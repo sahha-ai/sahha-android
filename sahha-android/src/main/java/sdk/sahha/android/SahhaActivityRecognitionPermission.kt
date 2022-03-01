@@ -5,10 +5,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
-class SahhaActivityRecognitionPermission : AppCompatActivity() {
+class SahhaActivityRecognitionPermission : ComponentActivity() {
   @RequiresApi(Build.VERSION_CODES.Q)
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
