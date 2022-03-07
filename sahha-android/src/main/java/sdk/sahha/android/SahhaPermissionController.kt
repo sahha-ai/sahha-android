@@ -1,15 +1,12 @@
 package sdk.sahha.android
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 
-object PermissionController {
+object SahhaPermissionController {
     private lateinit var permission: ActivityResultLauncher<String>
 
     fun init(activity: AppCompatActivity) {
@@ -36,22 +33,13 @@ object PermissionController {
                         activity,
                         "Enabled",
                         Toast.LENGTH_LONG
-                    )
-                        .show()
+                    ).show()
                 } else {
                     Toast.makeText(
                         activity,
-                        "Disabled, please enable",
+                        "Disabled",
                         Toast.LENGTH_LONG
-                    )
-                        .show()
-
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    val packageNameUri = Uri.fromParts("package", activity.packageName, null)
-                    intent.data = packageNameUri
-
-                    activity.startActivity(intent)
+                    ).show()
                 }
             }
     }

@@ -14,12 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
-import sdk.sahha.android.PermissionController
+import sdk.sahha.android.SahhaPermissionController
+import sdk.sahha.android.network.SahhaAPIController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        PermissionController.init(this)
+        SahhaPermissionController.init(this)
 
         setContent {
             SahhasdkemptyTheme {
@@ -36,9 +37,19 @@ class MainActivity : ComponentActivity() {
                             Greeting("Android")
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                PermissionController.grantActivityRecognition()
+                                SahhaPermissionController.grantActivityRecognition()
                             }) {
                                 Text("Permission Test")
+                            }
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Button(onClick = {
+                                SahhaAPIController.authentication(
+                                    "testCustomer",
+                                    "testProfile",
+                                    this@MainActivity
+                                )
+                            }) {
+                                Text("Authenticate")
                             }
                         }
                     }

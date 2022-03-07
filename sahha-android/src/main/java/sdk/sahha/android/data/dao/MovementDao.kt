@@ -1,4 +1,4 @@
-package sdk.sahha.android.data
+package sdk.sahha.android.data.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

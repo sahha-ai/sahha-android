@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import sdk.sahha.android.data.AVG_STEP_DISTANCE_MALE
 import sdk.sahha.android.data.AppDatabase
-import sdk.sahha.android.data.MovementDao
+import sdk.sahha.android.data.dao.MovementDao
 import sdk.sahha.android.data.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.model.steps.DetectedSteps
 import sdk.sahha.android.model.steps.LastDetectedSteps

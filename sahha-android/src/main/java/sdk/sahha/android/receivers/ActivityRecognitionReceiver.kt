@@ -10,7 +10,7 @@ import androidx.annotation.RequiresApi
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.DetectedActivity
 import sdk.sahha.android.data.AppDatabase
-import sdk.sahha.android.data.MovementDao
+import sdk.sahha.android.data.dao.MovementDao
 import sdk.sahha.android.model.activities.PreviousActivity
 import sdk.sahha.android.model.activities.RecognisedActivity
 import sdk.sahha.android.utils.TimeController
