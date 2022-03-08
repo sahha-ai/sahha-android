@@ -1,4 +1,4 @@
-package sdk.sahha.android.network
+package sdk.sahha.android.controller.network
 
 import okhttp3.ResponseBody
 import retrofit2.Call

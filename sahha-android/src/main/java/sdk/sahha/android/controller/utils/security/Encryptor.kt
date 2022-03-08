@@ -1,4 +1,4 @@
-package sdk.sahha.android.utils.security
+package sdk.sahha.android.controller.utils.security
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -13,7 +13,7 @@ import javax.crypto.SecretKey
 
 
 // Credit to JosiasSena Github user
-class Encryptor(private val context: Context) {
+internal class Encryptor(private val context: Context) {
     private val securityDao by lazy { AppDatabase(context).database.securityDao() }
     private lateinit var encryption: ByteArray
 

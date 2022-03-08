@@ -1,4 +1,4 @@
-package sdk.sahha.android
+package sdk.sahha.android.controller
 
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -20,6 +20,12 @@ object SahhaPermissionController {
                         Toast.LENGTH_LONG
                     )
                         .show()
+                } else {
+                    Toast.makeText(
+                        activity,
+                        "Disabled",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
     }

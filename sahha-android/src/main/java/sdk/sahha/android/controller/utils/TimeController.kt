@@ -1,4 +1,4 @@
-package sdk.sahha.android.utils
+package sdk.sahha.android.controller.utils
 
 import android.os.Build
 import androidx.annotation.RequiresApi

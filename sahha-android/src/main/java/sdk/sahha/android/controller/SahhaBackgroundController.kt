@@ -1,4 +1,4 @@
-package sdk.sahha.android
+package sdk.sahha.android.controller
 
 import android.app.PendingIntent
 import android.content.Context
@@ -17,10 +17,10 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import sdk.sahha.android.data.ACTIVITY_RECOGNITION_RECEIVER
 import sdk.sahha.android.data.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
-import sdk.sahha.android.receivers.ActivityRecognitionReceiver
-import sdk.sahha.android.receivers.PhoneScreenOn
-import sdk.sahha.android.services.DataCollectionService
-import sdk.sahha.android.workers.StepWorker
+import sdk.sahha.android.controller.receivers.ActivityRecognitionReceiver
+import sdk.sahha.android.controller.receivers.PhoneScreenOn
+import sdk.sahha.android.controller.services.DataCollectionService
+import sdk.sahha.android.controller.workers.StepWorker
 import java.util.concurrent.TimeUnit
 
 class SahhaBackgroundController(private val context: Context) {

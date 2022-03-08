@@ -1,4 +1,4 @@
-package sdk.sahha.android.receivers
+package sdk.sahha.android.controller.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -13,7 +13,7 @@ import sdk.sahha.android.data.AppDatabase
 import sdk.sahha.android.data.dao.MovementDao
 import sdk.sahha.android.model.activities.PreviousActivity
 import sdk.sahha.android.model.activities.RecognisedActivity
-import sdk.sahha.android.utils.TimeController
+import sdk.sahha.android.controller.utils.TimeController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

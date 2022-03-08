@@ -8,16 +8,22 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
-import sdk.sahha.android.SahhaPermissionController
-import sdk.sahha.android.network.SahhaAPIController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import sdk.sahha.android.controller.SahhaPermissionController
+import sdk.sahha.android.controller.network.SahhaAPIController
+import sdk.sahha.android.controller.utils.security.Decryptor
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SahhaPermissionController.init(this)
@@ -34,7 +40,9 @@ class MainActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Greeting("Android")
+                            var greeting by remember { mutableStateOf("Android") }
+
+                            Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
                                 SahhaPermissionController.grantActivityRecognition()
@@ -48,6 +56,12 @@ class MainActivity : ComponentActivity() {
                                     "testProfile",
                                     this@MainActivity
                                 )
+
+                                val ioScope = CoroutineScope(IO)
+                                ioScope.launch {
+                                    delay(1000)
+                                    greeting = Decryptor(this@MainActivity).decryptToken()
+                                }
                             }) {
                                 Text("Authenticate")
                             }

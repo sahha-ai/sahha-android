@@ -1,10 +1,10 @@
-package sdk.sahha.android.utils.security
+package sdk.sahha.android.controller.utils.security
 
 import android.content.Context
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.data.ANDROID_KEY_STORE
 import sdk.sahha.android.data.AppDatabase
 import sdk.sahha.android.data.TRANSFORMATION
+import sdk.sahha.android.data.UET
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -24,15 +24,24 @@ class Decryptor(private val context: Context) {
         keyStore?.load(null)
     }
 
-    fun decryptData(alias: String, encryptedData: ByteArray?): String {
-        val encryptionIv = runBlocking {
-            securityDao.getEncryptUtility(alias).iv
-        }
+    suspend fun decryptToken(): String {
+        val encryption = securityDao.getEncryptUtility(UET)
+        val encryptionIv = encryption.iv
+
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        val spec = GCMParameterSpec(128, encryptionIv)
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(UET), spec)
+        return cipher.doFinal(encryption.encryptedData).decodeToString()
+    }
+
+    private suspend fun decryptData(alias: String): String {
+        val encryption = securityDao.getEncryptUtility(alias)
+        val encryptionIv = encryption.iv
 
         val cipher = Cipher.getInstance(TRANSFORMATION)
         val spec = GCMParameterSpec(128, encryptionIv)
         cipher.init(Cipher.DECRYPT_MODE, getSecretKey(alias), spec)
-        return cipher.doFinal(encryptedData).decodeToString()
+        return cipher.doFinal(encryption.encryptedData).decodeToString()
     }
 
     private fun getSecretKey(alias: String): SecretKey? {

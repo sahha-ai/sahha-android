@@ -1,4 +1,4 @@
-package sdk.sahha.android.network
+package sdk.sahha.android.controller.network
 
 import android.content.Context
 import android.os.Build
@@ -19,8 +19,8 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.data.UET
-import sdk.sahha.android.utils.TimeController
-import sdk.sahha.android.utils.security.Encryptor
+import sdk.sahha.android.controller.utils.TimeController
+import sdk.sahha.android.controller.utils.security.Encryptor
 
 @RequiresApi(Build.VERSION_CODES.N)
 object SahhaAPIController {
