@@ -65,6 +65,12 @@ class MainActivity : ComponentActivity() {
                             }) {
                                 Text("Authenticate")
                             }
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Button(onClick = {
+                               SahhaPermissionController.openSettings(this@MainActivity)
+                            }) {
+                                Text("Open Settings")
+                            }
                         }
                     }
                 }

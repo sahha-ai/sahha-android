@@ -12,7 +12,7 @@ import sdk.sahha.android.model.security.EncryptUtility
 import sdk.sahha.android.model.steps.DetectedSteps
 import sdk.sahha.android.model.steps.LastDetectedSteps
 
-class AppDatabase(context: Context) {
+internal class AppDatabase(context: Context) {
     val database by lazy {
         Room.databaseBuilder(
             context,
