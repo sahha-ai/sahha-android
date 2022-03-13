@@ -25,9 +25,7 @@ import sdk.sahha.android.controller.utils.security.Encryptor
 @RequiresApi(Build.VERSION_CODES.N)
 object SahhaAPIController {
     private val tag = "APIController"
-    private val tc by lazy { TimeController() }
 
-    // TODO: Switch between dev/prod environment
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://sahhaapi-sandbox.azurewebsites.net/api/")
