@@ -15,12 +15,12 @@ import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-import sdk.sahha.android.data.ACTIVITY_RECOGNITION_RECEIVER
-import sdk.sahha.android.data.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
-import sdk.sahha.android.controller.receivers.ActivityRecognitionReceiver
-import sdk.sahha.android.controller.receivers.PhoneScreenOn
-import sdk.sahha.android.controller.services.DataCollectionService
-import sdk.sahha.android.controller.workers.StepWorker
+import sdk.sahha.android._refactor.domain.receiver.ActivityRecognitionReceiver
+import sdk.sahha.android._refactor.domain.receiver.PhoneScreenOn
+import sdk.sahha.android._refactor.domain.service.DataCollectionService
+import sdk.sahha.android._refactor.domain.worker.StepWorker
+import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_RECEIVER
+import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import java.util.concurrent.TimeUnit
 
 class SahhaBackgroundController(private val context: Context) {

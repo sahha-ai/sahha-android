@@ -19,8 +19,8 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.controller.SahhaPermissionController
-import sdk.sahha.android.controller.network.SahhaAPIController
-import sdk.sahha.android.controller.utils.security.Decryptor
+import sdk.sahha.android._refactor.common.security.Decryptor
+import sdk.sahha.android._refactor.domain.use_case.SahhaAuthenticate
 
 class MainActivity : ComponentActivity() {
 
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                SahhaAPIController.authentication(
+                                SahhaApi.authentication(
                                     "testCustomer",
                                     "testProfile",
                                     this@MainActivity
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                                 val ioScope = CoroutineScope(IO)
                                 ioScope.launch {
                                     delay(1000)
-                                    greeting = Decryptor(this@MainActivity).decryptToken()
+                                    greeting =
                                 }
                             }) {
                                 Text("Authenticate")
