@@ -17,7 +17,9 @@ import sdk.sahha.android._refactor.data.local.dao.MovementDao
 import sdk.sahha.android._refactor.data.local.dao.SecurityDao
 import sdk.sahha.android._refactor.data.remote.SahhaApi
 import sdk.sahha.android._refactor.data.repository.AuthRepoImpl
+import sdk.sahha.android._refactor.data.repository.BackgroundRepoImpl
 import sdk.sahha.android._refactor.domain.repository.AuthRepo
+import sdk.sahha.android._refactor.domain.repository.BackgroundRepo
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -44,6 +46,15 @@ internal object AppModule {
         securityDao: SecurityDao
     ): AuthRepo {
         return AuthRepoImpl(context, api, ioScope, securityDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackgroundRepository(
+        @ApplicationContext context: Context,
+        defaultScope: CoroutineScope
+    ): BackgroundRepo {
+        return BackgroundRepoImpl(context, defaultScope)
     }
 
     @Provides
