@@ -18,15 +18,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sdk.sahha.android.controller.SahhaPermissionController
-import sdk.sahha.android._refactor.common.security.Decryptor
-import sdk.sahha.android._refactor.domain.use_case.SahhaAuthenticate
+import sdk.sahha.android.presentation.Sahha
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SahhaPermissionController.init(this)
+
+        Sahha.configure(this)
 
         setContent {
             SahhasdkemptyTheme {
@@ -45,29 +44,27 @@ class MainActivity : ComponentActivity() {
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                SahhaPermissionController.grantActivityRecognition()
+                                Sahha.grantActivityRecognitionPermission()
                             }) {
                                 Text("Permission Test")
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                SahhaApi.authentication(
+                                Sahha.authenticate(
                                     "testCustomer",
-                                    "testProfile",
-                                    this@MainActivity
+                                    "testProfile"
                                 )
 
                                 val ioScope = CoroutineScope(IO)
                                 ioScope.launch {
                                     delay(1000)
-                                    greeting =
                                 }
                             }) {
                                 Text("Authenticate")
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                               SahhaPermissionController.openSettings(this@MainActivity)
+                                Sahha.openSettings()
                             }) {
                                 Text("Open Settings")
                             }
