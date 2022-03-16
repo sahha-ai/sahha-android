@@ -8,10 +8,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,18 +18,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import sdk.sahha.android.domain.model.enum.PermissionStatus
 import sdk.sahha.android.presentation.Sahha
 
 class MainActivity : ComponentActivity() {
-    private val permissionState = mutableStateOf("Waiting for result...")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         Sahha.configure(this)
-        Sahha.setPermissionLogic { enabled ->
-            permissionState.value = if (enabled) "Granted" else "Denied"
-        }
 
         setContent {
             SahhasdkemptyTheme {
@@ -47,14 +41,17 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val greeting by remember { mutableStateOf("Android") }
-                            val permission by remember { permissionState }
+                            var permission by remember { mutableStateOf(PermissionStatus.unknown.name) }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Text(permission)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.grantActivityRecognitionPermission()
+                                Sahha.grantActivityRecognitionPermission { enabled ->
+                                    if (enabled) permission = PermissionStatus.enabled.name
+                                    else permission = PermissionStatus.disabled.name
+                                }
                             }) {
                                 Text("Permission Test")
                             }

@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.domain.model.Logic
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import javax.inject.Inject
 
@@ -20,10 +21,10 @@ class PermissionsRepoImpl @Inject constructor(
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
     }
 
-    override fun setPermissionLogic(logic: ((enabled: Boolean) -> Unit)) {
+    override fun setPermissionLogic(logic: Logic) {
         permission =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { _enabled ->
-                logic(_enabled)
+                logic.unit(_enabled)
             }
     }
 
