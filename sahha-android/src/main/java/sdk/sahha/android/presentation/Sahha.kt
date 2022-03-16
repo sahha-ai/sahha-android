@@ -2,15 +2,20 @@ package sdk.sahha.android.presentation
 
 import androidx.activity.ComponentActivity
 import sdk.sahha.android.di.ManualDependencies
-import sdk.sahha.android.domain.model.Logic
+import sdk.sahha.android.domain.model.categories.ActivityRecognition
 
 object Sahha {
     private lateinit var manualDependencies: ManualDependencies
-    private val logic = Logic()
+    val activityRecognition by lazy {
+        ActivityRecognition(
+            manualDependencies.setPermissionLogicUseCase,
+            manualDependencies.grantActivityRecognitionPermissionUseCase
+        )
+    }
 
     fun configure(activity: ComponentActivity) {
         manualDependencies = ManualDependencies(activity)
-        setPermissionLogic(logic)
+        activityRecognition.setPermissionLogic()
     }
 
     fun authenticate(customerId: String, profileId: String) {
@@ -21,16 +26,7 @@ object Sahha {
         manualDependencies.startDataCollectionServiceUseCase()
     }
 
-    fun setPermissionLogic(logic: Logic) {
-        manualDependencies.setPermissionLogicUseCase(logic)
-    }
-
-    fun grantActivityRecognitionPermission(permissionLogic: ((enabled: Boolean) -> Unit)) {
-        logic.unit = permissionLogic
-        manualDependencies.grantActivityRecognitionPermissionUseCase()
-    }
-
-    fun openSettings() {
+    fun openAppSettings() {
         manualDependencies.openSettingsUseCase()
     }
 }

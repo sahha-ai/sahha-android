@@ -1,10 +1,10 @@
 package sdk.sahha.android.domain.repository
 
-import sdk.sahha.android.domain.model.Logic
+import sdk.sahha.android.domain.model.PermissionCallback
 
 interface PermissionsRepo {
     fun setPermissionLogic()
-    fun setPermissionLogic(logic: Logic)
+    fun setPermissionLogic(permissionCallback: PermissionCallback)
     fun openSettings()
     fun grantActivityRecognition()
 }

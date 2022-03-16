@@ -18,7 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sdk.sahha.android.domain.model.enum.PermissionStatus
+import sdk.sahha.android.domain.model.enums.PermissionStatus
 import sdk.sahha.android.presentation.Sahha
 
 class MainActivity : ComponentActivity() {
@@ -41,16 +41,16 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val greeting by remember { mutableStateOf("Android") }
-                            var permission by remember { mutableStateOf(PermissionStatus.unknown.name) }
+                            var permission by remember { mutableStateOf("${PermissionStatus.unknown.ordinal}: ${PermissionStatus.unknown.name}") }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Text(permission)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.grantActivityRecognitionPermission { enabled ->
-                                    if (enabled) permission = PermissionStatus.enabled.name
-                                    else permission = PermissionStatus.disabled.name
+                                Sahha.activityRecognition.activate { permissionStatus ->
+                                    permission =
+                                        "${permissionStatus.ordinal}: ${permissionStatus.name}"
                                 }
                             }) {
                                 Text("Permission Test")
@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.openSettings()
+                                Sahha.openAppSettings()
                             }) {
                                 Text("Open Settings")
                             }
