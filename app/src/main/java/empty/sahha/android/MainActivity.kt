@@ -8,7 +8,10 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,11 +24,15 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.presentation.Sahha
 
 class MainActivity : ComponentActivity() {
+    private val permissionState = mutableStateOf("Waiting for result...")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         Sahha.configure(this)
+        Sahha.setPermissionLogic { enabled ->
+            permissionState.value = if (enabled) "Granted" else "Denied"
+        }
 
         setContent {
             SahhasdkemptyTheme {
@@ -39,9 +46,12 @@ class MainActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            var greeting by remember { mutableStateOf("Android") }
+                            val greeting by remember { mutableStateOf("Android") }
+                            val permission by remember { permissionState }
 
                             Greeting(greeting)
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Text(permission)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
                                 Sahha.grantActivityRecognitionPermission()

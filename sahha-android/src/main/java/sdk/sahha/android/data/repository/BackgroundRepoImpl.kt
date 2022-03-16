@@ -13,13 +13,13 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.data.Constants
+import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenOn
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.StepWorker
-import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -101,12 +101,13 @@ internal class BackgroundRepoImpl @Inject constructor(
     }
 
     private fun setActivityRecognitionPendingIntent() {
-        val android12AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        activityRecognitionPendingIntent = if (android12AndAbove) {
-            getPendingIntentWithMutableFlag()
-        } else {
-            getPendingIntent()
-        }
+        val isAndroid12AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        activityRecognitionPendingIntent =
+            if (isAndroid12AndAbove) {
+                getPendingIntentWithMutableFlag()
+            } else {
+                getPendingIntent()
+            }
     }
 
     private fun requestActivityRecognitionUpdates() {

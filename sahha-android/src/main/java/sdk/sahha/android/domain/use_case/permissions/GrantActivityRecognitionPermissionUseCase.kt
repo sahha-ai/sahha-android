@@ -1,12 +1,12 @@
-package sdk.sahha.android.domain.use_case
+package sdk.sahha.android.domain.use_case.permissions
 
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import javax.inject.Inject
 
-class OpenSettingsUseCase @Inject constructor(
+class GrantActivityRecognitionPermissionUseCase @Inject constructor(
     private val repository: PermissionsRepo
 ) {
     operator fun invoke() {
-        repository.openSettings()
+        repository.grantActivityRecognition()
     }
 }

@@ -18,6 +18,10 @@ object Sahha {
         manualDependencies.startDataCollectionServiceUseCase()
     }
 
+    fun setPermissionLogic(logic: ((enabled: Boolean) -> Unit)) {
+        manualDependencies.setPermissionLogicUseCase(logic)
+    }
+
     fun grantActivityRecognitionPermission() {
         manualDependencies.grantActivityRecognitionPermissionUseCase()
     }

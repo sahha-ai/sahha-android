@@ -2,9 +2,10 @@ package sdk.sahha.android.di
 
 import androidx.activity.ComponentActivity
 import sdk.sahha.android.domain.use_case.AuthenticateUseCase
-import sdk.sahha.android.domain.use_case.GrantActivityRecognitionPermissionUseCase
-import sdk.sahha.android.domain.use_case.OpenSettingsUseCase
+import sdk.sahha.android.domain.use_case.permissions.GrantActivityRecognitionPermissionUseCase
+import sdk.sahha.android.domain.use_case.permissions.OpenSettingsUseCase
 import sdk.sahha.android.domain.use_case.StartDataCollectionServiceUseCase
+import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import javax.inject.Inject
 
 class ManualDependencies @Inject constructor(
@@ -47,4 +48,5 @@ class ManualDependencies @Inject constructor(
         )
     }
     val openSettingsUseCase by lazy { OpenSettingsUseCase(permissionRepo) }
+    val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
 }
