@@ -3,7 +3,6 @@ package sdk.sahha.android
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
 import sdk.sahha.android.di.ManualDependencies
-import sdk.sahha.android.domain.model.ActivityCallback
 import sdk.sahha.android.domain.model.enums.ActivityStatus
 
 @Keep
@@ -19,8 +18,8 @@ object Sahha {
         manualDependencies.activateUseCase(callback)
     }
 
-    fun authenticate(customerId: String, profileId: String) {
-        manualDependencies.authenticateUseCase(customerId, profileId)
+    fun authenticate(customerId: String, profileId: String, callback: ((value: String) -> Unit)) {
+        manualDependencies.authenticateUseCase(customerId, profileId, callback)
     }
 
     fun startDataCollectionService() {

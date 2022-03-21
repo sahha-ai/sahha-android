@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.model
+package sdk.sahha.android.domain.model.callbacks
 
 import sdk.sahha.android.domain.model.enums.ActivityStatus
 

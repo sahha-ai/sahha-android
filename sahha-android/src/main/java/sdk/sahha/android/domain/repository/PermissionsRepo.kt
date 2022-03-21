@@ -1,6 +1,5 @@
 package sdk.sahha.android.domain.repository
 
-import sdk.sahha.android.domain.model.ActivityCallback
 import sdk.sahha.android.domain.model.enums.ActivityStatus
 
 interface PermissionsRepo {

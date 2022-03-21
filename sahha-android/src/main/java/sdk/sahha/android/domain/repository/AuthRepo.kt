@@ -1,5 +1,5 @@
 package sdk.sahha.android.domain.repository
 
 interface AuthRepo {
-    fun authenticate(customerId: String, profileId: String)
+    fun authenticate(customerId: String, profileId: String, callback: ((value: String) -> Unit))
 }

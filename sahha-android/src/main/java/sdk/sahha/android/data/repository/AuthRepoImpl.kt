@@ -15,6 +15,7 @@ import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.callbacks.AuthCallback
 import sdk.sahha.android.domain.repository.AuthRepo
 import javax.inject.Inject
 
@@ -25,8 +26,14 @@ class AuthRepoImpl @Inject constructor(
     private val securityDao: SecurityDao
 ) : AuthRepo {
     private val tag = "AuthRepoImpl"
+    private val authCallback = AuthCallback()
 
-    override fun authenticate(customerId: String, profileId: String) {
+    override fun authenticate(
+        customerId: String,
+        profileId: String,
+        callback: ((value: String) -> Unit)
+    ) {
+        authCallback.authenticate = callback
         val call = api.authenticate(customerId, profileId)
         enqueueCall(call)
     }
@@ -35,8 +42,11 @@ class AuthRepoImpl @Inject constructor(
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (ResponseCode.isSuccessful(response.code())) {
-                    displayToast("Successful: ${response.code()}")
-                    storeToken(response)
+                    val token = getTokenFromResponse(response)
+                    authCallback.authenticate?.let {
+                        it(token)
+                    }
+                    storeToken(token)
                 }
             }
 
@@ -47,14 +57,14 @@ class AuthRepoImpl @Inject constructor(
         })
     }
 
-    private fun storeToken(response: Response<ResponseBody>) {
-        response.body()?.let { responseBody ->
-            val jsonObject = JSONObject(responseBody.string())
-            val token = jsonObject["token"] as String
+    private fun getTokenFromResponse(response: Response<ResponseBody>): String {
+        val jsonObject = JSONObject(response.body()!!.string())
+        return jsonObject["token"] as String
+    }
 
-            ioScope.launch {
-                encryptTokenAsync(token)
-            }
+    private fun storeToken(token: String) {
+        ioScope.launch {
+            encryptTokenAsync(token)
         }
     }
 

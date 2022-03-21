@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.domain.model.enums.ActivityStatus
 
 class MainActivity : ComponentActivity() {
 
@@ -39,8 +40,8 @@ class MainActivity : ComponentActivity() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            val greeting by remember { mutableStateOf("Android") }
-                            var permission by remember { mutableStateOf("pending") }
+                            var greeting by remember { mutableStateOf("Android") }
+                            var permission by remember { mutableStateOf(ActivityStatus.pending.name) }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
@@ -58,7 +59,9 @@ class MainActivity : ComponentActivity() {
                                 Sahha.authenticate(
                                     "testCustomer",
                                     "testProfile"
-                                )
+                                ) { value ->
+                                    greeting = value
+                                }
 
                                 val ioScope = CoroutineScope(IO)
                                 ioScope.launch {

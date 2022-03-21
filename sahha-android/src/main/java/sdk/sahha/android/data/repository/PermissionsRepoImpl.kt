@@ -6,8 +6,8 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import sdk.sahha.android.domain.model.ActivityCallback
-import sdk.sahha.android.domain.model.WindowCallback
+import sdk.sahha.android.domain.model.callbacks.ActivityCallback
+import sdk.sahha.android.domain.model.callbacks.WindowCallback
 import sdk.sahha.android.domain.model.enums.ActivityStatus
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import javax.inject.Inject
