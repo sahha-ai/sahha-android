@@ -1,21 +1,22 @@
-package sdk.sahha.android.presentation
+package sdk.sahha.android
 
 import androidx.activity.ComponentActivity
+import androidx.annotation.Keep
 import sdk.sahha.android.di.ManualDependencies
-import sdk.sahha.android.domain.model.categories.ActivityRecognition
+import sdk.sahha.android.domain.model.ActivityCallback
+import sdk.sahha.android.domain.model.enums.ActivityStatus
 
+@Keep
 object Sahha {
     private lateinit var manualDependencies: ManualDependencies
-    val activityRecognition by lazy {
-        ActivityRecognition(
-            manualDependencies.setPermissionLogicUseCase,
-            manualDependencies.grantActivityRecognitionPermissionUseCase
-        )
-    }
 
     fun configure(activity: ComponentActivity) {
         manualDependencies = ManualDependencies(activity)
-        activityRecognition.setPermissionLogic()
+        manualDependencies.setPermissionLogicUseCase()
+    }
+
+    fun activate(callback: ((activityStatus: Enum<ActivityStatus>) -> Unit)) {
+        manualDependencies.activateUseCase(callback)
     }
 
     fun authenticate(customerId: String, profileId: String) {
@@ -26,7 +27,7 @@ object Sahha {
         manualDependencies.startDataCollectionServiceUseCase()
     }
 
-    fun openAppSettings() {
-        manualDependencies.openSettingsUseCase()
+    fun promptUserToActivate(callback: (activityStatus: Enum<ActivityStatus>) -> Unit) {
+        manualDependencies.promptUserToActivateUseCase(callback)
     }
 }

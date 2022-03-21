@@ -3,7 +3,7 @@ package sdk.sahha.android.data.repository
 import android.os.Build
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 
-internal class DeviceInfoRepoImpl : DeviceInfoRepo {
+class DeviceInfoRepoImpl : DeviceInfoRepo {
     override fun getPlatform(): String {
         return "Android"
     }

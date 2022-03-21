@@ -18,7 +18,7 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.repository.AuthRepo
 import javax.inject.Inject
 
-internal class AuthRepoImpl @Inject constructor(
+class AuthRepoImpl @Inject constructor(
     private val context: Context,
     private val api: SahhaApi,
     private val ioScope: CoroutineScope,

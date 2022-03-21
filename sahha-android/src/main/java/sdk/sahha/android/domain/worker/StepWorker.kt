@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-internal class StepWorker(private val context: Context, workerParameters: WorkerParameters) :
+class StepWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
     @Inject
     lateinit var mainScope: CoroutineScope

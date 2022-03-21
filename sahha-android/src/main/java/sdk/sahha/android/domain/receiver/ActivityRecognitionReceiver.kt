@@ -18,7 +18,7 @@ import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.N)
-internal class ActivityRecognitionReceiver @Inject constructor(
+class ActivityRecognitionReceiver @Inject constructor(
     private val movementDao: MovementDao,
     private val defaultScope: CoroutineScope
 ) : BroadcastReceiver() {

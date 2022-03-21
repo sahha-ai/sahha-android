@@ -23,7 +23,7 @@ import sdk.sahha.android.domain.worker.StepWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-internal class BackgroundRepoImpl @Inject constructor(
+class BackgroundRepoImpl @Inject constructor(
     private val context: Context,
     private val defaultScope: CoroutineScope
 ) : BackgroundRepo {

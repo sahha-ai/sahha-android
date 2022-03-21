@@ -22,6 +22,6 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
 )
 
 abstract class SahhaDatabase : RoomDatabase() {
-    abstract fun movementDao(): MovementDao
-    abstract fun securityDao(): SecurityDao
+    internal abstract fun movementDao(): MovementDao
+    internal abstract fun securityDao(): SecurityDao
 }

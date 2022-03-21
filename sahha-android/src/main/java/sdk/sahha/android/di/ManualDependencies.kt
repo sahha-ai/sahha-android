@@ -2,9 +2,9 @@ package sdk.sahha.android.di
 
 import androidx.activity.ComponentActivity
 import sdk.sahha.android.domain.use_case.AuthenticateUseCase
-import sdk.sahha.android.domain.use_case.permissions.GrantActivityRecognitionPermissionUseCase
-import sdk.sahha.android.domain.use_case.permissions.OpenSettingsUseCase
 import sdk.sahha.android.domain.use_case.StartDataCollectionServiceUseCase
+import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
+import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import javax.inject.Inject
 
@@ -41,12 +41,16 @@ class ManualDependencies @Inject constructor(
     private val defaultScope by lazy { AppModule.provideDefaultScope() }
 
     val authenticateUseCase by lazy { AuthenticateUseCase(authRepo) }
-    val startDataCollectionServiceUseCase by lazy { StartDataCollectionServiceUseCase(backgroundRepo) }
-    val grantActivityRecognitionPermissionUseCase by lazy {
-        GrantActivityRecognitionPermissionUseCase(
+    val startDataCollectionServiceUseCase by lazy {
+        StartDataCollectionServiceUseCase(
+            backgroundRepo
+        )
+    }
+    val activateUseCase by lazy {
+        ActivateUseCase(
             permissionRepo
         )
     }
-    val openSettingsUseCase by lazy { OpenSettingsUseCase(permissionRepo) }
+    val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
 }

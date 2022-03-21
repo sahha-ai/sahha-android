@@ -11,7 +11,7 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.inject.Inject
 
 // Credit to JosiasSena Github user
-internal class Decryptor @Inject constructor(
+class Decryptor @Inject constructor(
     private val securityDao: SecurityDao
 ) {
     private val keyStore by lazy { KeyStore.getInstance(ANDROID_KEY_STORE) }

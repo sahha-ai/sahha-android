@@ -26,7 +26,7 @@ import javax.inject.Inject
 // TODO: Refactor
 
 @RequiresApi(Build.VERSION_CODES.O)
-internal class DataCollectionService @Inject constructor(
+class DataCollectionService @Inject constructor(
     private val defaultScope: CoroutineScope,
     private val ioScope: CoroutineScope,
     private val movementDao: MovementDao

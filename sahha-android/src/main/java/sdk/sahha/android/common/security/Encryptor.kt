@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 
 // Credit to JosiasSena Github user
-internal class Encryptor @Inject constructor(
+class Encryptor @Inject constructor(
     private val securityDao: SecurityDao
 ) {
     private lateinit var encryption: ByteArray

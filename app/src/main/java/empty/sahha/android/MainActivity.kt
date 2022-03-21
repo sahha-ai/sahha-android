@@ -18,8 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sdk.sahha.android.domain.model.enums.PermissionStatus
-import sdk.sahha.android.presentation.Sahha
+import sdk.sahha.android.Sahha
 
 class MainActivity : ComponentActivity() {
 
@@ -41,16 +40,15 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val greeting by remember { mutableStateOf("Android") }
-                            var permission by remember { mutableStateOf("${PermissionStatus.unknown.ordinal}: ${PermissionStatus.unknown.name}") }
+                            var permission by remember { mutableStateOf("pending") }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Text(permission)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.activityRecognition.activate { permissionStatus ->
-                                    permission =
-                                        "${permissionStatus.ordinal}: ${permissionStatus.name}"
+                                Sahha.activate { newStatus ->
+                                    permission = newStatus.name
                                 }
                             }) {
                                 Text("Permission Test")
@@ -71,7 +69,9 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.openAppSettings()
+                                Sahha.promptUserToActivate { newStatus ->
+                                    permission = newStatus.name
+                                }
                             }) {
                                 Text("Open Settings")
                             }
