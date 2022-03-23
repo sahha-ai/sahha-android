@@ -15,10 +15,6 @@ import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 
 class SleepReceiver : BroadcastReceiver() {
-    private val timeManager by lazy { Sahha.di.timeManager }
-    private val sleepDao by lazy { Sahha.di.sleepDao }
-    private val ioScope by lazy { Sahha.di.ioScope }
-
     private val tag = "SleepReceiver"
 
     private var start: Long = 0L
@@ -51,7 +47,7 @@ class SleepReceiver : BroadcastReceiver() {
         if (SleepSegmentEvent.hasEvents(intent)) {
             val sleepSegmentEvents = SleepSegmentEvent.extractEvents(intent)
 
-            ioScope.launch {
+            Sahha.di.ioScope.launch {
                 for (segment in sleepSegmentEvents) {
                     start = segment.startTimeMillis
                     end = segment.endTimeMillis
@@ -64,22 +60,22 @@ class SleepReceiver : BroadcastReceiver() {
     }
 
     private suspend fun checkForDuplicate() {
-        val specificSleepSegment = sleepDao.getSleepHistoryWith(start, end)
+        val specificSleepSegment = Sahha.di.sleepDao.getSleepHistoryWith(start, end)
         if (specificSleepSegment.isNullOrEmpty()) {
             saveSleep()
-            removeExcessSleepHistory(50)
             saveSleepHistory()
+            removeExcessSleepHistory(50)
         } else {
-            sleepDao.removeSleep(specificSleepSegment.first().id)
+            Sahha.di.sleepDao.removeSleep(specificSleepSegment.first().id)
         }
     }
 
     private suspend fun saveSleep() {
-        sleepDao.saveSleep(
+        Sahha.di.sleepDao.saveSleep(
             SleepQueue(
                 start,
                 end,
-                timeManager.epochMillisToISO(end)
+                Sahha.timeManager.epochMillisToISO(end)
             )
         )
     }
@@ -87,12 +83,12 @@ class SleepReceiver : BroadcastReceiver() {
     private suspend fun saveSleepHistory() {
         // Redundancy
         try {
-            sleepDao.saveSleepHistory(
+            Sahha.di.sleepDao.saveSleepHistory(
                 SleepQueueHistory(
-                    sleepDao.getSleepQueue().last().id,
+                    Sahha.di.sleepDao.getSleepQueue().last().id,
                     start,
                     end,
-                    timeManager.epochMillisToISO(end)
+                    Sahha.timeManager.epochMillisToISO(end)
                 )
             )
         } catch (e: Exception) {
@@ -111,13 +107,13 @@ class SleepReceiver : BroadcastReceiver() {
     private suspend fun checkAndRemove(
         maxCount: Int
     ) {
-        var history = sleepDao.getSleepQueueHistory()
+        var history = Sahha.di.sleepDao.getSleepQueueHistory()
 
         if (history.count() > maxCount) {
             for (i in history.indices) {
                 if (i > maxCount - 1) {
-                    sleepDao.removeHistory(history[0].id)
-                    history = sleepDao.getSleepQueueHistory()
+                    Sahha.di.sleepDao.removeHistory(history[0].id)
+                    history = Sahha.di.sleepDao.getSleepQueueHistory()
                 }
             }
         }
