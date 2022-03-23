@@ -9,14 +9,14 @@ import sdk.sahha.android.domain.model.device.DeviceUsage
 
 class PhoneScreenOff : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        saveUnlockAsync()
+        saveLockAsync()
     }
 
-    private fun saveUnlockAsync() {
+    private fun saveLockAsync() {
         Sahha.di.ioScope.launch {
             Sahha.di.deviceUsageDao.saveDeviceUsage(
                 DeviceUsage(
-                    Sahha.timeManager.nowInEpoch(), false
+                    Sahha.timeManager.nowInEpoch(), true
                 )
             )
         }

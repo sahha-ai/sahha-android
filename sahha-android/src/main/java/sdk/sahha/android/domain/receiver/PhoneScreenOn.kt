@@ -16,7 +16,7 @@ class PhoneScreenOn : BroadcastReceiver() {
         Sahha.di.ioScope.launch {
             Sahha.di.deviceUsageDao.saveDeviceUsage(
                 DeviceUsage(
-                    Sahha.timeManager.nowInEpoch(), true
+                    Sahha.timeManager.nowInEpoch(), false
                 )
             )
         }
