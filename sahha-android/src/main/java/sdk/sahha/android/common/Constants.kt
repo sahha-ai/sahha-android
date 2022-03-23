@@ -13,6 +13,7 @@ internal object Constants {
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000
+    const val NOTIFICATION_PERMISSION_SETTINGS = 1001
 
     // Receivers
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000

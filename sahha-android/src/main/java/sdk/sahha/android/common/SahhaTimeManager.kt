@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.N)
-internal object SahhaTimeManager {
+class SahhaTimeManager {
     private val tag by lazy { "SahhaTimeManager" }
 
     @RequiresApi(Build.VERSION_CODES.O)

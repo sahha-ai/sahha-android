@@ -1,9 +1,9 @@
 package sdk.sahha.android.domain.model.callbacks
 
-import android.content.pm.PackageManager
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import androidx.activity.ComponentActivity
+import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.domain.model.enums.ActivityStatus
 
 class WindowCallback(
@@ -115,18 +115,7 @@ class WindowCallback(
     }
 
     private fun checkActivityRecognitionPermission(): Enum<ActivityStatus> {
-        val permissionStatus =
-            activity.checkSelfPermission(android.Manifest.permission.ACTIVITY_RECOGNITION)
-        return convertPermissionStatusToActivityStatus(permissionStatus)
-    }
-
-    private fun convertPermissionStatusToActivityStatus(permissionStatus: Int): Enum<ActivityStatus> {
-        if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-            return ActivityStatus.enabled
-        } else if (permissionStatus == PackageManager.PERMISSION_DENIED) {
-            return ActivityStatus.disabled
-        } else {
-            return ActivityStatus.unavailable
-        }
+        if (SahhaPermissions.activityRecognitionGranted()) return ActivityStatus.enabled
+        return ActivityStatus.disabled
     }
 }

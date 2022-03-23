@@ -1,11 +1,9 @@
 package sdk.sahha.android.data.repository
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.callbacks.WindowCallback
 import sdk.sahha.android.domain.model.enums.ActivityStatus
@@ -40,12 +38,7 @@ class PermissionsRepoImpl @Inject constructor(
     }
 
     private fun openAppSettings() {
-        val openSettingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val packageNameUri = Uri.fromParts("package", activity.packageName, null)
-
-        openSettingsIntent.data = packageNameUri
-
+        val openSettingsIntent = SahhaIntents.settings()
         activity.startActivity(openSettingsIntent)
     }
 

@@ -6,7 +6,7 @@ import javax.inject.Inject
 class StartDataCollectionServiceUseCase @Inject constructor(
     private val repository: BackgroundRepo
 ) {
-    operator fun invoke() {
-        repository.startDataCollectionService()
+    operator fun invoke(icon: Int?, title: String?, shortDescription: String?) {
+        repository.startDataCollectionService(icon, title, shortDescription)
     }
 }

@@ -15,8 +15,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.data.Constants.BASE_URL
 import sdk.sahha.android.data.local.SahhaDatabase
+import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SecurityDao
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
@@ -91,6 +93,18 @@ internal object AppModule {
     @Singleton
     fun provideSecurityDao(db: SahhaDatabase): SecurityDao {
         return db.securityDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSleepDao(db: SahhaDatabase): SleepDao {
+        return db.sleepDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeviceUsageDao(db: SahhaDatabase): DeviceUsageDao {
+        return db.deviceUsageDao()
     }
 
     @Provides

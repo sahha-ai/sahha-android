@@ -1,6 +1,5 @@
 package sdk.sahha.android.domain.service
 
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.hardware.Sensor
@@ -12,27 +11,23 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaNotificationManager
-import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.Sahha
+import sdk.sahha.android.data.Constants.AVG_STEP_DISTANCE_MALE
+import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.steps.DetectedSteps
 import sdk.sahha.android.domain.model.steps.LastDetectedSteps
-import sdk.sahha.android.data.Constants.AVG_STEP_DISTANCE_MALE
-import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
-import javax.inject.Inject
 
 // TODO: Refactor
 
 @RequiresApi(Build.VERSION_CODES.O)
-class DataCollectionService @Inject constructor(
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
-    private val movementDao: MovementDao
-
-) : Service() {
+class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
+    private val repository by lazy { Sahha.di.backgroundRepo }
+    private val movementDao by lazy { Sahha.di.movementDao }
+    private val ioScope by lazy { Sahha.di.ioScope }
+    private val defaultScope by lazy { Sahha.di.defaultScope }
 
     private var pedometerRegistered = false
 
@@ -45,23 +40,15 @@ class DataCollectionService @Inject constructor(
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.w(tag, "onStartCommand")
 
-        val notification = SahhaNotificationManager.getNewNotification(
-            this,
-            "phoneUsage",
-            "Phone Usage",
-            NotificationManager.IMPORTANCE_MIN,
-            "Analytics are running",
-            "Swipe for options to hide this notification.",
-            true
-        )
-        startForeground(NOTIFICATION_DATA_COLLECTION, notification)
+        startForeground(NOTIFICATION_DATA_COLLECTION, repository.notification)
+
 
         runPedometer(
             (applicationContext.getSystemService(SENSOR_SERVICE) as SensorManager),
             movementDao
         )
 
-        Toast.makeText(this, "onStartCommand", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show()
 
         return START_STICKY
     }
@@ -103,13 +90,13 @@ class DataCollectionService @Inject constructor(
                                 distance = steps * distancePerStepMetres
                                 // Set start time to be start of device boot
                                 elapsedTimeInMillis =
-                                    SahhaTimeManager.convertNanosToMillis(event.timestamp)
-                                startOfSteps = SahhaTimeManager.nowInEpoch() - elapsedTimeInMillis
-                                startDateTime = SahhaTimeManager.epochMillisToISO(startOfSteps)
+                                    Sahha.timeManager.convertNanosToMillis(event.timestamp)
+                                startOfSteps = Sahha.timeManager.nowInEpoch() - elapsedTimeInMillis
+                                startDateTime = Sahha.timeManager.epochMillisToISO(startOfSteps)
                                 // end time to manual time stamp
-                                endDateTime = SahhaTimeManager.nowInISO()
+                                endDateTime = Sahha.timeManager.nowInISO()
                                 // created at to manual time stamp
-                                createdAt = SahhaTimeManager.nowInISO()
+                                createdAt = Sahha.timeManager.nowInISO()
                             }
 
                             fun setDataFromLastSteps() {
@@ -121,9 +108,9 @@ class DataCollectionService @Inject constructor(
                                 // start time is end of last steps end time
                                 startDateTime = lastDetectedSteps.endDateTime
                                 // end time to manual time stamp
-                                endDateTime = SahhaTimeManager.nowInISO()
+                                endDateTime = Sahha.timeManager.nowInISO()
                                 // created at to manual time stamp
-                                createdAt = SahhaTimeManager.nowInISO()
+                                createdAt = Sahha.timeManager.nowInISO()
 
                                 Log.w(tag, "event.timestamp: ${event.timestamp}")
 

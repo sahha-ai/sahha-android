@@ -9,20 +9,17 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.DetectedActivity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
-import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.N)
-class ActivityRecognitionReceiver @Inject constructor(
-    private val movementDao: MovementDao,
-    private val defaultScope: CoroutineScope
-) : BroadcastReceiver() {
+class ActivityRecognitionReceiver : BroadcastReceiver() {
     private val tag by lazy { "ActivityRecognitionReceiver" }
+
+    private val movementDao by lazy { Sahha.di.movementDao }
+    private val defaultScope by lazy { Sahha.di.defaultScope }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
@@ -131,7 +128,7 @@ class ActivityRecognitionReceiver @Inject constructor(
         mostProbableActivity: Int,
         mostProbableConfidence: Int,
     ) {
-        val nowInISO = SahhaTimeManager.nowInISO()
+        val nowInISO = Sahha.timeManager.nowInISO()
         Log.e(tag, "saveDetectedActivity nowInISO: $nowInISO")
         movementDao.saveDetectedActivity(
             RecognisedActivity(

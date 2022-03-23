@@ -1,7 +1,16 @@
 package sdk.sahha.android.domain.repository
 
+import android.app.Notification
+
 interface BackgroundRepo {
-    fun startDataCollectionService()
+    var notification: Notification
+    fun setSahhaNotification(_notification: Notification)
+    fun startDataCollectionService(
+        icon: Int?,
+        title: String?,
+        shortDescription: String?
+    )
+
     fun startActivityRecognitionReceiver()
     fun startPhoneScreenReceiver()
     fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String)

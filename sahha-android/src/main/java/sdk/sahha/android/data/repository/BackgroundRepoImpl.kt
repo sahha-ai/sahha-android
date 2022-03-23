@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.repository
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
@@ -27,6 +29,8 @@ class BackgroundRepoImpl @Inject constructor(
     private val context: Context,
     private val defaultScope: CoroutineScope
 ) : BackgroundRepo {
+    override lateinit var notification: Notification
+
     private val tag by lazy { "BackgroundRepoImpl" }
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val activityRecognitionIntent by lazy {
@@ -41,7 +45,16 @@ class BackgroundRepoImpl @Inject constructor(
     private lateinit var activityRecognitionClient: ActivityRecognitionClient
     private lateinit var activityRecognitionPendingIntent: PendingIntent
 
-    override fun startDataCollectionService() {
+    override fun setSahhaNotification(_notification: Notification) {
+        notification = _notification
+    }
+
+    override fun startDataCollectionService(
+        icon: Int?,
+        title: String?,
+        shortDescription: String?
+    ) {
+        Sahha.notifications.setNewPersistent(icon, title, shortDescription)
         context.startForegroundService(Intent(context, DataCollectionService::class.java))
     }
 
@@ -65,8 +78,9 @@ class BackgroundRepoImpl @Inject constructor(
     }
 
     override fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest: PeriodicWorkRequest =
-            getStepWorkerWorkRequest(repeatIntervalMinutes, workerTag)
+            getStepWorkerWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
     }
 
@@ -76,6 +90,11 @@ class BackgroundRepoImpl @Inject constructor(
 
     override fun stopAllWorkers() {
         workManager.cancelAllWork()
+    }
+
+    // Force default minimum value of 15 minutes
+    private fun getCheckedIntervalMinutes(interval: Long): Long {
+        return if (interval < 15) 15 else interval
     }
 
     private fun getStepWorkerWorkRequest(

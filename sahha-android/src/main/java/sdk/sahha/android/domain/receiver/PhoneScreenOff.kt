@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.domain.model.device.DeviceUsage
 
-class PhoneScreenOn : BroadcastReceiver() {
+class PhoneScreenOff : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         saveUnlockAsync()
     }
@@ -16,7 +16,7 @@ class PhoneScreenOn : BroadcastReceiver() {
         Sahha.di.ioScope.launch {
             Sahha.di.deviceUsageDao.saveDeviceUsage(
                 DeviceUsage(
-                    Sahha.timeManager.nowInEpoch(), true
+                    Sahha.timeManager.nowInEpoch(), false
                 )
             )
         }

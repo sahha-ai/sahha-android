@@ -78,6 +78,12 @@ class MainActivity : ComponentActivity() {
                             }) {
                                 Text("Open Settings")
                             }
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Button(onClick = {
+                                Sahha.startDataCollectionService()
+                            }) {
+                                Text("Start Service")
+                            }
                         }
                     }
                 }

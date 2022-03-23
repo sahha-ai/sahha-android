@@ -8,10 +8,45 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import sdk.sahha.android.R
+import sdk.sahha.android.data.Constants
+import sdk.sahha.android.domain.repository.BackgroundRepo
+import javax.inject.Inject
 
-internal object SahhaNotificationManager {
+class SahhaNotificationManager @Inject constructor(
+    private val context: Context,
+    private val repository: BackgroundRepo
+) {
+    fun setNewPersistent(icon: Int?, title: String?, shortDescription: String?) {
+        val notification = getNewNotification(
+            context,
+            "analytics",
+            "Analytics",
+            NotificationManager.IMPORTANCE_MIN,
+            title ?: "Analytics are running",
+            shortDescription ?: "Swipe for options to hide this notification.",
+            true,
+            icon ?: R.drawable.ic_baseline_security_update_good_24
+        )
+
+        repository.setSahhaNotification(notification)
+    }
+
+    fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
+        createNotificationWithIntent(
+            context,
+            "permissions",
+            "Permissions",
+            NotificationManager.IMPORTANCE_HIGH,
+            title ?: "Permissions",
+            shortDescription ?: "Please tap here to re-enable permissions.",
+            true,
+            Constants.NOTIFICATION_PERMISSION_SETTINGS,
+            SahhaIntents.settings()
+        )
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createNotification(
+    private fun createNotification(
         _service: Service,
         _channelId: String,
         _channelName: String,
@@ -46,7 +81,7 @@ internal object SahhaNotificationManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createNotificationForWorker(
+    private fun createNotificationForWorker(
         _context: Context,
         _channelId: String,
         _channelName: String,
@@ -82,14 +117,15 @@ internal object SahhaNotificationManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun getNewNotification(
+    private fun getNewNotification(
         _context: Context,
         _channelId: String,
         _channelName: String,
         _importanceLevel: Int,
         _contentTitle: String,
         _contentText: String,
-        _isOngoing: Boolean
+        _isOngoing: Boolean,
+        _icon: Int
     ): Notification {
         val NOTIFICATION_CHANNEL_ID = "sahha.$_channelId"
         val channelName = _channelName
@@ -111,14 +147,14 @@ internal object SahhaNotificationManager {
             .setContentText(_contentText)
             .setPriority(_importanceLevel)
             .setCategory(Notification.CATEGORY_SERVICE)
-            .setSmallIcon(R.drawable.ic_baseline_security_update_good_24)
+            .setSmallIcon(_icon)
             .build()
 
         return notification
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createNotificationForWorkerWithIntent(
+    private fun createNotificationWithIntent(
         _context: Context,
         _channelId: String,
         _channelName: String,

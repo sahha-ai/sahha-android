@@ -7,26 +7,33 @@ import sdk.sahha.android.domain.model.enums.ActivityStatus
 
 @Keep
 object Sahha {
-    private lateinit var manualDependencies: ManualDependencies
+    internal lateinit var di: ManualDependencies
+
+    internal val notifications by lazy { di.notifications }
+    val timeManager by lazy { di.timeManager }
 
     fun configure(activity: ComponentActivity) {
-        manualDependencies = ManualDependencies(activity)
-        manualDependencies.setPermissionLogicUseCase()
+        di = ManualDependencies(activity)
+        di.setPermissionLogicUseCase()
     }
 
     fun activate(callback: ((activityStatus: Enum<ActivityStatus>) -> Unit)) {
-        manualDependencies.activateUseCase(callback)
+        di.activateUseCase(callback)
     }
 
     fun authenticate(customerId: String, profileId: String, callback: ((value: String) -> Unit)) {
-        manualDependencies.authenticateUseCase(customerId, profileId, callback)
+        di.authenticateUseCase(customerId, profileId, callback)
     }
 
-    fun startDataCollectionService() {
-        manualDependencies.startDataCollectionServiceUseCase()
+    fun startDataCollectionService(
+        icon: Int? = null,
+        title: String? = null,
+        shortDescription: String? = null
+    ) {
+        di.startDataCollectionServiceUseCase(icon, title, shortDescription)
     }
 
     fun promptUserToActivate(callback: (activityStatus: Enum<ActivityStatus>) -> Unit) {
-        manualDependencies.promptUserToActivateUseCase(callback)
+        di.promptUserToActivateUseCase(callback)
     }
 }

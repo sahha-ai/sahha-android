@@ -8,10 +8,16 @@
 
     <application>
         <service android:name="sdk.sahha.android.domain.service.DataCollectionService" />
+
         <receiver
             android:name="sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+        <receiver
+            android:name="sdk.sahha.android.domain.receiver.SleepReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.ACTIVITY_RECOGNITION" />
     </application>
 </manifest>
