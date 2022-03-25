@@ -13,19 +13,20 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.BASE_URL
 import sdk.sahha.android.data.local.SahhaDatabase
-import sdk.sahha.android.data.local.dao.DeviceUsageDao
-import sdk.sahha.android.data.local.dao.MovementDao
-import sdk.sahha.android.data.local.dao.SecurityDao
-import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
+import sdk.sahha.android.data.repository.SleepWorkerRepoImpl
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
+import sdk.sahha.android.domain.repository.SleepWorkerRepo
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -73,6 +74,26 @@ internal object AppModule {
 
     @Provides
     @Singleton
+    fun provideSleepWorkerRepository(
+        ioScope: CoroutineScope,
+        sleepDao: SleepDao,
+        securityDao: SecurityDao,
+        timeManager: SahhaTimeManager,
+        decryptor: Decryptor,
+        api: SahhaApi
+    ): SleepWorkerRepo {
+        return SleepWorkerRepoImpl(
+            ioScope,
+            sleepDao,
+            securityDao,
+            timeManager,
+            decryptor,
+            api
+        )
+    }
+
+    @Provides
+    @Singleton
     fun provideDatabase(@ApplicationContext context: Context): SahhaDatabase {
         return Room.databaseBuilder(
             context,
@@ -105,6 +126,12 @@ internal object AppModule {
     @Singleton
     fun provideDeviceUsageDao(db: SahhaDatabase): DeviceUsageDao {
         return db.deviceUsageDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideConfigDao(db: SahhaDatabase): ConfigurationDao {
+        return db.configurationDao()
     }
 
     @Provides

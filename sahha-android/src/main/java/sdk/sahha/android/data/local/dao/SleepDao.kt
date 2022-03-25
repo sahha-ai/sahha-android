@@ -1,11 +1,13 @@
 package sdk.sahha.android.data.local.dao
 
+import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
 
+@Dao
 interface SleepDao {
     // Sleep queue
     @Insert(onConflict = OnConflictStrategy.ABORT)

@@ -4,7 +4,7 @@ import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import androidx.activity.ComponentActivity
 import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.domain.model.enums.ActivityStatus
+import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 
 class WindowCallback(
     private val activity: ComponentActivity,
@@ -114,8 +114,8 @@ class WindowCallback(
         return localCallback.onActionModeFinished(mode)
     }
 
-    private fun checkActivityRecognitionPermission(): Enum<ActivityStatus> {
-        if (SahhaPermissions.activityRecognitionGranted()) return ActivityStatus.enabled
-        return ActivityStatus.disabled
+    private fun checkActivityRecognitionPermission(): Enum<SahhaActivityStatus> {
+        if (SahhaPermissions.activityRecognitionGranted()) return SahhaActivityStatus.ENABLED
+        return SahhaActivityStatus.DISABLED
     }
 }

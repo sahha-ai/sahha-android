@@ -6,7 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.callbacks.WindowCallback
-import sdk.sahha.android.domain.model.enums.ActivityStatus
+import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import javax.inject.Inject
 
@@ -26,13 +26,13 @@ class PermissionsRepoImpl @Inject constructor(
     }
 
     override fun promptUserToActivateActivityRecognition(
-        callback: ((activityStatus: Enum<ActivityStatus>) -> Unit)
+        callback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)
     ) {
         activityCallback.setSettingOnResume = callback
         openAppSettings()
     }
 
-    override fun activate(callback: ((Enum<ActivityStatus>) -> Unit)) {
+    override fun activate(callback: ((Enum<SahhaActivityStatus>) -> Unit)) {
         activityCallback.requestPermission = callback
         permission.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
     }
@@ -42,9 +42,9 @@ class PermissionsRepoImpl @Inject constructor(
         activity.startActivity(openSettingsIntent)
     }
 
-    private fun convertToActivityStatus(enabled: Boolean): Enum<ActivityStatus> {
-        if (enabled) return ActivityStatus.enabled
-        else return ActivityStatus.disabled
+    private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaActivityStatus> {
+        if (enabled) return SahhaActivityStatus.ENABLED
+        else return SahhaActivityStatus.DISABLED
     }
 
     private fun setWindowFocusCallback() {

@@ -19,14 +19,24 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
-import sdk.sahha.android.domain.model.enums.ActivityStatus
+import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
+import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Sahha.configure(this)
+        Sahha.configure(
+            this,
+            SahhaEnvironment.DEVELOPMENT,
+            arrayOf(
+                SahhaSensor.SLEEP,
+                SahhaSensor.PEDOMETER
+            ),
+            true
+        )
 
         setContent {
             SahhasdkemptyTheme {
@@ -41,14 +51,14 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             var greeting by remember { mutableStateOf("Android") }
-                            var permission by remember { mutableStateOf(ActivityStatus.pending.name) }
+                            var permission by remember { mutableStateOf(SahhaActivityStatus.PENDING.name) }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Text(permission)
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.activate { newStatus ->
+                                Sahha.motion.activate { newStatus ->
                                     permission = newStatus.name
                                 }
                             }) {
@@ -72,7 +82,7 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.promptUserToActivate { newStatus ->
+                                Sahha.motion.promptUserToActivate { newStatus ->
                                     permission = newStatus.name
                                 }
                             }) {

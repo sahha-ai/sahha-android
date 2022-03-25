@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.local.dao
 
+import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -7,6 +8,7 @@ import sdk.sahha.android.domain.model.device.AppUsage
 import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
 
+@Dao
 interface DeviceUsageDao {
     // Phone Usage
     @Insert(onConflict = OnConflictStrategy.REPLACE)
