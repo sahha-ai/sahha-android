@@ -8,16 +8,16 @@ data class SahhaConfiguration(
     @PrimaryKey val id: Int,
     val environment: Int,
     val sensorArray: ArrayList<Int>,
-    val autoPostData: Boolean
+    val manuallyPostData: Boolean
 ) {
     constructor(
         environment: Int,
         sensorArray: ArrayList<Int>,
-        autoPostData: Boolean
+        manuallyPostData: Boolean
     ) : this(
         1,
         environment,
         sensorArray,
-        autoPostData
+        manuallyPostData
     )
 }

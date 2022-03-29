@@ -28,15 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Sahha.configure(
-            this,
-            SahhaEnvironment.DEVELOPMENT,
-            arrayOf(
-                SahhaSensor.SLEEP,
-                SahhaSensor.PEDOMETER
-            ),
-            true
-        )
+        Sahha.configure(this)
 
         setContent {
             SahhasdkemptyTheme {

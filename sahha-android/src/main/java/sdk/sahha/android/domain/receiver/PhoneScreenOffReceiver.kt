@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.domain.model.device.DeviceUsage
 
-class PhoneScreenOff : BroadcastReceiver() {
+class PhoneScreenOffReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         saveLockAsync()
     }

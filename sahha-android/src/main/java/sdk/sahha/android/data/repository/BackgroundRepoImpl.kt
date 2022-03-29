@@ -18,9 +18,10 @@ import sdk.sahha.android.Sahha
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
-import sdk.sahha.android.domain.receiver.PhoneScreenOn
+import sdk.sahha.android.domain.receiver.PhoneScreenOnReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
+import sdk.sahha.android.domain.worker.SleepCollectionWorker
 import sdk.sahha.android.domain.worker.StepWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -70,7 +71,7 @@ class BackgroundRepoImpl @Inject constructor(
 
     override fun startPhoneScreenReceiver() {
         context.registerReceiver(
-            PhoneScreenOn(),
+            PhoneScreenOnReceiver(),
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
             }
@@ -80,7 +81,14 @@ class BackgroundRepoImpl @Inject constructor(
     override fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String) {
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest: PeriodicWorkRequest =
-            getStepWorkerWorkRequest(checkedIntervalMinutes, workerTag)
+            getStepWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
+
+    override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest: PeriodicWorkRequest =
+            getStepWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
     }
 
@@ -97,11 +105,20 @@ class BackgroundRepoImpl @Inject constructor(
         return if (interval < 15) 15 else interval
     }
 
-    private fun getStepWorkerWorkRequest(
+    private fun getStepWorkRequest(
         repeatIntervalMinutes: Long,
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<StepWorker>(repeatIntervalMinutes, TimeUnit.MINUTES)
+            .addTag(workerTag)
+            .build()
+    }
+
+    private fun getSleepWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<SleepCollectionWorker>(repeatIntervalMinutes, TimeUnit.MINUTES)
             .addTag(workerTag)
             .build()
     }

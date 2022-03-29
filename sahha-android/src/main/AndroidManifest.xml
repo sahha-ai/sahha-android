@@ -10,6 +10,17 @@
         <service android:name="sdk.sahha.android.domain.service.DataCollectionService" />
 
         <receiver
+            android:name="..AutoStart"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name="sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver"
             android:enabled="true"
             android:exported="true"

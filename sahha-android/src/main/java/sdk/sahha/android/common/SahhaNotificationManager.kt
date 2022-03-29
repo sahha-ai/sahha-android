@@ -25,7 +25,7 @@ class SahhaNotificationManager @Inject constructor(
             title ?: "Analytics are running",
             shortDescription ?: "Swipe for options to hide this notification.",
             true,
-            icon ?: R.drawable.ic_baseline_security_update_good_24
+            icon ?: R.drawable.ic_sahha_no_bg
         )
 
         repository.setSahhaNotification(notification)

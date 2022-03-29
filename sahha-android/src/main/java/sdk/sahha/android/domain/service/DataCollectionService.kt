@@ -48,8 +48,6 @@ class DataCollectionService : Service() {
             movementDao
         )
 
-        Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show()
-
         return START_STICKY
     }
 

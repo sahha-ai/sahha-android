@@ -25,14 +25,18 @@ object Sahha {
 
     fun configure(
         activity: ComponentActivity,
-        environment: Enum<SahhaEnvironment>,
-        sensorArray: Array<Enum<SahhaSensor>>,
-        autoPostData: Boolean
+        environment: Enum<SahhaEnvironment> = SahhaEnvironment.DEVELOPMENT,
+        sensorSet: Set<Enum<SahhaSensor>> = setOf(
+            SahhaSensor.PEDOMETER,
+            SahhaSensor.SLEEP,
+            SahhaSensor.DEVICE
+        ),
+        manuallyPostData: Boolean = false
     ) {
         di = ManualDependencies(activity)
         di.setPermissionLogicUseCase()
         di.ioScope.launch {
-            saveConfiguration(environment, sensorArray, autoPostData)
+            saveConfiguration(environment, sensorSet, manuallyPostData)
         }
     }
 
@@ -48,30 +52,28 @@ object Sahha {
         di.startDataCollectionServiceUseCase(icon, title, shortDescription)
     }
 
-    fun sendSleepData(callback: ((responseSuccessful: Boolean) -> Unit)) {
-        di.ioScope.launch {
-            di.sendSleepDataUseCase(callback)
-        }
+    fun start() {
+
     }
 
     private suspend fun saveConfiguration(
         environment: Enum<SahhaEnvironment>,
-        sensorArray: Array<Enum<SahhaSensor>>,
-        autoPostData: Boolean
+        sensorSet: Set<Enum<SahhaSensor>>,
+        manuallyPostData: Boolean
     ) {
-        val sensorEnums = convertToEnums(sensorArray)
+        val sensorEnums = convertToEnums(sensorSet)
         di.configurationDao.saveConfig(
             SahhaConfiguration(
                 environment.ordinal,
                 sensorEnums,
-                autoPostData
+                manuallyPostData
             )
         )
     }
 
-    private fun convertToEnums(sensorArray: Array<Enum<SahhaSensor>>): ArrayList<Int> {
+    private fun convertToEnums(sensorSet: Set<Enum<SahhaSensor>>): ArrayList<Int> {
         val sensorEnums = arrayListOf<Int>()
-        sensorArray.forEach {
+        sensorSet.forEach {
             sensorEnums.add(it.ordinal)
         }
         return sensorEnums

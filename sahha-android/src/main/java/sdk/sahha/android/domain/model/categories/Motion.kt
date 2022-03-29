@@ -20,4 +20,8 @@ class Motion @Inject constructor(
     fun promptUserToActivate(_activityCallback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)) {
         promptUserToActivateUseCase(_activityCallback)
     }
+
+    fun postData() {
+        TODO("Awaiting API")
+    }
 }

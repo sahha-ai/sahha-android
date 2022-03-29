@@ -18,4 +18,5 @@ internal object Constants {
 
     // Receivers
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000
+    const val SLEEP_DATA_REQUEST = 2002
 }
