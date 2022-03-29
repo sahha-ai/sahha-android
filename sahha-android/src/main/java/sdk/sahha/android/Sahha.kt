@@ -14,6 +14,8 @@ object Sahha {
     internal lateinit var di: ManualDependencies
     internal val notifications by lazy { di.notifications }
 
+    // Test
+
     val timeManager by lazy { di.timeManager }
     val motion by lazy {
         Motion(
