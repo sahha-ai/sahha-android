@@ -9,6 +9,7 @@ internal object Constants {
 
     // Worker Tags
     const val SLEEP_WORKER_TAG = "sleepData"
+    const val SLEEP_POST_WORKER_TAG = "sleepPost"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

@@ -15,7 +15,7 @@ interface BackgroundRepo {
     fun startPhoneScreenReceiver()
     fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
-    fun startPostWorkers()
+    fun startPostWorkersAsync()
     fun stopWorkerByTag(workerTag: String)
     fun stopAllWorkers()
 }

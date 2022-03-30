@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.BASE_URL
 import sdk.sahha.android.data.local.SahhaDatabase
@@ -59,9 +58,18 @@ internal object AppModule {
     @Singleton
     fun provideBackgroundRepository(
         @ApplicationContext context: Context,
-        defaultScope: CoroutineScope
+        @Named("defaultScope") defaultScope: CoroutineScope,
+        @Named("ioScope") ioScope: CoroutineScope,
+        configurationDao: ConfigurationDao,
+        api: SahhaApi
     ): BackgroundRepo {
-        return BackgroundRepoImpl(context, defaultScope)
+        return BackgroundRepoImpl(
+            context,
+            defaultScope,
+            ioScope,
+            configurationDao,
+            api
+        )
     }
 
     @Provides
@@ -74,19 +82,17 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideSleepWorkerRepository(
+    fun provideRemotePostRepository(
         ioScope: CoroutineScope,
         sleepDao: SleepDao,
-        securityDao: SecurityDao,
-        timeManager: SahhaTimeManager,
+        deviceUsageDao: DeviceUsageDao,
         decryptor: Decryptor,
         api: SahhaApi
     ): RemotePostRepo {
         return RemotePostRepoImpl(
             ioScope,
             sleepDao,
-            securityDao,
-            timeManager,
+            deviceUsageDao,
             decryptor,
             api
         )

@@ -5,9 +5,10 @@ import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.domain.use_case.AuthenticateUseCase
-import sdk.sahha.android.domain.use_case.SendSleepDataUseCase
+import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.StartDataCollectionServiceUseCase
+import sdk.sahha.android.domain.use_case.StartPostWorkersUseCase
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
@@ -36,7 +37,10 @@ class ManualDependencies @Inject constructor(
     internal val backgroundRepo by lazy {
         AppModule.provideBackgroundRepository(
             activity,
-            defaultScope
+            defaultScope,
+            ioScope,
+            configurationDao,
+            api
         )
     }
     internal val permissionRepo by lazy {
@@ -44,12 +48,11 @@ class ManualDependencies @Inject constructor(
             activity
         )
     }
-    internal val sleepWorkerRepo by lazy {
-        AppModule.provideSleepWorkerRepository(
+    internal val remotePostWorker by lazy {
+        AppModule.provideRemotePostRepository(
             ioScope,
             sleepDao,
-            securityDao,
-            timeManager,
+            deviceUsageDao,
             decryptor,
             api
         )
@@ -75,6 +78,7 @@ class ManualDependencies @Inject constructor(
     }
     val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
-    val sendSleepDataUseCase by lazy { SendSleepDataUseCase(sleepWorkerRepo) }
+    val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostWorker) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
+    val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(backgroundRepo) }
 }

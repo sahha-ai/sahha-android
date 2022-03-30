@@ -20,7 +20,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +27,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Sahha.configure(this)
+        Sahha.configure(this, manuallyPostData = true)
 
         setContent {
             SahhasdkemptyTheme {
@@ -44,6 +43,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             var greeting by remember { mutableStateOf("Android") }
                             var permission by remember { mutableStateOf(SahhaActivityStatus.PENDING.name) }
+                            var manualPost by remember { mutableStateOf("") }
 
                             Greeting(greeting)
                             Spacer(modifier = Modifier.padding(16.dp))
@@ -86,6 +86,20 @@ class MainActivity : ComponentActivity() {
                             }) {
                                 Text("Test start")
                             }
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Button(onClick = {
+                                Sahha.motion.postData(SahhaSensor.SLEEP) { error, success ->
+                                    error?.also {
+                                        manualPost = it
+                                    }
+                                    success?.also {
+                                        manualPost = it
+                                    }
+                                }
+                            }) {
+                                Text("Manual Post")
+                            }
+                            Text(manualPost)
                         }
                     }
                 }

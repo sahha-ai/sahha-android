@@ -19,8 +19,11 @@ object Sahha {
     val motion by lazy {
         Motion(
             di.setPermissionLogicUseCase,
+            di.configurationDao,
+            di.ioScope,
             di.activateUseCase,
-            di.promptUserToActivateUseCase
+            di.promptUserToActivateUseCase,
+            di.postSleepDataUseCase
         )
     }
 
@@ -53,22 +56,22 @@ object Sahha {
         }
     }
 
-    private suspend fun checkAndStartPostWorkers(){
-        if(!config.manuallyPostData) {
-            TODO("Start post workers")
+    private suspend fun checkAndStartPostWorkers() {
+        if (!config.manuallyPostData) {
+            di.startPostWorkersUseCase()
         }
     }
 
     private suspend fun startDataCollection() {
-        if(config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
             di.startCollectingSleepDataUseCase()
         }
 
-        if(config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
             TODO("Collect device data")
         }
 
-        if(config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
             TODO("Collect pedometer data")
         }
     }
