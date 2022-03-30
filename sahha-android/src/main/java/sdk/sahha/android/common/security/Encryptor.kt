@@ -31,7 +31,6 @@ class Encryptor @Inject constructor(
                 alias, cipher.iv, encrypted
             )
         )
-
     }
 
     private fun getSecretKey(alias: String): SecretKey {

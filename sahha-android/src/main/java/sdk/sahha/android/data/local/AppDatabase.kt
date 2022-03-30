@@ -32,7 +32,7 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
         AppUsage::class,
         DeviceUsage::class,
         SahhaConfiguration::class,
-        SleepDto::class
+        SleepDto::class,
     ]
 )
 

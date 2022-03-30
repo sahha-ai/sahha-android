@@ -68,11 +68,11 @@ object Sahha {
         }
 
         if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
-            TODO("Collect device data")
+//            TODO("Collect device data")
         }
 
         if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
-            TODO("Collect pedometer data")
+//            TODO("Collect pedometer data")
         }
     }
 
