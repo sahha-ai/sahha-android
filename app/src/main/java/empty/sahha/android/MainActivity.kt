@@ -61,8 +61,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.authenticate(
-                                        "testCustomer938g93i4hg9ihdfg3984hg9hd9uhg34g34g34gdsge4g",
-                                        "testProfile439g8hoihd9g8h349gih34gdsg34gsdg34gseg34gsdg3g3"
+                                        "a78afc9b-cae3-4736-8bb1-ca174c16a2ed",
+                                        "2ef1af8e-ee11-41f9-9d02-5d0051aab1e8"
                                     ) { value ->
                                         greeting = value
                                     }
