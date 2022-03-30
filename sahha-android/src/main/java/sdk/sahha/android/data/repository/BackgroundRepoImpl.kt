@@ -17,6 +17,9 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
+import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenOnReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
@@ -25,10 +28,14 @@ import sdk.sahha.android.domain.worker.SleepCollectionWorker
 import sdk.sahha.android.domain.worker.StepWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Named
 
 class BackgroundRepoImpl @Inject constructor(
     private val context: Context,
-    private val defaultScope: CoroutineScope
+    @Named("defaultScope") private val defaultScope: CoroutineScope,
+    @Named("ioScope") private val ioScope: CoroutineScope,
+    private val configDao: ConfigurationDao,
+    private val api: SahhaApi
 ) : BackgroundRepo {
     override lateinit var notification: Notification
 
@@ -88,8 +95,25 @@ class BackgroundRepoImpl @Inject constructor(
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest: PeriodicWorkRequest =
-            getStepWorkRequest(checkedIntervalMinutes, workerTag)
+            getSleepWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
+    }
+
+    override fun startPostWorkers() {
+        ioScope.launch {
+            val config = configDao.getConfig()
+            if(config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
+                startSleepPostWorker()
+            }
+
+            if(config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
+                startDevicePostWorker()
+            }
+
+            if(config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
+                startPedometerPostWorker()
+            }
+        }
     }
 
     override fun stopWorkerByTag(workerTag: String) {

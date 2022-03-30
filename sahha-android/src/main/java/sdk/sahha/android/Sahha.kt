@@ -11,10 +11,9 @@ import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 @Keep
 object Sahha {
+    private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
     internal val notifications by lazy { di.notifications }
-
-    // Testttt
 
     val timeManager by lazy { di.timeManager }
     val motion by lazy {
@@ -46,16 +45,40 @@ object Sahha {
         di.authenticateUseCase(customerId, profileId, callback)
     }
 
-    fun startDataCollectionService(
+    fun start() {
+        di.defaultScope.launch {
+            config = di.configurationDao.getConfig()
+            startDataCollection()
+            checkAndStartPostWorkers()
+        }
+    }
+
+    private suspend fun checkAndStartPostWorkers(){
+        if(!config.manuallyPostData) {
+            TODO("Start post workers")
+        }
+    }
+
+    private suspend fun startDataCollection() {
+        if(config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
+            di.startCollectingSleepDataUseCase()
+        }
+
+        if(config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
+            TODO("Collect device data")
+        }
+
+        if(config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
+            TODO("Collect pedometer data")
+        }
+    }
+
+    private fun startDataCollectionService(
         icon: Int? = null,
         title: String? = null,
         shortDescription: String? = null
     ) {
         di.startDataCollectionServiceUseCase(icon, title, shortDescription)
-    }
-
-    fun start() {
-
     }
 
     private suspend fun saveConfiguration(

@@ -6,9 +6,20 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
+import sdk.sahha.android.data.remote.dto.SleepDto
 
 @Dao
 interface SleepDao {
+    // Sleep Dto
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun saveSleepDto(sleep: SleepDto)
+
+    @Query("SELECT * FROM SleepDto")
+    suspend fun getSleepDto(): List<SleepDto>
+
+    @Query("DELETE FROM SleepDto")
+    suspend fun clearSleepDto()
+
     // Sleep queue
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun saveSleep(sleep: SleepQueue)
@@ -21,6 +32,9 @@ interface SleepDao {
 
     @Query("DELETE FROM SleepQueue WHERE id=:id")
     suspend fun removeSleep(id: Int)
+
+    @Query("DELETE FROM SleepQueue")
+    suspend fun clearSleep()
 
     @Query("SELECT * FROM SleepQueue WHERE createdAt=:createdAt")
     suspend fun getSleepQueueCreatedAt(createdAt: String): SleepQueue

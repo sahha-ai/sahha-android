@@ -10,7 +10,7 @@
         <service android:name="sdk.sahha.android.domain.service.DataCollectionService" />
 
         <receiver
-            android:name="..AutoStart"
+            android:name=".domain.receiver.AutoStartReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">

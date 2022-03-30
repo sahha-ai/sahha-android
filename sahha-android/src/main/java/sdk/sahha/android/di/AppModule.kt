@@ -22,11 +22,11 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
-import sdk.sahha.android.data.repository.SleepWorkerRepoImpl
+import sdk.sahha.android.data.repository.RemotePostRepoImpl
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
-import sdk.sahha.android.domain.repository.SleepWorkerRepo
+import sdk.sahha.android.domain.repository.RemotePostRepo
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -81,8 +81,8 @@ internal object AppModule {
         timeManager: SahhaTimeManager,
         decryptor: Decryptor,
         api: SahhaApi
-    ): SleepWorkerRepo {
-        return SleepWorkerRepoImpl(
+    ): RemotePostRepo {
+        return RemotePostRepoImpl(
             ioScope,
             sleepDao,
             securityDao,

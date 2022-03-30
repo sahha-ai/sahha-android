@@ -7,6 +7,7 @@ import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
 import sdk.sahha.android.data.local.converter.Converter
 import sdk.sahha.android.data.local.dao.*
+import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -30,7 +31,8 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
         PhoneUsage::class,
         AppUsage::class,
         DeviceUsage::class,
-        SahhaConfiguration::class
+        SahhaConfiguration::class,
+        SleepDto::class
     ]
 )
 

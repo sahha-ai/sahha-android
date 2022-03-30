@@ -3,12 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="../../../../layout/compose-model-1648592497783.xml" value="1.5342960288808665" />
         <entry key="..\:/Android Studio Projects SSD/sahha-android/sahha-android/src/main/res/drawable/ic_baseline_security_update_good_24.xml" value="0.2625" />
       </map>
     </option>
-  </component>
-  <component name="ProjectPlainTextFileTypeManager">
-    <file url="file://$PROJECT_DIR$/sahha-android/src/main/res/drawable/ic_baseline_security_update_good_24.xml" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />

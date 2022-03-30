@@ -82,9 +82,9 @@ class MainActivity : ComponentActivity() {
                             }
                             Spacer(modifier = Modifier.padding(16.dp))
                             Button(onClick = {
-                                Sahha.startDataCollectionService()
+                                Sahha.start()
                             }) {
-                                Text("Start Service")
+                                Text("Test start")
                             }
                         }
                     }

@@ -6,6 +6,7 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.domain.use_case.AuthenticateUseCase
 import sdk.sahha.android.domain.use_case.SendSleepDataUseCase
+import sdk.sahha.android.domain.use_case.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.StartDataCollectionServiceUseCase
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
@@ -75,4 +76,5 @@ class ManualDependencies @Inject constructor(
     val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
     val sendSleepDataUseCase by lazy { SendSleepDataUseCase(sleepWorkerRepo) }
+    val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
 }

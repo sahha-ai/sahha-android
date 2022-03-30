@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
+import sdk.sahha.android.data.remote.dto.SleepDto
 
 class SleepReceiver : BroadcastReceiver() {
     private val tag = "SleepReceiver"
@@ -62,6 +63,7 @@ class SleepReceiver : BroadcastReceiver() {
     private suspend fun checkForDuplicate() {
         val specificSleepSegment = Sahha.di.sleepDao.getSleepHistoryWith(start, end)
         if (specificSleepSegment.isNullOrEmpty()) {
+            saveSleepDto()
             saveSleep()
             saveSleepHistory()
             removeExcessSleepHistory(50)
@@ -70,12 +72,25 @@ class SleepReceiver : BroadcastReceiver() {
         }
     }
 
+    private suspend fun saveSleepDto() {
+        val millisSlept = end - start
+        val minutesSlept = millisSlept / 1000 / 60
+        Sahha.di.sleepDao.saveSleepDto(
+            SleepDto(
+                minutesSlept.toInt(),
+                Sahha.timeManager.epochMillisToISO(start),
+                Sahha.timeManager.epochMillisToISO(end),
+                Sahha.timeManager.nowInISO()
+            )
+        )
+    }
+
     private suspend fun saveSleep() {
         Sahha.di.sleepDao.saveSleep(
             SleepQueue(
                 start,
                 end,
-                Sahha.timeManager.epochMillisToISO(end)
+                Sahha.timeManager.nowInISO()
             )
         )
     }
@@ -88,7 +103,7 @@ class SleepReceiver : BroadcastReceiver() {
                     Sahha.di.sleepDao.getSleepQueue().last().id,
                     start,
                     end,
-                    Sahha.timeManager.epochMillisToISO(end)
+                    Sahha.timeManager.nowInISO()
                 )
             )
         } catch (e: Exception) {

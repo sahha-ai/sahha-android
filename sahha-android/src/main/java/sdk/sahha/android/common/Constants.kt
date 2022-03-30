@@ -7,6 +7,9 @@ internal object Constants {
     const val ANDROID_KEY_STORE = "AndroidKeyStore"
     const val UET = "uet"
 
+    // Worker Tags
+    const val SLEEP_WORKER_TAG = "sleepData"
+
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
     const val AVG_STEP_DISTANCE_FEMALE = 0.7
