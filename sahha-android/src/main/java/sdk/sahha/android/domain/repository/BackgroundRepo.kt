@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.repository
 
 import android.app.Notification
+import android.content.Context
 
 interface BackgroundRepo {
     var notification: Notification
@@ -12,7 +13,7 @@ interface BackgroundRepo {
     )
 
     fun startActivityRecognitionReceiver()
-    fun startPhoneScreenReceiver()
+    fun startPhoneScreenReceivers(serviceContext: Context, receiverRegistered: Boolean): Boolean
     fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startPostWorkersAsync()

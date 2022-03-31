@@ -22,7 +22,8 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
-import sdk.sahha.android.domain.receiver.PhoneScreenOnReceiver
+import sdk.sahha.android.domain.receiver.PhoneScreenOffReceiver
+import sdk.sahha.android.domain.receiver.PhoneScreenUnlockedReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.SleepCollectionWorker
@@ -78,13 +79,12 @@ class BackgroundRepoImpl @Inject constructor(
         }
     }
 
-    override fun startPhoneScreenReceiver() {
-        context.registerReceiver(
-            PhoneScreenOnReceiver(),
-            IntentFilter().apply {
-                addAction(Intent.ACTION_USER_PRESENT)
-            }
-        )
+    override fun startPhoneScreenReceivers(serviceContext: Context, receiverRegistered: Boolean): Boolean {
+        if(receiverRegistered) return true
+
+        registerScreenUnlockedReceiver(serviceContext)
+        registerScreenOffReceiver(serviceContext)
+        return true
     }
 
     override fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String) {
@@ -124,6 +124,24 @@ class BackgroundRepoImpl @Inject constructor(
 
     override fun stopAllWorkers() {
         workManager.cancelAllWork()
+    }
+
+    private fun registerScreenUnlockedReceiver(serviceContext: Context) {
+        serviceContext.registerReceiver(
+            PhoneScreenUnlockedReceiver(),
+            IntentFilter().apply {
+                addAction(Intent.ACTION_USER_PRESENT)
+            }
+        )
+    }
+
+    private fun registerScreenOffReceiver(serviceContext: Context) {
+        serviceContext.registerReceiver(
+            PhoneScreenOffReceiver(),
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_OFF)
+            }
+        )
     }
 
     private fun startSleepPostWorker(repeatIntervalMinutes: Long, workerTag: String) {

@@ -20,7 +20,9 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
+import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 class MainActivity : ComponentActivity() {
@@ -28,7 +30,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Sahha.configure(this, manuallyPostData = true)
+        val config = SahhaSettings(
+            environment = SahhaEnvironment.DEVELOPMENT,
+            manuallyPostData = true
+        )
+        Sahha.configure(this, config)
 
         setContent {
             SahhasdkemptyTheme {

@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
@@ -29,18 +30,12 @@ object Sahha {
 
     fun configure(
         activity: ComponentActivity,
-        environment: Enum<SahhaEnvironment> = SahhaEnvironment.DEVELOPMENT,
-        sensorSet: Set<Enum<SahhaSensor>> = setOf(
-            SahhaSensor.PEDOMETER,
-            SahhaSensor.SLEEP,
-            SahhaSensor.DEVICE
-        ),
-        manuallyPostData: Boolean = false
+        settings: SahhaSettings
     ) {
         di = ManualDependencies(activity)
         di.setPermissionLogicUseCase()
         di.ioScope.launch {
-            saveConfiguration(environment, sensorSet, manuallyPostData)
+            saveConfiguration(settings.environment, settings.sensors, settings.manuallyPostData)
         }
     }
 
@@ -67,13 +62,8 @@ object Sahha {
             di.startCollectingSleepDataUseCase()
         }
 
-        if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
-//            TODO("Collect device data")
-        }
-
-        if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
-//            TODO("Collect pedometer data")
-        }
+        // Pedometer/device checkers are in the service
+        startDataCollectionService()
     }
 
     private fun startDataCollectionService(

@@ -9,7 +9,7 @@ import sdk.sahha.android.Sahha
 class AutoStartReceiver: BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         Sahha.di.defaultScope.launch {
-            // TODO:("Restart service and workers")
+            Sahha.start()
         }
     }
 }

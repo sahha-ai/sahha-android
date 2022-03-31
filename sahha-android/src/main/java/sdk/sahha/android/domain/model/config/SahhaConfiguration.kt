@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.model.config
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

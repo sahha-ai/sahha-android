@@ -4,14 +4,11 @@ import androidx.activity.ComponentActivity
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
-import sdk.sahha.android.domain.use_case.AuthenticateUseCase
-import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
-import sdk.sahha.android.domain.use_case.StartCollectingSleepDataUseCase
-import sdk.sahha.android.domain.use_case.StartDataCollectionServiceUseCase
-import sdk.sahha.android.domain.use_case.StartPostWorkersUseCase
+import sdk.sahha.android.domain.use_case.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
+import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import javax.inject.Inject
 
 class ManualDependencies @Inject constructor(
@@ -81,4 +78,9 @@ class ManualDependencies @Inject constructor(
     val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostWorker) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
     val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(backgroundRepo) }
+    val startCollectingPhoneScreenLockDataUseCase by lazy {
+        StartCollectingPhoneScreenLockDataUseCase(
+            backgroundRepo
+        )
+    }
 }

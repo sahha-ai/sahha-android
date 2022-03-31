@@ -7,6 +7,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.domain.model.device.PhoneUsage
 
 interface SahhaApi {
     @POST("authentication")
@@ -20,4 +21,10 @@ interface SahhaApi {
         @Header("Authorization") token: String,
         @Body sleepData: List<SleepDto>
     ): Call<ResponseBody>
+
+    @POST("deviceActivity/lockRange")
+    fun sendDeviceActivityRange(
+        @Header("Authorization") token: String,
+        @Body lockData: List<PhoneUsage>
+    )
 }
