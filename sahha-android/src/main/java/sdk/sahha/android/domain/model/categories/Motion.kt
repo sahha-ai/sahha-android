@@ -2,8 +2,7 @@ package sdk.sahha.android.domain.model.categories
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
-import retrofit2.Call
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.model.enums.SahhaSensor
@@ -38,7 +37,10 @@ class Motion @Inject constructor(
     ) {
         ioScope.launch {
             val config = configDao.getConfig()
-            if (!config.sensorArray.contains(sensor.ordinal)) return@launch
+            if (!config.sensorArray.contains(sensor.ordinal)) {
+                callback(SahhaErrors.sensorNotEnabled(sensor), null)
+                return@launch
+            }
 
             if (sensor.ordinal == SahhaSensor.SLEEP.ordinal) {
                 postSleepDataUseCase(callback)

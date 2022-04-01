@@ -7,10 +7,12 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.repository.RemotePostRepo
 import javax.inject.Inject
 import javax.inject.Named
@@ -23,6 +25,11 @@ class RemotePostRepoImpl @Inject constructor(
     private val api: SahhaApi
 ) : RemotePostRepo {
     override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
+        if (sleepDao.getSleepDto().isEmpty()) {
+            callback?.let { it(SahhaErrors.localDataIsEmpty(SahhaSensor.SLEEP), null) }
+            return
+        }
+
         val call = getSleepCall()
         enqueueCall(call, callback) {
             ioScope.launch {
@@ -32,6 +39,11 @@ class RemotePostRepoImpl @Inject constructor(
     }
 
     override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: String?) -> Unit)?) {
+        if (deviceDao.getUsages().isEmpty()) {
+            callback?.let { it(SahhaErrors.localDataIsEmpty(SahhaSensor.DEVICE), null) }
+            return
+        }
+
         val call = getPhoneScreenLockCall()
         enqueueCall(call, callback) {
             ioScope.launch {
