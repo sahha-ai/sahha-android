@@ -26,5 +26,5 @@ interface SahhaApi {
     fun sendDeviceActivityRange(
         @Header("Authorization") token: String,
         @Body lockData: List<PhoneUsage>
-    )
+    ): Call<ResponseBody>
 }

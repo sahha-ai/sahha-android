@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
+import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.SahhaSettings
@@ -25,6 +26,13 @@ object Sahha {
             di.activateUseCase,
             di.promptUserToActivateUseCase,
             di.postSleepDataUseCase
+        )
+    }
+    val device by lazy {
+        Device(
+            di.ioScope,
+            di.configurationDao,
+            di.postDeviceDataUseCase
         )
     }
 
@@ -51,13 +59,13 @@ object Sahha {
         }
     }
 
-    private suspend fun checkAndStartPostWorkers() {
+    private fun checkAndStartPostWorkers() {
         if (!config.manuallyPostData) {
             di.startPostWorkersUseCase()
         }
     }
 
-    private suspend fun startDataCollection() {
+    private fun startDataCollection() {
         if (config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
             di.startCollectingSleepDataUseCase()
         }

@@ -24,21 +24,33 @@ class RemotePostRepoImpl @Inject constructor(
 ) : RemotePostRepo {
     override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
         val call = getSleepCall()
-        enqueueSleepCall(call, callback)
+        enqueueCall(call, callback) {
+            ioScope.launch {
+                clearLocalSleepData()
+            }
+        }
     }
 
-    private suspend fun enqueueSleepCall(
+    override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: String?) -> Unit)?) {
+        val call = getPhoneScreenLockCall()
+        enqueueCall(call, callback) {
+            ioScope.launch {
+                clearLocalPhoneScreenLockData()
+            }
+        }
+    }
+
+    private fun enqueueCall(
         call: Call<ResponseBody>,
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, successful: String?) -> Unit)?,
+        successfulLogic: (() -> Unit)
     ) {
         call.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (ResponseCode.isSuccessful(response.code())) {
-                    ioScope.launch {
-                        clearLocalSleepData()
-                        callback?.let {
-                            it(null, "${response.code()}: ${response.message()}")
-                        }
+                    successfulLogic()
+                    callback?.let {
+                        it(null, "${response.code()}: ${response.message()}")
                     }
                     return
                 }
@@ -61,10 +73,21 @@ class RemotePostRepoImpl @Inject constructor(
         sleepDao.clearSleep()
     }
 
+    private suspend fun clearLocalPhoneScreenLockData() {
+        deviceDao.clearUsages()
+    }
+
     private suspend fun getSleepCall(): Call<ResponseBody> {
         return api.sendSleepDataRange(
             decryptor.decryptToken(),
             sleepDao.getSleepDto()
+        )
+    }
+
+    private suspend fun getPhoneScreenLockCall(): Call<ResponseBody> {
+        return api.sendDeviceActivityRange(
+            decryptor.decryptToken(),
+            deviceDao.getUsages()
         )
     }
 }

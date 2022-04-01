@@ -20,6 +20,8 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.common.TestUser.CUST_ID
+import sdk.sahha.android.common.TestUser.PROFILE_ID
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
@@ -32,7 +34,6 @@ class MainActivity : ComponentActivity() {
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.DEVELOPMENT,
-            manuallyPostData = true
         )
         Sahha.configure(this, config)
 
@@ -52,6 +53,7 @@ class MainActivity : ComponentActivity() {
                                 var greeting by remember { mutableStateOf("Android") }
                                 var permission by remember { mutableStateOf(SahhaActivityStatus.PENDING.name) }
                                 var manualPost by remember { mutableStateOf("") }
+                                var manualPostDevice by remember { mutableStateOf("") }
 
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -67,8 +69,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.authenticate(
-                                        "a78afc9b-cae3-4736-8bb1-ca174c16a2ed",
-                                        "2ef1af8e-ee11-41f9-9d02-5d0051aab1e8"
+                                        CUST_ID,
+                                        PROFILE_ID
                                     ) { value ->
                                         greeting = value
                                     }
@@ -97,17 +99,23 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.motion.postData(SahhaSensor.SLEEP) { error, success ->
-                                        error?.also {
-                                            manualPost = it
-                                        }
-                                        success?.also {
-                                            manualPost = it
-                                        }
+                                        error?.also { manualPost = it }
+                                        success?.also { manualPost = it }
                                     }
                                 }) {
-                                    Text("Manual Post")
+                                    Text("Manual Post Sleep")
                                 }
                                 Text(manualPost)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.device.postData(SahhaSensor.DEVICE) { error, success ->
+                                        error?.also { manualPostDevice = it }
+                                        success?.also { manualPostDevice = it }
+                                    }
+                                }) {
+                                    Text("Manual Post Device")
+                                }
+                                Text(manualPostDevice)
                             }
                         }
                     }

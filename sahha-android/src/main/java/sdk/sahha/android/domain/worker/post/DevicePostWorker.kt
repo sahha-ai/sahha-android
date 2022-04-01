@@ -6,11 +6,11 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 
-class SleepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
+class DevicePostWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
     override fun doWork(): Result {
         Sahha.di.defaultScope.launch {
-            Sahha.di.postSleepDataUseCase(null)
+            Sahha.di.postDeviceDataUseCase(null)
         }
         return Result.success()
     }

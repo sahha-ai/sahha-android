@@ -11,6 +11,8 @@ import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.domain.model.config.SahhaSettings
+import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 
 class SleepReceiverTest : TestCase() {
     private lateinit var receiver: SleepReceiver
@@ -19,14 +21,13 @@ class SleepReceiverTest : TestCase() {
     class TestActivity : ComponentActivity() {
         override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
             super.onCreate(savedInstanceState, persistentState)
-            Sahha.configure(this)
+            Sahha.configure(this, SahhaSettings(environment = SahhaEnvironment.DEVELOPMENT))
         }
     }
 
     override fun setUp() {
         receiver = SleepReceiver()
         ActivityScenario.launch(TestActivity::class.java).onActivity { activity ->
-            Sahha.configure(activity)
             sleepDao = Sahha.di.sleepDao
         }
     }

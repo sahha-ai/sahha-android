@@ -2,7 +2,7 @@ package sdk.sahha.android.data
 
 internal object Constants {
     // Configs
-    const val BASE_URL = "https://sahhaapi-sandbox.azurewebsites.net/api/"
+    const val BASE_URL = "https://sandbox-api.sahha.ai/api/"
     const val TRANSFORMATION = "AES/GCM/NoPadding"
     const val ANDROID_KEY_STORE = "AndroidKeyStore"
     const val UET = "uet"
@@ -10,6 +10,7 @@ internal object Constants {
     // Worker Tags
     const val SLEEP_WORKER_TAG = "sleepData"
     const val SLEEP_POST_WORKER_TAG = "sleepPost"
+    const val DEVICE_POST_WORKER_TAG = "devicePost"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

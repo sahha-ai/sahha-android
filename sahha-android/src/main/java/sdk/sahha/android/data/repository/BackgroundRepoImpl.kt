@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
+import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
@@ -28,6 +29,7 @@ import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.SleepCollectionWorker
 import sdk.sahha.android.domain.worker.StepWorker
+import sdk.sahha.android.domain.worker.post.DevicePostWorker
 import sdk.sahha.android.domain.worker.post.SleepPostWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -79,8 +81,11 @@ class BackgroundRepoImpl @Inject constructor(
         }
     }
 
-    override fun startPhoneScreenReceivers(serviceContext: Context, receiverRegistered: Boolean): Boolean {
-        if(receiverRegistered) return true
+    override fun startPhoneScreenReceivers(
+        serviceContext: Context,
+        receiverRegistered: Boolean
+    ): Boolean {
+        if (receiverRegistered) return true
 
         registerScreenUnlockedReceiver(serviceContext)
         registerScreenOffReceiver(serviceContext)
@@ -109,7 +114,7 @@ class BackgroundRepoImpl @Inject constructor(
             }
 
             if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
-                startDevicePostWorker()
+                startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
             }
 
             if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
@@ -150,7 +155,12 @@ class BackgroundRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag)
     }
 
-    private fun startDevicePostWorker() {}
+    private fun startDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest = getDevicePostWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
+
     private fun startPedometerPostWorker() {}
 
     // Force default minimum value of 15 minutes
@@ -172,6 +182,18 @@ class BackgroundRepoImpl @Inject constructor(
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<SleepPostWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .build()
+    }
+
+    private fun getDevicePostWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<DevicePostWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
         )
