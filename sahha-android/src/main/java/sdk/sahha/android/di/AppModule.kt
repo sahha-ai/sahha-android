@@ -21,11 +21,11 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
-import sdk.sahha.android.data.repository.RemotePostRepoImpl
+import sdk.sahha.android.data.repository.RemoteRepoImpl
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
-import sdk.sahha.android.domain.repository.RemotePostRepo
+import sdk.sahha.android.domain.repository.RemoteRepo
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -88,8 +88,8 @@ internal object AppModule {
         deviceUsageDao: DeviceUsageDao,
         decryptor: Decryptor,
         api: SahhaApi
-    ): RemotePostRepo {
-        return RemotePostRepoImpl(
+    ): RemoteRepo {
+        return RemoteRepoImpl(
             ioScope,
             sleepDao,
             deviceUsageDao,

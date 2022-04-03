@@ -13,17 +13,17 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.enums.SahhaSensor
-import sdk.sahha.android.domain.repository.RemotePostRepo
+import sdk.sahha.android.domain.repository.RemoteRepo
 import javax.inject.Inject
 import javax.inject.Named
 
-class RemotePostRepoImpl @Inject constructor(
+class RemoteRepoImpl @Inject constructor(
     @Named("ioScope") private val ioScope: CoroutineScope,
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
     private val decryptor: Decryptor,
     private val api: SahhaApi
-) : RemotePostRepo {
+) : RemoteRepo {
     override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
         if (sleepDao.getSleepDto().isEmpty()) {
             callback?.let { it(SahhaErrors.localDataIsEmpty(SahhaSensor.SLEEP), null) }
@@ -50,6 +50,19 @@ class RemotePostRepoImpl @Inject constructor(
                 clearLocalPhoneScreenLockData()
             }
         }
+    }
+
+    override suspend fun getAnalysis(callback: ((error: String?, successful: String?) -> Unit)?) {
+        val response = getAnalysisResponse()
+
+        if (ResponseCode.isSuccessful(response.code())) {
+            val bodyString = response.body()?.string()
+            callback?.let { it(null, bodyString) }
+            return
+        }
+
+        callback?.let { it("${response.code()}: ${response.message()}", null) }
+
     }
 
     private fun enqueueCall(
@@ -101,5 +114,9 @@ class RemotePostRepoImpl @Inject constructor(
             decryptor.decryptToken(),
             deviceDao.getUsages()
         )
+    }
+
+    private suspend fun getAnalysisResponse(): Response<ResponseBody> {
+        return api.analyzeProfile(decryptor.decryptToken())
     }
 }

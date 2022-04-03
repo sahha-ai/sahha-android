@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.TestUser.CUST_ID
 import sdk.sahha.android.common.TestUser.PROFILE_ID
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
                                 var permission by remember { mutableStateOf(SahhaActivityStatus.PENDING.name) }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
+                                var analyzeResponse by remember { mutableStateOf("") }
 
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -116,6 +118,18 @@ class MainActivity : ComponentActivity() {
                                     Text("Manual Post Device")
                                 }
                                 Text(manualPostDevice)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.analyze { error, success ->
+                                        error?.also { analyzeResponse = it }
+                                        success?.also {
+                                            analyzeResponse = it
+                                        }
+                                    }
+                                }) {
+                                    Text("Analyze")
+                                }
+                                Text(analyzeResponse)
                             }
                         }
                     }

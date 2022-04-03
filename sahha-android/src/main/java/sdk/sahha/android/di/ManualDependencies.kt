@@ -85,4 +85,5 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
+    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostWorker) }
 }

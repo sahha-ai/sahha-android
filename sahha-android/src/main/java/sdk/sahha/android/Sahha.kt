@@ -59,6 +59,12 @@ object Sahha {
         }
     }
 
+    fun analyze(callback: ((error: String?, success: String?) -> Unit)?) {
+        di.defaultScope.launch {
+            di.analyzeProfileUseCase(callback)
+        }
+    }
+
     private fun checkAndStartPostWorkers() {
         if (!config.manuallyPostData) {
             di.startPostWorkersUseCase()

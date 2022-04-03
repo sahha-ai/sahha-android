@@ -1,7 +1,5 @@
 package sdk.sahha.android.data.repository
 
-import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.test.core.app.ActivityScenario
 import junit.framework.TestCase
@@ -13,11 +11,10 @@ import sdk.sahha.android.common.TestUser.PROFILE_ID
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.receiver.SleepReceiverTest
-import sdk.sahha.android.domain.repository.RemotePostRepo
+import sdk.sahha.android.domain.repository.RemoteRepo
 
-class RemotePostRepoImplTest : TestCase() {
-    lateinit var repo: RemotePostRepo
+class RemoteRepoImplTest : TestCase() {
+    lateinit var repo: RemoteRepo
 
     class TestActivity : ComponentActivity()
 
