@@ -2,7 +2,6 @@ package sdk.sahha.android
 
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
-import com.google.android.gms.common.annotation.KeepName
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
@@ -63,6 +62,40 @@ object Sahha {
     fun analyze(callback: ((error: String?, success: String?) -> Unit)?) {
         di.defaultScope.launch {
             di.analyzeProfileUseCase(callback)
+        }
+    }
+
+    //TODO: For demo only
+    fun getSleepData(callback: ((data: List<String>) -> Unit)) {
+        di.ioScope.launch {
+            val sleepData = di.sleepDao.getSleepDto()
+            val sleepDataString = mutableListOf<String>()
+            sleepData.mapTo(sleepDataString) {
+                "Minutes slept: ${it.minutesSlept}" +
+                        "\nStarted: ${it.startDateTime}" +
+                        "\nEnded: ${it.endDateTime}" +
+                        "\nCreated at: ${it.createdAt}"
+            }
+            callback(sleepDataString)
+        }
+    }
+
+    //TODO: For demo only
+    fun getDeviceData(callback: ((data: List<String>) -> Unit)) {
+        di.ioScope.launch {
+            val lockData = di.deviceUsageDao.getUsages()
+            val lockDataString = mutableListOf<String>()
+            lockData.mapTo(lockDataString) {
+                when {
+                    it.isLocked -> {
+                        "Locked at ${it.createdAt}"
+                    }
+                    else -> {
+                        "Unlocked at ${it.createdAt}"
+                    }
+                }
+            }
+            callback(lockDataString)
         }
     }
 
