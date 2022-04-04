@@ -3,6 +3,7 @@ package sdk.sahha.android.data.repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -56,13 +57,22 @@ class RemoteRepoImpl @Inject constructor(
         val response = getAnalysisResponse()
 
         if (ResponseCode.isSuccessful(response.code())) {
-            val bodyString = response.body()?.string()
-            callback?.let { it(null, bodyString) }
+            returnFormattedResponse(callback, response.body())
             return
         }
 
         callback?.let { it("${response.code()}: ${response.message()}", null) }
+    }
 
+    private fun returnFormattedResponse(
+        callback: ((error: String?, success: String?) -> Unit)?,
+        responseBody: ResponseBody?
+    ) {
+        val reader = responseBody?.charStream()
+        val bodyString = reader?.readText()
+        val json = JSONObject(bodyString ?: "")
+        val jsonString = json.toString(6)
+        callback?.let { it(null, jsonString) }
     }
 
     private fun enqueueCall(

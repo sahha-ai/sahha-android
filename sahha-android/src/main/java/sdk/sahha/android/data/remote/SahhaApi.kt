@@ -28,7 +28,7 @@ interface SahhaApi {
     ): Call<ResponseBody>
 
     @GET("profile/analyze")
-    fun analyzeProfile(
+    suspend fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) token: String,
     ): Response<ResponseBody>
 }
