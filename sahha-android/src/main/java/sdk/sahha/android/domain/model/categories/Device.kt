@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.model.categories
 
-import com.google.android.gms.common.annotation.KeepName
+import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
@@ -10,7 +10,7 @@ import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import javax.inject.Inject
 import javax.inject.Named
 
-@KeepName
+@Keep
 class Device @Inject constructor(
     @Named("iosScope") private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,

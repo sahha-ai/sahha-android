@@ -12,7 +12,7 @@ import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
-@KeepName
+@Keep
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
