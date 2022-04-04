@@ -1,10 +1,10 @@
 package sdk.sahha.android.domain.model.config
 
-import androidx.annotation.Keep
+import com.google.android.gms.common.annotation.KeepName
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
-@Keep
+@KeepName
 class SahhaSettings(
     val environment: Enum<SahhaEnvironment>,
     val sensors: Set<Enum<SahhaSensor>> = mutableSetOf<Enum<SahhaSensor>>().let {

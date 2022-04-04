@@ -2,12 +2,14 @@ package sdk.sahha.android.common
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.google.android.gms.common.annotation.KeepName
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+@KeepName
 @RequiresApi(Build.VERSION_CODES.N)
 class SahhaTimeManager {
     private val tag by lazy { "SahhaTimeManager" }

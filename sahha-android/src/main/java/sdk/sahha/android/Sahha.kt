@@ -2,6 +2,7 @@ package sdk.sahha.android
 
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
+import com.google.android.gms.common.annotation.KeepName
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
@@ -11,7 +12,7 @@ import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
-@Keep
+@KeepName
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies

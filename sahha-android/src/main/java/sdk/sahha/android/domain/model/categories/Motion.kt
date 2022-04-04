@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.model.categories
 
+import com.google.android.gms.common.annotation.KeepName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
@@ -13,6 +14,7 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import javax.inject.Inject
 import javax.inject.Named
 
+@KeepName
 class Motion @Inject constructor(
     setPermissionLogicUseCase: SetPermissionLogicUseCase,
     private val configDao: ConfigurationDao,
