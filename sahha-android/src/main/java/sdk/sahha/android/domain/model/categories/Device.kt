@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.model.categories
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.model.enums.SahhaSensor
@@ -30,6 +31,25 @@ class Device @Inject constructor(
             if (sensor.ordinal == SahhaSensor.DEVICE.ordinal) {
                 postDeviceDataUseCase(callback)
             }
+        }
+    }
+
+    //TODO: For demo only
+    fun getData(callback: ((data: List<String>) -> Unit)) {
+        Sahha.di.ioScope.launch {
+            val lockData = Sahha.di.deviceUsageDao.getUsages()
+            val lockDataString = mutableListOf<String>()
+            lockData.mapTo(lockDataString) {
+                when {
+                    it.isLocked -> {
+                        "Locked at ${it.createdAt}"
+                    }
+                    else -> {
+                        "Unlocked at ${it.createdAt}"
+                    }
+                }
+            }
+            callback(lockDataString)
         }
     }
 }

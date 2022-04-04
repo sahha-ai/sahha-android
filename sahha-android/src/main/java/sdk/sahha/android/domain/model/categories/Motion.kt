@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.model.categories
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
@@ -47,6 +48,21 @@ class Motion @Inject constructor(
             if (sensor.ordinal == SahhaSensor.SLEEP.ordinal) {
                 postSleepDataUseCase(callback)
             }
+        }
+    }
+
+    //TODO: For demo only
+    fun getData(callback: ((data: List<String>) -> Unit)) {
+        Sahha.di.ioScope.launch {
+            val sleepData = Sahha.di.sleepDao.getSleepDto()
+            val sleepDataString = mutableListOf<String>()
+            sleepData.mapTo(sleepDataString) {
+                "Minutes slept: ${it.minutesSlept}" +
+                        "\nStarted: ${it.startDateTime}" +
+                        "\nEnded: ${it.endDateTime}" +
+                        "\nCreated at: ${it.createdAt}"
+            }
+            callback(sleepDataString)
         }
     }
 }

@@ -65,40 +65,6 @@ object Sahha {
         }
     }
 
-    //TODO: For demo only
-    fun getSleepData(callback: ((data: List<String>) -> Unit)) {
-        di.ioScope.launch {
-            val sleepData = di.sleepDao.getSleepDto()
-            val sleepDataString = mutableListOf<String>()
-            sleepData.mapTo(sleepDataString) {
-                "Minutes slept: ${it.minutesSlept}" +
-                        "\nStarted: ${it.startDateTime}" +
-                        "\nEnded: ${it.endDateTime}" +
-                        "\nCreated at: ${it.createdAt}"
-            }
-            callback(sleepDataString)
-        }
-    }
-
-    //TODO: For demo only
-    fun getDeviceData(callback: ((data: List<String>) -> Unit)) {
-        di.ioScope.launch {
-            val lockData = di.deviceUsageDao.getUsages()
-            val lockDataString = mutableListOf<String>()
-            lockData.mapTo(lockDataString) {
-                when {
-                    it.isLocked -> {
-                        "Locked at ${it.createdAt}"
-                    }
-                    else -> {
-                        "Unlocked at ${it.createdAt}"
-                    }
-                }
-            }
-            callback(lockDataString)
-        }
-    }
-
     private fun checkAndStartPostWorkers() {
         if (!config.manuallyPostData) {
             di.startPostWorkersUseCase()
