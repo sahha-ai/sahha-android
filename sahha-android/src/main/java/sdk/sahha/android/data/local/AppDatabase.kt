@@ -37,7 +37,7 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
 )
 
 @TypeConverters(Converter::class)
-abstract class SahhaDatabase : RoomDatabase() {
+internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun movementDao(): MovementDao
     internal abstract fun securityDao(): SecurityDao
     internal abstract fun sleepDao(): SleepDao
