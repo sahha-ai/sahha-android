@@ -10,6 +10,7 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
 @Keep
 object Sahha {
@@ -62,6 +63,21 @@ object Sahha {
     fun analyze(callback: ((error: String?, success: String?) -> Unit)?) {
         di.defaultScope.launch {
             di.analyzeProfileUseCase(callback)
+        }
+    }
+
+    fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
+        di.defaultScope.launch {
+            di.getDemographicUseCase(callback)
+        }
+    }
+
+    fun postDemographic(
+        sahhaDemographic: SahhaDemographic,
+        callback: ((error: String?, success: String?) -> Unit)?
+    ) {
+        di.defaultScope.launch {
+            di.postDemographicUseCase(sahhaDemographic, callback)
         }
     }
 

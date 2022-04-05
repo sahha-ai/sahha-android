@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.service
 
 import android.app.Service
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener2
@@ -20,6 +21,7 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.steps.DetectedSteps
 import sdk.sahha.android.domain.model.steps.LastDetectedSteps
+import sdk.sahha.android.domain.receiver.AutoStartReceiver
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {

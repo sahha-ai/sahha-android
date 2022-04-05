@@ -13,7 +13,9 @@ import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.domain.model.profile.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
 import javax.inject.Inject
 import javax.inject.Named
@@ -58,6 +60,32 @@ class RemoteRepoImpl @Inject constructor(
 
         if (ResponseCode.isSuccessful(response.code())) {
             returnFormattedResponse(callback, response.body())
+            return
+        }
+
+        callback?.let { it("${response.code()}: ${response.message()}", null) }
+    }
+
+    override suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
+        val response = getDemographicResponse()
+
+        if (ResponseCode.isSuccessful(response.code())) {
+            val sahhaDemographic = response.body()?.toSahhaDemographic()
+            callback?.let { it(null, sahhaDemographic) }
+            return
+        }
+
+        callback?.let { it("${response.code()}: ${response.message()}", null) }
+    }
+
+    override suspend fun postDemographic(
+        sahhaDemographic: SahhaDemographic,
+        callback: ((error: String?, successful: String?) -> Unit)?
+    ) {
+        val response = postDemographicResponse(sahhaDemographic)
+
+        if (ResponseCode.isSuccessful(response.code())) {
+            callback?.let { it(null, "${response.code()}: ${response.message()}") }
             return
         }
 
@@ -113,14 +141,14 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private suspend fun getSleepCall(): Call<ResponseBody> {
-        return api.sendSleepDataRange(
+        return api.postSleepDataRange(
             decryptor.decryptToken(),
             sleepDao.getSleepDto()
         )
     }
 
     private suspend fun getPhoneScreenLockCall(): Call<ResponseBody> {
-        return api.sendDeviceActivityRange(
+        return api.postDeviceActivityRange(
             decryptor.decryptToken(),
             deviceDao.getUsages()
         )
@@ -128,5 +156,13 @@ class RemoteRepoImpl @Inject constructor(
 
     private suspend fun getAnalysisResponse(): Response<ResponseBody> {
         return api.analyzeProfile(decryptor.decryptToken())
+    }
+
+    private suspend fun getDemographicResponse(): Response<DemographicDto> {
+        return api.getDemographic(decryptor.decryptToken())
+    }
+
+    private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Response<ResponseBody> {
+        return api.postDemographic(decryptor.decryptToken(), sahhaDemographic)
     }
 }

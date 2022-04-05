@@ -8,6 +8,7 @@ import sdk.sahha.android.domain.use_case.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
+import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class ManualDependencies @Inject constructor(
             activity
         )
     }
-    internal val remotePostWorker by lazy {
+    internal val remotePostRepo by lazy {
         AppModule.provideRemotePostRepository(
             ioScope,
             sleepDao,
@@ -76,8 +77,8 @@ class ManualDependencies @Inject constructor(
     }
     val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
-    val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostWorker) }
-    val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostWorker) }
+    val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
+    val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
     val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(backgroundRepo) }
     val startCollectingPhoneScreenLockDataUseCase by lazy {
@@ -85,5 +86,7 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostWorker) }
+    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo) }
+    val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
+    val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
 }
