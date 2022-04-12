@@ -4,12 +4,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.common.security.Decryptor
+import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
@@ -28,68 +28,88 @@ class RemoteRepoImpl @Inject constructor(
     private val api: SahhaApi
 ) : RemoteRepo {
     override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
-        if (sleepDao.getSleepDto().isEmpty()) {
-            callback?.let { it(SahhaErrors.localDataIsEmpty(SahhaSensor.SLEEP), null) }
-            return
-        }
-
-        val call = getSleepCall()
-        enqueueCall(call, callback) {
-            ioScope.launch {
-                clearLocalSleepData()
+        try {
+            if (sleepDao.getSleepDto().isEmpty()) {
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.SLEEP), null) }
+                return
             }
+
+            val response = getSleepResponse()
+            handleResponse(response, callback) {
+                ioScope.launch {
+                    clearLocalSleepData()
+                }
+            }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
         }
     }
 
     override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: String?) -> Unit)?) {
-        if (deviceDao.getUsages().isEmpty()) {
-            callback?.let { it(SahhaErrors.localDataIsEmpty(SahhaSensor.DEVICE), null) }
-            return
-        }
-
-        val call = getPhoneScreenLockCall()
-        enqueueCall(call, callback) {
-            ioScope.launch {
-                clearLocalPhoneScreenLockData()
+        try {
+            if (deviceDao.getUsages().isEmpty()) {
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.DEVICE), null) }
+                return
             }
+
+            val response = getPhoneScreenLockResponse()
+            handleResponse(response, callback) {
+                ioScope.launch {
+                    clearLocalPhoneScreenLockData()
+                }
+            }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
         }
     }
 
     override suspend fun getAnalysis(callback: ((error: String?, successful: String?) -> Unit)?) {
-        val response = getAnalysisResponse()
+        try {
+            val response = getAnalysisResponse()
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            returnFormattedResponse(callback, response.body())
-            return
+            if (ResponseCode.isSuccessful(response.code())) {
+                returnFormattedResponse(callback, response.body())
+                return
+            }
+
+            callback?.also { it("${response.code()}: ${response.message()}", null) }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
         }
-
-        callback?.let { it("${response.code()}: ${response.message()}", null) }
     }
 
     override suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
-        val response = getDemographicResponse()
+        try {
+            val response = getDemographicResponse()
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            val sahhaDemographic = response.body()?.toSahhaDemographic()
-            callback?.let { it(null, sahhaDemographic) }
-            return
+            if (ResponseCode.isSuccessful(response.code())) {
+                val sahhaDemographic = response.body()?.toSahhaDemographic()
+                callback?.also { it(null, sahhaDemographic) }
+                return
+            }
+
+            callback?.also { it("${response.code()}: ${response.message()}", null) }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
         }
-
-        callback?.let { it("${response.code()}: ${response.message()}", null) }
     }
 
     override suspend fun postDemographic(
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, successful: String?) -> Unit)?
     ) {
-        val response = postDemographicResponse(sahhaDemographic)
+        try {
+            val response = postDemographicResponse(sahhaDemographic)
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            callback?.let { it(null, "${response.code()}: ${response.message()}") }
-            return
+            if (ResponseCode.isSuccessful(response.code())) {
+                callback?.also { it(null, "${response.code()}: ${response.message()}") }
+                return
+            }
+
+            callback?.also { it("${response.code()}: ${response.message()}", null) }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
         }
-
-        callback?.let { it("${response.code()}: ${response.message()}", null) }
     }
 
     private fun returnFormattedResponse(
@@ -100,35 +120,25 @@ class RemoteRepoImpl @Inject constructor(
         val bodyString = reader?.readText()
         val json = JSONObject(bodyString ?: "")
         val jsonString = json.toString(6)
-        callback?.let { it(null, jsonString) }
+        callback?.also { it(null, jsonString) }
     }
 
-    private fun enqueueCall(
-        call: Call<ResponseBody>,
+    private fun handleResponse(
+        response: Response<ResponseBody>,
         callback: ((error: String?, successful: String?) -> Unit)?,
         successfulLogic: (() -> Unit)
     ) {
-        call.enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (ResponseCode.isSuccessful(response.code())) {
-                    successfulLogic()
-                    callback?.let {
-                        it(null, "${response.code()}: ${response.message()}")
-                    }
-                    return
-                }
-
-                callback?.let {
-                    it("${response.code()}: ${response.message()}", null)
-                }
+        if (ResponseCode.isSuccessful(response.code())) {
+            successfulLogic()
+            callback?.also {
+                it(null, "${response.code()}: ${response.message()}")
             }
+            return
+        }
 
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                callback?.let {
-                    it(t.message, null)
-                }
-            }
-        })
+        callback?.also {
+            it("${response.code()}: ${response.message()}", null)
+        }
     }
 
     private suspend fun clearLocalSleepData() {
@@ -140,29 +150,29 @@ class RemoteRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getSleepCall(): Call<ResponseBody> {
+    private suspend fun getSleepResponse(): Response<ResponseBody> {
         return api.postSleepDataRange(
-            decryptor.decryptToken(),
+            TokenBearer(decryptor.decrypt(UET)),
             sleepDao.getSleepDto()
         )
     }
 
-    private suspend fun getPhoneScreenLockCall(): Call<ResponseBody> {
+    private suspend fun getPhoneScreenLockResponse(): Response<ResponseBody> {
         return api.postDeviceActivityRange(
-            decryptor.decryptToken(),
+            TokenBearer(decryptor.decrypt(UET)),
             deviceDao.getUsages()
         )
     }
 
     private suspend fun getAnalysisResponse(): Response<ResponseBody> {
-        return api.analyzeProfile(decryptor.decryptToken())
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)))
     }
 
     private suspend fun getDemographicResponse(): Response<DemographicDto> {
-        return api.getDemographic(decryptor.decryptToken())
+        return api.getDemographic(TokenBearer(decryptor.decrypt(UET)))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Response<ResponseBody> {
-        return api.postDemographic(decryptor.decryptToken(), sahhaDemographic)
+        return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 }

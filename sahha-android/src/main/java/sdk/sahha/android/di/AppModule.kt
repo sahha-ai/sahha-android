@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.common.security.Decryptor
@@ -47,11 +48,12 @@ internal object AppModule {
     @Singleton
     fun provideAuthRepository(
         api: SahhaApi,
-        ioScope: CoroutineScope,
+        @Named("ioScope") ioScope: CoroutineScope,
+        @Named("mainScope") mainScope: CoroutineScope,
         @ApplicationContext context: Context,
         securityDao: SecurityDao
     ): AuthRepo {
-        return AuthRepoImpl(context, api, ioScope, securityDao)
+        return AuthRepoImpl(context, api, ioScope, mainScope, securityDao)
     }
 
     @Provides
@@ -152,5 +154,12 @@ internal object AppModule {
     @Named("ioScope")
     fun provideIoScope(): CoroutineScope {
         return CoroutineScope(IO)
+    }
+
+    @Provides
+    @Singleton
+    @Named("mainScope")
+    fun provideMainScope(): CoroutineScope {
+        return CoroutineScope(Main)
     }
 }

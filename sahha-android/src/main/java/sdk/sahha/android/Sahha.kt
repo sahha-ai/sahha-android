@@ -44,12 +44,17 @@ object Sahha {
         di = ManualDependencies(activity)
         di.setPermissionLogicUseCase()
         di.ioScope.launch {
-            saveConfiguration(settings.environment, settings.sensors, settings.manuallyPostData)
+            saveConfiguration(settings)
         }
     }
 
-    fun authenticate(customerId: String, profileId: String, callback: ((value: String) -> Unit)) {
-        di.authenticateUseCase(customerId, profileId, callback)
+    fun authenticate(
+        profileId: String,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        di.ioScope.launch {
+            di.authenticateUseCase(profileId, callback)
+        }
     }
 
     fun start() {
@@ -105,16 +110,16 @@ object Sahha {
     }
 
     private suspend fun saveConfiguration(
-        environment: Enum<SahhaEnvironment>,
-        sensorSet: Set<Enum<SahhaSensor>>,
-        manuallyPostData: Boolean
+        settings: SahhaSettings
     ) {
-        val sensorEnums = convertToEnums(sensorSet)
+        val sensorEnums = convertToEnums(settings.sensors)
         di.configurationDao.saveConfig(
             SahhaConfiguration(
-                environment.ordinal,
+                settings.clientId,
+                settings.clientSecret,
+                settings.environment.ordinal,
                 sensorEnums,
-                manuallyPostData
+                settings.manuallyPostData
             )
         )
     }

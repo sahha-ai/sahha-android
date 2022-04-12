@@ -19,14 +19,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import sdk.sahha.android.Sahha
-import sdk.sahha.android.common.TestUser.CUST_ID
-import sdk.sahha.android.common.TestUser.PROFILE_ID
+import sdk.sahha.android.common.TestUser.CLIENT_ID
+import sdk.sahha.android.common.TestUser.CLIENT_SECRET
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
 class MainActivity : ComponentActivity() {
 
@@ -34,6 +34,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
+            clientId = CLIENT_ID,
+            clientSecret = CLIENT_SECRET,
             environment = SahhaEnvironment.DEVELOPMENT,
         )
         Sahha.configure(this, config)
@@ -56,6 +58,8 @@ class MainActivity : ComponentActivity() {
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
+                                var postDemo by remember { mutableStateOf("") }
+                                var getDemo by remember { mutableStateOf("") }
 
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -71,10 +75,16 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.authenticate(
-                                        CUST_ID,
-                                        PROFILE_ID
-                                    ) { value ->
-                                        greeting = value
+                                        CLIENT_ID,
+                                        CLIENT_SECRET
+                                    ) { error, success ->
+                                        error?.also {
+                                            greeting = it
+                                        }
+
+                                        success?.also {
+                                            greeting = it
+                                        }
                                     }
 
                                     val ioScope = CoroutineScope(IO)
@@ -130,6 +140,34 @@ class MainActivity : ComponentActivity() {
                                     Text("Analyze")
                                 }
                                 Text(analyzeResponse)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.postDemographic(
+                                        SahhaDemographic(
+                                            10, "m", "nz", "korea"
+                                        )
+                                    ) { error, success ->
+                                        error?.also { postDemo = it }
+                                        success?.also { postDemo = it }
+                                    }
+                                }) {
+                                    Text("Post Demographic")
+                                }
+                                Text(postDemo)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.getDemographic { error, demographic ->
+                                        error?.also { getDemo = it }
+                                        demographic?.also {
+                                            getDemo =
+                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}"
+                                        }
+                                    }
+                                }) {
+                                    Text("Get Demographic")
+                                }
+                                Text(getDemo)
+
                             }
                         }
                     }

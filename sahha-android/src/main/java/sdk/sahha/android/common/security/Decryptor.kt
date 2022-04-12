@@ -20,13 +20,13 @@ class Decryptor @Inject constructor(
         keyStore?.load(null)
     }
 
-    suspend fun decryptToken(): String {
-        val encryption = securityDao.getEncryptUtility(UET)
+    suspend fun decrypt(alias: String): String {
+        val encryption = securityDao.getEncryptUtility(alias)
         val encryptionIv = encryption.iv
 
         val cipher = Cipher.getInstance(TRANSFORMATION)
         val spec = GCMParameterSpec(128, encryptionIv)
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(UET), spec)
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(alias), spec)
         return cipher.doFinal(encryption.encryptedData).decodeToString()
     }
 

@@ -6,8 +6,8 @@ import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import sdk.sahha.android.Sahha
-import sdk.sahha.android.common.TestUser.CUST_ID
-import sdk.sahha.android.common.TestUser.PROFILE_ID
+import sdk.sahha.android.common.TestUser.CLIENT_ID
+import sdk.sahha.android.common.TestUser.CLIENT_SECRET
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
@@ -23,7 +23,7 @@ class RemoteRepoImplTest : TestCase() {
         ActivityScenario.launch(TestActivity::class.java).onActivity {
             Sahha.configure(it, SahhaSettings(environment = SahhaEnvironment.DEVELOPMENT))
             repo = Sahha.di.remotePostWorker
-            Sahha.authenticate(CUST_ID, PROFILE_ID) {}
+            Sahha.authenticate(CLIENT_ID, CLIENT_SECRET) {}
         }
     }
 

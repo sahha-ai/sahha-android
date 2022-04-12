@@ -1,60 +1,47 @@
 package sdk.sahha.android.data.repository
 
 import android.content.Context
-import android.util.Log
-import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants.CET
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.domain.model.callbacks.AuthCallback
 import sdk.sahha.android.domain.repository.AuthRepo
 import javax.inject.Inject
+import javax.inject.Named
 
 class AuthRepoImpl @Inject constructor(
     private val context: Context,
     private val api: SahhaApi,
-    private val ioScope: CoroutineScope,
+    @Named("ioScope") private val ioScope: CoroutineScope,
+    @Named("mainScope") private val mainScope: CoroutineScope,
     private val securityDao: SecurityDao
 ) : AuthRepo {
-    private val tag = "AuthRepoImpl"
-    private val authCallback = AuthCallback()
-
-    override fun authenticate(
-        customerId: String,
+    override suspend fun authenticate(
         profileId: String,
-        callback: ((value: String) -> Unit)
+        callback: ((error: String?, success: String?) -> Unit)
     ) {
-        authCallback.authenticate = callback
-        val call = api.authenticate(customerId, profileId)
-        enqueueCall(call)
-    }
-
-    private fun enqueueCall(call: Call<ResponseBody>) {
-        call.enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (ResponseCode.isSuccessful(response.code())) {
-                    val token = getTokenFromResponse(response)
-                    authCallback.authenticate?.let {
-                        it(token)
-                    }
-                    storeToken(token)
-                }
+        try {
+            val response = api.profileAuth(TokenBearer(decryptTokenAsync(CET)), profileId)
+            if (ResponseCode.isSuccessful(response.code())) {
+                val token = getTokenFromResponse(response)
+                storeToken(token)
+                callback(null, "${response.code()}: ${response.message()}")
+                return
             }
 
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                displayToast("Failure: ${t.message}")
-                Log.e(tag, t.message, t)
-            }
-        })
+            callback("${response.code()}: ${response.message()}", null)
+        } catch (e: Exception) {
+            callback(e.message, null)
+        }
     }
 
     private fun getTokenFromResponse(response: Response<ResponseBody>): String {
@@ -72,8 +59,7 @@ class AuthRepoImpl @Inject constructor(
         Encryptor(securityDao).encryptText(UET, token)
     }
 
-    private fun displayToast(toastMsg: String) {
-        Toast.makeText(context, toastMsg, Toast.LENGTH_LONG)
-            .show()
+    private suspend fun decryptTokenAsync(alias: String): String {
+        return Decryptor(securityDao).decrypt(alias)
     }
 }

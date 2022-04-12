@@ -29,6 +29,7 @@ class ManualDependencies @Inject constructor(
         AppModule.provideAuthRepository(
             api,
             ioScope,
+            mainScope,
             activity,
             securityDao
         )
@@ -57,6 +58,7 @@ class ManualDependencies @Inject constructor(
         )
     }
 
+    internal val mainScope by lazy { AppModule.provideMainScope() }
     internal val ioScope by lazy { AppModule.provideIoScope() }
     internal val defaultScope by lazy { AppModule.provideDefaultScope() }
 

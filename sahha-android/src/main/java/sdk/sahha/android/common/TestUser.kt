@@ -1,6 +1,6 @@
 package sdk.sahha.android.common
 
 object TestUser {
-    const val CUST_ID = "a78afc9b-cae3-4736-8bb1-ca174c16a2ed"
-    const val PROFILE_ID = "5b992635-ade9-401c-a3bc-733b8651851d"
+    const val CLIENT_ID = "p43zVQ5BFsxMtu3FSTd3mR1kb1bmMT7x"
+    const val CLIENT_SECRET = "HQ092umfog26ZDTnPhQtZwzMsv21FV6k-G-SuqFvlUvfnnNj9rIlkClEKGJrtSAV"
 }

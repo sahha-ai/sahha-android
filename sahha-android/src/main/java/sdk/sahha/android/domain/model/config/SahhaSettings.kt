@@ -6,6 +6,8 @@ import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 @Keep
 class SahhaSettings(
+    val clientId: String,
+    val clientSecret: String,
     val environment: Enum<SahhaEnvironment>,
     val sensors: Set<Enum<SahhaSensor>> = mutableSetOf<Enum<SahhaSensor>>().let {
         for (sensor in SahhaSensor.values()) {
