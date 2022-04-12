@@ -2,11 +2,12 @@ package sdk.sahha.android.data
 
 internal object Constants {
     // Configs
-    const val BASE_URL = "https://sandbox-api.sahha.ai/api/"
+    const val BASE_URL_DEVELOPMENT = "https://sandbox-api.sahha.ai/api/"
+    const val BASE_URL_PRODUCTION = "https://api.sahha.ai/api/"
     const val TRANSFORMATION = "AES/GCM/NoPadding"
     const val ANDROID_KEY_STORE = "AndroidKeyStore"
     const val UET = "uet"
-    const val CET = "cet"
+    const val UERT = "uert"
     const val AUTHORIZATION_HEADER = "Authorization"
 
     // Worker Tags

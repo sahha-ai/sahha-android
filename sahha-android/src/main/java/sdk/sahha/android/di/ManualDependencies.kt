@@ -4,6 +4,8 @@ import androidx.activity.ComponentActivity
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
+import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.use_case.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
@@ -14,9 +16,10 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import javax.inject.Inject
 
 class ManualDependencies @Inject constructor(
-    internal val activity: ComponentActivity
+    internal val activity: ComponentActivity,
+    internal val environment: Enum<SahhaEnvironment>
 ) {
-    internal val api by lazy { AppModule.provideSahhaApi() }
+    internal val api by lazy { AppModule.provideSahhaApi(environment) }
 
     internal val database by lazy { AppModule.provideDatabase(activity) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
@@ -31,7 +34,7 @@ class ManualDependencies @Inject constructor(
             ioScope,
             mainScope,
             activity,
-            securityDao
+            encryptor
         )
     }
     internal val backgroundRepo by lazy {
@@ -64,9 +67,10 @@ class ManualDependencies @Inject constructor(
 
     val notifications by lazy { SahhaNotificationManager(activity, backgroundRepo) }
     val timeManager by lazy { SahhaTimeManager() }
+    val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
 
-    val authenticateUseCase by lazy { AuthenticateUseCase(authRepo) }
+    val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {
         StartDataCollectionServiceUseCase(
             backgroundRepo

@@ -15,7 +15,9 @@ import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.common.security.Decryptor
-import sdk.sahha.android.data.Constants.BASE_URL
+import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants.BASE_URL_DEVELOPMENT
+import sdk.sahha.android.data.Constants.BASE_URL_PRODUCTION
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
@@ -23,6 +25,7 @@ import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
 import sdk.sahha.android.data.repository.RemoteRepoImpl
+import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
@@ -36,12 +39,20 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideSahhaApi(): SahhaApi {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(SahhaApi::class.java)
+    fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
+        return if (environment == SahhaEnvironment.DEVELOPMENT) {
+            Retrofit.Builder()
+                .baseUrl(BASE_URL_DEVELOPMENT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(SahhaApi::class.java)
+        } else {
+            Retrofit.Builder()
+                .baseUrl(BASE_URL_PRODUCTION)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(SahhaApi::class.java)
+        }
     }
 
     @Provides
@@ -51,9 +62,9 @@ internal object AppModule {
         @Named("ioScope") ioScope: CoroutineScope,
         @Named("mainScope") mainScope: CoroutineScope,
         @ApplicationContext context: Context,
-        securityDao: SecurityDao
+        encryptor: Encryptor
     ): AuthRepo {
-        return AuthRepoImpl(context, api, ioScope, mainScope, securityDao)
+        return AuthRepoImpl(context, api, ioScope, mainScope, encryptor)
     }
 
     @Provides

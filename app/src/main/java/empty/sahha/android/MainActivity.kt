@@ -20,11 +20,10 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
-import sdk.sahha.android.common.TestUser.CLIENT_ID
-import sdk.sahha.android.common.TestUser.CLIENT_SECRET
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.domain.model.enums.SahhaFramework
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
@@ -34,9 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            clientId = CLIENT_ID,
-            clientSecret = CLIENT_SECRET,
-            environment = SahhaEnvironment.DEVELOPMENT,
+            environment = SahhaEnvironment.DEVELOPMENT
         )
         Sahha.configure(this, config)
 
@@ -74,19 +71,6 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.authenticate(
-                                        CLIENT_ID,
-                                        CLIENT_SECRET
-                                    ) { error, success ->
-                                        error?.also {
-                                            greeting = it
-                                        }
-
-                                        success?.also {
-                                            greeting = it
-                                        }
-                                    }
-
                                     val ioScope = CoroutineScope(IO)
                                     ioScope.launch {
                                         delay(1000)

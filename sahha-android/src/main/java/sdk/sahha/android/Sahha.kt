@@ -41,19 +41,19 @@ object Sahha {
         activity: ComponentActivity,
         settings: SahhaSettings
     ) {
-        di = ManualDependencies(activity)
+        di = ManualDependencies(activity, settings.environment)
         di.setPermissionLogicUseCase()
         di.ioScope.launch {
             saveConfiguration(settings)
         }
     }
 
-    fun authenticate(
-        profileId: String,
-        callback: ((error: String?, success: String?) -> Unit)
+    fun saveTokens(
+        token: String,
+        refreshToken: String
     ) {
         di.ioScope.launch {
-            di.authenticateUseCase(profileId, callback)
+            di.saveTokensUseCase(token, refreshToken)
         }
     }
 
@@ -115,8 +115,6 @@ object Sahha {
         val sensorEnums = convertToEnums(settings.sensors)
         di.configurationDao.saveConfig(
             SahhaConfiguration(
-                settings.clientId,
-                settings.clientSecret,
                 settings.environment.ordinal,
                 sensorEnums,
                 settings.manuallyPostData

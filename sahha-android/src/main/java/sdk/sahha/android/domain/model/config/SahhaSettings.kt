@@ -2,13 +2,13 @@ package sdk.sahha.android.domain.model.config
 
 import androidx.annotation.Keep
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.domain.model.enums.SahhaFramework
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 @Keep
 class SahhaSettings(
-    val clientId: String,
-    val clientSecret: String,
     val environment: Enum<SahhaEnvironment>,
+    val framework: SahhaFramework = SahhaFramework.android_kotlin,
     val sensors: Set<Enum<SahhaSensor>> = mutableSetOf<Enum<SahhaSensor>>().let {
         for (sensor in SahhaSensor.values()) {
             it.add(sensor)
