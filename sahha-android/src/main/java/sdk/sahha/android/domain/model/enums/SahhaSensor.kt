@@ -5,7 +5,7 @@ import com.google.android.gms.common.annotation.KeepName
 
 @Keep
 enum class SahhaSensor {
-    DEVICE,
-    SLEEP,
-    PEDOMETER
+    device,
+    sleep,
+    pedometer
 }

@@ -5,6 +5,6 @@ import com.google.android.gms.common.annotation.KeepName
 
 @Keep
 enum class SahhaEnvironment {
-    DEVELOPMENT,
-    PRODUCTION
+    development,
+    production
 }

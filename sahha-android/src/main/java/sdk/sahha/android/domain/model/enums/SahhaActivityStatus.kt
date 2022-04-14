@@ -4,8 +4,8 @@ import androidx.annotation.Keep
 
 @Keep
 enum class SahhaActivityStatus {
-    PENDING,
-    UNAVAILABLE,
-    DISABLED,
-    ENABLED
+    pending,
+    unavailable,
+    disabled,
+    enabled
 }
