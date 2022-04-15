@@ -6,11 +6,16 @@ import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.SleepDto
-import sdk.sahha.android.domain.model.auth.SahhaClient
+import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
 interface SahhaApi {
+    @POST("oauth/profile/refresh-token")
+    suspend fun postRefreshToken(
+        @Body tokenData: TokenData
+    ): Response<ResponseBody>
+
     @POST("sleep/logRange")
     suspend fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,

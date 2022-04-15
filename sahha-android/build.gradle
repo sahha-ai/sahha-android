@@ -5,16 +5,27 @@ plugins {
     id 'maven-publish'
 }
 
+def apikeyPropertiesFile = rootProject.file("apikey.properties")
+def apikeyProperties = new Properties()
+apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
+
 android {
     compileSdk 31
 
     defaultConfig {
-        minSdk 29
+        minSdk 26
         targetSdk 31
+        versionName "0.0.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         consumerProguardFiles "consumer-rules.pro"
+
+        buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
+        buildConfigField("String", "APP_CENTER_DEV_KEY", apikeyProperties["APP_CENTER_DEV_KEY"])
+        buildConfigField("String", "APP_CENTER_PROD_KEY", apikeyProperties["APP_CENTER_PROD_KEY"])
+        buildConfigField("String", "BASE_URL_DEVELOPMENT", apikeyProperties["BASE_URL_DEVELOPMENT"])
+        buildConfigField("String", "BASE_URL_PRODUCTION", apikeyProperties["BASE_URL_PRODUCTION"])
     }
 
     buildTypes {
@@ -32,7 +43,7 @@ android {
     }
     testOptions {
         // Used for Unit testing Android dependent elements in /test folder
-        unitTests.includeAndroidResources  = true
+        unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
     }
 }
@@ -70,6 +81,11 @@ dependencies {
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03"
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
+
+    //App Center
+    def appCenterSdkVersion = '4.3.1'
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 }
 
 afterEvaluate {

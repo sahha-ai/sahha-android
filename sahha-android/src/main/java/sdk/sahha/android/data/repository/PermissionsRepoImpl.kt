@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.repository
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,11 @@ class PermissionsRepoImpl @Inject constructor(
     }
 
     override fun activate(callback: ((Enum<SahhaActivityStatus>) -> Unit)) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            callback(SahhaActivityStatus.unavailable)
+            return
+        }
+
         activityCallback.requestPermission = callback
         permission.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
     }
@@ -43,8 +49,8 @@ class PermissionsRepoImpl @Inject constructor(
     }
 
     private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaActivityStatus> {
-        if (enabled) return SahhaActivityStatus.ENABLED
-        else return SahhaActivityStatus.DISABLED
+        if (enabled) return SahhaActivityStatus.enabled
+        else return SahhaActivityStatus.disabled
     }
 
     private fun setWindowFocusCallback() {

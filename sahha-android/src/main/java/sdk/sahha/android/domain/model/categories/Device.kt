@@ -28,7 +28,7 @@ class Device @Inject constructor(
                 return@launch
             }
 
-            if (sensor.ordinal == SahhaSensor.DEVICE.ordinal) {
+            if (sensor.ordinal == SahhaSensor.device.ordinal) {
                 postDeviceDataUseCase(callback)
             }
         }

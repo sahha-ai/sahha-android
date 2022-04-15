@@ -2,6 +2,9 @@ package sdk.sahha.android
 
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
@@ -11,6 +14,7 @@ import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
+
 
 @Keep
 object Sahha {
@@ -45,6 +49,11 @@ object Sahha {
         di.setPermissionLogicUseCase()
         di.ioScope.launch {
             saveConfiguration(settings)
+            AppCenter.start(
+                activity.application,
+                getCorrectAppCenterKey(settings.environment),
+                Analytics::class.java, Crashes::class.java
+            )
         }
     }
 
@@ -93,7 +102,7 @@ object Sahha {
     }
 
     private fun startDataCollection() {
-        if (config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
             di.startCollectingSleepDataUseCase()
         }
 
@@ -116,6 +125,7 @@ object Sahha {
         di.configurationDao.saveConfig(
             SahhaConfiguration(
                 settings.environment.ordinal,
+                settings.framework.name,
                 sensorEnums,
                 settings.manuallyPostData
             )
@@ -128,5 +138,12 @@ object Sahha {
             sensorEnums.add(it.ordinal)
         }
         return sensorEnums
+    }
+
+    private fun getCorrectAppCenterKey(environment: Enum<SahhaEnvironment>): String {
+        if (environment == SahhaEnvironment.production) {
+            return BuildConfig.APP_CENTER_PROD_KEY
+        }
+        return BuildConfig.APP_CENTER_DEV_KEY
     }
 }

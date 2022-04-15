@@ -5,15 +5,18 @@ import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Response
-import sdk.sahha.android.common.ResponseCode
-import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.common.*
 import sdk.sahha.android.common.security.Decryptor
+import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants.API_ERROR
+import sdk.sahha.android.data.Constants.ERROR_TYPE
+import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
@@ -24,18 +27,42 @@ class RemoteRepoImpl @Inject constructor(
     @Named("ioScope") private val ioScope: CoroutineScope,
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
+    private val encryptor: Encryptor,
     private val decryptor: Decryptor,
-    private val api: SahhaApi
+    private val api: SahhaApi,
+    private val appCenterLog: AppCenterLog
 ) : RemoteRepo {
+    override suspend fun postRefreshToken(retryLogic: (() -> Unit)) {
+        val tokenData = TokenData(
+            decryptor.decrypt(UET),
+            decryptor.decrypt(UERT)
+        )
+
+        try {
+            val response = getRefreshTokenResponse(tokenData)
+            if (ResponseCode.isSuccessful(response.code())) {
+                ioScope.launch {
+                    storeNewTokens(response.body())
+                    retryLogic()
+                }
+                return
+            }
+
+            appCenterLog.api(API_ERROR, false, null, SahhaErrors.typeAuthentication)
+        } catch (e: Exception) {
+            appCenterLog.application(e.message ?: "Error refreshing token")
+        }
+    }
+
     override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
         try {
             if (sleepDao.getSleepDto().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.SLEEP), null) }
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), null) }
                 return
             }
 
             val response = getSleepResponse()
-            handleResponse(response, callback) {
+            handleResponse(response, { getSleepResponse() }, callback) {
                 ioScope.launch {
                     clearLocalSleepData()
                 }
@@ -48,12 +75,12 @@ class RemoteRepoImpl @Inject constructor(
     override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: String?) -> Unit)?) {
         try {
             if (deviceDao.getUsages().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.DEVICE), null) }
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.device), null) }
                 return
             }
 
             val response = getPhoneScreenLockResponse()
-            handleResponse(response, callback) {
+            handleResponse(response, { getPhoneScreenLockResponse() }, callback) {
                 ioScope.launch {
                     clearLocalPhoneScreenLockData()
                 }
@@ -66,6 +93,9 @@ class RemoteRepoImpl @Inject constructor(
     override suspend fun getAnalysis(callback: ((error: String?, successful: String?) -> Unit)?) {
         try {
             val response = getAnalysisResponse()
+            checkTokenExpired(response.code()) {
+                ioScope.launch { getAnalysis(callback) }
+            }
 
             if (ResponseCode.isSuccessful(response.code())) {
                 returnFormattedResponse(callback, response.body())
@@ -81,6 +111,9 @@ class RemoteRepoImpl @Inject constructor(
     override suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
         try {
             val response = getDemographicResponse()
+            checkTokenExpired(response.code()) {
+                ioScope.launch { getDemographic(callback) }
+            }
 
             if (ResponseCode.isSuccessful(response.code())) {
                 val sahhaDemographic = response.body()?.toSahhaDemographic()
@@ -100,6 +133,9 @@ class RemoteRepoImpl @Inject constructor(
     ) {
         try {
             val response = postDemographicResponse(sahhaDemographic)
+            checkTokenExpired(response.code()) {
+                ioScope.launch { postDemographic(sahhaDemographic, callback) }
+            }
 
             if (ResponseCode.isSuccessful(response.code())) {
                 callback?.also { it(null, "${response.code()}: ${response.message()}") }
@@ -125,9 +161,22 @@ class RemoteRepoImpl @Inject constructor(
 
     private fun handleResponse(
         response: Response<ResponseBody>,
+        retryLogic: suspend (() -> Response<ResponseBody>),
         callback: ((error: String?, successful: String?) -> Unit)?,
         successfulLogic: (() -> Unit)
     ) {
+        checkTokenExpired(response.code()) {
+            ioScope.launch {
+                val retryResponse = retryLogic()
+                handleResponse(
+                    retryResponse,
+                    { retryLogic() },
+                    callback,
+                    successfulLogic
+                )
+            }
+        }
+
         if (ResponseCode.isSuccessful(response.code())) {
             successfulLogic()
             callback?.also {
@@ -141,6 +190,26 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
+    private fun checkTokenExpired(
+        code: Int,
+        retryLogic: () -> Unit
+    ) {
+        if (code == 401) {
+            ioScope.launch {
+                postRefreshToken(retryLogic)
+            }
+        }
+    }
+
+    private suspend fun storeNewTokens(responseBody: ResponseBody?) {
+
+        val json = ApiBodyConverter.responseBodyToJson(responseBody)
+        json?.also {
+            encryptor.encryptText(UET, it["profileToken"].toString())
+            encryptor.encryptText(UERT, it["refreshToken"].toString())
+        }
+    }
+
     private suspend fun clearLocalSleepData() {
         sleepDao.clearSleepDto()
         sleepDao.clearSleep()
@@ -148,6 +217,12 @@ class RemoteRepoImpl @Inject constructor(
 
     private suspend fun clearLocalPhoneScreenLockData() {
         deviceDao.clearUsages()
+    }
+
+    private suspend fun getRefreshTokenResponse(
+        td: TokenData
+    ): Response<ResponseBody> {
+        return api.postRefreshToken(td)
     }
 
     private suspend fun getSleepResponse(): Response<ResponseBody> {

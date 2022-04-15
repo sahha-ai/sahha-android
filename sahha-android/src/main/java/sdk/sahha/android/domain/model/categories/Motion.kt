@@ -45,7 +45,7 @@ class Motion @Inject constructor(
                 return@launch
             }
 
-            if (sensor.ordinal == SahhaSensor.SLEEP.ordinal) {
+            if (sensor.ordinal == SahhaSensor.sleep.ordinal) {
                 postSleepDataUseCase(callback)
             }
         }

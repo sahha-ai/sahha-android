@@ -1,6 +1,7 @@
 package sdk.sahha.android.di
 
 import androidx.activity.ComponentActivity
+import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
@@ -56,6 +57,7 @@ class ManualDependencies @Inject constructor(
             ioScope,
             sleepDao,
             deviceUsageDao,
+            encryptor,
             decryptor,
             api
         )
@@ -69,6 +71,7 @@ class ManualDependencies @Inject constructor(
     val timeManager by lazy { SahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
+    val appCenterLog by lazy { AppCenterLog(activity, configurationDao, defaultScope) }
 
     val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {

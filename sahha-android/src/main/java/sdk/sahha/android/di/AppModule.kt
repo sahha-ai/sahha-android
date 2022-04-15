@@ -14,10 +14,10 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import sdk.sahha.android.BuildConfig
+import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.data.Constants.BASE_URL_DEVELOPMENT
-import sdk.sahha.android.data.Constants.BASE_URL_PRODUCTION
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
@@ -40,15 +40,15 @@ internal object AppModule {
     @Provides
     @Singleton
     fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
-        return if (environment == SahhaEnvironment.DEVELOPMENT) {
+        return if (environment == SahhaEnvironment.development) {
             Retrofit.Builder()
-                .baseUrl(BASE_URL_DEVELOPMENT)
+                .baseUrl(BuildConfig.BASE_URL_DEVELOPMENT)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
-                .baseUrl(BASE_URL_PRODUCTION)
+                .baseUrl(BuildConfig.BASE_URL_PRODUCTION)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
@@ -99,6 +99,7 @@ internal object AppModule {
         ioScope: CoroutineScope,
         sleepDao: SleepDao,
         deviceUsageDao: DeviceUsageDao,
+        encryptor: Encryptor,
         decryptor: Decryptor,
         api: SahhaApi
     ): RemoteRepo {
@@ -106,6 +107,7 @@ internal object AppModule {
             ioScope,
             sleepDao,
             deviceUsageDao,
+            encryptor,
             decryptor,
             api
         )
@@ -172,5 +174,15 @@ internal object AppModule {
     @Named("mainScope")
     fun provideMainScope(): CoroutineScope {
         return CoroutineScope(Main)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppCenterLog(
+        @ApplicationContext context: Context,
+        configurationDao: ConfigurationDao,
+        @Named("defaultScope") defaultScope: CoroutineScope
+    ): AppCenterLog {
+        return AppCenterLog(context, configurationDao, defaultScope)
     }
 }

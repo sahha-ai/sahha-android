@@ -109,15 +109,15 @@ class BackgroundRepoImpl @Inject constructor(
     override fun startPostWorkersAsync() {
         ioScope.launch {
             val config = configDao.getConfig()
-            if (config.sensorArray.contains(SahhaSensor.SLEEP.ordinal)) {
+            if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
                 startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
             }
 
-            if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
+            if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
                 startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
             }
 
-            if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
+            if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
                 startPedometerPostWorker()
             }
         }
