@@ -5,10 +5,6 @@ plugins {
     id 'maven-publish'
 }
 
-def apikeyPropertiesFile = rootProject.file("apikey.properties")
-def apikeyProperties = new Properties()
-apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
-
 android {
     compileSdk 31
 
@@ -22,16 +18,17 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
-        buildConfigField("String", "APP_CENTER_DEV_KEY", apikeyProperties["APP_CENTER_DEV_KEY"])
-        buildConfigField("String", "APP_CENTER_PROD_KEY", apikeyProperties["APP_CENTER_PROD_KEY"])
-        buildConfigField("String", "BASE_URL_DEVELOPMENT", apikeyProperties["BASE_URL_DEVELOPMENT"])
-        buildConfigField("String", "BASE_URL_PRODUCTION", apikeyProperties["BASE_URL_PRODUCTION"])
     }
 
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/jni/Android.mk'
         }
     }
     compileOptions {

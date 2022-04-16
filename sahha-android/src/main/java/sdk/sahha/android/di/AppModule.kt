@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
@@ -36,19 +35,26 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 internal object AppModule {
+    init {
+        System.loadLibrary("native-lib")
+    }
+
+    private external fun getApiUrlDev(): String
+    private external fun getApiUrlProd(): String
+
 
     @Provides
     @Singleton
     fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
         return if (environment == SahhaEnvironment.development) {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.BASE_URL_DEVELOPMENT)
+                .baseUrl(getApiUrlDev())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.BASE_URL_PRODUCTION)
+                .baseUrl(getApiUrlProd())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
@@ -101,7 +107,8 @@ internal object AppModule {
         deviceUsageDao: DeviceUsageDao,
         encryptor: Encryptor,
         decryptor: Decryptor,
-        api: SahhaApi
+        api: SahhaApi,
+        appCenterLog: AppCenterLog
     ): RemoteRepo {
         return RemoteRepoImpl(
             ioScope,
@@ -109,7 +116,8 @@ internal object AppModule {
             deviceUsageDao,
             encryptor,
             decryptor,
-            api
+            api,
+            appCenterLog
         )
     }
 

@@ -59,7 +59,8 @@ class ManualDependencies @Inject constructor(
             deviceUsageDao,
             encryptor,
             decryptor,
-            api
+            api,
+            appCenterLog
         )
     }
 
