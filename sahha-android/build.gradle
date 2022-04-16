@@ -5,6 +5,8 @@ plugins {
     id 'maven-publish'
 }
 
+def gVersionName = ""
+
 android {
     compileSdk 31
 
@@ -18,6 +20,7 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
+        gVersionName = versionName
     }
 
     buildTypes {
@@ -93,7 +96,7 @@ afterEvaluate {
 
                 groupId = 'com.github.sahha-ai'
                 artifactId = 'sahha-android'
-                version = '0.3.5'
+                version = gVersionName
             }
         }
     }
