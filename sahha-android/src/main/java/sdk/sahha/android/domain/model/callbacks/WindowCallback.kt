@@ -115,7 +115,7 @@ class WindowCallback(
     }
 
     private fun checkActivityRecognitionPermission(): Enum<SahhaActivityStatus> {
-        if (SahhaPermissions.activityRecognitionGranted()) return SahhaActivityStatus.ENABLED
-        return SahhaActivityStatus.DISABLED
+        if (SahhaPermissions.activityRecognitionGranted()) return SahhaActivityStatus.enabled
+        return SahhaActivityStatus.disabled
     }
 }

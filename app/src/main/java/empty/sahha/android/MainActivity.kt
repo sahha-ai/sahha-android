@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.DEVELOPMENT
+            environment = SahhaEnvironment.development
         )
         Sahha.configure(this, config)
 
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permission by remember { mutableStateOf(SahhaActivityStatus.PENDING.name) }
+                                var permission by remember { mutableStateOf(SahhaActivityStatus.pending.name) }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.motion.postData(SahhaSensor.SLEEP) { error, success ->
+                                    Sahha.motion.postData(SahhaSensor.sleep) { error, success ->
                                         error?.also { manualPost = it }
                                         success?.also { manualPost = it }
                                     }
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                 Text(manualPost)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.device.postData(SahhaSensor.DEVICE) { error, success ->
+                                    Sahha.device.postData(SahhaSensor.device) { error, success ->
                                         error?.also { manualPostDevice = it }
                                         success?.also { manualPostDevice = it }
                                     }

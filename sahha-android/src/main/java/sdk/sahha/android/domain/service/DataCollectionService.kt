@@ -48,7 +48,7 @@ class DataCollectionService : Service() {
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
-        if (config.sensorArray.contains(SahhaSensor.PEDOMETER.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
             // TODO: Refactor this
             // Checks sensor is activated first
             runPedometerAsync(
@@ -59,7 +59,7 @@ class DataCollectionService : Service() {
     }
 
     private fun checkAndStartCollectingScreenLockData() {
-        if (config.sensorArray.contains(SahhaSensor.DEVICE.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
             screenLocksRegistered =
                 Sahha.di.startCollectingPhoneScreenLockDataUseCase(
                     this@DataCollectionService,
