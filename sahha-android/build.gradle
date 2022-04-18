@@ -5,6 +5,10 @@ plugins {
     id 'maven-publish'
 }
 
+def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
+def secretsProperties = new Properties()
+secretsProperties.load(new FileInputStream(secretsPropertiesFile))
+
 def gVersionName = ""
 
 android {
@@ -20,6 +24,10 @@ android {
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
+        buildConfigField("String", "API_DEV", secretsProperties['API_DEV'])
+        buildConfigField("String", "API_PROD", secretsProperties['API_PROD'])
+        buildConfigField("String", "APP_CENTER_DEV", secretsProperties['APP_CENTER_DEV'])
+        buildConfigField("String", "APP_CENTER_PROD", secretsProperties['APP_CENTER_PROD'])
         gVersionName = versionName
     }
 
@@ -27,11 +35,6 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    externalNativeBuild {
-        ndkBuild {
-            path 'src/main/jni/Android.mk'
         }
     }
     compileOptions {

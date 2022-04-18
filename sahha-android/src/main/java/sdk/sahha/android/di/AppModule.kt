@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
@@ -35,26 +36,18 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 internal object AppModule {
-    init {
-        System.loadLibrary("native-lib")
-    }
-
-    private external fun getApiUrlDev(): String
-    private external fun getApiUrlProd(): String
-
-
     @Provides
     @Singleton
     fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
         return if (environment == SahhaEnvironment.development) {
             Retrofit.Builder()
-                .baseUrl(getApiUrlDev())
+                .baseUrl(BuildConfig.API_DEV)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
-                .baseUrl(getApiUrlProd())
+                .baseUrl(BuildConfig.API_PROD)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)

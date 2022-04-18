@@ -41,13 +41,6 @@ object Sahha {
         )
     }
 
-    init {
-        System.loadLibrary("native-lib")
-    }
-
-    private external fun getAppCenterDevKey(): String
-    private external fun getAppCenterProdKey(): String
-
     fun configure(
         activity: ComponentActivity,
         settings: SahhaSettings
@@ -149,8 +142,8 @@ object Sahha {
 
     private fun getCorrectAppCenterKey(environment: Enum<SahhaEnvironment>): String {
         if (environment == SahhaEnvironment.production) {
-            return getAppCenterProdKey()
+            return BuildConfig.APP_CENTER_PROD
         }
-        return getAppCenterDevKey()
+        return BuildConfig.APP_CENTER_DEV
     }
 }
