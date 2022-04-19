@@ -1,5 +1,6 @@
 package sdk.sahha.android
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
 import com.microsoft.appcenter.AppCenter
@@ -57,19 +58,20 @@ object Sahha {
         }
     }
 
-    fun saveTokens(
+    fun authenticate(
         token: String,
-        refreshToken: String
+        refreshToken: String,
+        callback: ((error: String?, success: String?) -> Unit)? = null
     ) {
         di.ioScope.launch {
-            di.saveTokensUseCase(token, refreshToken)
+                di.saveTokensUseCase(token, refreshToken, callback)
         }
     }
 
-    fun start() {
+    fun start(callback: ((error: String?, success: String?) -> Unit)? = null) {
         di.defaultScope.launch {
             config = di.configurationDao.getConfig()
-            startDataCollection()
+            startDataCollection(callback)
             checkAndStartPostWorkers()
         }
     }
@@ -101,20 +103,23 @@ object Sahha {
         }
     }
 
-    private fun startDataCollection() {
+    private fun startDataCollection(callback: ((error: String?, success: String?) -> Unit)?) {
         if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
             di.startCollectingSleepDataUseCase()
         }
 
         // Pedometer/device checkers are in the service
-        startDataCollectionService()
+        startDataCollectionService(callback = callback)
     }
 
     private fun startDataCollectionService(
         icon: Int? = null,
         title: String? = null,
-        shortDescription: String? = null
+        shortDescription: String? = null,
+        callback: ((error: String?, success: String?) -> Unit)? = null
     ) {
+        if (Build.VERSION.SDK_INT < 26) callback?.also { it("Android version must be 8 or above", null) }
+
         di.startDataCollectionServiceUseCase(icon, title, shortDescription)
     }
 
