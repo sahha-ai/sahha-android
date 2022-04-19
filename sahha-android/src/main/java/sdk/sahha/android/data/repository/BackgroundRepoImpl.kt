@@ -65,8 +65,14 @@ class BackgroundRepoImpl @Inject constructor(
     override fun startDataCollectionService(
         icon: Int?,
         title: String?,
-        shortDescription: String?
+        shortDescription: String?,
+        callback: ((error: String?, success: String?) -> Unit)?
     ) {
+        if (Build.VERSION.SDK_INT < 26) {
+            callback?.also { it("Android version must be 8 or above", null) }
+            return
+        }
+
         Sahha.notifications.setNewPersistent(icon, title, shortDescription)
         context.startForegroundService(Intent(context, DataCollectionService::class.java))
     }

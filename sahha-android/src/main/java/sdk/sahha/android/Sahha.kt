@@ -118,9 +118,7 @@ object Sahha {
         shortDescription: String? = null,
         callback: ((error: String?, success: String?) -> Unit)? = null
     ) {
-        if (Build.VERSION.SDK_INT < 26) callback?.also { it("Android version must be 8 or above", null) }
-
-        di.startDataCollectionServiceUseCase(icon, title, shortDescription)
+        di.startDataCollectionServiceUseCase(icon, title, shortDescription, callback)
     }
 
     private suspend fun saveConfiguration(

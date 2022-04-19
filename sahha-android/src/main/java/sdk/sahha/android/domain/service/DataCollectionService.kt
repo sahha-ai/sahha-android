@@ -104,13 +104,13 @@ class DataCollectionService : Service() {
                             distance = steps * distancePerStepMetres
                             // Set start time to be start of device boot
                             elapsedTimeInMillis =
-                                Sahha.timeManager.convertNanosToMillis(event.timestamp)
-                            startOfSteps = Sahha.timeManager.nowInEpoch() - elapsedTimeInMillis
-                            startDateTime = Sahha.timeManager.epochMillisToISO(startOfSteps)
+                                Sahha.timeManager!!.convertNanosToMillis(event.timestamp)
+                            startOfSteps = Sahha.timeManager!!.nowInEpoch() - elapsedTimeInMillis
+                            startDateTime = Sahha.timeManager!!.epochMillisToISO(startOfSteps)
                             // end time to manual time stamp
-                            endDateTime = Sahha.timeManager.nowInISO()
+                            endDateTime = Sahha.timeManager!!.nowInISO()
                             // created at to manual time stamp
-                            createdAt = Sahha.timeManager.nowInISO()
+                            createdAt = Sahha.timeManager!!.nowInISO()
                         }
 
                         fun setDataFromLastSteps() {
@@ -122,9 +122,9 @@ class DataCollectionService : Service() {
                             // start time is end of last steps end time
                             startDateTime = lastDetectedSteps.endDateTime
                             // end time to manual time stamp
-                            endDateTime = Sahha.timeManager.nowInISO()
+                            endDateTime = Sahha.timeManager!!.nowInISO()
                             // created at to manual time stamp
-                            createdAt = Sahha.timeManager.nowInISO()
+                            createdAt = Sahha.timeManager!!.nowInISO()
                         }
 
                         when {

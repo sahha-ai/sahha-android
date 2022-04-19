@@ -5,7 +5,9 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.google.android.gms.location.SleepSegmentEvent
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
@@ -15,6 +17,7 @@ import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.SleepDto
 
+@RequiresApi(Build.VERSION_CODES.O)
 class SleepReceiver : BroadcastReceiver() {
     private val tag = "SleepReceiver"
 
@@ -78,9 +81,9 @@ class SleepReceiver : BroadcastReceiver() {
         Sahha.di.sleepDao.saveSleepDto(
             SleepDto(
                 minutesSlept.toInt(),
-                Sahha.timeManager.epochMillisToISO(start),
-                Sahha.timeManager.epochMillisToISO(end),
-                Sahha.timeManager.nowInISO()
+                Sahha.timeManager!!.epochMillisToISO(start),
+                Sahha.timeManager!!.epochMillisToISO(end),
+                Sahha.timeManager!!.nowInISO()
             )
         )
     }
@@ -90,7 +93,7 @@ class SleepReceiver : BroadcastReceiver() {
             SleepQueue(
                 start,
                 end,
-                Sahha.timeManager.nowInISO()
+                Sahha.timeManager!!.nowInISO()
             )
         )
     }
@@ -103,7 +106,7 @@ class SleepReceiver : BroadcastReceiver() {
                     Sahha.di.sleepDao.getSleepQueue().last().id,
                     start,
                     end,
-                    Sahha.timeManager.nowInISO()
+                    Sahha.timeManager!!.nowInISO()
                 )
             )
         } catch (e: Exception) {

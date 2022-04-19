@@ -61,9 +61,10 @@ internal object AppModule {
         @Named("ioScope") ioScope: CoroutineScope,
         @Named("mainScope") mainScope: CoroutineScope,
         @ApplicationContext context: Context,
-        encryptor: Encryptor
+        encryptor: Encryptor,
+        appCenterLog: AppCenterLog
     ): AuthRepo {
-        return AuthRepoImpl(context, api, ioScope, mainScope, encryptor)
+        return AuthRepoImpl(context, api, ioScope, mainScope, encryptor, appCenterLog)
     }
 
     @Provides

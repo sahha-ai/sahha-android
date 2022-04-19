@@ -1,5 +1,6 @@
 package sdk.sahha.android.di
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.SahhaNotificationManager
@@ -35,7 +36,8 @@ class ManualDependencies @Inject constructor(
             ioScope,
             mainScope,
             activity,
-            encryptor
+            encryptor,
+            appCenterLog
         )
     }
     internal val backgroundRepo by lazy {
@@ -69,7 +71,7 @@ class ManualDependencies @Inject constructor(
     internal val defaultScope by lazy { AppModule.provideDefaultScope() }
 
     val notifications by lazy { SahhaNotificationManager(activity, backgroundRepo) }
-    val timeManager by lazy { SahhaTimeManager() }
+    val timeManager by lazy { getSahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
     val appCenterLog by lazy { AppCenterLog(activity, configurationDao, defaultScope) }
@@ -99,4 +101,9 @@ class ManualDependencies @Inject constructor(
     val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo) }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
+
+    private fun getSahhaTimeManager(): SahhaTimeManager? {
+        if (Build.VERSION.SDK_INT < 24) return null
+        return SahhaTimeManager()
+    }
 }

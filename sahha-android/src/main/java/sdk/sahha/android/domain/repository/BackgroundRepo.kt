@@ -9,7 +9,8 @@ interface BackgroundRepo {
     fun startDataCollectionService(
         icon: Int?,
         title: String?,
-        shortDescription: String?
+        shortDescription: String?,
+        callback: ((error: String?, success: String?) -> Unit)?
     )
 
     fun startActivityRecognitionReceiver()

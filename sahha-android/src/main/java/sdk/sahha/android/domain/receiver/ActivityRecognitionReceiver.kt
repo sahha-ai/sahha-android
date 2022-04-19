@@ -14,7 +14,7 @@ import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import java.util.*
 
-@RequiresApi(Build.VERSION_CODES.N)
+@RequiresApi(Build.VERSION_CODES.O)
 class ActivityRecognitionReceiver : BroadcastReceiver() {
     private val tag by lazy { "ActivityRecognitionReceiver" }
 
@@ -130,7 +130,7 @@ class ActivityRecognitionReceiver : BroadcastReceiver() {
         mostProbableActivity: Int,
         mostProbableConfidence: Int,
     ) {
-        val nowInISO = Sahha.timeManager.nowInISO()
+        val nowInISO = Sahha.timeManager!!.nowInISO()
         Log.e(tag, "saveDetectedActivity nowInISO: $nowInISO")
         Sahha.di.movementDao.saveDetectedActivity(
             RecognisedActivity(
