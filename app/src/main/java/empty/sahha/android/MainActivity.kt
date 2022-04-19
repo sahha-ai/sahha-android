@@ -15,15 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.domain.model.config.SahhaSettings
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.model.enums.SahhaFramework
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
@@ -71,9 +66,12 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    val ioScope = CoroutineScope(IO)
-                                    ioScope.launch {
-                                        delay(1000)
+                                    Sahha.authenticate(
+                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY",
+                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY"
+                                    ) { error, success ->
+                                        error?.also { greeting = it }
+                                        success?.also { greeting = it }
                                     }
                                 }) {
                                     Text("Authenticate")
