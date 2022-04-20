@@ -11,7 +11,7 @@ object SahhaIntents {
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         val packageNameUri =
-            Uri.fromParts("package", Sahha.di.activity.packageName, null)
+            Uri.fromParts("package", Sahha.di.context.packageName, null)
 
         openSettingsIntent.data = packageNameUri
 

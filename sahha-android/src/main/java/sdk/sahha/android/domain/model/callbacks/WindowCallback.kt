@@ -2,12 +2,11 @@ package sdk.sahha.android.domain.model.callbacks
 
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
-import androidx.activity.ComponentActivity
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
 
 class WindowCallback(
-    private val activity: ComponentActivity,
     private var localCallback: Window.Callback,
     private val activityCallback: ActivityCallback
 ) : Window.Callback {
@@ -68,6 +67,7 @@ class WindowCallback(
         if (hasFocus) {
             activityCallback.setSettingOnResume?.let {
                 val activityStatus = checkActivityRecognitionPermission()
+                Sahha.motion.activityStatus = activityStatus
                 it(activityStatus)
             }
         }

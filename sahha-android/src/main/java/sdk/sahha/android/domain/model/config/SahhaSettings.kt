@@ -15,5 +15,5 @@ class SahhaSettings(
         }
         return@let it
     },
-    val manuallyPostData: Boolean = false
+    val postActivityManually: Boolean = false
 )

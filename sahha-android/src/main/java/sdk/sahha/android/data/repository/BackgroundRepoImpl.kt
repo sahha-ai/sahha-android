@@ -14,13 +14,16 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.R
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenOffReceiver
@@ -63,35 +66,50 @@ class BackgroundRepoImpl @Inject constructor(
     }
 
     override fun startDataCollectionService(
-        icon: Int?,
-        title: String?,
-        shortDescription: String?,
+        _icon: Int?,
+        _title: String?,
+        _shortDescription: String?,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        if (Build.VERSION.SDK_INT < 26) {
-            callback?.also { it("Android version must be 8 or above", null) }
-            return
-        }
+        Sahha.di.defaultScope.launch {
+            if (Build.VERSION.SDK_INT < 26) {
+                callback?.also { it(SahhaErrors.androidVersionTooLow(8), null) }
+                return@launch
+            }
 
-        Sahha.notifications.setNewPersistent(icon, title, shortDescription)
-        context.startForegroundService(Intent(context, DataCollectionService::class.java))
+            val icon = _icon ?: R.drawable.ic_sahha_no_bg
+            val title = _title ?: "Analytics are running"
+            val shortDescription =
+                _shortDescription ?: "Swipe for options to hide this notification."
+
+            Sahha.di.configurationDao.saveNotificationConfig(
+                SahhaNotificationConfiguration(
+                    icon,
+                    title,
+                    shortDescription
+                )
+            )
+            Sahha.notifications.setNewPersistent(icon, title, shortDescription)
+            context.startForegroundService(Intent(context, DataCollectionService::class.java))
+        }
     }
 
-    override fun startActivityRecognitionReceiver() {
+    override fun startActivityRecognitionReceiver(callback: ((error: String?, success: String?) -> Unit)?) {
         if (activityRecognitionReceiverRegistered) return
 
         defaultScope.launch {
             setActivityRecognitionClient()
-            setActivityRecognitionPendingIntent()
+            setActivityRecognitionPendingIntent(callback = callback)
             requestActivityRecognitionUpdates()
         }
     }
 
     override fun startPhoneScreenReceivers(
         serviceContext: Context,
-        receiverRegistered: Boolean
+        receiverRegistered: Boolean,
     ): Boolean {
         if (receiverRegistered) return true
+        if (Build.VERSION.SDK_INT < 26) return false
 
         registerScreenUnlockedReceiver(serviceContext)
         registerScreenOffReceiver(serviceContext)
@@ -232,10 +250,14 @@ class BackgroundRepoImpl @Inject constructor(
         activityRecognitionClient = ActivityRecognitionClient(context)
     }
 
-    private fun setActivityRecognitionPendingIntent() {
+    private fun setActivityRecognitionPendingIntent(callback: ((error: String?, success: String?) -> Unit)?) {
         val isAndroid12AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        val isBelowAndroid8 = Build.VERSION.SDK_INT < 26
         activityRecognitionPendingIntent =
-            if (isAndroid12AndAbove) {
+            if (isBelowAndroid8) {
+                callback?.also { it(SahhaErrors.androidVersionTooLow(8), null) }
+                return
+            } else if (isAndroid12AndAbove) {
                 getPendingIntentWithMutableFlag()
             } else {
                 getPendingIntent()

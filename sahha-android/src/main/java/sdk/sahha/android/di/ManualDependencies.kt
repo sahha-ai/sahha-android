@@ -1,7 +1,8 @@
 package sdk.sahha.android.di
 
+import android.content.Context
 import android.os.Build
-import androidx.activity.ComponentActivity
+import dagger.hilt.android.AndroidEntryPoint
 import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
@@ -18,12 +19,12 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import javax.inject.Inject
 
 class ManualDependencies @Inject constructor(
-    internal val activity: ComponentActivity,
+    internal val context: Context,
     internal val environment: Enum<SahhaEnvironment>
 ) {
     internal val api by lazy { AppModule.provideSahhaApi(environment) }
 
-    internal val database by lazy { AppModule.provideDatabase(activity) }
+    internal val database by lazy { AppModule.provideDatabase(context) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
     internal val movementDao by lazy { AppModule.provideMovementDao(database) }
     internal val sleepDao by lazy { AppModule.provideSleepDao(database) }
@@ -35,23 +36,18 @@ class ManualDependencies @Inject constructor(
             api,
             ioScope,
             mainScope,
-            activity,
+            context,
             encryptor,
             appCenterLog
         )
     }
     internal val backgroundRepo by lazy {
         AppModule.provideBackgroundRepository(
-            activity,
+            context,
             defaultScope,
             ioScope,
             configurationDao,
             api
-        )
-    }
-    internal val permissionRepo by lazy {
-        AppModule.providePermissionsRepository(
-            activity
         )
     }
     internal val remotePostRepo by lazy {
@@ -70,11 +66,11 @@ class ManualDependencies @Inject constructor(
     internal val ioScope by lazy { AppModule.provideIoScope() }
     internal val defaultScope by lazy { AppModule.provideDefaultScope() }
 
-    val notifications by lazy { SahhaNotificationManager(activity, backgroundRepo) }
+    val notifications by lazy { SahhaNotificationManager(context, backgroundRepo) }
     val timeManager by lazy { getSahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
-    val appCenterLog by lazy { AppCenterLog(activity, configurationDao, defaultScope) }
+    val appCenterLog by lazy { AppCenterLog(context, configurationDao, defaultScope) }
 
     val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {
@@ -82,13 +78,6 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val activateUseCase by lazy {
-        ActivateUseCase(
-            permissionRepo
-        )
-    }
-    val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
-    val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
     val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
     val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }

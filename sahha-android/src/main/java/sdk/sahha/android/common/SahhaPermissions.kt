@@ -6,6 +6,6 @@ import sdk.sahha.android.Sahha
 
 object SahhaPermissions {
     fun activityRecognitionGranted(): Boolean {
-        return Sahha.di.activity.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+        return Sahha.di.context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
     }
 }

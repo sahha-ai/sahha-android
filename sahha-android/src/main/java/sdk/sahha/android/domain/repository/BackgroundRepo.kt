@@ -13,8 +13,12 @@ interface BackgroundRepo {
         callback: ((error: String?, success: String?) -> Unit)?
     )
 
-    fun startActivityRecognitionReceiver()
-    fun startPhoneScreenReceivers(serviceContext: Context, receiverRegistered: Boolean): Boolean
+    fun startActivityRecognitionReceiver(callback: ((error: String?, success: String?) -> Unit)? = null)
+    fun startPhoneScreenReceivers(
+        serviceContext: Context,
+        receiverRegistered: Boolean,
+    ): Boolean
+
     fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startPostWorkersAsync()

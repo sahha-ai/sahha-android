@@ -2,8 +2,8 @@ package sdk.sahha.android.domain.repository
 
 interface AuthRepo {
     suspend fun saveTokens(
-        token: String,
+        profileToken: String,
         refreshToken: String,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     )
 }

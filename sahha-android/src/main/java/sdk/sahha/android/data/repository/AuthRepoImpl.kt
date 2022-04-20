@@ -20,18 +20,18 @@ class AuthRepoImpl @Inject constructor(
     private val appCenterLog: AppCenterLog
 ) : AuthRepo {
     override suspend fun saveTokens(
-        token: String,
+        profileToken: String,
         refreshToken: String,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         try {
-            encryptor.encryptText(UET, token)
+            encryptor.encryptText(UET, profileToken)
             encryptor.encryptText(UERT, refreshToken)
-            callback?.also { it(null, "Tokens stored successfully") }
+            callback?.also { it(null, true) }
         } catch (e: Exception) {
             val nullErrorMsg = "Something went wrong storing tokens"
 
-            callback?.also { it(e.message ?: nullErrorMsg, null) }
+            callback?.also { it(e.message ?: nullErrorMsg, false) }
             appCenterLog.application(e.message ?: nullErrorMsg)
         }
     }

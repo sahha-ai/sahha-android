@@ -7,10 +7,10 @@ class SaveTokensUseCase @Inject constructor(
     private val repository: AuthRepo
 ) {
     suspend operator fun invoke(
-        token: String,
+        profileToken: String,
         refreshToken: String,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        repository.saveTokens(token, refreshToken, callback)
+        repository.saveTokens(profileToken, refreshToken, callback)
     }
 }

@@ -8,8 +8,11 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.DetectedActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import java.util.*
@@ -26,7 +29,8 @@ class ActivityRecognitionReceiver : BroadcastReceiver() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
-        Sahha.di.defaultScope.launch {
+        CoroutineScope(Default).launch {
+            SahhaReconfigure(context.applicationContext)
             checkActivities(intent)
         }
     }

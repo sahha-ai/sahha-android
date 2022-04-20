@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application>
-        <service android:name="sdk.sahha.android.domain.service.DataCollectionService" />
+        <service android:name=".domain.service.DataCollectionService" />
 
         <receiver
             android:name=".domain.receiver.AutoStartReceiver"
@@ -28,4 +28,5 @@
             </intent-filter>
         </receiver>
     </application>
+
 </manifest>

@@ -6,7 +6,7 @@ import javax.inject.Inject
 class PostSleepDataUseCase @Inject constructor(
     private val repository: RemoteRepo
 ) {
-    suspend operator fun invoke(callback: ((error: String?, success: String?) -> Unit)?) {
+    suspend operator fun invoke(callback: ((error: String?, success: Boolean) -> Unit)?) {
         repository.postSleepData(callback)
     }
 }

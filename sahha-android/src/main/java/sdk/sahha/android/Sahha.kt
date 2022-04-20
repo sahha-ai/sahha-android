@@ -1,12 +1,12 @@
 package sdk.sahha.android
 
-import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
+import sdk.sahha.android.di.ActivityRequiredDependencies
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
@@ -16,21 +16,21 @@ import sdk.sahha.android.domain.model.enums.SahhaEnvironment
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
-
 @Keep
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
+    internal lateinit var ardi: ActivityRequiredDependencies
     internal val notifications by lazy { di.notifications }
 
     val timeManager by lazy { di.timeManager }
     val motion by lazy {
         Motion(
-            di.setPermissionLogicUseCase,
+            ardi.setPermissionLogicUseCase,
             di.configurationDao,
             di.ioScope,
-            di.activateUseCase,
-            di.promptUserToActivateUseCase,
+            ardi.activateUseCase,
+            ardi.promptUserToActivateUseCase,
             di.postSleepDataUseCase
         )
     }
@@ -46,8 +46,9 @@ object Sahha {
         activity: ComponentActivity,
         settings: SahhaSettings
     ) {
-        di = ManualDependencies(activity, settings.environment)
-        di.setPermissionLogicUseCase()
+        di = ManualDependencies(activity.applicationContext, settings.environment)
+        ardi = ActivityRequiredDependencies(activity)
+        ardi.setPermissionLogicUseCase()
         di.ioScope.launch {
             saveConfiguration(settings)
             AppCenter.start(
@@ -61,10 +62,10 @@ object Sahha {
     fun authenticate(
         token: String,
         refreshToken: String,
-        callback: ((error: String?, success: String?) -> Unit)? = null
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di.ioScope.launch {
-                di.saveTokensUseCase(token, refreshToken, callback)
+            di.saveTokensUseCase(token, refreshToken, callback)
         }
     }
 
@@ -130,7 +131,7 @@ object Sahha {
                 settings.environment.ordinal,
                 settings.framework.name,
                 sensorEnums,
-                settings.manuallyPostData
+                settings.postActivityManually
             )
         )
     }

@@ -34,14 +34,14 @@ class Motion @Inject constructor(
         promptUserToActivateUseCase(_activityCallback)
     }
 
-    fun postData(
+    fun postSensorData(
         sensor: Enum<SahhaSensor>,
-        callback: ((error: String?, success: String?) -> Unit)
+        callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         ioScope.launch {
             val config = configDao.getConfig()
             if (!config.sensorArray.contains(sensor.ordinal)) {
-                callback(SahhaErrors.sensorNotEnabled(sensor), null)
+                callback(SahhaErrors.sensorNotEnabled(sensor), false)
                 return@launch
             }
 

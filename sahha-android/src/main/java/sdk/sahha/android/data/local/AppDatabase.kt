@@ -11,6 +11,7 @@ import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.model.device.AppUsage
 import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
@@ -33,6 +34,7 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
         DeviceUsage::class,
         SahhaConfiguration::class,
         SleepDto::class,
+        SahhaNotificationConfiguration::class
     ]
 )
 

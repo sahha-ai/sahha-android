@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresApi
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.ActivityRecognition
@@ -14,7 +14,6 @@ import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.domain.receiver.SleepReceiver
@@ -24,9 +23,10 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
 
     private val tag by lazy { "SleepCollectionWorker" }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun doWork(): Result {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context as ComponentActivity)
+            SahhaReconfigure(context.applicationContext)
 
             val sleepIntent = Intent(context, SleepReceiver::class.java)
             val sleepPendingIntent = getSleepPendingIntent(sleepIntent)

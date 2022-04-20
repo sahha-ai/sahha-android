@@ -2,7 +2,6 @@ package sdk.sahha.android.domain.service
 
 import android.app.Service
 import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener2
@@ -14,6 +13,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.Sahha
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.AVG_STEP_DISTANCE
 import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.data.local.dao.MovementDao
@@ -21,7 +21,6 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.model.steps.DetectedSteps
 import sdk.sahha.android.domain.model.steps.LastDetectedSteps
-import sdk.sahha.android.domain.receiver.AutoStartReceiver
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
@@ -37,7 +36,15 @@ class DataCollectionService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Sahha.di.defaultScope.launch {
+            SahhaReconfigure(this@DataCollectionService.applicationContext)
             config = Sahha.di.configurationDao.getConfig()
+
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+            Sahha.di.notifications.setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
+            )
 
             startForegroundService()
             checkAndStartCollectingScreenLockData()
@@ -62,7 +69,7 @@ class DataCollectionService : Service() {
         if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
             screenLocksRegistered =
                 Sahha.di.startCollectingPhoneScreenLockDataUseCase(
-                    this@DataCollectionService,
+                    this@DataCollectionService.applicationContext,
                     screenLocksRegistered
                 )
         }

@@ -9,7 +9,6 @@ import sdk.sahha.android.common.*
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.API_ERROR
-import sdk.sahha.android.data.Constants.ERROR_TYPE
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
@@ -54,10 +53,10 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun postSleepData(callback: ((error: String?, successful: String?) -> Unit)?) {
+    override suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
         try {
             if (sleepDao.getSleepDto().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), null) }
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), false) }
                 return
             }
 
@@ -68,14 +67,14 @@ class RemoteRepoImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            callback?.also { it(e.message, null) }
+            callback?.also { it(e.message, false) }
         }
     }
 
-    override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: String?) -> Unit)?) {
+    override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
         try {
             if (deviceDao.getUsages().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.device), null) }
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.device), false) }
                 return
             }
 
@@ -86,7 +85,7 @@ class RemoteRepoImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            callback?.also { it(e.message, null) }
+            callback?.also { it(e.message, false) }
         }
     }
 
@@ -162,7 +161,7 @@ class RemoteRepoImpl @Inject constructor(
     private fun handleResponse(
         response: Response<ResponseBody>,
         retryLogic: suspend (() -> Response<ResponseBody>),
-        callback: ((error: String?, successful: String?) -> Unit)?,
+        callback: ((error: String?, successful: Boolean) -> Unit)?,
         successfulLogic: (() -> Unit)
     ) {
         checkTokenExpired(response.code()) {
@@ -180,13 +179,13 @@ class RemoteRepoImpl @Inject constructor(
         if (ResponseCode.isSuccessful(response.code())) {
             successfulLogic()
             callback?.also {
-                it(null, "${response.code()}: ${response.message()}")
+                it(null, true)
             }
             return
         }
 
         callback?.also {
-            it("${response.code()}: ${response.message()}", null)
+            it("${response.code()}: ${response.message()}", false)
         }
     }
 

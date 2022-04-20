@@ -16,6 +16,7 @@ class SahhaNotificationManager @Inject constructor(
     private val context: Context,
     private val repository: BackgroundRepo
 ) {
+    @RequiresApi(Build.VERSION_CODES.O)
     fun setNewPersistent(icon: Int?, title: String?, shortDescription: String?) {
         val notification = getNewNotification(
             context,
@@ -31,6 +32,7 @@ class SahhaNotificationManager @Inject constructor(
         repository.setSahhaNotification(notification)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
         createNotificationWithIntent(
             context,

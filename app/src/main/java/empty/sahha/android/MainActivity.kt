@@ -70,8 +70,7 @@ class MainActivity : ComponentActivity() {
                                         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY",
                                         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY"
                                     ) { error, success ->
-                                        error?.also { greeting = it }
-                                        success?.also { greeting = it }
+                                        if (success) greeting = "Successful" else greeting = error ?: "Failed"
                                     }
                                 }) {
                                     Text("Authenticate")
@@ -92,9 +91,8 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.motion.postData(SahhaSensor.sleep) { error, success ->
-                                        error?.also { manualPost = it }
-                                        success?.also { manualPost = it }
+                                    Sahha.motion.postSensorData(SahhaSensor.sleep) { error, success ->
+                                        if(success) manualPost = "Successful" else manualPost = error ?: "Failed"
                                     }
                                 }) {
                                     Text("Manual Post Sleep")
@@ -102,9 +100,8 @@ class MainActivity : ComponentActivity() {
                                 Text(manualPost)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.device.postData(SahhaSensor.device) { error, success ->
-                                        error?.also { manualPostDevice = it }
-                                        success?.also { manualPostDevice = it }
+                                    Sahha.device.postSensorData(SahhaSensor.device) { error, success ->
+                                        if(success) manualPostDevice = "Successful" else manualPostDevice = error ?: "Failed"
                                     }
                                 }) {
                                     Text("Manual Post Device")

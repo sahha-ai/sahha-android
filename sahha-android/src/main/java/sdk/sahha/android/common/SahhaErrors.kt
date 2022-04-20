@@ -18,4 +18,8 @@ object SahhaErrors {
     fun localDataIsEmpty(sensor: Enum<SahhaSensor>): String {
         return "Error: The local ${sensor.name.lowercase()} data is empty."
     }
+
+    fun androidVersionTooLow(requiredVersion: Int): String {
+        return "Error: Android $requiredVersion or above is required."
+    }
 }

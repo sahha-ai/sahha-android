@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.callbacks.WindowCallback
@@ -35,7 +36,9 @@ class PermissionsRepoImpl @Inject constructor(
 
     override fun activate(callback: ((Enum<SahhaActivityStatus>) -> Unit)) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            callback(SahhaActivityStatus.unavailable)
+            val status = SahhaActivityStatus.unavailable
+            callback(status)
+            Sahha.motion.activityStatus = status
             return
         }
 
@@ -57,7 +60,7 @@ class PermissionsRepoImpl @Inject constructor(
         val win = activity.window
         val localCallback = win.callback
         win.callback =
-            WindowCallback(activity, localCallback, activityCallback)
+            WindowCallback(localCallback, activityCallback)
         (win.callback as WindowCallback).onWindowFocusChanged(win.isActive)
     }
 }

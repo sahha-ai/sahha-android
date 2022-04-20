@@ -11,9 +11,12 @@ import androidx.annotation.RequiresApi
 import com.google.android.gms.location.SleepSegmentEvent
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaPermissions
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.SleepDto
 
@@ -25,15 +28,18 @@ class SleepReceiver : BroadcastReceiver() {
     private var end: Long = 0L
 
     override fun onReceive(context: Context, intent: Intent) {
+        CoroutineScope(Default).launch {
+            SahhaReconfigure(context.applicationContext)
 
-        // First check activity permissions
-        if (!SahhaPermissions.activityRecognitionGranted()) {
-            notifyPermissionsIssue(context)
-            return
+            // First check activity permissions
+            if (!SahhaPermissions.activityRecognitionGranted()) {
+                notifyPermissionsIssue(context)
+                return@launch
+            }
+
+            // Sleep data is found
+            checkSleepData(intent)
         }
-
-        // Sleep data is found
-        checkSleepData(intent)
     }
 
     private fun notifyPermissionsIssue(context: Context) {

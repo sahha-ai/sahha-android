@@ -7,7 +7,10 @@ import javax.inject.Inject
 class StartCollectingPhoneScreenLockDataUseCase @Inject constructor(
     private val repository: BackgroundRepo
 ) {
-    operator fun invoke(serviceContext: Context, receiverRegistered: Boolean): Boolean {
+    operator fun invoke(
+        serviceContext: Context,
+        receiverRegistered: Boolean,
+    ): Boolean {
         return repository.startPhoneScreenReceivers(serviceContext, receiverRegistered)
     }
 }
