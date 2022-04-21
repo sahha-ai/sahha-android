@@ -1,7 +1,7 @@
 package sdk.sahha.android.data.remote.dto
 
 import androidx.room.Entity
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.SahhaDemographic
 
 @Entity
 data class DemographicDto(

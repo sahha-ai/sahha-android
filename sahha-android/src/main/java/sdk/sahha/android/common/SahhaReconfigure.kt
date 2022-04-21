@@ -3,7 +3,7 @@ package sdk.sahha.android.common
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.ManualDependencies
 

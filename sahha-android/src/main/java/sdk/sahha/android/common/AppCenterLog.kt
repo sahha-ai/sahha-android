@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
-import android.provider.Settings
 import com.microsoft.appcenter.analytics.Analytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -79,10 +78,6 @@ class AppCenterLog @Inject constructor(
         properties["sdk_version"] = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
         properties["app_id"] = appId
         properties["app_version"] = versionName ?: "Unknown"
-        properties["device_id"] = Settings.Secure.getString(
-            context.contentResolver,
-            Settings.Secure.ANDROID_ID
-        )
         properties["device_type"] = Build.MANUFACTURER
         properties["device_model"] = Build.MODEL
         properties["system"] = PLATFORM_NAME

@@ -15,12 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
-import sdk.sahha.android.Sahha
-import sdk.sahha.android.domain.model.config.SahhaSettings
-import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.model.enums.SahhaSensor
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSettings
+import sdk.sahha.android.source.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaDemographic
 
 class MainActivity : ComponentActivity() {
 
@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
                                 Text(permission)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    permission = SahhaActivityStatus.pending.name
                                     Sahha.motion.activate { newStatus ->
                                         permission = newStatus.name
                                     }
@@ -70,7 +71,8 @@ class MainActivity : ComponentActivity() {
                                         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY",
                                         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY"
                                     ) { error, success ->
-                                        if (success) greeting = "Successful" else greeting = error ?: "Failed"
+                                        if (success) greeting = "Successful" else greeting =
+                                            error ?: "Failed"
                                     }
                                 }) {
                                     Text("Authenticate")
@@ -85,14 +87,18 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.start()
+                                    Sahha.start { error, success ->
+
+                                    }
                                 }) {
                                     Text("Test start")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.motion.postSensorData(SahhaSensor.sleep) { error, success ->
-                                        if(success) manualPost = "Successful" else manualPost = error ?: "Failed"
+                                    manualPost = ""
+                                    Sahha.postSensorData(setOf(SahhaSensor.sleep)) { error, success ->
+                                        if (success) manualPost = "Successful" else manualPost =
+                                            error ?: "Failed"
                                     }
                                 }) {
                                     Text("Manual Post Sleep")
@@ -100,8 +106,10 @@ class MainActivity : ComponentActivity() {
                                 Text(manualPost)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.device.postSensorData(SahhaSensor.device) { error, success ->
-                                        if(success) manualPostDevice = "Successful" else manualPostDevice = error ?: "Failed"
+                                    manualPostDevice = ""
+                                    Sahha.postSensorData(setOf(SahhaSensor.device)) { error, success ->
+                                        if (success) manualPostDevice =
+                                            "Successful" else manualPostDevice = error ?: "Failed"
                                     }
                                 }) {
                                     Text("Manual Post Device")
@@ -109,6 +117,7 @@ class MainActivity : ComponentActivity() {
                                 Text(manualPostDevice)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    analyzeResponse = ""
                                     Sahha.analyze { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
@@ -121,13 +130,16 @@ class MainActivity : ComponentActivity() {
                                 Text(analyzeResponse)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
                                             10, "m", "nz", "korea"
                                         )
                                     ) { error, success ->
-                                        error?.also { postDemo = it }
-                                        success?.also { postDemo = it }
+                                        if(success)
+                                            postDemo = "Successful"
+                                        else
+                                            error?.also { postDemo = it }
                                     }
                                 }) {
                                     Text("Post Demographic")

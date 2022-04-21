@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.repository
 
-import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaActivityStatus
 
 interface PermissionsRepo {
     fun setPermissionLogic()

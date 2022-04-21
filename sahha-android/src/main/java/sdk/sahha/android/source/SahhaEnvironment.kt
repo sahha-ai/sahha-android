@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.model.enums
+package sdk.sahha.android.source
 
 import androidx.annotation.Keep
 import com.google.android.gms.common.annotation.KeepName

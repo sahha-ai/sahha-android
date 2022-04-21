@@ -3,7 +3,7 @@ package sdk.sahha.android.common
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 
 object SahhaIntents {
     fun settings(): Intent {

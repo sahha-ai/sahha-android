@@ -4,11 +4,11 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.callbacks.WindowCallback
-import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaActivityStatus
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import javax.inject.Inject
 

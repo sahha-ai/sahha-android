@@ -2,7 +2,7 @@ package sdk.sahha.android.common
 
 import android.Manifest
 import android.content.pm.PackageManager
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 
 object SahhaPermissions {
     fun activityRecognitionGranted(): Boolean {

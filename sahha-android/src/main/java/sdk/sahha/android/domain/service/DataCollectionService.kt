@@ -9,16 +9,18 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.AVG_STEP_DISTANCE
 import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.domain.model.steps.DetectedSteps
 import sdk.sahha.android.domain.model.steps.LastDetectedSteps
 
@@ -35,9 +37,9 @@ class DataCollectionService : Service() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Sahha.di.defaultScope.launch {
+        CoroutineScope(Default).launch {
             SahhaReconfigure(this@DataCollectionService.applicationContext)
-            config = Sahha.di.configurationDao.getConfig()
+            config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
             val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
             Sahha.di.notifications.setNewPersistent(

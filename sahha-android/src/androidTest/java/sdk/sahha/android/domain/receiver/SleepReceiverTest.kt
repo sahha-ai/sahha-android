@@ -9,10 +9,10 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.SleepSegmentEvent
 import junit.framework.TestCase
 import kotlinx.coroutines.runBlocking
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.data.local.dao.SleepDao
-import sdk.sahha.android.domain.model.config.SahhaSettings
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.source.SahhaSettings
+import sdk.sahha.android.source.SahhaEnvironment
 
 class SleepReceiverTest : TestCase() {
     private lateinit var receiver: SleepReceiver

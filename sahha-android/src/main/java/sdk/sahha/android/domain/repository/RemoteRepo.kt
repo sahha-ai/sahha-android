@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.repository
 
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.SahhaDemographic
 
 interface RemoteRepo {
     suspend fun postRefreshToken(retryLogic: (() -> Unit))
@@ -10,6 +10,6 @@ interface RemoteRepo {
     suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?)
     suspend fun postDemographic(
         sahhaDemographic: SahhaDemographic,
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, successful: Boolean) -> Unit)?
     )
 }

@@ -10,10 +10,10 @@ interface BackgroundRepo {
         icon: Int?,
         title: String?,
         shortDescription: String?,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     )
 
-    fun startActivityRecognitionReceiver(callback: ((error: String?, success: String?) -> Unit)? = null)
+    fun startActivityRecognitionReceiver(callback: ((error: String?, success: Boolean) -> Unit)? = null)
     fun startPhoneScreenReceivers(
         serviceContext: Context,
         receiverRegistered: Boolean,

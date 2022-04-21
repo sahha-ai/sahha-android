@@ -8,7 +8,7 @@ import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
     @POST("oauth/profile/refresh-token")

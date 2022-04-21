@@ -6,7 +6,7 @@ import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 
 class AutoStartReceiver : BroadcastReceiver() {

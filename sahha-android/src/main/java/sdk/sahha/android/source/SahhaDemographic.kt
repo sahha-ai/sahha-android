@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.model.profile
+package sdk.sahha.android.source
 
 import androidx.annotation.Keep
 

@@ -1,9 +1,6 @@
-package sdk.sahha.android.domain.model.config
+package sdk.sahha.android.source
 
 import androidx.annotation.Keep
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.model.enums.SahhaFramework
-import sdk.sahha.android.domain.model.enums.SahhaSensor
 
 @Keep
 class SahhaSettings(
@@ -15,5 +12,5 @@ class SahhaSettings(
         }
         return@let it
     },
-    val postActivityManually: Boolean = false
+    val postSensorDataManually: Boolean = false
 )

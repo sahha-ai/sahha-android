@@ -24,6 +24,15 @@ class AuthRepoImpl @Inject constructor(
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
+        if (profileToken.isEmpty()) {
+            callback?.also { it("The profile token was null or empty.", false) }
+            return
+        }
+        if (refreshToken.isEmpty()) {
+            callback?.also { it("The refresh token was null or empty.", false) }
+            return
+        }
+
         try {
             encryptor.encryptText(UET, profileToken)
             encryptor.encryptText(UERT, refreshToken)

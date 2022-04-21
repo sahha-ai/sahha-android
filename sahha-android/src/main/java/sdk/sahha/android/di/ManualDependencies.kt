@@ -2,17 +2,13 @@ package sdk.sahha.android.di
 
 import android.content.Context
 import android.os.Build
-import dagger.hilt.android.AndroidEntryPoint
 import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.domain.use_case.*
-import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
-import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
-import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase

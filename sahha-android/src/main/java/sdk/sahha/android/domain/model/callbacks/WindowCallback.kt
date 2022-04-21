@@ -2,9 +2,9 @@ package sdk.sahha.android.domain.model.callbacks
 
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.domain.model.enums.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaActivityStatus
 
 class WindowCallback(
     private var localCallback: Window.Callback,

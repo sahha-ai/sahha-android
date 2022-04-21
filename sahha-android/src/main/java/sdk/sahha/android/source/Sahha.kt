@@ -1,4 +1,4 @@
-package sdk.sahha.android
+package sdk.sahha.android.source
 
 import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
@@ -6,15 +6,13 @@ import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
+import sdk.sahha.android.BuildConfig
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.ActivityRequiredDependencies
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.SahhaSettings
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.model.enums.SahhaSensor
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
 
 @Keep
 object Sahha {
@@ -44,32 +42,32 @@ object Sahha {
 
     fun configure(
         activity: ComponentActivity,
-        settings: SahhaSettings
+        sahhaSettings: SahhaSettings
     ) {
-        di = ManualDependencies(activity.applicationContext, settings.environment)
+        di = ManualDependencies(activity.applicationContext, sahhaSettings.environment)
         ardi = ActivityRequiredDependencies(activity)
         ardi.setPermissionLogicUseCase()
         di.ioScope.launch {
-            saveConfiguration(settings)
+            saveConfiguration(sahhaSettings)
             AppCenter.start(
                 activity.application,
-                getCorrectAppCenterKey(settings.environment),
+                getCorrectAppCenterKey(sahhaSettings.environment),
                 Analytics::class.java, Crashes::class.java
             )
         }
     }
 
     fun authenticate(
-        token: String,
+        profileToken: String,
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di.ioScope.launch {
-            di.saveTokensUseCase(token, refreshToken, callback)
+            di.saveTokensUseCase(profileToken, refreshToken, callback)
         }
     }
 
-    fun start(callback: ((error: String?, success: String?) -> Unit)? = null) {
+    fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         di.defaultScope.launch {
             config = di.configurationDao.getConfig()
             startDataCollection(callback)
@@ -91,20 +89,43 @@ object Sahha {
 
     fun postDemographic(
         sahhaDemographic: SahhaDemographic,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         di.defaultScope.launch {
             di.postDemographicUseCase(sahhaDemographic, callback)
         }
     }
 
+    fun postSensorData(
+        sensors: Set<Enum<SahhaSensor>>,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        di.ioScope.launch {
+            val config = di.configurationDao.getConfig()
+            sensors.forEach { sensor ->
+                if (!config.sensorArray.contains(sensor.ordinal)) {
+                    callback(SahhaErrors.sensorNotEnabled(sensor), false)
+                    return@launch
+                }
+            }
+
+            if (sensors.contains(SahhaSensor.sleep)) {
+                di.postSleepDataUseCase(callback)
+            }
+
+            if (sensors.contains(SahhaSensor.device)) {
+                di.postDeviceDataUseCase(callback)
+            }
+        }
+    }
+
     private fun checkAndStartPostWorkers() {
-        if (!config.manuallyPostData) {
+        if (!config.postSensorDataManually) {
             di.startPostWorkersUseCase()
         }
     }
 
-    private fun startDataCollection(callback: ((error: String?, success: String?) -> Unit)?) {
+    private fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)?) {
         if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
             di.startCollectingSleepDataUseCase()
         }
@@ -117,7 +138,7 @@ object Sahha {
         icon: Int? = null,
         title: String? = null,
         shortDescription: String? = null,
-        callback: ((error: String?, success: String?) -> Unit)? = null
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di.startDataCollectionServiceUseCase(icon, title, shortDescription, callback)
     }
@@ -131,7 +152,7 @@ object Sahha {
                 settings.environment.ordinal,
                 settings.framework.name,
                 sensorEnums,
-                settings.postActivityManually
+                settings.postSensorDataManually
             )
         )
     }

@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.use_case
 
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
 import javax.inject.Inject
 

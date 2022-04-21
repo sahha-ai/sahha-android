@@ -4,7 +4,7 @@ import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONObject
-import sdk.sahha.android.Sahha
+import sdk.sahha.android.source.Sahha
 
 object ApiBodyConverter {
     fun responseBodyToJson(response: ResponseBody?): JSONObject? {

@@ -16,8 +16,8 @@ import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.auth.TokenData
-import sdk.sahha.android.domain.model.enums.SahhaSensor
-import sdk.sahha.android.domain.model.profile.SahhaDemographic
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
 import javax.inject.Inject
 import javax.inject.Named
@@ -128,7 +128,7 @@ class RemoteRepoImpl @Inject constructor(
 
     override suspend fun postDemographic(
         sahhaDemographic: SahhaDemographic,
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
             val response = postDemographicResponse(sahhaDemographic)
@@ -137,13 +137,13 @@ class RemoteRepoImpl @Inject constructor(
             }
 
             if (ResponseCode.isSuccessful(response.code())) {
-                callback?.also { it(null, "${response.code()}: ${response.message()}") }
+                callback?.also { it(null, true) }
                 return
             }
 
-            callback?.also { it("${response.code()}: ${response.message()}", null) }
+            callback?.also { it("${response.code()}: ${response.message()}", false) }
         } catch (e: Exception) {
-            callback?.also { it(e.message, null) }
+            callback?.also { it(e.message, false) }
         }
     }
 

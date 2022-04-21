@@ -2,9 +2,10 @@ package sdk.sahha.android.domain.model.config
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
-import sdk.sahha.android.domain.model.enums.SahhaFramework
-import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaFramework
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSettings
 
 @Entity
 data class SahhaConfiguration(
@@ -12,7 +13,7 @@ data class SahhaConfiguration(
     val environment: Int,
     val framework: String,
     val sensorArray: ArrayList<Int>,
-    val manuallyPostData: Boolean
+    val postSensorDataManually: Boolean
 ) {
     constructor(
         environment: Int,
@@ -34,7 +35,7 @@ data class SahhaConfiguration(
             sensorArray.mapTo(mutableSetOf()) {
                 SahhaSensor.values()[it]
             },
-            manuallyPostData
+            postSensorDataManually
         )
     }
 }

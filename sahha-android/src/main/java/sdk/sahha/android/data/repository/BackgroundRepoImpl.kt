@@ -15,7 +15,6 @@ import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.R
-import sdk.sahha.android.Sahha
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
@@ -24,7 +23,6 @@ import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
-import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenOffReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenUnlockedReceiver
@@ -34,6 +32,8 @@ import sdk.sahha.android.domain.worker.SleepCollectionWorker
 import sdk.sahha.android.domain.worker.StepWorker
 import sdk.sahha.android.domain.worker.post.DevicePostWorker
 import sdk.sahha.android.domain.worker.post.SleepPostWorker
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
@@ -69,11 +69,11 @@ class BackgroundRepoImpl @Inject constructor(
         _icon: Int?,
         _title: String?,
         _shortDescription: String?,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         Sahha.di.defaultScope.launch {
             if (Build.VERSION.SDK_INT < 26) {
-                callback?.also { it(SahhaErrors.androidVersionTooLow(8), null) }
+                callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
                 return@launch
             }
 
@@ -90,17 +90,22 @@ class BackgroundRepoImpl @Inject constructor(
                 )
             )
             Sahha.notifications.setNewPersistent(icon, title, shortDescription)
-            context.startForegroundService(Intent(context, DataCollectionService::class.java))
+
+            try {
+                context.startForegroundService(Intent(context, DataCollectionService::class.java))
+            } catch (e: Exception) {
+                callback?.also { it(e.message, false) }
+            }
         }
     }
 
-    override fun startActivityRecognitionReceiver(callback: ((error: String?, success: String?) -> Unit)?) {
+    override fun startActivityRecognitionReceiver(callback: ((error: String?, success: Boolean) -> Unit)?) {
         if (activityRecognitionReceiverRegistered) return
 
         defaultScope.launch {
             setActivityRecognitionClient()
             setActivityRecognitionPendingIntent(callback = callback)
-            requestActivityRecognitionUpdates()
+            requestActivityRecognitionUpdates(callback)
         }
     }
 
@@ -250,12 +255,12 @@ class BackgroundRepoImpl @Inject constructor(
         activityRecognitionClient = ActivityRecognitionClient(context)
     }
 
-    private fun setActivityRecognitionPendingIntent(callback: ((error: String?, success: String?) -> Unit)?) {
+    private fun setActivityRecognitionPendingIntent(callback: ((error: String?, success: Boolean) -> Unit)?) {
         val isAndroid12AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         val isBelowAndroid8 = Build.VERSION.SDK_INT < 26
         activityRecognitionPendingIntent =
             if (isBelowAndroid8) {
-                callback?.also { it(SahhaErrors.androidVersionTooLow(8), null) }
+                callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
                 return
             } else if (isAndroid12AndAbove) {
                 getPendingIntentWithMutableFlag()
@@ -264,14 +269,16 @@ class BackgroundRepoImpl @Inject constructor(
             }
     }
 
-    private fun requestActivityRecognitionUpdates() {
+    private fun requestActivityRecognitionUpdates(callback: ((error: String?, success: Boolean) -> Unit)?) {
         activityRecognitionClient.requestActivityUpdates(
             ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS,
             activityRecognitionPendingIntent
         ).addOnSuccessListener {
             activityRecognitionReceiverRegistered = true
-        }.addOnFailureListener {
-            displayErrorToast(it)
+            callback?.also { it(null, true) }
+        }.addOnFailureListener { e ->
+            callback?.also { it(e.message, false) }
+            displayErrorToast(e)
         }
     }
 

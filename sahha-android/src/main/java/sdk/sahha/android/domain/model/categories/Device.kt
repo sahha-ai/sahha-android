@@ -3,10 +3,8 @@ package sdk.sahha.android.domain.model.categories
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.Sahha
-import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.domain.model.enums.SahhaSensor
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import javax.inject.Inject
 import javax.inject.Named
@@ -17,23 +15,6 @@ class Device @Inject constructor(
     private val configDao: ConfigurationDao,
     private val postDeviceDataUseCase: PostDeviceDataUseCase
 ) {
-    fun postSensorData(
-        sensor: Enum<SahhaSensor>,
-        callback: ((error: String?, success: Boolean) -> Unit)
-    ) {
-        ioScope.launch {
-            val config = configDao.getConfig()
-            if (!config.sensorArray.contains(sensor.ordinal)) {
-                callback(SahhaErrors.sensorNotEnabled(sensor), false)
-                return@launch
-            }
-
-            if (sensor.ordinal == SahhaSensor.device.ordinal) {
-                postDeviceDataUseCase(callback)
-            }
-        }
-    }
-
     //TODO: For demo only
     fun getData(callback: ((data: List<String>) -> Unit)) {
         Sahha.di.ioScope.launch {

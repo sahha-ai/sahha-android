@@ -25,7 +25,7 @@ import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
 import sdk.sahha.android.data.repository.RemoteRepoImpl
-import sdk.sahha.android.domain.model.enums.SahhaEnvironment
+import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo

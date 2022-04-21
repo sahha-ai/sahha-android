@@ -1,6 +1,6 @@
 package sdk.sahha.android.common
 
-import sdk.sahha.android.domain.model.enums.SahhaSensor
+import sdk.sahha.android.source.SahhaSensor
 
 object SahhaErrors {
     val typeAuthentication = "Authentication Error"
