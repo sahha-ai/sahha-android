@@ -7,7 +7,6 @@ import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.ActivityRequiredDependencies
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
@@ -97,25 +96,11 @@ object Sahha {
     }
 
     fun postSensorData(
-        sensors: Set<Enum<SahhaSensor>>,
+        sensors: Set<Enum<SahhaSensor>>? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         di.ioScope.launch {
-            val config = di.configurationDao.getConfig()
-            sensors.forEach { sensor ->
-                if (!config.sensorArray.contains(sensor.ordinal)) {
-                    callback(SahhaErrors.sensorNotEnabled(sensor), false)
-                    return@launch
-                }
-            }
-
-            if (sensors.contains(SahhaSensor.sleep)) {
-                di.postSleepDataUseCase(callback)
-            }
-
-            if (sensors.contains(SahhaSensor.device)) {
-                di.postDeviceDataUseCase(callback)
-            }
+            di.postAllSensorDataUseCase(sensors, callback)
         }
     }
 

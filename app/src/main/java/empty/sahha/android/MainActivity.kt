@@ -15,12 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
-import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSettings
-import sdk.sahha.android.source.SahhaActivityStatus
-import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.*
 
 class MainActivity : ComponentActivity() {
 
@@ -96,25 +91,14 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     manualPost = ""
-                                    Sahha.postSensorData(setOf(SahhaSensor.sleep)) { error, success ->
+                                    Sahha.postSensorData { error, success ->
                                         if (success) manualPost = "Successful" else manualPost =
                                             error ?: "Failed"
                                     }
                                 }) {
-                                    Text("Manual Post Sleep")
+                                    Text("Manual Post All")
                                 }
                                 Text(manualPost)
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
-                                    manualPostDevice = ""
-                                    Sahha.postSensorData(setOf(SahhaSensor.device)) { error, success ->
-                                        if (success) manualPostDevice =
-                                            "Successful" else manualPostDevice = error ?: "Failed"
-                                    }
-                                }) {
-                                    Text("Manual Post Device")
-                                }
-                                Text(manualPostDevice)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     analyzeResponse = ""
@@ -136,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                             10, "m", "nz", "korea"
                                         )
                                     ) { error, success ->
-                                        if(success)
+                                        if (success)
                                             postDemo = "Successful"
                                         else
                                             error?.also { postDemo = it }

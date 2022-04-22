@@ -16,9 +16,9 @@ import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.auth.TokenData
-import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -86,6 +86,17 @@ class RemoteRepoImpl @Inject constructor(
             }
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+        }
+    }
+
+    override suspend fun postAllSensorData(
+        sensors: Set<Enum<SahhaSensor>>?,
+        callback: ((error: String?, successful: Boolean) -> Unit)
+    ) {
+        try {
+            postSensorData(sensors, callback)
+        } catch (e: Exception) {
+            callback(e.message, false)
         }
     }
 
@@ -198,6 +209,37 @@ class RemoteRepoImpl @Inject constructor(
                 postRefreshToken(retryLogic)
             }
         }
+    }
+
+    private suspend fun postSensorData(
+        sensors: Set<Enum<SahhaSensor>>?,
+        callback: ((error: String?, successful: Boolean) -> Unit)
+    ) {
+        var errorSummary = ""
+        val successfulResults = mutableListOf<Boolean>()
+
+        val specificOrAllSensors = sensors ?: SahhaSensor.values().toSet()
+        specificOrAllSensors.forEach { sensor ->
+            if (sensor == SahhaSensor.sleep) {
+                postSleepData { error, successful ->
+                    error?.also { errorSummary += "$it\n" }
+                    successfulResults.add(successful)
+                }
+            }
+
+            if (sensor == SahhaSensor.device) {
+                postPhoneScreenLockData { error, successful ->
+                    error?.also { errorSummary += "$it\n" }
+                    successfulResults.add(successful)
+                }
+            }
+        }
+
+        if (successfulResults.contains(false)) {
+            callback(errorSummary, false)
+            return
+        }
+        callback(null, true)
     }
 
     private suspend fun storeNewTokens(responseBody: ResponseBody?) {

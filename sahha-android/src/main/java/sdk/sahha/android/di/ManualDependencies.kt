@@ -7,11 +7,12 @@ import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.domain.use_case.*
+import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
+import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Inject
 
 class ManualDependencies @Inject constructor(
@@ -86,6 +87,7 @@ class ManualDependencies @Inject constructor(
     val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo) }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
+    val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
 
     private fun getSahhaTimeManager(): SahhaTimeManager? {
         if (Build.VERSION.SDK_INT < 24) return null
