@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         val config = SahhaSettings(
             environment = SahhaEnvironment.development
         )
-        Sahha.configure(this, config)
+        Sahha.configure(application, config)
 
         setContent {
             SahhasdkemptyTheme {
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.motion.promptUserToActivate { newStatus ->
+                                    Sahha.motion.promptUserToActivate(this@MainActivity) { newStatus ->
                                         permission = newStatus.name
                                     }
                                 }) {

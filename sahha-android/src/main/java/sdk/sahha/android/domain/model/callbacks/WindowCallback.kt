@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.model.callbacks
 
+import android.content.Context
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import sdk.sahha.android.source.Sahha
@@ -7,6 +8,7 @@ import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.source.SahhaActivityStatus
 
 class WindowCallback(
+    private val context: Context,
     private var localCallback: Window.Callback,
     private val activityCallback: ActivityCallback
 ) : Window.Callback {
@@ -115,7 +117,7 @@ class WindowCallback(
     }
 
     private fun checkActivityRecognitionPermission(): Enum<SahhaActivityStatus> {
-        if (SahhaPermissions.activityRecognitionGranted()) return SahhaActivityStatus.enabled
+        if (SahhaPermissions.activityRecognitionGranted(context)) return SahhaActivityStatus.enabled
         return SahhaActivityStatus.disabled
     }
 }

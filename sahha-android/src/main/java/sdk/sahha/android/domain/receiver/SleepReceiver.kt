@@ -20,7 +20,7 @@ import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.SleepDto
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.Q)
 class SleepReceiver : BroadcastReceiver() {
     private val tag = "SleepReceiver"
 
@@ -32,7 +32,7 @@ class SleepReceiver : BroadcastReceiver() {
             SahhaReconfigure(context.applicationContext)
 
             // First check activity permissions
-            if (!SahhaPermissions.activityRecognitionGranted()) {
+            if (!SahhaPermissions.activityRecognitionGranted(context)) {
                 notifyPermissionsIssue(context)
                 return@launch
             }

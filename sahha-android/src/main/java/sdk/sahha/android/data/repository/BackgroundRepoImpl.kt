@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
@@ -160,6 +161,7 @@ class BackgroundRepoImpl @Inject constructor(
         workManager.cancelAllWork()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun registerScreenUnlockedReceiver(serviceContext: Context) {
         serviceContext.registerReceiver(
             PhoneScreenUnlockedReceiver(),
@@ -169,6 +171,7 @@ class BackgroundRepoImpl @Inject constructor(
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun registerScreenOffReceiver(serviceContext: Context) {
         serviceContext.registerReceiver(
             PhoneScreenOffReceiver(),

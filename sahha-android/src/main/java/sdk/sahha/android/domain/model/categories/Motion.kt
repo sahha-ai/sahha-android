@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.model.categories
 
+import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -28,8 +29,8 @@ class Motion @Inject constructor(
         activateUseCase(_activityCallback)
     }
 
-    fun promptUserToActivate(_activityCallback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)) {
-        promptUserToActivateUseCase(_activityCallback)
+    fun promptUserToActivate(context: Context, _activityCallback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)) {
+        promptUserToActivateUseCase(context, _activityCallback)
     }
 
     //TODO: For demo only

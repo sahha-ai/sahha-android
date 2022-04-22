@@ -43,7 +43,7 @@ class SahhaNotificationManager @Inject constructor(
             shortDescription ?: "Please tap here to re-enable permissions.",
             true,
             Constants.NOTIFICATION_PERMISSION_SETTINGS,
-            SahhaIntents.settings()
+            SahhaIntents.settings(context)
         )
     }
 

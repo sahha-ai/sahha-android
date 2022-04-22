@@ -7,9 +7,9 @@ interface BackgroundRepo {
     var notification: Notification
     fun setSahhaNotification(_notification: Notification)
     fun startDataCollectionService(
-        icon: Int?,
-        title: String?,
-        shortDescription: String?,
+        _icon: Int?,
+        _title: String?,
+        _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     )
 

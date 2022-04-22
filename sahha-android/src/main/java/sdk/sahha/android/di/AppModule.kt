@@ -57,14 +57,12 @@ internal object AppModule {
     @Provides
     @Singleton
     fun provideAuthRepository(
-        api: SahhaApi,
         @Named("ioScope") ioScope: CoroutineScope,
         @Named("mainScope") mainScope: CoroutineScope,
-        @ApplicationContext context: Context,
         encryptor: Encryptor,
         appCenterLog: AppCenterLog
     ): AuthRepo {
-        return AuthRepoImpl(context, api, ioScope, mainScope, encryptor, appCenterLog)
+        return AuthRepoImpl(ioScope, mainScope, encryptor, appCenterLog)
     }
 
     @Provides
@@ -88,9 +86,8 @@ internal object AppModule {
     @Provides
     @Singleton
     fun providePermissionsRepository(
-        activity: ComponentActivity
     ): PermissionsRepo {
-        return PermissionsRepoImpl(activity)
+        return PermissionsRepoImpl()
     }
 
     @Provides

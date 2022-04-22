@@ -12,8 +12,6 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class AuthRepoImpl @Inject constructor(
-    private val context: Context,
-    private val api: SahhaApi,
     @Named("ioScope") private val ioScope: CoroutineScope,
     @Named("mainScope") private val mainScope: CoroutineScope,
     private val encryptor: Encryptor,

@@ -1,11 +1,14 @@
 package sdk.sahha.android.common
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
-import sdk.sahha.android.source.Sahha
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 object SahhaPermissions {
-    fun activityRecognitionGranted(): Boolean {
-        return Sahha.di.context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun activityRecognitionGranted(context: Context): Boolean {
+        return context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED
     }
 }

@@ -3,16 +3,19 @@ package sdk.sahha.android.common
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.ManualDependencies
 
 object SahhaReconfigure {
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend operator fun invoke(context: Context) {
         val settings =
             AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
-        Sahha.di = ManualDependencies(context, settings.environment)
+        Sahha.di = ManualDependencies(settings.environment)
+        Sahha.di.setDependencies(context.applicationContext)
+
+        if(Build.VERSION.SDK_INT < 26) return
         Sahha.notifications.setNewPersistent(
             Sahha.di.configurationDao.getNotificationConfig().icon,
             Sahha.di.configurationDao.getNotificationConfig().title,

@@ -13,7 +13,7 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
     Worker(context, workerParameters) {
     override fun doWork(): Result {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context.applicationContext)
+            SahhaReconfigure(context)
             Sahha.di.postDeviceDataUseCase(null)
         }
         return Result.success()

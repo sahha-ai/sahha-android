@@ -1,6 +1,6 @@
 package sdk.sahha.android.source
 
-import androidx.activity.ComponentActivity
+import android.app.Application
 import androidx.annotation.Keep
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
@@ -17,17 +17,16 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
-    internal lateinit var ardi: ActivityRequiredDependencies
     internal val notifications by lazy { di.notifications }
 
     val timeManager by lazy { di.timeManager }
     val motion by lazy {
         Motion(
-            ardi.setPermissionLogicUseCase,
+            di.setPermissionLogicUseCase,
             di.configurationDao,
             di.ioScope,
-            ardi.activateUseCase,
-            ardi.promptUserToActivateUseCase,
+            di.activateUseCase,
+            di.promptUserToActivateUseCase,
             di.postSleepDataUseCase
         )
     }
@@ -40,16 +39,15 @@ object Sahha {
     }
 
     fun configure(
-        activity: ComponentActivity,
+        application: Application,
         sahhaSettings: SahhaSettings
     ) {
-        di = ManualDependencies(activity.applicationContext, sahhaSettings.environment)
-        ardi = ActivityRequiredDependencies(activity)
-        ardi.setPermissionLogicUseCase()
+        di = ManualDependencies(sahhaSettings.environment)
+        di.setDependencies(application.applicationContext)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
             AppCenter.start(
-                activity.application,
+                application,
                 getCorrectAppCenterKey(sahhaSettings.environment),
                 Analytics::class.java, Crashes::class.java
             )

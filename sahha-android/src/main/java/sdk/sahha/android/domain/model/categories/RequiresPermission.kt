@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.model.categories
 
+import androidx.activity.ComponentActivity
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.source.SahhaActivityStatus
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
@@ -11,7 +12,7 @@ open class RequiresPermission @Inject constructor(
     val activityCallback = ActivityCallback()
     var activityStatus: Enum<SahhaActivityStatus> = SahhaActivityStatus.pending
 
-    fun setPermissionLogic() {
-        setPermissionLogicUseCase()
+    fun setPermissionLogic(activity: ComponentActivity) {
+        setPermissionLogicUseCase(activity)
     }
 }
