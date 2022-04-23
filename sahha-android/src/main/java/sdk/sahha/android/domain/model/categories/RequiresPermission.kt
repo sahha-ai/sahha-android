@@ -9,17 +9,11 @@ import sdk.sahha.android.source.SahhaActivityStatus
 import javax.inject.Inject
 
 open class RequiresPermission @Inject constructor(
-    private val setPermissionLogicUseCase: SetPermissionLogicUseCase,
-    private val openAppSettingsUseCase: OpenAppSettingsUseCase,
-) {
+    private val setPermissionLogicUseCase: SetPermissionLogicUseCase, ) {
     val activityCallback = ActivityCallback()
     var activityStatus: Enum<SahhaActivityStatus> = SahhaActivityStatus.pending
 
     fun prepareActivity(activity: ComponentActivity) {
         setPermissionLogicUseCase(activity)
-    }
-
-    fun openAppSettings(context: Context) {
-        openAppSettingsUseCase(context)
     }
 }

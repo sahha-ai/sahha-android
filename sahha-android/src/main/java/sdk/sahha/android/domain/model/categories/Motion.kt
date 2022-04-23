@@ -21,7 +21,6 @@ class Motion @Inject constructor(
     private val activateUseCase: ActivateUseCase,
 ) : RequiresPermission(
     setPermissionLogicUseCase,
-    openAppSettingsUseCase
 ) {
     fun activate(
         _activityCallback: ((error: String?, sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)

@@ -17,10 +17,10 @@ data class DemographicDto(
     val relationship: String?,
     val locale: String?,
     val livingArrangement: String?
-) {
-    fun toSahhaDemographic(): SahhaDemographic {
-        return SahhaDemographic(
-            age, gender, country, birthCountry
-        )
-    }
+)
+
+fun DemographicDto.toSahhaDemographic(): SahhaDemographic {
+    return SahhaDemographic(
+        age, gender, country, birthCountry
+    )
 }

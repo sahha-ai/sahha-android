@@ -15,6 +15,7 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic

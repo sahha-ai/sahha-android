@@ -1,6 +1,7 @@
 package sdk.sahha.android.source
 
 import android.app.Application
+import android.content.Context
 import androidx.annotation.Keep
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
@@ -98,6 +99,10 @@ object Sahha {
         di.ioScope.launch {
             di.postAllSensorDataUseCase(sensors, callback)
         }
+    }
+
+    fun openAppSettings(context: Context) {
+        di.openAppSettingsUseCase(context)
     }
 
     private fun checkAndStartPostWorkers() {

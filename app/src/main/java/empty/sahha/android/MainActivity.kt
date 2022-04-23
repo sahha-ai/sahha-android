@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.motion.openAppSettings(this@MainActivity)
+                                    Sahha.openAppSettings(this@MainActivity)
                                 }) {
                                     Text("Open Settings")
                                 }
