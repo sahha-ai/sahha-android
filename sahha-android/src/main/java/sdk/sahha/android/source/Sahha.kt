@@ -7,7 +7,6 @@ import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.di.ActivityRequiredDependencies
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
@@ -22,12 +21,11 @@ object Sahha {
     val timeManager by lazy { di.timeManager }
     val motion by lazy {
         Motion(
+            di.openAppSettingsUseCase,
             di.setPermissionLogicUseCase,
             di.configurationDao,
             di.ioScope,
             di.activateUseCase,
-            di.promptUserToActivateUseCase,
-            di.postSleepDataUseCase
         )
     }
     val device by lazy {

@@ -7,7 +7,7 @@ import javax.inject.Inject
 class ActivateUseCase @Inject constructor(
     private val repository: PermissionsRepo
 ) {
-    operator fun invoke(callback: ((Enum<SahhaActivityStatus>) -> Unit)) {
+    operator fun invoke(callback: ((error: String?, status: Enum<SahhaActivityStatus>) -> Unit)) {
         repository.activate(callback)
     }
 }

@@ -6,10 +6,6 @@ import sdk.sahha.android.source.SahhaActivityStatus
 
 interface PermissionsRepo {
     fun setPermissionLogic(activity: ComponentActivity)
-    fun promptUserToActivateActivityRecognition(
-        context: Context,
-        callback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)
-    )
-
-    fun activate(callback: ((Enum<SahhaActivityStatus>) -> Unit))
+    fun openAppSettings(context: Context)
+    fun activate(callback: ((error: String?, status: Enum<SahhaActivityStatus>) -> Unit))
 }

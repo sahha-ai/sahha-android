@@ -1,36 +1,32 @@
 package sdk.sahha.android.domain.model.categories
 
-import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.source.SahhaActivityStatus
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
-import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
+import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
-import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaActivityStatus
 import javax.inject.Inject
 import javax.inject.Named
 
 @Keep
 class Motion @Inject constructor(
+    openAppSettingsUseCase: OpenAppSettingsUseCase,
     setPermissionLogicUseCase: SetPermissionLogicUseCase,
     private val configDao: ConfigurationDao,
     @Named("ioScope") private val ioScope: CoroutineScope,
     private val activateUseCase: ActivateUseCase,
-    private val promptUserToActivateUseCase: PromptUserToActivateUseCase,
-    private val postSleepDataUseCase: PostSleepDataUseCase
 ) : RequiresPermission(
-    setPermissionLogicUseCase
+    setPermissionLogicUseCase,
+    openAppSettingsUseCase
 ) {
-    fun activate(_activityCallback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)) {
+    fun activate(
+        _activityCallback: ((error: String?, sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)
+    ) {
         activateUseCase(_activityCallback)
-    }
-
-    fun promptUserToActivate(context: Context, _activityCallback: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)) {
-        promptUserToActivateUseCase(context, _activityCallback)
     }
 
     //TODO: For demo only

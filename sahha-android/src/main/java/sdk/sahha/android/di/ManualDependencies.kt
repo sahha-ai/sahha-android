@@ -11,7 +11,7 @@ import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.use_case.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
-import sdk.sahha.android.domain.use_case.permissions.PromptUserToActivateUseCase
+import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
@@ -92,7 +92,7 @@ class ManualDependencies @Inject constructor(
             permissionRepo
         )
     }
-    val promptUserToActivateUseCase by lazy { PromptUserToActivateUseCase(permissionRepo) }
+    val openAppSettingsUseCase by lazy { OpenAppSettingsUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
 
     fun setDependencies(context: Context) {
