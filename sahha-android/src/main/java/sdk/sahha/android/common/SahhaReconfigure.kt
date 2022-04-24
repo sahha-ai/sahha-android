@@ -13,7 +13,7 @@ object SahhaReconfigure {
         val settings =
             AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
         Sahha.di = ManualDependencies(settings.environment)
-        Sahha.di.setDependencies(context.applicationContext)
+        Sahha.di.setDependencies(context)
 
         if(Build.VERSION.SDK_INT < 26) return
         Sahha.notifications.setNewPersistent(

@@ -2,6 +2,7 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.annotation.Keep
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics

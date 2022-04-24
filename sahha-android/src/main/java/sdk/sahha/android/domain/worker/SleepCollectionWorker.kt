@@ -23,17 +23,16 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
 
     private val tag by lazy { "SleepCollectionWorker" }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun doWork(): Result {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context.applicationContext)
+            SahhaReconfigure(context)
 
             val sleepIntent = Intent(context, SleepReceiver::class.java)
             val sleepPendingIntent = getSleepPendingIntent(sleepIntent)
             val task = getSleepSegmentTask(sleepPendingIntent)
             addLogListeners(task)
         }
-
         return Result.success()
     }
 

@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
                                     permission = SahhaActivityStatus.pending.name
                                     Sahha.motion.activate { error, newStatus ->
                                         permission = newStatus.name
-                                        error?.also {permission += "\n$it" }
+                                        error?.also { permission += "\n$it" }
                                     }
                                 }) {
                                     Text("Permission Test")
@@ -83,7 +83,11 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
-
+                                        Sahha.motion.getData { data ->
+                                            data.forEach { dataString ->
+                                                greeting += dataString
+                                            }
+                                        }
                                     }
                                 }) {
                                     Text("Test start")
@@ -142,7 +146,6 @@ class MainActivity : ComponentActivity() {
                                     Text("Get Demographic")
                                 }
                                 Text(getDemo)
-
                             }
                         }
                     }

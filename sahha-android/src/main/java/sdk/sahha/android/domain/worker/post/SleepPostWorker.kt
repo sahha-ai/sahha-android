@@ -13,7 +13,7 @@ class SleepPostWorker(private val context: Context, workerParameters: WorkerPara
     Worker(context, workerParameters) {
     override fun doWork(): Result {
         CoroutineScope(IO).launch {
-            SahhaReconfigure(context.applicationContext)
+            SahhaReconfigure(context)
             Sahha.di.postSleepDataUseCase(null)
         }
         return Result.success()
