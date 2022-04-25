@@ -28,15 +28,15 @@ class SleepReceiver : BroadcastReceiver() {
     private var end: Long = 0L
 
     override fun onReceive(context: Context, intent: Intent) {
+        Log.w(tag, "onReceive")
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context.applicationContext)
-
             // First check activity permissions
             if (!SahhaPermissions.activityRecognitionGranted(context)) {
                 notifyPermissionsIssue(context)
                 return@launch
             }
 
+            Log.w(tag, "defaultScope")
             // Sleep data is found
             checkSleepData(intent)
         }
@@ -54,10 +54,13 @@ class SleepReceiver : BroadcastReceiver() {
     }
 
     private fun checkSleepData(intent: Intent) {
+        Log.w(tag, "checkSleepData")
         if (SleepSegmentEvent.hasEvents(intent)) {
+            Log.w(tag, "hasEvents")
             val sleepSegmentEvents = SleepSegmentEvent.extractEvents(intent)
 
             Sahha.di.ioScope.launch {
+                Log.w(tag, "ioScope")
                 for (segment in sleepSegmentEvents) {
                     start = segment.startTimeMillis
                     end = segment.endTimeMillis

@@ -2,8 +2,14 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
+import android.content.Context.POWER_SERVICE
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.annotation.Keep
+import androidx.core.view.ContentInfoCompat
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -13,6 +19,7 @@ import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+
 
 @Keep
 object Sahha {

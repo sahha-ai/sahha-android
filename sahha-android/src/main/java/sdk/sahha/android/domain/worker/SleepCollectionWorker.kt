@@ -18,14 +18,16 @@ import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.domain.receiver.SleepReceiver
 
+@RequiresApi(Build.VERSION_CODES.Q)
 class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
 
     private val tag by lazy { "SleepCollectionWorker" }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun doWork(): Result {
+        Log.d(tag, "doWork")
         CoroutineScope(Default).launch {
+            Log.d(tag, "CoroutineScope(Default)")
             SahhaReconfigure(context)
 
             val sleepIntent = Intent(context, SleepReceiver::class.java)
@@ -53,7 +55,9 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
     }
 
     private fun getSleepPendingIntent(sleepIntent: Intent): PendingIntent {
+        Log.d(tag, "getSleepPendingIntent")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Log.d(tag, "Build.VERSION_CODES.S")
             return PendingIntent.getBroadcast(
                 context,
                 SLEEP_DATA_REQUEST,
@@ -62,6 +66,7 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
             )
         }
 
+        Log.d(tag, "return PendingIntent.getBroadcast")
         return PendingIntent.getBroadcast(
             context,
             SLEEP_DATA_REQUEST,

@@ -27,15 +27,15 @@ data class SahhaConfiguration(
         sensorArray,
         manuallyPostData
     )
+}
 
-    fun toSahhaSettings(): SahhaSettings {
-        return SahhaSettings(
-            SahhaEnvironment.values()[environment],
-            SahhaFramework.valueOf(framework),
-            sensorArray.mapTo(mutableSetOf()) {
-                SahhaSensor.values()[it]
-            },
-            postSensorDataManually
-        )
-    }
+fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
+    return SahhaSettings(
+        SahhaEnvironment.values()[environment],
+        SahhaFramework.valueOf(framework),
+        sensorArray.mapTo(mutableSetOf()) {
+            SahhaSensor.values()[it]
+        },
+        postSensorDataManually
+    )
 }

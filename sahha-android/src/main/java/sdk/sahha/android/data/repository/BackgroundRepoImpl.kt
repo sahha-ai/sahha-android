@@ -50,6 +50,7 @@ class BackgroundRepoImpl @Inject constructor(
 
     private val tag by lazy { "BackgroundRepoImpl" }
     private val workManager by lazy { WorkManager.getInstance(context) }
+
     private val activityRecognitionIntent by lazy {
         Intent(
             context,
@@ -248,7 +249,7 @@ class BackgroundRepoImpl @Inject constructor(
     private fun startWorkManager(workRequest: PeriodicWorkRequest, workerTag: String) {
         workManager.enqueueUniquePeriodicWork(
             workerTag,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.REPLACE, //TODO: Back to KEEP
             workRequest
         )
     }

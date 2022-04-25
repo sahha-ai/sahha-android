@@ -11,7 +11,7 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
-    @POST("oauth/profile/refresh-token")
+    @POST("oauth/profile/refreshToken")
     suspend fun postRefreshToken(
         @Body tokenData: TokenData
     ): Response<ResponseBody>

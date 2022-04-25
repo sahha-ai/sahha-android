@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
+                                        error?.also { greeting = it }
                                         Sahha.motion.getData { data ->
                                             data.forEach { dataString ->
                                                 greeting += dataString

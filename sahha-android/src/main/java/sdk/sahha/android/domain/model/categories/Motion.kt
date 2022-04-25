@@ -1,8 +1,13 @@
 package sdk.sahha.android.domain.model.categories
 
+import android.Manifest
+import android.app.Activity
+import android.os.Build
 import androidx.annotation.Keep
+import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
