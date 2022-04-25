@@ -30,7 +30,7 @@ class ActivityRecognitionReceiver : BroadcastReceiver() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context.applicationContext)
+            SahhaReconfigure(context)
             checkActivities(intent)
         }
     }

@@ -50,7 +50,7 @@ object Sahha {
         sahhaSettings: SahhaSettings
     ) {
         di = ManualDependencies(sahhaSettings.environment)
-        di.setDependencies(application.applicationContext)
+        di.setDependencies(application.baseContext)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
             AppCenter.start(

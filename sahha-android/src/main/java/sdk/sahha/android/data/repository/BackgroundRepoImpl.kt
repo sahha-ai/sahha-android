@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.repository
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
@@ -39,6 +40,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
 
+@SuppressLint("NewApi")
 class BackgroundRepoImpl @Inject constructor(
     private val context: Context,
     @Named("defaultScope") private val defaultScope: CoroutineScope,
@@ -249,7 +251,7 @@ class BackgroundRepoImpl @Inject constructor(
     private fun startWorkManager(workRequest: PeriodicWorkRequest, workerTag: String) {
         workManager.enqueueUniquePeriodicWork(
             workerTag,
-            ExistingPeriodicWorkPolicy.REPLACE, //TODO: Back to KEEP
+            ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )
     }

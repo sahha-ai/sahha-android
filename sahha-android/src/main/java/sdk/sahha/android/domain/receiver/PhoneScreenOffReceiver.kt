@@ -16,7 +16,7 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 class PhoneScreenOffReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context.applicationContext)
+            SahhaReconfigure(context)
             saveLockAsync()
         }
     }

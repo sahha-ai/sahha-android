@@ -172,7 +172,7 @@ class SahhaNotificationManager @Inject constructor(
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         val pendingIntent = PendingIntent.getActivity(
-            _context.applicationContext,
+            _context,
             _notificationId,
             intent,
             PendingIntent.FLAG_IMMUTABLE

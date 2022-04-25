@@ -17,7 +17,7 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 31
-        versionName "0.9.5"
+        versionName "0.9.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -110,9 +110,6 @@ dependencies {
     def appCenterSdkVersion = '4.3.1'
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-
-    //Easy Permissions
-    implementation 'pub.devrel:easypermissions:3.0.0'
 }
 
 afterEvaluate {

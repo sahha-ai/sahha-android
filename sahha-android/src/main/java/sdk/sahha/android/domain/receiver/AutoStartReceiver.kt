@@ -16,7 +16,7 @@ class AutoStartReceiver : BroadcastReceiver() {
             || intent.action == Intent.ACTION_BOOT_COMPLETED
         ) {
             CoroutineScope(Default).launch {
-                SahhaReconfigure(context.applicationContext)
+                SahhaReconfigure(context)
                 Sahha.start()
             }
         }
