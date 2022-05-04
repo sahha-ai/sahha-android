@@ -59,7 +59,10 @@ class MainActivity : ComponentActivity() {
 //                                        permission = newStatus.name
 //                                        error?.also { permission += "\n$it" }
 //                                    }
-                                    Sahha.motion.testNewActivate(this@MainActivity)
+                                    Sahha.motion.testNewActivate(this@MainActivity) { error, newStatus ->
+                                        permission = newStatus.name
+                                        error?.also { permission += "\n$it" }
+                                    }
                                 }) {
                                     Text("Permission Test")
                                 }

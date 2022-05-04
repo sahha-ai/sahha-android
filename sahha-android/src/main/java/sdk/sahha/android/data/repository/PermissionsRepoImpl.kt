@@ -18,7 +18,11 @@ class PermissionsRepoImpl : PermissionsRepo {
     private lateinit var permission: ActivityResultLauncher<String>
     private val activityCallback = ActivityCallback()
 
-    override fun testNewActivate(context: Context) {
+    override fun testNewActivate(
+        context: Context,
+        callback: ((error: String?, status: Enum<SahhaActivityStatus>) -> Unit)
+    ) {
+        Sahha.motion.activityCallback.requestPermission = callback
         context.startActivity(Intent(context, SahhaPermissionActivity::class.java))
     }
 
@@ -49,7 +53,7 @@ class PermissionsRepoImpl : PermissionsRepo {
             activityCallback.requestPermission = callback
             permission.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
         } catch (e: Exception) {
-            callback(SahhaErrors.activityNotPrepared, SahhaActivityStatus.pending)
+            callback(e.message ?: SahhaErrors.activityNotPrepared, SahhaActivityStatus.pending)
         }
     }
 

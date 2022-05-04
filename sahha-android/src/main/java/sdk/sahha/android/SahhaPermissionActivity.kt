@@ -16,7 +16,10 @@ class SahhaPermissionActivity : ComponentActivity() {
 
         // Test
         Sahha.motion.prepareActivity(this)
-        Sahha.motion.activate { _, _ -> finish() }
+        Sahha.motion.activate { error, status ->
+            Sahha.motion.activityCallback.requestPermission?.let { it(error, status) }
+            finish()
+        }
 
         setContent {
             SahhasdkemptyTheme {
