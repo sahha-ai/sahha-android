@@ -14,6 +14,7 @@ class SahhaPermissionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Test
         Sahha.motion.prepareActivity(this)
         Sahha.motion.activate { _, _ -> finish() }
 
