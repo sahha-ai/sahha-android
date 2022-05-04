@@ -8,4 +8,5 @@ interface PermissionsRepo {
     fun setPermissionLogic(activity: ComponentActivity)
     fun openAppSettings(context: Context)
     fun activate(callback: ((error: String?, status: Enum<SahhaActivityStatus>) -> Unit))
+    fun testNewActivate(context: Context)
 }

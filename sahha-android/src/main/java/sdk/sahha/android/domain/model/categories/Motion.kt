@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.model.categories
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.core.app.ActivityCompat
@@ -27,6 +28,10 @@ class Motion @Inject constructor(
 ) : RequiresPermission(
     setPermissionLogicUseCase,
 ) {
+    fun testNewActivate(context: Context) {
+        activateUseCase.testNewActivate(context)
+    }
+
     fun activate(
         _activityCallback: ((error: String?, sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)
     ) {

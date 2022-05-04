@@ -1,10 +1,12 @@
 package sdk.sahha.android.data.repository
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.SahhaPermissionActivity
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
@@ -15,6 +17,10 @@ import sdk.sahha.android.source.SahhaActivityStatus
 class PermissionsRepoImpl : PermissionsRepo {
     private lateinit var permission: ActivityResultLauncher<String>
     private val activityCallback = ActivityCallback()
+
+    override fun testNewActivate(context: Context) {
+        context.startActivity(Intent(context, SahhaPermissionActivity::class.java))
+    }
 
     override fun setPermissionLogic(activity: ComponentActivity) {
         permission =

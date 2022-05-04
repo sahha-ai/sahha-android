@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
             environment = SahhaEnvironment.development
         )
         Sahha.configure(application, config)
-        Sahha.motion.prepareActivity(this)
+//        Sahha.motion.prepareActivity(this)
 
         setContent {
             SahhasdkemptyTheme {
@@ -55,10 +55,11 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     permission = SahhaActivityStatus.pending.name
-                                    Sahha.motion.activate { error, newStatus ->
-                                        permission = newStatus.name
-                                        error?.also { permission += "\n$it" }
-                                    }
+//                                    Sahha.motion.activate { error, newStatus ->
+//                                        permission = newStatus.name
+//                                        error?.also { permission += "\n$it" }
+//                                    }
+                                    Sahha.motion.testNewActivate(this@MainActivity)
                                 }) {
                                     Text("Permission Test")
                                 }
