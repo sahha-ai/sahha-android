@@ -15,9 +15,7 @@ class SahhaPermissionActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         Sahha.motion.prepareActivity(this)
-        Sahha.motion.activate { error, sahhaActivityStatus ->
-            finish()
-        }
+        Sahha.motion.activate { _, _ -> finish() }
 
         setContent {
             SahhasdkemptyTheme {
