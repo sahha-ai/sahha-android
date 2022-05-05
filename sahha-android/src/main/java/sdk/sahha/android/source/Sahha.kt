@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaPermissions
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -114,10 +115,14 @@ object Sahha {
                 motion.activate(context, callback)
                 return
             }
+            SahhaSensor.device -> {
+                callback(null, SahhaSensorStatus.enabled)
+                return
+            }
             else -> {
                 callback(
-                    SahhaErrors.sensorEnablingNotRequired(sensor),
-                    SahhaSensorStatus.unavailable
+                    SahhaErrors.sensorInvalid,
+                    SahhaSensorStatus.pending
                 )
             }
         }
@@ -135,17 +140,23 @@ object Sahha {
             SahhaSensor.sleep -> {
                 callback(null, SahhaPermissions.activityRecognitionGranted(context))
             }
+            SahhaSensor.device -> {
+                callback(null, SahhaSensorStatus.enabled)
+            }
             else -> {
                 callback(
-                    SahhaErrors.sensorEnablingNotRequired(sensor),
-                    SahhaSensorStatus.unavailable
+                    SahhaErrors.sensorInvalid,
+                    SahhaSensorStatus.pending
                 )
             }
         }
     }
 
     private fun checkAndStartPostWorkers() {
-        if (!config.postSensorDataManually) {
+        if (config.postSensorDataManually) {
+            di.backgroundRepo.stopWorkerByTag(Constants.SLEEP_POST_WORKER_TAG)
+            di.backgroundRepo.stopWorkerByTag(Constants.DEVICE_POST_WORKER_TAG)
+        } else {
             di.startPostWorkersUseCase()
         }
     }

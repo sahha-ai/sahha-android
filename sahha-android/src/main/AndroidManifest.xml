@@ -23,6 +23,12 @@
         <service android:name=".domain.service.DataCollectionService" />
 
         <receiver
+            android:name=".domain.receiver.SleepReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.ACTIVITY_RECOGNITION" />
+
+        <receiver
             android:name=".domain.receiver.AutoStartReceiver"
             android:enabled="true"
             android:exported="true"
