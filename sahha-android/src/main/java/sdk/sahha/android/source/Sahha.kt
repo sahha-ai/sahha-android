@@ -20,9 +20,7 @@ object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
     internal val notifications by lazy { di.notifications }
-
-    val timeManager by lazy { di.timeManager }
-    val motion by lazy {
+    internal val motion by lazy {
         Motion(
             di.openAppSettingsUseCase,
             di.setPermissionLogicUseCase,
@@ -31,6 +29,8 @@ object Sahha {
             di.activateUseCase,
         )
     }
+
+    val timeManager by lazy { di.timeManager }
 
     fun configure(
         application: Application,
