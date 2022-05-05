@@ -19,6 +19,7 @@ import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.source.SahhaSensorStatus
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class SleepReceiver : BroadcastReceiver() {
@@ -31,7 +32,7 @@ class SleepReceiver : BroadcastReceiver() {
         Log.w(tag, "onReceive")
         CoroutineScope(Default).launch {
             // First check activity permissions
-            if (!SahhaPermissions.activityRecognitionGranted(context)) {
+            if (SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled) {
                 notifyPermissionsIssue(context)
                 return@launch
             }

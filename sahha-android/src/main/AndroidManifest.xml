@@ -14,6 +14,12 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application>
+        <activity
+            android:name=".SahhaPermissionActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sahha_permission"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
         <service android:name=".domain.service.DataCollectionService" />
 
         <receiver

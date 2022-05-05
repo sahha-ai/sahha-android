@@ -1,26 +1,26 @@
 package sdk.sahha.android.data.repository
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.SahhaPermissionActivity
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
-import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaSensorStatus
 
 class PermissionsRepoImpl : PermissionsRepo {
     private lateinit var permission: ActivityResultLauncher<String>
-    private val activityCallback = ActivityCallback()
 
     override fun setPermissionLogic(activity: ComponentActivity) {
         permission =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
                 val status = convertToActivityStatus(enabled)
-                activityCallback.requestPermission?.let { it(null, status) }
+                Sahha.motion.activityCallback.requestPermission?.let { it(null, status) }
             }
     }
 
@@ -31,24 +31,27 @@ class PermissionsRepoImpl : PermissionsRepo {
         context.startActivity(openSettingsIntent)
     }
 
-    override fun activate(callback: ((error: String?, status: Enum<SahhaActivityStatus>) -> Unit)) {
+    override fun activate(
+        context: Context,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            val status = SahhaActivityStatus.unavailable
+            val status = SahhaSensorStatus.unavailable
             callback(SahhaErrors.androidVersionTooLow(9), status)
-            Sahha.motion.activityStatus = status
+            Sahha.motion.sensorStatus = status
             return
         }
 
         try {
-            activityCallback.requestPermission = callback
-            permission.launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+            Sahha.motion.activityCallback.requestPermission = callback
+            context.startActivity(Intent(context, SahhaPermissionActivity::class.java))
         } catch (e: Exception) {
-            callback(SahhaErrors.activityNotPrepared, SahhaActivityStatus.pending)
+            callback(e.message, SahhaSensorStatus.pending)
         }
     }
 
-    private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaActivityStatus> {
-        if (enabled) return SahhaActivityStatus.enabled
-        else return SahhaActivityStatus.disabled
+    private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaSensorStatus> {
+        if (enabled) return SahhaSensorStatus.enabled
+        else return SahhaSensorStatus.disabled
     }
 }

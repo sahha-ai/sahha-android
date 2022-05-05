@@ -26,7 +26,7 @@ class MainActivity : ComponentActivity() {
             environment = SahhaEnvironment.development
         )
         Sahha.configure(application, config)
-        Sahha.motion.prepareActivity(this)
+//        Sahha.motion.prepareActivity(this)
 
         setContent {
             SahhasdkemptyTheme {
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permission by remember { mutableStateOf(SahhaActivityStatus.pending.name) }
+                                var permission by remember { mutableStateOf(SahhaSensorStatus.pending.name) }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
@@ -54,8 +54,15 @@ class MainActivity : ComponentActivity() {
                                 Text(permission)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    permission = SahhaActivityStatus.pending.name
-                                    Sahha.motion.activate { error, newStatus ->
+                                    permission = SahhaSensorStatus.pending.name
+//                                    Sahha.motion.activate { error, newStatus ->
+//                                        permission = newStatus.name
+//                                        error?.also { permission += "\n$it" }
+//                                    }
+                                    Sahha.enableSensor(
+                                        this@MainActivity,
+                                        SahhaSensor.sleep
+                                    ) { error, newStatus ->
                                         permission = newStatus.name
                                         error?.also { permission += "\n$it" }
                                     }
@@ -83,12 +90,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
+                                        if(success) greeting = "Successful test start"
                                         error?.also { greeting = it }
-                                        Sahha.motion.getData { data ->
-                                            data.forEach { dataString ->
-                                                greeting += dataString
-                                            }
-                                        }
                                     }
                                 }) {
                                     Text("Test start")

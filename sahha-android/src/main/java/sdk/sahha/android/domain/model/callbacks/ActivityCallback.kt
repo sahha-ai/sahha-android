@@ -1,9 +1,9 @@
 package sdk.sahha.android.domain.model.callbacks
 
-import sdk.sahha.android.source.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaSensorStatus
 
 class ActivityCallback {
-    var sahhaActivityStatus: Enum<SahhaActivityStatus>? = null
-    var requestPermission: ((error: String?, sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)? = null
-    var setSettingOnResume: ((sahhaActivityStatus: Enum<SahhaActivityStatus>) -> Unit)? = null
+    var sahhaSensorStatus: Enum<SahhaSensorStatus>? = null
+    var requestPermission: ((error: String?, sahhaSensorStatus: Enum<SahhaSensorStatus>) -> Unit)? = null
+    var setSettingOnResume: ((sahhaSensorStatus: Enum<SahhaSensorStatus>) -> Unit)? = null
 }

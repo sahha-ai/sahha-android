@@ -5,7 +5,7 @@ import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.source.SahhaActivityStatus
+import sdk.sahha.android.source.SahhaSensorStatus
 
 class WindowCallback(
     private val context: Context,
@@ -69,7 +69,7 @@ class WindowCallback(
         if (hasFocus) {
             activityCallback.setSettingOnResume?.let {
                 val activityStatus = checkActivityRecognitionPermission()
-                Sahha.motion.activityStatus = activityStatus
+                Sahha.motion.sensorStatus = activityStatus
                 it(activityStatus)
             }
         }
@@ -116,8 +116,7 @@ class WindowCallback(
         return localCallback.onActionModeFinished(mode)
     }
 
-    private fun checkActivityRecognitionPermission(): Enum<SahhaActivityStatus> {
-        if (SahhaPermissions.activityRecognitionGranted(context)) return SahhaActivityStatus.enabled
-        return SahhaActivityStatus.disabled
+    private fun checkActivityRecognitionPermission(): Enum<SahhaSensorStatus> {
+        return SahhaPermissions.activityRecognitionGranted(context)
     }
 }
