@@ -42,19 +42,22 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permission by remember { mutableStateOf(SahhaSensorStatus.pending.name) }
+                                var permissionStatus: Enum<SahhaSensorStatus> by remember { mutableStateOf(SahhaSensorStatus.pending) }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
                                 var postDemo by remember { mutableStateOf("") }
                                 var getDemo by remember { mutableStateOf("") }
 
+                                Sahha.getSensorStatus(this@MainActivity, SahhaSensor.pedometer) { error, sensorStatus ->
+                                    permissionStatus = sensorStatus
+                                }
+
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Text(permission)
+                                Text(permissionStatus.name)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    permission = SahhaSensorStatus.pending.name
 //                                    Sahha.motion.activate { error, newStatus ->
 //                                        permission = newStatus.name
 //                                        error?.also { permission += "\n$it" }
@@ -63,8 +66,8 @@ class MainActivity : ComponentActivity() {
                                         this@MainActivity,
                                         SahhaSensor.sleep
                                     ) { error, newStatus ->
-                                        permission = newStatus.name
-                                        error?.also { permission += "\n$it" }
+                                        permissionStatus = newStatus
+                                        error?.also { permissionStatus.name }
                                     }
                                 }) {
                                     Text("Permission Test")
@@ -90,7 +93,7 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
-                                        if(success) greeting = "Successful test start"
+                                        if (success) greeting = "Successful test start"
                                         error?.also { greeting = it }
                                     }
                                 }) {
@@ -154,9 +157,9 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                }
             }
         }
-    }
 }
 
 @Composable

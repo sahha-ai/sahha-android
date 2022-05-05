@@ -15,10 +15,19 @@
 
     <application>
         <activity
-            android:name=".SahhaPermissionActivity"
+            android:name=".common.SahhaSensorPermissionActivity"
             android:exported="false"
             android:label="@string/title_activity_sahha_permission"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <activity
+            android:name=".common.SahhaSensorStatusActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sahha_permission"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+       <!-- <activity android:name=".GetPermissionsActivity" android:allowEmbedded="true">
+        </activity> -->
 
         <service android:name=".domain.service.DataCollectionService" />
 

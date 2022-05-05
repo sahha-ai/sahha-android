@@ -107,17 +107,23 @@ object Sahha {
     ) {
         when (sensor) {
             SahhaSensor.pedometer -> {
-                motion.activate(context, callback)
+                //motion.activate(context, callback)
+                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
+                    callback(null, sensorStatus)
+                }
                 return
             }
             SahhaSensor.sleep -> {
-                motion.activate(context, callback)
+                //motion.activate(context, callback)
+                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
+                    callback(null, sensorStatus)
+                }
                 return
             }
             else -> {
                 callback(
-                    SahhaErrors.sensorEnablingNotRequired(sensor),
-                    SahhaSensorStatus.unavailable
+                    null,
+                    SahhaSensorStatus.enabled
                 )
             }
         }
@@ -130,15 +136,21 @@ object Sahha {
     ) {
         when (sensor) {
             SahhaSensor.pedometer -> {
-                callback(null, SahhaPermissions.activityRecognitionGranted(context))
+                //callback(null, SahhaPermissions.activityRecognitionGranted(context))
+                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
+                    callback(null, sensorStatus)
+                }
             }
             SahhaSensor.sleep -> {
-                callback(null, SahhaPermissions.activityRecognitionGranted(context))
+                //callback(null, SahhaPermissions.activityRecognitionGranted(context))
+                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
+                    callback(null, sensorStatus)
+                }
             }
             else -> {
                 callback(
-                    SahhaErrors.sensorEnablingNotRequired(sensor),
-                    SahhaSensorStatus.unavailable
+                    null,
+                    SahhaSensorStatus.enabled
                 )
             }
         }
