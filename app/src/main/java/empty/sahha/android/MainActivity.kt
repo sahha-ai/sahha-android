@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permission by remember { mutableStateOf(SahhaActivityStatus.pending.name) }
+                                var permission by remember { mutableStateOf(SahhaSensorStatus.pending.name) }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
@@ -54,12 +54,15 @@ class MainActivity : ComponentActivity() {
                                 Text(permission)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    permission = SahhaActivityStatus.pending.name
+                                    permission = SahhaSensorStatus.pending.name
 //                                    Sahha.motion.activate { error, newStatus ->
 //                                        permission = newStatus.name
 //                                        error?.also { permission += "\n$it" }
 //                                    }
-                                    Sahha.motion.testNewActivate(this@MainActivity) { error, newStatus ->
+                                    Sahha.enableSensor(
+                                        this@MainActivity,
+                                        SahhaSensor.sleep
+                                    ) { error, newStatus ->
                                         permission = newStatus.name
                                         error?.also { permission += "\n$it" }
                                     }

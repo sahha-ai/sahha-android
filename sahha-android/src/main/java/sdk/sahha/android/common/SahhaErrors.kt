@@ -17,6 +17,10 @@ object SahhaErrors {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."
     }
 
+    fun sensorEnablingNotRequired(sensor: Enum<SahhaSensor>): String {
+        return "The ${sensor.name.lowercase()} sensor does not need to be enabled."
+    }
+
     fun localDataIsEmpty(sensor: Enum<SahhaSensor>): String {
         return "Error: The local ${sensor.name.lowercase()} data is empty."
     }

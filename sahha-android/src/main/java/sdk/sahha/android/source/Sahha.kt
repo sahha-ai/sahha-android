@@ -2,21 +2,15 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
-import android.content.Context.POWER_SERVICE
-import android.content.Intent
-import android.net.Uri
-import android.os.Build
-import android.os.PowerManager
-import android.provider.Settings
 import androidx.annotation.Keep
-import androidx.core.view.ContentInfoCompat
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.di.ManualDependencies
-import sdk.sahha.android.domain.model.categories.Device
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 
@@ -35,13 +29,6 @@ object Sahha {
             di.configurationDao,
             di.ioScope,
             di.activateUseCase,
-        )
-    }
-    val device by lazy {
-        Device(
-            di.ioScope,
-            di.configurationDao,
-            di.postDeviceDataUseCase
         )
     }
 
@@ -111,6 +98,50 @@ object Sahha {
 
     fun openAppSettings(context: Context) {
         di.openAppSettingsUseCase(context)
+    }
+
+    fun enableSensor(
+        context: Context,
+        sensor: SahhaSensor,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        when (sensor) {
+            SahhaSensor.pedometer -> {
+                motion.activate(context, callback)
+                return
+            }
+            SahhaSensor.sleep -> {
+                motion.activate(context, callback)
+                return
+            }
+            else -> {
+                callback(
+                    SahhaErrors.sensorEnablingNotRequired(sensor),
+                    SahhaSensorStatus.unavailable
+                )
+            }
+        }
+    }
+
+    fun getSensorStatus(
+        context: Context,
+        sensor: SahhaSensor,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        when (sensor) {
+            SahhaSensor.pedometer -> {
+                callback(null, SahhaPermissions.activityRecognitionGranted(context))
+            }
+            SahhaSensor.sleep -> {
+                callback(null, SahhaPermissions.activityRecognitionGranted(context))
+            }
+            else -> {
+                callback(
+                    SahhaErrors.sensorEnablingNotRequired(sensor),
+                    SahhaSensorStatus.unavailable
+                )
+            }
+        }
     }
 
     private fun checkAndStartPostWorkers() {
