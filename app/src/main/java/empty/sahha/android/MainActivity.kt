@@ -90,12 +90,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
+                                        if(success) greeting = "Successful test start"
                                         error?.also { greeting = it }
-                                        Sahha.motion.getData { data ->
-                                            data.forEach { dataString ->
-                                                greeting += dataString
-                                            }
-                                        }
                                     }
                                 }) {
                                     Text("Test start")
