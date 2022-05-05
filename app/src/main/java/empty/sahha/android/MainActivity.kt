@@ -72,8 +72,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.authenticate(
-                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY",
-                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQcm9maWxlSWQiOiJiZTgyNDQ5ZC1mMzUwLTQ1ZWEtYTkzMy1iYjAzZjJmNDJlOTQiLCJBY2NvdW50SWQiOiI5OTQwOGZhZS1lZGUzLTQ3MGUtYTFmYS1mZWU5YWZjZTJhMGUiLCJleHAiOjE2NTI5Mjg1NzksImlzcyI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkiLCJhdWQiOiJodHRwczovL3NhbmRib3gtYXBpLnNhaGhhLmFpIn0.Pk3pT0ghSQP23mLr_ljCGNIqdaB98sKa_lL3yL8muhY"
+                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2FwaS5zYWhoYS5haS9jbGFpbXMvcHJvZmlsZUlkIjoiYzkyMjMxNTEtOTQ1Ni00N2U2LWFkNDMtYzIwMWUxYTA2MzkxIiwiaHR0cHM6Ly9hcGkuc2FoaGEuYWkvY2xhaW1zL2FjY291bnRJZCI6Ijk5NDA4ZmFlLWVkZTMtNDcwZS1hMWZhLWZlZTlhZmNlMmEwZSIsImV4cCI6MTY1NDM4NjU1MCwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWFwaS5zYWhoYS5haSIsImF1ZCI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkifQ.PHp2rdp1Z1iDkGa-cL9BskwhkodFicmribL12Iay-jQ",
+                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2FwaS5zYWhoYS5haS9jbGFpbXMvcHJvZmlsZUlkIjoiYzkyMjMxNTEtOTQ1Ni00N2U2LWFkNDMtYzIwMWUxYTA2MzkxIiwiaHR0cHM6Ly9hcGkuc2FoaGEuYWkvY2xhaW1zL2FjY291bnRJZCI6Ijk5NDA4ZmFlLWVkZTMtNDcwZS1hMWZhLWZlZTlhZmNlMmEwZSIsImV4cCI6MTY1NDM4NjU1MCwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWFwaS5zYWhoYS5haSIsImF1ZCI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkifQ.PHp2rdp1Z1iDkGa-cL9BskwhkodFicmribL12Iay-jQ"
                                     ) { error, success ->
                                         if (success) greeting = "Successful" else greeting =
                                             error ?: "Failed"
