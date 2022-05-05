@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
             environment = SahhaEnvironment.development
         )
         Sahha.configure(application, config)
-//        Sahha.motion.prepareActivity(this)
 
         setContent {
             SahhasdkemptyTheme {
@@ -42,12 +41,19 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permission by remember { mutableStateOf(SahhaSensorStatus.pending.name) }
+                                var permission by remember { mutableStateOf("") }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
                                 var postDemo by remember { mutableStateOf("") }
                                 var getDemo by remember { mutableStateOf("") }
+
+                                Sahha.getSensorStatus(
+                                    this@MainActivity,
+                                    SahhaSensor.sleep
+                                ) { error, status ->
+                                    permission = status.name
+                                }
 
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -90,12 +96,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
+                                        if (success) greeting = "Successful test start"
                                         error?.also { greeting = it }
-                                        Sahha.motion.getData { data ->
-                                            data.forEach { dataString ->
-                                                greeting += dataString
-                                            }
-                                        }
                                     }
                                 }) {
                                     Text("Test start")
