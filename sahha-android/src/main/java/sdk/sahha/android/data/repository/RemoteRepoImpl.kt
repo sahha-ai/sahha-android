@@ -99,22 +99,20 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAnalysis(callback: ((error: String?, successful: String?) -> Unit)?) {
-        Log.d(tag, "getAnalysis")
+    override suspend fun getAnalysis(
+        callback: ((error: String?, successful: String?) -> Unit)?
+    ) {
         try {
             val response = getAnalysisResponse()
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null)}
-                Log.d(tag, "ResponseCode.isUnauthorized")
                 checkTokenExpired(response.code()) {
-                    Log.d(tag, "checkTokenExpired")
                     getAnalysis(callback)
                 }
                 return
             }
 
             if (ResponseCode.isSuccessful(response.code())) {
-                Log.d(tag, "getAnalysis ResponseCode.isSuccessful")
                 returnFormattedResponse(callback, response.body())
                 return
             }

@@ -20,7 +20,7 @@ import sdk.sahha.android.domain.model.steps.DetectedSteps
 import sdk.sahha.android.domain.model.steps.LastDetectedSteps
 
 @Database(
-    version = 1,
+    version = 2,
     entities = [
         DetectedSteps::class,
         LastDetectedSteps::class,

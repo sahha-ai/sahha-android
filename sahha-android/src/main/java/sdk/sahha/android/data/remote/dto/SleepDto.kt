@@ -6,19 +6,21 @@ import androidx.room.PrimaryKey
 @Entity
 data class SleepDto(
     @PrimaryKey(autoGenerate = true) val id: Int,
-    val minutesSlept: Int,
+    val durationInMinutes: Int,
+    val sleepStage: String,
     val startDateTime: String,
     val endDateTime: String,
     val createdAt: String
 ) {
     constructor(
-        minutesSlept: Int,
+        durationInMinutes: Int,
         startDateTime: String,
         endDateTime: String,
         createdAt: String
     ) : this(
         0,
-        minutesSlept,
+        durationInMinutes,
+        "asleep",
         startDateTime,
         endDateTime,
         createdAt
