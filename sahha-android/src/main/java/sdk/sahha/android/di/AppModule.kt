@@ -1,7 +1,6 @@
 package sdk.sahha.android.di
 
 import android.content.Context
-import androidx.activity.ComponentActivity
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -19,17 +18,18 @@ import sdk.sahha.android.common.AppCenterLog
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
+import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
 import sdk.sahha.android.data.repository.RemoteRepoImpl
-import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -120,6 +120,9 @@ internal object AppModule {
             SahhaDatabase::class.java,
             "sahha-database"
         )
+            .addMigrations(
+                SahhaDbMigrations.MIGRATION_1_2
+            )
             .fallbackToDestructiveMigration()
             .build()
     }

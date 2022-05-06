@@ -142,6 +142,7 @@ class BackgroundRepoImpl @Inject constructor(
     override fun startPostWorkersAsync() {
         ioScope.launch {
             val config = configDao.getConfig()
+
             if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
                 startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
             }
