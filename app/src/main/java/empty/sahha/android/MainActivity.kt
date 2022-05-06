@@ -42,14 +42,18 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permissionStatus: Enum<SahhaSensorStatus> by remember { mutableStateOf(SahhaSensorStatus.pending) }
+                                var permissionStatus: Enum<SahhaSensorStatus> by remember {
+                                    mutableStateOf(
+                                        SahhaSensorStatus.unavailable
+                                    )
+                                }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
                                 var postDemo by remember { mutableStateOf("") }
                                 var getDemo by remember { mutableStateOf("") }
 
-                                Sahha.getSensorStatus(this@MainActivity, SahhaSensor.pedometer) { error, sensorStatus ->
+                                Sahha.getSensorStatus(this@MainActivity, SahhaSensor.sleep) { error, sensorStatus ->
                                     permissionStatus = sensorStatus
                                 }
 
@@ -157,9 +161,9 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                }
             }
         }
+    }
 }
 
 @Composable

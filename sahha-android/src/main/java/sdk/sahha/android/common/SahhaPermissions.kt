@@ -1,7 +1,10 @@
 package sdk.sahha.android.common
 
 import android.Manifest
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -11,7 +14,8 @@ import androidx.core.app.ActivityCompat
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
-
+internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
+internal const val RATIONALE_KEY = "shouldShowRationale"
 internal const val PERMISSIONS_KEY = "permissions"
 internal const val PERMISSION_ENABLED = "SahhaPermissionActivity.permission_enabled"
 internal const val PERMISSION_PENDING = "SahhaPermissionActivity.permission_pending"
@@ -37,20 +41,32 @@ class SahhaSensorPermissionActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
+        val sharedPrefs = getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE)
+
         if (requestCode == permissionRequestCode && grantResults.isNotEmpty()) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 sendBroadcast(Intent(PERMISSION_ENABLED))
             } else {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                val shouldShowRationale =
+                    ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])
+
+                if (shouldShowRationale) {
                     sendBroadcast(Intent(PERMISSION_PENDING))
+                    sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
                 } else {
-                    sendBroadcast(Intent(PERMISSION_DISABLED))
+                    if (!sharedPrefs.contains(RATIONALE_KEY)) {
+                        sendBroadcast(Intent(PERMISSION_PENDING))
+                        sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
+                    } else {
+                        sendBroadcast(Intent(PERMISSION_DISABLED))
+                        sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
+                    }
                 }
             }
-            finish()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+        finish()
     }
 }
 
@@ -58,15 +74,29 @@ class SahhaSensorStatusActivity : AppCompatActivity() {
 
     private val permissionRequestCode = 0
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sharedPrefs = getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE)
+        if (!sharedPrefs.contains(RATIONALE_KEY)) {
+            sendBroadcast(Intent(PERMISSION_PENDING))
+            finish()
+            return
+        }
+
         intent.getStringArrayExtra(PERMISSIONS_KEY)?.let {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])) {
+            val shouldShowRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
+            if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
+//                sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
+//                sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
             }
         }
+        finish()
     }
 }
 
