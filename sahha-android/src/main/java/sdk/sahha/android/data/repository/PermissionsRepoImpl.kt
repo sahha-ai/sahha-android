@@ -44,7 +44,9 @@ class PermissionsRepoImpl : PermissionsRepo {
 
         try {
             Sahha.motion.activityCallback.requestPermission = callback
-            context.startActivity(Intent(context, SahhaPermissionActivity::class.java))
+            val intent = Intent(context, SahhaPermissionActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
         } catch (e: Exception) {
             callback(e.message, SahhaSensorStatus.pending)
         }

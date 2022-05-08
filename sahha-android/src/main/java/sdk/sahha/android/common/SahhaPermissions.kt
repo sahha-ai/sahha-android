@@ -175,6 +175,7 @@ object SahhaPermissions : BroadcastReceiver() {
                 context.registerReceiver(this, intentFilter)
                 val intent = Intent(context, SahhaSensorStatusActivity::class.java)
                 intent.putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
 
             }
@@ -204,6 +205,7 @@ object SahhaPermissions : BroadcastReceiver() {
         context.registerReceiver(this, intentFilter)
         val intent = Intent(context, SahhaSensorPermissionActivity::class.java)
         intent.putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     }
 
