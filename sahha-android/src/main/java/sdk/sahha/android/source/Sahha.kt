@@ -125,12 +125,6 @@ object Sahha {
                 callback(null, SahhaSensorStatus.enabled)
                 return
             }
-            else -> {
-                callback(
-                    null,
-                    SahhaSensorStatus.enabled
-                )
-            }
         }
     }
 
