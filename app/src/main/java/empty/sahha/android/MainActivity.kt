@@ -131,7 +131,7 @@ class MainActivity : ComponentActivity() {
                                     postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
-                                            10, "m", "nz", "korea"
+                                            31, "Male", "NZ", "KR"
                                         )
                                     ) { error, success ->
                                         if (success)
