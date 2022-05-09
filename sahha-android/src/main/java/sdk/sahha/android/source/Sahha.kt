@@ -8,7 +8,6 @@ import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
@@ -67,9 +66,13 @@ object Sahha {
         }
     }
 
-    fun analyze(callback: ((error: String?, success: String?) -> Unit)?) {
+    fun analyze(
+        callback: ((error: String?, success: String?) -> Unit)?,
+        startDate: String?,
+        endDate: String?
+    ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(callback)
+            di.analyzeProfileUseCase(callback, startDate, endDate)
         }
     }
 

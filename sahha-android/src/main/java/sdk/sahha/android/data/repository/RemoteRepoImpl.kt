@@ -100,14 +100,26 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     override suspend fun getAnalysis(
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, successful: String?) -> Unit)?,
+        startDate: String?,
+        endDate: String?
     ) {
+        val bothDatesArray = arrayOf(startDate, endDate)
+        if (datesArePartiallyNull(bothDatesArray)) {
+            callback?.also { it(SahhaErrors.datesInvalid, null) }
+            return
+        }
+
         try {
-            val response = getAnalysisResponse()
+            val response =
+                if (bothDatesNotNull(bothDatesArray))
+                    getAnalysisResponse(startDate!!, endDate!!)
+                else getAnalysisResponse()
+
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
-                    getAnalysis(callback)
+                    getAnalysis(callback, startDate, endDate)
                 }
                 return
             }
@@ -128,7 +140,7 @@ class RemoteRepoImpl @Inject constructor(
             val response = getDemographicResponse()
 
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
                     getDemographic(callback)
                 }
@@ -154,7 +166,7 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val response = postDemographicResponse(sahhaDemographic)
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, false)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                 checkTokenExpired(response.code()) {
                     postDemographic(sahhaDemographic, callback)
                 }
@@ -190,7 +202,7 @@ class RemoteRepoImpl @Inject constructor(
         successfulLogic: (suspend () -> Unit)
     ) {
         if (ResponseCode.isUnauthorized(response.code())) {
-            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false)}
+            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
             checkTokenExpired(response.code()) {
                 val retryResponse = retryLogic()
                 handleResponse(
@@ -299,11 +311,29 @@ class RemoteRepoImpl @Inject constructor(
         return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)))
     }
 
+    private suspend fun getAnalysisResponse(
+        startDate: String,
+        endDate: String
+    ): Response<ResponseBody> {
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), startDate, endDate)
+    }
+
     private suspend fun getDemographicResponse(): Response<DemographicDto> {
         return api.getDemographic(TokenBearer(decryptor.decrypt(UET)))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Response<ResponseBody> {
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
+    }
+
+    private fun datesArePartiallyNull(dates: Array<String?>): Boolean {
+        if (dates[0] == null && dates[1] == null) return false
+        if (dates.contains(null)) return true
+        return false
+    }
+
+    private fun bothDatesNotNull(dates: Array<String?>): Boolean {
+        if (!dates[0].isNullOrBlank() && !dates[1].isNullOrBlank()) return true
+        return false
     }
 }

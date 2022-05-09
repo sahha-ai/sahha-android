@@ -9,7 +9,9 @@ interface RemoteRepo {
     suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: Boolean) -> Unit)?)
     suspend fun postAllSensorData(sensors: Set<Enum<SahhaSensor>>?, callback: ((error: String?, successful: Boolean) -> Unit))
     suspend fun getAnalysis(
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, successful: String?) -> Unit)?,
+        startDate: String? = null,
+        endDate: String? = null
     )
     suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?)
     suspend fun postDemographic(

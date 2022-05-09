@@ -33,6 +33,14 @@ interface SahhaApi {
         @Header(AUTHORIZATION_HEADER) profileToken: String,
     ): Response<ResponseBody>
 
+    @GET("profile/analyze")
+    suspend fun analyzeProfile(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("startDate") startDate: String,
+        @Query("endDate") endDate: String
+    ): Response<ResponseBody>
+
+
     @GET("profile/demographic")
     suspend fun getDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String
