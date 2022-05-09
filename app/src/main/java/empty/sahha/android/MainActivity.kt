@@ -5,10 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +48,13 @@ class MainActivity : ComponentActivity() {
                                 var analyzeResponse by remember { mutableStateOf("") }
                                 var postDemo by remember { mutableStateOf("") }
                                 var getDemo by remember { mutableStateOf("") }
+                                var token by remember { mutableStateOf("") }
+                                var refreshToken by remember { mutableStateOf("") }
 
-                                Sahha.getSensorStatus(this@MainActivity, SahhaSensor.sleep) { error, sensorStatus ->
+                                Sahha.getSensorStatus(
+                                    this@MainActivity,
+                                    SahhaSensor.sleep
+                                ) { error, sensorStatus ->
                                     permissionStatus = sensorStatus
                                 }
 
@@ -76,10 +78,20 @@ class MainActivity : ComponentActivity() {
                                     Text("Permission Test")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                OutlinedTextField(value = token, onValueChange = {
+                                    token = it
+                                }, label = {
+                                    Text("Token")
+                                })
+                                OutlinedTextField(value = refreshToken, onValueChange = {
+                                    refreshToken = it
+                                }, label = {
+                                    Text("Refresh Token")
+                                })
                                 Button(onClick = {
                                     Sahha.authenticate(
-                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2FwaS5zYWhoYS5haS9jbGFpbXMvcHJvZmlsZUlkIjoiYzkyMjMxNTEtOTQ1Ni00N2U2LWFkNDMtYzIwMWUxYTA2MzkxIiwiaHR0cHM6Ly9hcGkuc2FoaGEuYWkvY2xhaW1zL2FjY291bnRJZCI6Ijk5NDA4ZmFlLWVkZTMtNDcwZS1hMWZhLWZlZTlhZmNlMmEwZSIsImV4cCI6MTY1NDM4NjU1MCwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWFwaS5zYWhoYS5haSIsImF1ZCI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkifQ.PHp2rdp1Z1iDkGa-cL9BskwhkodFicmribL12Iay-jQ",
-                                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2FwaS5zYWhoYS5haS9jbGFpbXMvcHJvZmlsZUlkIjoiYzkyMjMxNTEtOTQ1Ni00N2U2LWFkNDMtYzIwMWUxYTA2MzkxIiwiaHR0cHM6Ly9hcGkuc2FoaGEuYWkvY2xhaW1zL2FjY291bnRJZCI6Ijk5NDA4ZmFlLWVkZTMtNDcwZS1hMWZhLWZlZTlhZmNlMmEwZSIsImV4cCI6MTY1NDM4NjU1MCwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWFwaS5zYWhoYS5haSIsImF1ZCI6Imh0dHBzOi8vc2FuZGJveC1hcGkuc2FoaGEuYWkifQ.PHp2rdp1Z1iDkGa-cL9BskwhkodFicmribL12Iay-jQ"
+                                        token,
+                                        refreshToken
                                     ) { error, success ->
                                         if (success) greeting = "Successful" else greeting =
                                             error ?: "Failed"
