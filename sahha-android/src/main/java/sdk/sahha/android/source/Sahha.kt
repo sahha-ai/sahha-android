@@ -67,9 +67,9 @@ object Sahha {
     }
 
     fun analyze(
+        startDate: String? = null,
+        endDate: String? = null,
         callback: ((error: String?, success: String?) -> Unit)?,
-        startDate: String?,
-        endDate: String?
     ) {
         di.defaultScope.launch {
             di.analyzeProfileUseCase(callback, startDate, endDate)
