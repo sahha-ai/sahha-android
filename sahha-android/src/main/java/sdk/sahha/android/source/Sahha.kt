@@ -13,6 +13,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import java.time.LocalDateTime
 
 
 @Keep
@@ -67,12 +68,11 @@ object Sahha {
     }
 
     fun analyze(
-        startDate: String? = null,
-        endDate: String? = null,
+        dates: Pair<LocalDateTime, LocalDateTime>? = null,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(callback, startDate, endDate)
+            di.analyzeProfileUseCase(callback, dates)
         }
     }
 

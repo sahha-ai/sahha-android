@@ -1,11 +1,7 @@
 package sdk.sahha.android.domain.use_case
 
-import android.os.Build
-import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.repository.RemoteRepo
-import java.time.LocalDate
-import java.time.ZonedDateTime
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 class AnalyzeProfileUseCase @Inject constructor(
@@ -13,9 +9,8 @@ class AnalyzeProfileUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         callback: ((error: String?, success: String?) -> Unit)?,
-        startDate: String? = null,
-        endDate: String? = null
+        dates: Pair<LocalDateTime, LocalDateTime>?
     ) {
-        repository.getAnalysis(callback, startDate, endDate)
+        repository.getAnalysis(callback, dates)
     }
 }

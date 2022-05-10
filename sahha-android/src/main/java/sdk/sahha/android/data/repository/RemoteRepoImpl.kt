@@ -1,6 +1,8 @@
 package sdk.sahha.android.data.repository
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -20,6 +22,7 @@ import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -101,25 +104,22 @@ class RemoteRepoImpl @Inject constructor(
 
     override suspend fun getAnalysis(
         callback: ((error: String?, successful: String?) -> Unit)?,
-        startDate: String?,
-        endDate: String?
+        dates: Pair<LocalDateTime, LocalDateTime>?
     ) {
-        val bothDatesArray = arrayOf(startDate, endDate)
-        if (datesArePartiallyNull(bothDatesArray)) {
-            callback?.also { it(SahhaErrors.datesInvalid, null) }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            callback?.also {
+                it(SahhaErrors.androidVersionTooLow(8), null)
+            }
             return
         }
 
         try {
-            val response =
-                if (bothDatesNotNull(bothDatesArray))
-                    getAnalysisResponse(startDate!!, endDate!!)
-                else getAnalysisResponse()
+            val response = getDetectedAnalysisResponse(dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
-                    getAnalysis(callback, startDate, endDate)
+                    getAnalysis(callback, dates)
                 }
                 return
             }
@@ -326,14 +326,14 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    private fun datesArePartiallyNull(dates: Array<String?>): Boolean {
-        if (dates[0] == null && dates[1] == null) return false
-        if (dates.contains(null)) return true
-        return false
-    }
 
-    private fun bothDatesNotNull(dates: Array<String?>): Boolean {
-        if (!dates[0].isNullOrBlank() && !dates[1].isNullOrBlank()) return true
-        return false
+    @RequiresApi(Build.VERSION_CODES.O)
+    private suspend fun getDetectedAnalysisResponse(dates: Pair<LocalDateTime, LocalDateTime>?): Response<ResponseBody> {
+        return dates?.let { it ->
+            val sahhaTimeManager = SahhaTimeManager()
+            val startDate = sahhaTimeManager.localDateTimeToISO(it.first)
+            val endDate = sahhaTimeManager.localDateTimeToISO(it.second)
+            getAnalysisResponse(startDate, endDate)
+        } ?: getAnalysisResponse()
     }
 }
