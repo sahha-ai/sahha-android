@@ -125,7 +125,7 @@ class RemoteRepoImpl @Inject constructor(
             }
 
             if (ResponseCode.isSuccessful(response.code())) {
-                returnFormattedResponse(callback, response.body())
+                returnFormattedResponse(response, callback)
                 return
             }
 
@@ -185,10 +185,15 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private fun returnFormattedResponse(
+        response: Response<ResponseBody>,
         callback: ((error: String?, success: String?) -> Unit)?,
-        responseBody: ResponseBody?
     ) {
-        val reader = responseBody?.charStream()
+        if (response.code() == 204) {
+            callback?.also { it(null, "{}") }
+            return
+        }
+
+        val reader = response.body()?.charStream()
         val bodyString = reader?.readText()
         val json = JSONObject(bodyString ?: "")
         val jsonString = json.toString(6)
