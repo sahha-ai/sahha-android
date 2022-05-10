@@ -72,7 +72,7 @@ object Sahha {
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(callback, dates)
+            di.analyzeProfileUseCase(dates, callback)
         }
     }
 

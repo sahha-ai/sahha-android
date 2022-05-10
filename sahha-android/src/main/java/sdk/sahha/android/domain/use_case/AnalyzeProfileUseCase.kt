@@ -8,9 +8,9 @@ class AnalyzeProfileUseCase @Inject constructor(
     private val repository: RemoteRepo
 ) {
     suspend operator fun invoke(
+        dates: Pair<LocalDateTime, LocalDateTime>?,
         callback: ((error: String?, success: String?) -> Unit)?,
-        dates: Pair<LocalDateTime, LocalDateTime>?
     ) {
-        repository.getAnalysis(callback, dates)
+        repository.getAnalysis(dates, callback)
     }
 }

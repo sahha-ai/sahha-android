@@ -103,8 +103,8 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     override suspend fun getAnalysis(
+        dates: Pair<LocalDateTime, LocalDateTime>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
-        dates: Pair<LocalDateTime, LocalDateTime>?
     ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             callback?.also {
@@ -119,7 +119,7 @@ class RemoteRepoImpl @Inject constructor(
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
-                    getAnalysis(callback, dates)
+                    getAnalysis(dates, callback)
                 }
                 return
             }
