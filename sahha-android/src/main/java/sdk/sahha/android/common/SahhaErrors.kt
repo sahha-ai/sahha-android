@@ -10,9 +10,9 @@ object SahhaErrors {
     val typeResponse = "Response Error"
     val typeDecode = "Decoding Error"
     val typeMissing = "Missing Data"
-    val activityNotPrepared = "Error: Activity must be prepared before calling activate"
     val attemptingTokenRefresh = "Error: Invalid token, attempting to refresh token..."
-    val sensorInvalid = "Sensor not valid."
+    val sensorInvalid = "Error: Sensor not valid"
+    val datesInvalid = "Error: Both start and end dates must be entered or null"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

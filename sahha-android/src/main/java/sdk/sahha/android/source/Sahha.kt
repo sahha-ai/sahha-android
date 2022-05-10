@@ -8,12 +8,12 @@ import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import java.time.LocalDateTime
 
 
 @Keep
@@ -67,9 +67,12 @@ object Sahha {
         }
     }
 
-    fun analyze(callback: ((error: String?, success: String?) -> Unit)?) {
+    fun analyze(
+        dates: Pair<LocalDateTime, LocalDateTime>? = null,
+        callback: ((error: String?, success: String?) -> Unit)?,
+    ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(callback)
+            di.analyzeProfileUseCase(dates, callback)
         }
     }
 

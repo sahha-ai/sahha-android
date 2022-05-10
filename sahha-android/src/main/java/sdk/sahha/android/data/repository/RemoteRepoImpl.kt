@@ -1,6 +1,8 @@
 package sdk.sahha.android.data.repository
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -20,6 +22,7 @@ import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -100,14 +103,23 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     override suspend fun getAnalysis(
-        callback: ((error: String?, successful: String?) -> Unit)?
+        dates: Pair<LocalDateTime, LocalDateTime>?,
+        callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            callback?.also {
+                it(SahhaErrors.androidVersionTooLow(8), null)
+            }
+            return
+        }
+
         try {
-            val response = getAnalysisResponse()
+            val response = getDetectedAnalysisResponse(dates)
+
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
-                    getAnalysis(callback)
+                    getAnalysis(dates, callback)
                 }
                 return
             }
@@ -128,7 +140,7 @@ class RemoteRepoImpl @Inject constructor(
             val response = getDemographicResponse()
 
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 checkTokenExpired(response.code()) {
                     getDemographic(callback)
                 }
@@ -154,7 +166,7 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val response = postDemographicResponse(sahhaDemographic)
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, false)}
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                 checkTokenExpired(response.code()) {
                     postDemographic(sahhaDemographic, callback)
                 }
@@ -190,7 +202,7 @@ class RemoteRepoImpl @Inject constructor(
         successfulLogic: (suspend () -> Unit)
     ) {
         if (ResponseCode.isUnauthorized(response.code())) {
-            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false)}
+            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
             checkTokenExpired(response.code()) {
                 val retryResponse = retryLogic()
                 handleResponse(
@@ -299,11 +311,29 @@ class RemoteRepoImpl @Inject constructor(
         return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)))
     }
 
+    private suspend fun getAnalysisResponse(
+        startDate: String,
+        endDate: String
+    ): Response<ResponseBody> {
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), startDate, endDate)
+    }
+
     private suspend fun getDemographicResponse(): Response<DemographicDto> {
         return api.getDemographic(TokenBearer(decryptor.decrypt(UET)))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Response<ResponseBody> {
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private suspend fun getDetectedAnalysisResponse(dates: Pair<LocalDateTime, LocalDateTime>?): Response<ResponseBody> {
+        return dates?.let { it ->
+            val sahhaTimeManager = SahhaTimeManager()
+            val startDate = sahhaTimeManager.localDateTimeToISO(it.first)
+            val endDate = sahhaTimeManager.localDateTimeToISO(it.second)
+            getAnalysisResponse(startDate, endDate)
+        } ?: getAnalysisResponse()
     }
 }

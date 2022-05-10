@@ -1,5 +1,6 @@
 package empty.sahha.android
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.source.*
+import java.time.LocalDateTime
 
 class MainActivity : ComponentActivity() {
 
@@ -63,10 +66,6 @@ class MainActivity : ComponentActivity() {
                                 Text(permissionStatus.name)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-//                                    Sahha.motion.activate { error, newStatus ->
-//                                        permission = newStatus.name
-//                                        error?.also { permission += "\n$it" }
-//                                    }
                                     Sahha.enableSensor(
                                         this@MainActivity,
                                         SahhaSensor.sleep
@@ -128,7 +127,15 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     analyzeResponse = ""
-                                    Sahha.analyze { error, success ->
+                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                                        analyzeResponse = SahhaErrors.androidVersionTooLow(8)
+                                        return@Button
+                                    }
+
+                                    val now = LocalDateTime.now()
+                                    Sahha.analyze(
+                                        Pair(now.minusDays(7), now)
+                                    ) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
