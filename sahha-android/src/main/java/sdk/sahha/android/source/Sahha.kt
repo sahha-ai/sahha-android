@@ -13,7 +13,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import java.time.LocalDateTime
+import java.util.*
 
 
 @Keep
@@ -68,7 +68,7 @@ object Sahha {
     }
 
     fun analyze(
-        dates: Pair<LocalDateTime, LocalDateTime>? = null,
+        dates: Pair<Date, Date>? = null,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
@@ -191,7 +191,10 @@ object Sahha {
     private suspend fun saveConfiguration(
         settings: SahhaSettings
     ) {
-        val sensorEnums = convertToEnums(settings.sensors)
+        val sensorEnums = settings.sensors?.let {
+            convertToEnums(it)
+        } ?: convertToEnums(SahhaSensor.values().toSet())
+
         di.configurationDao.saveConfig(
             SahhaConfiguration(
                 settings.environment.ordinal,

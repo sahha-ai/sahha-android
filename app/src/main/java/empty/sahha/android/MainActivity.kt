@@ -16,6 +16,7 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
+import java.util.*
 
 class MainActivity : ComponentActivity() {
 
@@ -132,9 +133,10 @@ class MainActivity : ComponentActivity() {
                                         return@Button
                                     }
 
-                                    val now = LocalDateTime.now()
+                                    val now = Date()
+                                    val lastWeek = Date(now.time - (1000*60*60*24*7))
                                     Sahha.analyze(
-                                        Pair(now.minusDays(7), now)
+                                        Pair(lastWeek, now)
                                     ) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {

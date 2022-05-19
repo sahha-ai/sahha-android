@@ -3,12 +3,15 @@ package sdk.sahha.android.common
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
-import java.time.*
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Keep
-@RequiresApi(Build.VERSION_CODES.N)
 class SahhaTimeManager {
     private val tag by lazy { "SahhaTimeManager" }
 
@@ -22,8 +25,14 @@ class SahhaTimeManager {
     @RequiresApi(Build.VERSION_CODES.O)
     fun localDateTimeToISO(localDateTime: LocalDateTime): String {
         val iso =
-            localDateTime.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            localDateTime.atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         return removeDuplicateZ(iso)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun dateToISO(date: Date): String {
+        return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault()).format(date)
     }
 
     // Extra check for when there was a duplicate 'z' bug
