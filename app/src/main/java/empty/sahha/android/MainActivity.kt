@@ -136,7 +136,6 @@ class MainActivity : ComponentActivity() {
                                     val now = Date()
                                     val lastWeek = Date(now.time - (1000*60*60*24*7))
                                     Sahha.analyze(
-                                        Pair(lastWeek, now)
                                     ) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {

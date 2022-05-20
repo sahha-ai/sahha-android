@@ -57,12 +57,10 @@ internal object AppModule {
     @Provides
     @Singleton
     fun provideAuthRepository(
-        @Named("ioScope") ioScope: CoroutineScope,
-        @Named("mainScope") mainScope: CoroutineScope,
         encryptor: Encryptor,
         appCenterLog: AppCenterLog
     ): AuthRepo {
-        return AuthRepoImpl(ioScope, mainScope, encryptor, appCenterLog)
+        return AuthRepoImpl(encryptor, appCenterLog)
     }
 
     @Provides
@@ -72,14 +70,12 @@ internal object AppModule {
         @Named("defaultScope") defaultScope: CoroutineScope,
         @Named("ioScope") ioScope: CoroutineScope,
         configurationDao: ConfigurationDao,
-        api: SahhaApi
     ): BackgroundRepo {
         return BackgroundRepoImpl(
             context,
             defaultScope,
             ioScope,
             configurationDao,
-            api
         )
     }
 
@@ -93,7 +89,6 @@ internal object AppModule {
     @Provides
     @Singleton
     fun provideRemotePostRepository(
-        ioScope: CoroutineScope,
         sleepDao: SleepDao,
         deviceUsageDao: DeviceUsageDao,
         encryptor: Encryptor,
@@ -102,7 +97,6 @@ internal object AppModule {
         appCenterLog: AppCenterLog
     ): RemoteRepo {
         return RemoteRepoImpl(
-            ioScope,
             sleepDao,
             deviceUsageDao,
             encryptor,

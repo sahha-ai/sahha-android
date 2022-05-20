@@ -2,8 +2,6 @@ package sdk.sahha.android.domain.repository
 
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
-import java.time.LocalDateTime
-import java.util.*
 
 interface RemoteRepo {
     suspend fun postRefreshToken(retryLogic: (suspend () -> Unit))
@@ -15,7 +13,7 @@ interface RemoteRepo {
     )
 
     suspend fun getAnalysis(
-        dates: Pair<Date, Date>?,
+        dates: Pair<String, String>? = null,
         callback: ((error: String?, successful: String?) -> Unit)?,
     )
 

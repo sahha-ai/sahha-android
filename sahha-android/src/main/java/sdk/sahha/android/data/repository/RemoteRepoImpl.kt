@@ -1,9 +1,5 @@
 package sdk.sahha.android.data.repository
 
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
-import kotlinx.coroutines.CoroutineScope
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Response
@@ -22,12 +18,9 @@ import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
-import java.util.*
 import javax.inject.Inject
-import javax.inject.Named
 
 class RemoteRepoImpl @Inject constructor(
-    @Named("ioScope") private val ioScope: CoroutineScope,
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
     private val encryptor: Encryptor,
@@ -35,20 +28,17 @@ class RemoteRepoImpl @Inject constructor(
     private val api: SahhaApi,
     private val appCenterLog: AppCenterLog
 ) : RemoteRepo {
-    private val tag = "RemoteRepoImpl"
 
     override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
-        Log.d(tag, "postRefreshToken")
         val tokenData = TokenData(
             decryptor.decrypt(UET),
             decryptor.decrypt(UERT)
         )
 
         try {
-            Log.d(tag, "try")
             val response = getRefreshTokenResponse(tokenData)
+
             if (ResponseCode.isSuccessful(response.code())) {
-                Log.d(tag, "ResponseCode.isSuccessful")
                 storeNewTokens(response.body())
                 retryLogic()
                 return
@@ -103,17 +93,11 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     override suspend fun getAnalysis(
-        dates: Pair<Date, Date>?,
+        dates: Pair<String, String>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val response =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                    getDetectedAnalysisResponse(dates)
-                else {
-                    callback?.also { it(SahhaErrors.androidVersionTooLow(7), null) }
-                    return
-                }
+            val response = getDetectedAnalysisResponse(dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
@@ -273,10 +257,8 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private suspend fun storeNewTokens(responseBody: ResponseBody?) {
-        Log.d(tag, "storeNewTokens")
         val json = ApiBodyConverter.responseBodyToJson(responseBody)
         json?.also {
-            Log.d(tag, "json?.also")
             encryptor.encryptText(UET, it["profileToken"].toString())
             encryptor.encryptText(UERT, it["refreshToken"].toString())
         }
@@ -330,13 +312,9 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    private suspend fun getDetectedAnalysisResponse(dates: Pair<Date, Date>?): Response<ResponseBody> {
-        return dates?.let { it ->
-            val sahhaTimeManager = SahhaTimeManager()
-            val startDate = sahhaTimeManager.dateToISO(it.first)
-            val endDate = sahhaTimeManager.dateToISO(it.second)
-            getAnalysisResponse(startDate, endDate)
+    private suspend fun getDetectedAnalysisResponse(datesISO: Pair<String, String>?): Response<ResponseBody> {
+        return datesISO?.let { it ->
+            getAnalysisResponse(it.first, it.second)
         } ?: getAnalysisResponse()
     }
 }

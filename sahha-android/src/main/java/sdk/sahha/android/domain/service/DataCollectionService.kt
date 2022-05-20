@@ -84,7 +84,7 @@ class DataCollectionService : Service() {
     }
 
     private suspend fun runPedometerAsync(sensorManager: SensorManager, movementDao: MovementDao) {
-        // Get user's gender
+        // TODO: Get user's gender
         var steps = 0f
         var lastSteps = 0
         var distance: Double = 0.0

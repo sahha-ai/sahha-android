@@ -13,6 +13,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -68,7 +69,36 @@ object Sahha {
     }
 
     fun analyze(
-        dates: Pair<Date, Date>? = null,
+        callback: ((error: String?, success: String?) -> Unit)?
+    ) {
+        di.defaultScope.launch {
+            di.analyzeProfileUseCase(callback)
+        }
+    }
+
+
+    @JvmName("analyzeDate")
+    fun analyze(
+        dates: Pair<Date, Date>,
+        callback: ((error: String?, success: String?) -> Unit)?,
+    ) {
+        di.defaultScope.launch {
+            di.analyzeProfileUseCase(dates, callback)
+        }
+    }
+
+    @JvmName("analyzeLocalDateTime")
+    fun analyze(
+        dates: Pair<LocalDateTime, LocalDateTime>,
+        callback: ((error: String?, success: String?) -> Unit)?,
+    ) {
+        di.defaultScope.launch {
+            di.analyzeProfileUseCase(dates, callback)
+        }
+    }
+
+    fun analyze(
+        dates: Pair<Long, Long>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
@@ -111,14 +141,12 @@ object Sahha {
     ) {
         when (sensor) {
             SahhaSensor.pedometer -> {
-                //motion.activate(context, callback)
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }
                 return
             }
             SahhaSensor.sleep -> {
-                //motion.activate(context, callback)
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }
@@ -138,13 +166,11 @@ object Sahha {
     ) {
         when (sensor) {
             SahhaSensor.pedometer -> {
-                //callback(null, SahhaPermissions.activityRecognitionGranted(context))
                 SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }
             }
             SahhaSensor.sleep -> {
-                //callback(null, SahhaPermissions.activityRecognitionGranted(context))
                 SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }

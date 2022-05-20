@@ -13,8 +13,6 @@ import java.util.*
 
 @Keep
 class SahhaTimeManager {
-    private val tag by lazy { "SahhaTimeManager" }
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun nowInISO(): String {
         val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
