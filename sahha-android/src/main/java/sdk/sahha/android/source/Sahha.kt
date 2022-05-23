@@ -62,9 +62,13 @@ object Sahha {
 
     fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         di.defaultScope.launch {
-            config = di.configurationDao.getConfig()
-            startDataCollection(callback)
-            checkAndStartPostWorkers()
+            try {
+                config = di.configurationDao.getConfig()
+                startDataCollection(callback)
+                checkAndStartPostWorkers()
+            } catch (e: Exception) {
+                callback?.also { it("Error: ${e.message}", false) }
+            }
         }
     }
 
