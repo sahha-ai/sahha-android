@@ -16,6 +16,7 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
+import java.util.*
 
 class MainActivity : ComponentActivity() {
 
@@ -49,10 +50,14 @@ class MainActivity : ComponentActivity() {
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
                                 var analyzeResponse by remember { mutableStateOf("") }
+                                var analyzeResponseEpoch by remember { mutableStateOf("") }
+                                var analyzeResponseDate by remember { mutableStateOf("") }
+                                var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
                                 var postDemo by remember { mutableStateOf("") }
                                 var getDemo by remember { mutableStateOf("") }
                                 var token by remember { mutableStateOf("") }
                                 var refreshToken by remember { mutableStateOf("") }
+                                var start by remember { mutableStateOf("") }
 
                                 Sahha.getSensorStatus(
                                     this@MainActivity,
@@ -107,12 +112,13 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.start { error, success ->
-                                        if (success) greeting = "Successful test start"
-                                        error?.also { greeting = it }
+                                        if (success) start = "Successful test start"
+                                        error?.also { start = it }
                                     }
                                 }) {
                                     Text("Test start")
                                 }
+                                Text(start)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     manualPost = ""
@@ -127,24 +133,55 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     analyzeResponse = ""
-                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                                        analyzeResponse = SahhaErrors.androidVersionTooLow(8)
-                                        return@Button
-                                    }
 
-                                    val now = LocalDateTime.now()
-                                    Sahha.analyze(
-                                        Pair(now.minusDays(7), now)
-                                    ) { error, success ->
+                                    val now = Date()
+                                    val lastWeek = Date(now.time - (1000 * 60 * 60 * 24 * 7))
+
+                                    Sahha.analyze { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
                                         }
                                     }
+
+                                    Sahha.analyze(
+                                        Pair(Date().time, Date().time)
+                                    ) { error, success ->
+                                        error?.also { analyzeResponseEpoch = it }
+                                        success?.also {
+                                            analyzeResponseEpoch = it
+                                        }
+                                    }
+
+                                    Sahha.analyze(
+                                        Pair(lastWeek, now)
+                                    ) { error, success ->
+                                        error?.also { analyzeResponseDate = it }
+                                        success?.also {
+                                            analyzeResponseDate = it
+                                        }
+                                    }
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        Sahha.analyze(
+                                            Pair(LocalDateTime.now(), LocalDateTime.now())
+                                        ) { error, success ->
+                                            error?.also { analyzeResponseLocalDateTime = it }
+                                            success?.also {
+                                                analyzeResponseLocalDateTime = it
+                                            }
+                                        }
+                                    } else {
+                                        analyzeResponseLocalDateTime =
+                                            SahhaErrors.androidVersionTooLow(8)
+                                    }
                                 }) {
                                     Text("Analyze")
                                 }
                                 Text(analyzeResponse)
+                                Text(analyzeResponseEpoch)
+                                Text(analyzeResponseDate)
+                                Text(analyzeResponseLocalDateTime)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     postDemo = ""

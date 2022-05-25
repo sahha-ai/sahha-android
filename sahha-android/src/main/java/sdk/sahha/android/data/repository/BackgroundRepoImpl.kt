@@ -46,11 +46,9 @@ class BackgroundRepoImpl @Inject constructor(
     @Named("defaultScope") private val defaultScope: CoroutineScope,
     @Named("ioScope") private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,
-    private val api: SahhaApi
 ) : BackgroundRepo {
     override lateinit var notification: Notification
 
-    private val tag by lazy { "BackgroundRepoImpl" }
     private val workManager by lazy { WorkManager.getInstance(context) }
 
     private val activityRecognitionIntent by lazy {

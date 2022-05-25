@@ -37,15 +37,12 @@ class ManualDependencies @Inject constructor(
 
     internal val authRepo by lazy {
         AppModule.provideAuthRepository(
-            ioScope,
-            mainScope,
             encryptor,
             appCenterLog
         )
     }
     internal val remotePostRepo by lazy {
         AppModule.provideRemotePostRepository(
-            ioScope,
             sleepDao,
             deviceUsageDao,
             encryptor,
@@ -79,7 +76,7 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo) }
+    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo, timeManager) }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
     val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
@@ -112,7 +109,6 @@ class ManualDependencies @Inject constructor(
             defaultScope,
             ioScope,
             configurationDao,
-            api
         )
     }
 

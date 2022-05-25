@@ -3,27 +3,40 @@ package sdk.sahha.android.common
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
-import java.time.*
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Keep
-@RequiresApi(Build.VERSION_CODES.N)
 class SahhaTimeManager {
-    private val tag by lazy { "SahhaTimeManager" }
+    private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun nowInISO(): String {
-        val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
-        val nowInISO = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        return removeDuplicateZ(nowInISO)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
+            val nowInISO = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            return removeDuplicateZ(nowInISO)
+        } else {
+            val now = Date()
+            val nowInISO = simpleDateFormat.format(now)
+            return removeDuplicateZ(nowInISO)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun localDateTimeToISO(localDateTime: LocalDateTime): String {
         val iso =
-            localDateTime.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            localDateTime.atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         return removeDuplicateZ(iso)
+    }
+
+    fun dateToISO(date: Date): String {
+        return removeDuplicateZ(simpleDateFormat.format(date))
     }
 
     // Extra check for when there was a duplicate 'z' bug
@@ -34,9 +47,12 @@ class SahhaTimeManager {
         return isoTime
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun nowInEpoch(): Long {
-        return ZonedDateTime.now().withFixedOffsetZone().toInstant().toEpochMilli()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ZonedDateTime.now().withFixedOffsetZone().toInstant().toEpochMilli()
+        } else {
+            Date().time
+        }
     }
 
     fun epochFrom(time: Long, minusInterval: Int, intervalType: Int): Long {
@@ -54,11 +70,14 @@ class SahhaTimeManager {
         return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun epochMillisToISO(epochTimeMS: Long): String {
-        val instant = Instant.ofEpochMilli(epochTimeMS)
-        val zdt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).withFixedOffsetZone()
-        return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val instant = Instant.ofEpochMilli(epochTimeMS)
+            val zdt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).withFixedOffsetZone()
+            return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        } else {
+            return removeDuplicateZ(simpleDateFormat.format(epochTimeMS))
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
