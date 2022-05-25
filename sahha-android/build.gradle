@@ -9,7 +9,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = ""
+def gVersionName = "0.11.5"
 
 android {
     compileSdk 31
@@ -27,7 +27,6 @@ android {
         buildConfigField("String", "API_PROD", secretsProperties['API_PROD'])
         buildConfigField("String", "APP_CENTER_DEV", secretsProperties['APP_CENTER_DEV'])
         buildConfigField("String", "APP_CENTER_PROD", secretsProperties['APP_CENTER_PROD'])
-        gVersionName = versionName
         vectorDrawables {
             useSupportLibrary true
         }
