@@ -14,7 +14,19 @@ import sdk.sahha.android.data.Constants.API_BODY
 import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.API_METHOD
 import sdk.sahha.android.data.Constants.API_URL
+import sdk.sahha.android.data.Constants.APPLICATION_ERROR
+import sdk.sahha.android.data.Constants.APP_ID
+import sdk.sahha.android.data.Constants.APP_VERSION
+import sdk.sahha.android.data.Constants.DEVICE_MODEL
+import sdk.sahha.android.data.Constants.DEVICE_TYPE
+import sdk.sahha.android.data.Constants.ERROR_MESSAGE
+import sdk.sahha.android.data.Constants.ERROR_SOURCE
+import sdk.sahha.android.data.Constants.ERROR_TYPE
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
+import sdk.sahha.android.data.Constants.SDK_ID
+import sdk.sahha.android.data.Constants.SDK_VERSION
+import sdk.sahha.android.data.Constants.SYSTEM
+import sdk.sahha.android.data.Constants.SYSTEM_VERSION
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import javax.inject.Inject
 import javax.inject.Named
@@ -27,7 +39,6 @@ class AppCenterLog @Inject constructor(
     private val properties = hashMapOf<String, String>()
 
     fun api(
-        eventName: String,
         auth: Boolean,
         call: Call<ResponseBody>?,
         type: String,
@@ -36,15 +47,26 @@ class AppCenterLog @Inject constructor(
             properties.clear()
             setStaticProperties()
             setApiLogProperties(auth, call, type)
-            Analytics.trackEvent(eventName, properties)
+            Analytics.trackEvent(API_ERROR, properties)
         }
     }
 
-    fun application(error: String) {
+    fun application(
+        errorSource: String,
+        error: String
+    ) {
         defaultScope.launch {
             properties.clear()
             setStaticProperties()
-            Analytics.trackEvent(error)
+            setApplicationLogProperties(errorSource, error)
+            Analytics.trackEvent(APPLICATION_ERROR, properties)
+        }
+    }
+
+    private fun setApplicationLogProperties(errorSource: String, error: String) {
+        properties.apply {
+            put(ERROR_SOURCE, errorSource)
+            put(ERROR_MESSAGE, error)
         }
     }
 
@@ -63,7 +85,7 @@ class AppCenterLog @Inject constructor(
                 put(API_METHOD, it.request().method)
                 put(API_URL, it.request().url.encodedPath)
             }
-            put(API_ERROR, type)
+            put(ERROR_TYPE, type)
         }
     }
 
@@ -74,14 +96,14 @@ class AppCenterLog @Inject constructor(
         val versionName: String? = packageInfo.versionName
         val config = configurationDao.getConfig()
 
-        properties["sdk_id"] = config.framework
-        properties["sdk_version"] = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
-        properties["app_id"] = appId
-        properties["app_version"] = versionName ?: "Unknown"
-        properties["device_type"] = Build.MANUFACTURER
-        properties["device_model"] = Build.MODEL
-        properties["system"] = PLATFORM_NAME
-        properties["system_version"] =
+        properties[SDK_ID] = config.framework
+        properties[SDK_VERSION] = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
+        properties[APP_ID] = appId
+        properties[APP_VERSION] = versionName ?: "Unknown"
+        properties[DEVICE_TYPE] = Build.MANUFACTURER
+        properties[DEVICE_MODEL] = Build.MODEL
+        properties[SYSTEM] = PLATFORM_NAME
+        properties[SYSTEM_VERSION] =
             "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})"
     }
 }
