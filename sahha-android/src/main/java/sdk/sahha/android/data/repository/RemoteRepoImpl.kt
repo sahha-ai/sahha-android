@@ -43,7 +43,7 @@ class RemoteRepoImpl @Inject constructor(
                 retryLogic()
                 return
             }
-            sahhaErrorLogger.api(API_ERROR, false, null, SahhaErrors.typeAuthentication)
+            sahhaErrorLogger.api(null, SahhaErrors.typeAuthentication)
         } catch (e: Exception) {
             sahhaErrorLogger.application(e.message ?: "Error refreshing token")
         }

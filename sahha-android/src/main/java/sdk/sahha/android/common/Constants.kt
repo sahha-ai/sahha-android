@@ -28,8 +28,8 @@ internal object Constants {
     const val APP_BODY = "appBody"
     const val ERROR_MESSAGE = "errorMessage"
     const val ERROR_SOURCE = "errorSource"
-    const val API_ERROR = "api_error"
-    const val APPLICATION_ERROR = "application_error"
+    const val API_ERROR = "api"
+    const val APPLICATION_ERROR = "application"
 
     // Worker tags
     const val SLEEP_WORKER_TAG = "sleepData"

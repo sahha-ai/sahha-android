@@ -34,7 +34,11 @@ object ApiBodyConverter {
             }
         } catch (e: Exception) {
             e.message?.also {
-                Sahha.di.sahhaErrorLogger.application(it)
+                Sahha.di.sahhaErrorLogger.application(
+                    it,
+                    "requestBodyToString(request: RequestBody?): String?",
+                    request?.toString()
+                )
             }
         }
         return null

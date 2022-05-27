@@ -4,27 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
-import com.microsoft.appcenter.analytics.Analytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
 import sdk.sahha.android.common.security.Decryptor
-import sdk.sahha.android.data.Constants.API_BODY
-import sdk.sahha.android.data.Constants.API_METHOD
-import sdk.sahha.android.data.Constants.API_URL
+import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.APPLICATION_ERROR
-import sdk.sahha.android.data.Constants.APP_ID
-import sdk.sahha.android.data.Constants.APP_VERSION
-import sdk.sahha.android.data.Constants.DEVICE_MODEL
-import sdk.sahha.android.data.Constants.DEVICE_TYPE
-import sdk.sahha.android.data.Constants.ERROR_MESSAGE
-import sdk.sahha.android.data.Constants.ERROR_SOURCE
-import sdk.sahha.android.data.Constants.ERROR_TYPE
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
-import sdk.sahha.android.data.Constants.SDK_VERSION
-import sdk.sahha.android.data.Constants.SYSTEM
-import sdk.sahha.android.data.Constants.SYSTEM_VERSION
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
@@ -39,22 +26,18 @@ class SahhaErrorLogger @Inject constructor(
     private val sahhaErrorApi: SahhaErrorApi,
     @Named("defaultScope") private val defaultScope: CoroutineScope
 ) {
-    private val properties = hashMapOf<String, String>()
-    private val sahhaErrorLog = SahhaErrorLog(
-        null, null, null, null, null, null,
-        null, null, null, null, null, null,
-        null, null, null, null, null, null
-    )
+    private var sahhaErrorLog = getNewSahhaErrorLog()
 
     fun api(
-        auth: Boolean,
         call: Call<ResponseBody>?,
         type: String,
+        code: Int,
+        message: String
     ) {
         defaultScope.launch {
-            properties.clear()
-            setStaticProperties()
-            setApiLogProperties(auth, call, type)
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(call, type, code, message)
             sahhaErrorApi.postErrorLog(
                 decryptor.decrypt(UET),
                 sahhaErrorLog
@@ -63,56 +46,84 @@ class SahhaErrorLogger @Inject constructor(
     }
 
     fun application(
-        errorSource: String,
-        error: String
+        error: String?,
+        appMethod: String,
+        appBody: String?
     ) {
         defaultScope.launch {
-            properties.clear()
-            setStaticProperties()
-            setApplicationLogProperties(errorSource, error)
-            Analytics.trackEvent(APPLICATION_ERROR, properties)
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApplicationLogProperties(error, appMethod, appBody)
+            sahhaErrorApi.postErrorLog(
+                decryptor.decrypt(UET),
+                sahhaErrorLog
+            )
         }
     }
 
-    private fun setApplicationLogProperties(errorSource: String, error: String) {
-        properties.apply {
-            put(ERROR_SOURCE, errorSource)
-            put(ERROR_MESSAGE, error)
-        }
+    private fun setApplicationLogProperties(error: String?, appMethod: String, appBody: String?) {
+        sahhaErrorLog.errorSource = APPLICATION_ERROR
+        error?.also { sahhaErrorLog.errorMessage = it }
+        sahhaErrorLog.appMethod = appMethod
+        appBody?.also { sahhaErrorLog.appBody = it }
     }
 
     private fun setApiLogProperties(
         call: Call<ResponseBody>?,
-        type: String
+        type: String,
+        code: Int,
+        message: String
     ) {
-        properties.apply {
-            call?.also {
-                put(
-                    API_BODY,
-                    ApiBodyConverter.requestBodyToString(it.request().body) ?: "No data found"
-                )
-                put(API_METHOD, it.request().method)
-                put(API_URL, it.request().url.encodedPath)
-            }
-            put(ERROR_TYPE, type)
+        sahhaErrorLog.errorSource = API_ERROR
+        call?.also {
+            sahhaErrorLog.apiBody =
+                ApiBodyConverter.requestBodyToString(it.request().body) ?: "No data found"
+            sahhaErrorLog.apiMethod = it.request().method
+            sahhaErrorLog.apiURL = it.request().url.encodedPath
         }
+        sahhaErrorLog.errorType = type
+        sahhaErrorLog.errorCode = code
+        sahhaErrorLog.errorMessage = message
     }
 
     @SuppressLint("HardwareIds")
-    private suspend fun setStaticProperties() {
+    private suspend fun setStaticParameters() {
         val packageInfo: PackageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         val appId = packageInfo.packageName
         val versionName: String? = packageInfo.versionName
         val config = configurationDao.getConfig()
 
         sahhaErrorLog.sdkId = config.framework
-        properties[SDK_VERSION] = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
-        properties[APP_ID] = appId
-        properties[APP_VERSION] = versionName ?: "Unknown"
-        properties[DEVICE_TYPE] = Build.MANUFACTURER
-        properties[DEVICE_MODEL] = Build.MODEL
-        properties[SYSTEM] = PLATFORM_NAME
-        properties[SYSTEM_VERSION] =
+        sahhaErrorLog.sdkVersion = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
+        sahhaErrorLog.appId = appId
+        sahhaErrorLog.appVersion = versionName ?: "Unknown"
+        sahhaErrorLog.deviceType = Build.MANUFACTURER
+        sahhaErrorLog.deviceModel = Build.MODEL
+        sahhaErrorLog.system = PLATFORM_NAME
+        sahhaErrorLog.systemVersion =
             "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})"
+    }
+
+    private fun getNewSahhaErrorLog(): SahhaErrorLog {
+        return SahhaErrorLog(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        )
     }
 }
