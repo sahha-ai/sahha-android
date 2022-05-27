@@ -29,6 +29,7 @@ class ManualDependencies @Inject constructor(
     internal lateinit var sahhaErrorLogger: SahhaErrorLogger
 
     internal val api by lazy { AppModule.provideSahhaApi(environment) }
+    internal val sahhaErrorApi by lazy { AppModule.provideSahhaErrorApi(environment) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
     internal val movementDao by lazy { AppModule.provideMovementDao(database) }
     internal val sleepDao by lazy { AppModule.provideSleepDao(database) }
@@ -117,7 +118,8 @@ class ManualDependencies @Inject constructor(
     }
 
     private fun setAppCenterLog(context: Context) {
-        sahhaErrorLogger = SahhaErrorLogger(context, configurationDao, defaultScope)
+        sahhaErrorLogger =
+            SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager? {

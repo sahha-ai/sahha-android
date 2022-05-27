@@ -9,25 +9,7 @@ internal object Constants {
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
 
-    // App Center parameters
-    const val SDK_ID = "sdkId"
-    const val SDK_VERSION = "sdkVersion"
-    const val APP_ID = "appId"
-    const val APP_VERSION = "appVersion"
-    const val DEVICE_ID = "deviceId"
-    const val DEVICE_TYPE = "deviceType"
-    const val DEVICE_MODEL = "deviceModel"
-    const val SYSTEM = "system"
-    const val SYSTEM_VERSION = "systemVersion"
-    const val API_METHOD = "apiMethod"
-    const val API_URL = "apiURL"
-    const val API_BODY = "apiBody"
-    const val ERROR_TYPE = "errorType"
-    const val ERROR_CODE = "errorCode"
-    const val APP_METHOD = "appMethod"
-    const val APP_BODY = "appBody"
-    const val ERROR_MESSAGE = "errorMessage"
-    const val ERROR_SOURCE = "errorSource"
+    // Sahha Error API parameters
     const val API_ERROR = "api"
     const val APPLICATION_ERROR = "application"
 

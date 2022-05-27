@@ -57,7 +57,7 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideSahhaErrorApi(environment: Enum<SahhaEnvironment>): SahhaApi {
+    fun provideSahhaErrorApi(environment: Enum<SahhaEnvironment>): SahhaErrorApi {
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.ERROR_API_PROD)
@@ -194,11 +194,13 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideAppCenterLog(
+    fun provideSahhaErrorLogger(
         @ApplicationContext context: Context,
         configurationDao: ConfigurationDao,
+        decryptor: Decryptor,
+        sahhaErrorApi: SahhaErrorApi,
         @Named("defaultScope") defaultScope: CoroutineScope
     ): SahhaErrorLogger {
-        return SahhaErrorLogger(context, configurationDao, defaultScope)
+        return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 }

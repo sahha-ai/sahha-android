@@ -31,7 +31,7 @@ class SahhaErrorLogger @Inject constructor(
     fun api(
         call: Call<ResponseBody>?,
         type: String,
-        code: Int,
+        code: Int?,
         message: String
     ) {
         defaultScope.launch {
@@ -71,7 +71,7 @@ class SahhaErrorLogger @Inject constructor(
     private fun setApiLogProperties(
         call: Call<ResponseBody>?,
         type: String,
-        code: Int,
+        code: Int?,
         message: String
     ) {
         sahhaErrorLog.errorSource = API_ERROR
@@ -82,7 +82,7 @@ class SahhaErrorLogger @Inject constructor(
             sahhaErrorLog.apiURL = it.request().url.encodedPath
         }
         sahhaErrorLog.errorType = type
-        sahhaErrorLog.errorCode = code
+        code?.also { sahhaErrorLog.errorCode = it }
         sahhaErrorLog.errorMessage = message
     }
 
