@@ -26,7 +26,7 @@ class RemoteRepoImpl @Inject constructor(
     private val encryptor: Encryptor,
     private val decryptor: Decryptor,
     private val api: SahhaApi,
-    private val appCenterLog: AppCenterLog
+    private val sahhaErrorLogger: SahhaErrorLogger
 ) : RemoteRepo {
 
     override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
@@ -43,9 +43,9 @@ class RemoteRepoImpl @Inject constructor(
                 retryLogic()
                 return
             }
-            appCenterLog.api(API_ERROR, false, null, SahhaErrors.typeAuthentication)
+            sahhaErrorLogger.api(API_ERROR, false, null, SahhaErrors.typeAuthentication)
         } catch (e: Exception) {
-            appCenterLog.application(e.message ?: "Error refreshing token")
+            sahhaErrorLogger.application(e.message ?: "Error refreshing token")
         }
     }
 

@@ -34,7 +34,7 @@ object ApiBodyConverter {
             }
         } catch (e: Exception) {
             e.message?.also {
-                Sahha.di.appCenterLog.application(it)
+                Sahha.di.sahhaErrorLogger.application(it)
             }
         }
         return null

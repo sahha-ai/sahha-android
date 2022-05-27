@@ -14,13 +14,14 @@ import kotlinx.coroutines.Dispatchers.Main
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.common.AppCenterLog
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BackgroundRepoImpl
 import sdk.sahha.android.data.repository.PermissionsRepoImpl
@@ -39,15 +40,15 @@ internal object AppModule {
     @Provides
     @Singleton
     fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
-        return if (environment == SahhaEnvironment.development) {
+        return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.API_DEV)
+                .baseUrl(BuildConfig.API_PROD)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.API_PROD)
+                .baseUrl(BuildConfig.API_DEV)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(SahhaApi::class.java)
@@ -56,11 +57,30 @@ internal object AppModule {
 
     @Provides
     @Singleton
+    fun provideSahhaErrorApi(environment: Enum<SahhaEnvironment>): SahhaApi {
+        return if (environment == SahhaEnvironment.production) {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.ERROR_API_PROD)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(SahhaErrorApi::class.java)
+        } else {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.ERROR_API_DEV)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(SahhaErrorApi::class.java)
+        }
+    }
+
+
+    @Provides
+    @Singleton
     fun provideAuthRepository(
         encryptor: Encryptor,
-        appCenterLog: AppCenterLog
+        sahhaErrorLogger: SahhaErrorLogger
     ): AuthRepo {
-        return AuthRepoImpl(encryptor, appCenterLog)
+        return AuthRepoImpl(encryptor, sahhaErrorLogger)
     }
 
     @Provides
@@ -94,7 +114,7 @@ internal object AppModule {
         encryptor: Encryptor,
         decryptor: Decryptor,
         api: SahhaApi,
-        appCenterLog: AppCenterLog
+        sahhaErrorLogger: SahhaErrorLogger
     ): RemoteRepo {
         return RemoteRepoImpl(
             sleepDao,
@@ -102,7 +122,7 @@ internal object AppModule {
             encryptor,
             decryptor,
             api,
-            appCenterLog
+            sahhaErrorLogger
         )
     }
 
@@ -178,7 +198,7 @@ internal object AppModule {
         @ApplicationContext context: Context,
         configurationDao: ConfigurationDao,
         @Named("defaultScope") defaultScope: CoroutineScope
-    ): AppCenterLog {
-        return AppCenterLog(context, configurationDao, defaultScope)
+    ): SahhaErrorLogger {
+        return SahhaErrorLogger(context, configurationDao, defaultScope)
     }
 }

@@ -2,7 +2,7 @@ package sdk.sahha.android.di
 
 import android.content.Context
 import android.os.Build
-import sdk.sahha.android.common.AppCenterLog
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
@@ -26,7 +26,7 @@ class ManualDependencies @Inject constructor(
     internal lateinit var database: SahhaDatabase
     internal lateinit var backgroundRepo: BackgroundRepo
     internal lateinit var notifications: SahhaNotificationManager
-    internal lateinit var appCenterLog: AppCenterLog
+    internal lateinit var sahhaErrorLogger: SahhaErrorLogger
 
     internal val api by lazy { AppModule.provideSahhaApi(environment) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
@@ -38,7 +38,7 @@ class ManualDependencies @Inject constructor(
     internal val authRepo by lazy {
         AppModule.provideAuthRepository(
             encryptor,
-            appCenterLog
+            sahhaErrorLogger
         )
     }
     internal val remotePostRepo by lazy {
@@ -48,7 +48,7 @@ class ManualDependencies @Inject constructor(
             encryptor,
             decryptor,
             api,
-            appCenterLog
+            sahhaErrorLogger
         )
     }
 
@@ -117,7 +117,7 @@ class ManualDependencies @Inject constructor(
     }
 
     private fun setAppCenterLog(context: Context) {
-        appCenterLog = AppCenterLog(context, configurationDao, defaultScope)
+        sahhaErrorLogger = SahhaErrorLogger(context, configurationDao, defaultScope)
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager? {

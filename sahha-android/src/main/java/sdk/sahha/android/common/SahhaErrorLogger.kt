@@ -9,9 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
-import sdk.sahha.android.data.Constants.API_AUTH
+import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.API_BODY
-import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.API_METHOD
 import sdk.sahha.android.data.Constants.API_URL
 import sdk.sahha.android.data.Constants.APPLICATION_ERROR
@@ -23,20 +22,29 @@ import sdk.sahha.android.data.Constants.ERROR_MESSAGE
 import sdk.sahha.android.data.Constants.ERROR_SOURCE
 import sdk.sahha.android.data.Constants.ERROR_TYPE
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
-import sdk.sahha.android.data.Constants.SDK_ID
 import sdk.sahha.android.data.Constants.SDK_VERSION
 import sdk.sahha.android.data.Constants.SYSTEM
 import sdk.sahha.android.data.Constants.SYSTEM_VERSION
+import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.remote.SahhaErrorApi
+import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import javax.inject.Inject
 import javax.inject.Named
 
-class AppCenterLog @Inject constructor(
+class SahhaErrorLogger @Inject constructor(
     private val context: Context,
     private val configurationDao: ConfigurationDao,
+    private val decryptor: Decryptor,
+    private val sahhaErrorApi: SahhaErrorApi,
     @Named("defaultScope") private val defaultScope: CoroutineScope
 ) {
     private val properties = hashMapOf<String, String>()
+    private val sahhaErrorLog = SahhaErrorLog(
+        null, null, null, null, null, null,
+        null, null, null, null, null, null,
+        null, null, null, null, null, null
+    )
 
     fun api(
         auth: Boolean,
@@ -47,7 +55,10 @@ class AppCenterLog @Inject constructor(
             properties.clear()
             setStaticProperties()
             setApiLogProperties(auth, call, type)
-            Analytics.trackEvent(API_ERROR, properties)
+            sahhaErrorApi.postErrorLog(
+                decryptor.decrypt(UET),
+                sahhaErrorLog
+            )
         }
     }
 
@@ -71,12 +82,10 @@ class AppCenterLog @Inject constructor(
     }
 
     private fun setApiLogProperties(
-        auth: Boolean,
         call: Call<ResponseBody>?,
         type: String
     ) {
         properties.apply {
-            put(API_AUTH, auth.toString())
             call?.also {
                 put(
                     API_BODY,
@@ -96,7 +105,7 @@ class AppCenterLog @Inject constructor(
         val versionName: String? = packageInfo.versionName
         val config = configurationDao.getConfig()
 
-        properties[SDK_ID] = config.framework
+        sahhaErrorLog.sdkId = config.framework
         properties[SDK_VERSION] = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
         properties[APP_ID] = appId
         properties[APP_VERSION] = versionName ?: "Unknown"

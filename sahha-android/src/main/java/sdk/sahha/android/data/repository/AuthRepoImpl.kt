@@ -1,6 +1,6 @@
 package sdk.sahha.android.data.repository
 
-import sdk.sahha.android.common.AppCenterLog
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.UERT
@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 class AuthRepoImpl @Inject constructor(
     private val encryptor: Encryptor,
-    private val appCenterLog: AppCenterLog
+    private val sahhaErrorLogger: SahhaErrorLogger
 ) : AuthRepo {
     override suspend fun saveTokens(
         profileToken: String,
@@ -34,7 +34,7 @@ class AuthRepoImpl @Inject constructor(
             val nullErrorMsg = "Something went wrong storing tokens"
 
             callback?.also { it(e.message ?: nullErrorMsg, false) }
-            appCenterLog.application(e.message ?: nullErrorMsg)
+            sahhaErrorLogger.application(e.message ?: nullErrorMsg)
         }
     }
 }
