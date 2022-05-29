@@ -114,7 +114,8 @@ internal object AppModule {
         encryptor: Encryptor,
         decryptor: Decryptor,
         api: SahhaApi,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        @Named("ioScope") ioScope: CoroutineScope
     ): RemoteRepo {
         return RemoteRepoImpl(
             sleepDao,
@@ -122,7 +123,8 @@ internal object AppModule {
             encryptor,
             decryptor,
             api,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            ioScope
         )
     }
 

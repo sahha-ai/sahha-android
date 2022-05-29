@@ -49,7 +49,8 @@ class ManualDependencies @Inject constructor(
             encryptor,
             decryptor,
             api,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            ioScope
         )
     }
 

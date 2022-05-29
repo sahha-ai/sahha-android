@@ -245,8 +245,8 @@ object Sahha {
 
     private fun getCorrectAppCenterKey(environment: Enum<SahhaEnvironment>): String {
         if (environment == SahhaEnvironment.production) {
-            return BuildConfig.APP_CENTER_PROD
+            return BuildConfig.ERROR_API_PROD
         }
-        return BuildConfig.APP_CENTER_DEV
+        return BuildConfig.ERROR_API_DEV
     }
 }

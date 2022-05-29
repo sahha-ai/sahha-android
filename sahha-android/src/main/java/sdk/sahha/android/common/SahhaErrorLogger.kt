@@ -15,6 +15,7 @@ import sdk.sahha.android.data.Constants.PLATFORM_NAME
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
+import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import javax.inject.Inject
 import javax.inject.Named
@@ -30,6 +31,24 @@ class SahhaErrorLogger @Inject constructor(
 
     fun api(
         call: Call<ResponseBody>?,
+        type: String,
+        code: Int?,
+        message: String
+    ) {
+        defaultScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(call, type, code, message)
+            sahhaErrorApi.postErrorLog(
+                decryptor.decrypt(UET),
+                sahhaErrorLog
+            )
+        }
+    }
+
+    @JvmName("apiDemographicDto")
+    fun api(
+        call: Call<DemographicDto>?,
         type: String,
         code: Int?,
         message: String
@@ -68,6 +87,7 @@ class SahhaErrorLogger @Inject constructor(
         appBody?.also { sahhaErrorLog.appBody = it }
     }
 
+    @JvmName("setApiLogPropertiesDemographicDto")
     private fun setApiLogProperties(
         call: Call<ResponseBody>?,
         type: String,
@@ -77,7 +97,25 @@ class SahhaErrorLogger @Inject constructor(
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.apiBody =
-                ApiBodyConverter.requestBodyToString(it.request().body) ?: "No data found"
+                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+            sahhaErrorLog.apiMethod = it.request().method
+            sahhaErrorLog.apiURL = it.request().url.encodedPath
+        }
+        sahhaErrorLog.errorType = type
+        code?.also { sahhaErrorLog.errorCode = it }
+        sahhaErrorLog.errorMessage = message
+    }
+
+    private fun setApiLogProperties(
+        call: Call<DemographicDto>?,
+        type: String,
+        code: Int?,
+        message: String
+    ) {
+        sahhaErrorLog.errorSource = API_ERROR
+        call?.also {
+            sahhaErrorLog.apiBody =
+                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
         }

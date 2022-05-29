@@ -43,7 +43,7 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = getRefreshTokenCall(tokenData)
             call.enqueue(
-                object: Callback<ResponseBody> {
+                object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
@@ -185,7 +185,7 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = getDemographicCall()
             call.enqueue(
-                object: Callback<DemographicDto> {
+                object : Callback<DemographicDto> {
                     override fun onResponse(
                         call: Call<DemographicDto>,
                         response: Response<DemographicDto>
@@ -240,7 +240,7 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = postDemographicResponse(sahhaDemographic)
             call.enqueue(
-                object: Callback<ResponseBody> {
+                object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
@@ -266,7 +266,12 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", false) }
+                            callback?.also {
+                                it(
+                                    "${response.code()}: ${response.message()}",
+                                    false
+                                )
+                            }
 
                             sahhaErrorLogger.api(
                                 call,
@@ -310,36 +315,56 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private suspend fun handleResponse(
-        response: Response<ResponseBody>,
+        call: Call<ResponseBody>,
         retryLogic: suspend (() -> Call<ResponseBody>),
         callback: ((error: String?, successful: Boolean) -> Unit)?,
         successfulLogic: (suspend () -> Unit)
     ) {
-        if (ResponseCode.isUnauthorized(response.code())) {
-            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
-            checkTokenExpired(response.code()) {
-                val retryResponse = retryLogic()
-                handleResponse(
-                    retryResponse,
-                    retryLogic,
-                    callback,
-                    successfulLogic
-                )
-            }
-            return
-        }
+        call.enqueue(
+            object : Callback<ResponseBody> {
+                override fun onResponse(
+                    call: Call<ResponseBody>,
+                    response: Response<ResponseBody>
+                ) {
+                    ioScope.launch {
+                        if (ResponseCode.isUnauthorized(response.code())) {
+                            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
+                            checkTokenExpired(response.code()) {
+                                val retryResponse = retryLogic()
+                                handleResponse(
+                                    retryResponse,
+                                    retryLogic,
+                                    callback,
+                                    successfulLogic
+                                )
+                            }
+                            return@launch
+                        }
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            successfulLogic()
-            callback?.also {
-                it(null, true)
-            }
-            return
-        }
+                        if (ResponseCode.isSuccessful(response.code())) {
+                            successfulLogic()
+                            callback?.also {
+                                it(null, true)
+                            }
+                            return@launch
+                        }
 
-        callback?.also {
-            it("${response.code()}: ${response.message()}", false)
-        }
+                        callback?.also {
+                            it("${response.code()}: ${response.message()}", false)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    sahhaErrorLogger.api(
+                        call,
+                        SahhaErrors.typeResponse,
+                        null,
+                        t.message ?: SahhaErrors.responseFailure
+                    )
+                }
+            }
+        )
     }
 
     private suspend fun checkTokenExpired(

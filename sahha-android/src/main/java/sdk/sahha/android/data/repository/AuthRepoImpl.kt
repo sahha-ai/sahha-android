@@ -34,7 +34,7 @@ class AuthRepoImpl @Inject constructor(
             val nullErrorMsg = "Something went wrong storing tokens"
 
             callback?.also { it(e.message ?: nullErrorMsg, false) }
-            sahhaErrorLogger.application(e.message ?: nullErrorMsg)
+            sahhaErrorLogger.application(e.message ?: nullErrorMsg, "saveTokens", null)
         }
     }
 }
