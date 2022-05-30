@@ -98,7 +98,7 @@ class ManualDependencies @Inject constructor(
         setDatabase(context)
         setBackgroundRepo(context)
         setNotifications(context)
-        setAppCenterLog(context)
+        setSahhaErrorLogger(context)
     }
 
     private fun setDatabase(context: Context) {
@@ -118,7 +118,7 @@ class ManualDependencies @Inject constructor(
         notifications = SahhaNotificationManager(context, backgroundRepo)
     }
 
-    private fun setAppCenterLog(context: Context) {
+    private fun setSahhaErrorLogger(context: Context) {
         sahhaErrorLogger =
             SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }

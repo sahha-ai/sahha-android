@@ -42,11 +42,6 @@ object Sahha {
         di.setDependencies(application)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
-            AppCenter.start(
-                application,
-                getCorrectAppCenterKey(sahhaSettings.environment),
-                Analytics::class.java, Crashes::class.java
-            )
         }
     }
 

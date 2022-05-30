@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.repository
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -43,10 +44,10 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = getRefreshTokenCall(tokenData)
             call.enqueue(
-                object : Callback<ResponseBody> {
+                object : Callback<ResponseBody?> {
                     override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
+                        call: Call<ResponseBody?>,
+                        response: Response<ResponseBody?>
                     ) {
                         ioScope.launch {
                             if (ResponseCode.isSuccessful(response.code())) {
@@ -64,7 +65,7 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeAuthentication,
@@ -131,25 +132,29 @@ class RemoteRepoImpl @Inject constructor(
         dates: Pair<String, String>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
+        Log.w("getAnalysis", "getAnalysis")
         try {
+            Log.w("getAnalysis", "try")
             val call = getDetectedAnalysisCall(dates)
             call.enqueue(
-                object : Callback<ResponseBody> {
+                object : Callback<ResponseBody?> {
                     override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
+                        call: Call<ResponseBody?>,
+                        response: Response<ResponseBody?>
                     ) {
+                        Log.w("getAnalysis", "onResponse")
                         ioScope.launch {
+                            Log.w("getAnalysis", "ioscope")
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
                                     getAnalysis(dates, callback)
                                 }
-
                                 return@launch
                             }
 
                             if (ResponseCode.isSuccessful(response.code())) {
+                                Log.w("getAnalysis", "success")
                                 returnFormattedResponse(response, callback)
                                 return@launch
                             }
@@ -165,7 +170,9 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                        Log.w("getAnalysis", "fail")
+
                         callback?.also { it(t.message, null) }
                         sahhaErrorLogger.api(
                             call,
@@ -177,6 +184,7 @@ class RemoteRepoImpl @Inject constructor(
                 }
             )
         } catch (e: Exception) {
+            Log.w("getAnalysis", "catch")
             callback?.also { it(e.message, null) }
         }
     }
@@ -240,10 +248,10 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = postDemographicResponse(sahhaDemographic)
             call.enqueue(
-                object : Callback<ResponseBody> {
+                object : Callback<ResponseBody?> {
                     override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
+                        call: Call<ResponseBody?>,
+                        response: Response<ResponseBody?>
                     ) {
                         ioScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
@@ -282,7 +290,7 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeResponse,
@@ -299,7 +307,7 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private fun returnFormattedResponse(
-        response: Response<ResponseBody>,
+        response: Response<ResponseBody?>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         if (response.code() == 204) {
@@ -315,16 +323,16 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private suspend fun handleResponse(
-        call: Call<ResponseBody>,
-        retryLogic: suspend (() -> Call<ResponseBody>),
+        call: Call<ResponseBody?>,
+        retryLogic: suspend (() -> Call<ResponseBody?>),
         callback: ((error: String?, successful: Boolean) -> Unit)?,
         successfulLogic: (suspend () -> Unit)
     ) {
         call.enqueue(
-            object : Callback<ResponseBody> {
+            object : Callback<ResponseBody?> {
                 override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
+                    call: Call<ResponseBody?>,
+                    response: Response<ResponseBody?>
                 ) {
                     ioScope.launch {
                         if (ResponseCode.isUnauthorized(response.code())) {
@@ -355,7 +363,7 @@ class RemoteRepoImpl @Inject constructor(
                     }
                 }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
                     sahhaErrorLogger.api(
                         call,
                         SahhaErrors.typeResponse,
@@ -430,28 +438,28 @@ class RemoteRepoImpl @Inject constructor(
         return api.postRefreshToken(td)
     }
 
-    private suspend fun getSleepResponse(): Call<ResponseBody> {
+    private suspend fun getSleepResponse(): Call<ResponseBody?> {
         return api.postSleepDataRange(
             TokenBearer(decryptor.decrypt(UET)),
             sleepDao.getSleepDto()
         )
     }
 
-    private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
+    private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody?> {
         return api.postDeviceActivityRange(
             TokenBearer(decryptor.decrypt(UET)),
             deviceDao.getUsages()
         )
     }
 
-    private suspend fun getAnalysisResponse(): Call<ResponseBody> {
+    private suspend fun getAnalysisResponse(): Call<ResponseBody?> {
         return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)))
     }
 
     private suspend fun getAnalysisResponse(
         startDate: String,
         endDate: String
-    ): Call<ResponseBody> {
+    ): Call<ResponseBody?> {
         return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), startDate, endDate)
     }
 
@@ -463,7 +471,7 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody> {
+    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody?> {
         return datesISO?.let { it ->
             getAnalysisResponse(it.first, it.second)
         } ?: getAnalysisResponse()

@@ -2,6 +2,7 @@ package sdk.sahha.android.data.remote
 
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
@@ -20,25 +21,25 @@ interface SahhaApi {
     suspend fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepDto>
-    ): Call<ResponseBody>
+    ): Call<ResponseBody?>
 
     @POST("deviceActivity/lockRange")
     suspend fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsage>
-    ): Call<ResponseBody>
+    ): Call<ResponseBody?>
 
     @GET("profile/analyze")
     suspend fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-    ): Call<ResponseBody>
+    ): Call<ResponseBody?>
 
     @GET("profile/analyze")
     suspend fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Query("startDate") startDate: String,
         @Query("endDate") endDate: String
-    ): Call<ResponseBody>
+    ): Call<ResponseBody?>
 
 
     @GET("profile/demographic")

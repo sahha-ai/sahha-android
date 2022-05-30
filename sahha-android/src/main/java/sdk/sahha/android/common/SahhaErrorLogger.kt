@@ -30,7 +30,7 @@ class SahhaErrorLogger @Inject constructor(
     private var sahhaErrorLog = getNewSahhaErrorLog()
 
     fun api(
-        call: Call<ResponseBody>?,
+        call: Call<ResponseBody?>?,
         type: String,
         code: Int?,
         message: String
@@ -89,7 +89,7 @@ class SahhaErrorLogger @Inject constructor(
 
     @JvmName("setApiLogPropertiesDemographicDto")
     private fun setApiLogProperties(
-        call: Call<ResponseBody>?,
+        call: Call<ResponseBody?>?,
         type: String,
         code: Int?,
         message: String
