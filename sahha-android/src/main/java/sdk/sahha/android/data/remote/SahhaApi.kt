@@ -13,40 +13,40 @@ import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
     @POST("oauth/profile/refreshToken")
-    suspend fun postRefreshToken(
+    fun postRefreshToken(
         @Body tokenData: TokenData
     ): Call<ResponseBody>
 
     @POST("sleep/logRange")
-    suspend fun postSleepDataRange(
+    fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepDto>
     ): Call<ResponseBody>
 
     @POST("deviceActivity/lockRange")
-    suspend fun postDeviceActivityRange(
+    fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsage>
     ): Call<ResponseBody>
 
     @POST("profile/analyze")
-    suspend fun analyzeProfile(
+    fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
     ): Call<ResponseBody>
 
     @POST("profile/analyze")
-    suspend fun analyzeProfile(
+    fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body requestBody: RequestBody
     ): Call<ResponseBody>
 
     @GET("profile/demographic")
-    suspend fun getDemographic(
+    fun getDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String
     ): Call<DemographicDto>
 
     @PUT("profile/demographic")
-    suspend fun postDemographic(
+    fun postDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body demographics: SahhaDemographic
     ): Call<ResponseBody>
