@@ -114,6 +114,7 @@ dependencies {
     testImplementation "com.squareup.okhttp3:mockwebserver:4.9.1"
     testImplementation "io.mockk:mockk:1.10.5"
     debugImplementation "androidx.compose.ui:ui-test-manifest:1.1.0-alpha04"
+    testImplementation 'org.json:json:20180813'
 
     // Instrumentation tests
     androidTestImplementation 'com.google.dagger:hilt-android-testing:2.37'
