@@ -82,16 +82,22 @@ class MainActivity : ComponentActivity() {
                                     Text("Permission Test")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                OutlinedTextField(value = token, onValueChange = {
-                                    token = it
-                                }, label = {
-                                    Text("Token")
-                                })
-                                OutlinedTextField(value = refreshToken, onValueChange = {
-                                    refreshToken = it
-                                }, label = {
-                                    Text("Refresh Token")
-                                })
+                                OutlinedTextField(
+                                    value = token,
+                                    singleLine = true,
+                                    onValueChange = {
+                                        token = it
+                                    }, label = {
+                                        Text("Token")
+                                    })
+                                OutlinedTextField(
+                                    value = refreshToken,
+                                    singleLine = true,
+                                    onValueChange = {
+                                        refreshToken = it
+                                    }, label = {
+                                        Text("Refresh Token")
+                                    })
                                 Button(onClick = {
                                     Sahha.authenticate(
                                         token,
@@ -141,15 +147,6 @@ class MainActivity : ComponentActivity() {
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
-                                        }
-                                    }
-
-                                    Sahha.analyze(
-                                        Pair(Date().time, Date().time)
-                                    ) { error, success ->
-                                        error?.also { analyzeResponseEpoch = it }
-                                        success?.also {
-                                            analyzeResponseEpoch = it
                                         }
                                     }
 

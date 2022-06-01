@@ -8,9 +8,9 @@ import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.source.Sahha
 
 @RequiresApi(Build.VERSION_CODES.O)
 class PhoneScreenOffReceiver : BroadcastReceiver() {
@@ -23,12 +23,15 @@ class PhoneScreenOffReceiver : BroadcastReceiver() {
 
     private fun saveLockAsync() {
         Sahha.di.ioScope.launch {
-            Sahha.di.deviceUsageDao.saveUsage(
-                PhoneUsage(
-                    true,
-                    Sahha.timeManager!!.nowInISO()
+            Sahha.timeManager?.also { sahhaTime ->
+                Sahha.di.deviceUsageDao.saveUsage(
+                    PhoneUsage(
+                        isLocked = true,
+                        isScreenOn = false,
+                        sahhaTime.nowInISO()
+                    )
                 )
-            )
+            }
         }
     }
 }

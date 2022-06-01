@@ -76,22 +76,4 @@ class AnalyzeProfileUseCase @Inject constructor(
             callback?.also { it("Error: ${e.message}", null) }
         }
     }
-
-    suspend operator fun invoke(
-        dates: Pair<Long, Long>,
-        callback: ((error: String?, success: String?) -> Unit)?,
-    ) {
-        try {
-            sahhaTimeManager?.also { timeManager ->
-                val datesISO = Pair(
-                    timeManager.epochMillisToISO(dates.first),
-                    timeManager.epochMillisToISO(dates.second)
-                )
-
-                repository.getAnalysis(datesISO, callback)
-            } ?: callback?.also { it(SahhaErrors.nullTimeManager, null) }
-        } catch (e: Exception) {
-            callback?.also { it("Error: ${e.message}", null) }
-        }
-    }
 }

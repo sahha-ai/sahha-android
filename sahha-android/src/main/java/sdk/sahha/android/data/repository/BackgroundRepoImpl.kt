@@ -23,7 +23,6 @@ import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MIL
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenOffReceiver
@@ -169,6 +168,7 @@ class BackgroundRepoImpl @Inject constructor(
             PhoneScreenUnlockedReceiver(),
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
+                addAction(Intent.ACTION_SCREEN_ON)
             }
         )
     }

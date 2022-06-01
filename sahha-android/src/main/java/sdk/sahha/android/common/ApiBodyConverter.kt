@@ -1,12 +1,26 @@
 package sdk.sahha.android.common
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONObject
 import sdk.sahha.android.source.Sahha
 
 object ApiBodyConverter {
+    fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
+        val jsonObject = JSONObject()
+
+        for (content in rbContent) {
+            jsonObject.put(content.key, content.value)
+        }
+
+        val jsonString = jsonObject.toString()
+
+        return jsonString.toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
     fun responseBodyToJson(response: ResponseBody?): JSONObject? {
         response?.also {
             val jsonString = it.string()
@@ -36,7 +50,7 @@ object ApiBodyConverter {
             e.message?.also {
                 Sahha.di.sahhaErrorLogger.application(
                     it,
-                    "requestBodyToString(request: RequestBody?): String?",
+                    "requestBodyToString",
                     request?.toString()
                 )
             }

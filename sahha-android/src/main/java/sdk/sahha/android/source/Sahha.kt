@@ -3,9 +3,6 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaPermissions
@@ -89,15 +86,6 @@ object Sahha {
     @JvmName("analyzeLocalDateTime")
     fun analyze(
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?,
-    ) {
-        di.defaultScope.launch {
-            di.analyzeProfileUseCase(dates, callback)
-        }
-    }
-
-    fun analyze(
-        dates: Pair<Long, Long>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {

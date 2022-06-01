@@ -28,8 +28,9 @@ class ManualDependencies @Inject constructor(
     internal lateinit var notifications: SahhaNotificationManager
     internal lateinit var sahhaErrorLogger: SahhaErrorLogger
 
-    internal val api by lazy { AppModule.provideSahhaApi(environment) }
-    internal val sahhaErrorApi by lazy { AppModule.provideSahhaErrorApi(environment) }
+    internal val gson by lazy { AppModule.provideGsonConverter() }
+    internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
+    internal val sahhaErrorApi by lazy { AppModule.provideSahhaErrorApi(environment, gson) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
     internal val movementDao by lazy { AppModule.provideMovementDao(database) }
     internal val sleepDao by lazy { AppModule.provideSleepDao(database) }

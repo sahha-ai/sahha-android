@@ -39,17 +39,26 @@ import javax.inject.Singleton
 internal object AppModule {
     @Provides
     @Singleton
-    fun provideSahhaApi(environment: Enum<SahhaEnvironment>): SahhaApi {
+    fun provideGsonConverter(): GsonConverterFactory {
+        return GsonConverterFactory.create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSahhaApi(
+        environment: Enum<SahhaEnvironment>,
+        gson: GsonConverterFactory
+    ): SahhaApi {
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_PROD)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_DEV)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
         }
@@ -57,17 +66,20 @@ internal object AppModule {
 
     @Provides
     @Singleton
-    fun provideSahhaErrorApi(environment: Enum<SahhaEnvironment>): SahhaErrorApi {
+    fun provideSahhaErrorApi(
+        environment: Enum<SahhaEnvironment>,
+        gson: GsonConverterFactory
+    ): SahhaErrorApi {
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.ERROR_API_PROD)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(gson)
                 .build()
                 .create(SahhaErrorApi::class.java)
         } else {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.ERROR_API_DEV)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(gson)
                 .build()
                 .create(SahhaErrorApi::class.java)
         }
@@ -137,7 +149,8 @@ internal object AppModule {
             "sahha-database"
         )
             .addMigrations(
-                SahhaDbMigrations.MIGRATION_1_2
+                SahhaDbMigrations.MIGRATION_1_2,
+                SahhaDbMigrations.MIGRATION_2_3
             )
             .fallbackToDestructiveMigration()
             .build()

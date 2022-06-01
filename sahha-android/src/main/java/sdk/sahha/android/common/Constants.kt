@@ -23,6 +23,7 @@ internal object Constants {
     const val AVG_STEP_DISTANCE_FEMALE = 0.7
     const val AVG_STEP_DISTANCE = 0.74
     const val ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS = 15000L
+    const val ONE_DAY_IN_MILLIS = 86400000L
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000

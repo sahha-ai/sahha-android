@@ -7,6 +7,7 @@ import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import org.json.JSONObject
 import retrofit2.Call
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.API_ERROR
@@ -30,7 +31,25 @@ class SahhaErrorLogger @Inject constructor(
     private var sahhaErrorLog = getNewSahhaErrorLog()
 
     fun api(
-        call: Call<ResponseBody?>?,
+        call: Call<ResponseBody>,
+        type: String,
+        code: Int?,
+        message: String
+    ) {
+        defaultScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(call, type, code, message)
+            sahhaErrorApi.postErrorLog(
+                decryptor.decrypt(UET),
+                sahhaErrorLog
+            )
+        }
+    }
+
+    @JvmName("apiUnit")
+    fun api(
+        call: Call<Unit>,
         type: String,
         code: Int?,
         message: String
@@ -87,9 +106,8 @@ class SahhaErrorLogger @Inject constructor(
         appBody?.also { sahhaErrorLog.appBody = it }
     }
 
-    @JvmName("setApiLogPropertiesDemographicDto")
     private fun setApiLogProperties(
-        call: Call<ResponseBody?>?,
+        call: Call<ResponseBody>?,
         type: String,
         code: Int?,
         message: String
@@ -106,6 +124,27 @@ class SahhaErrorLogger @Inject constructor(
         sahhaErrorLog.errorMessage = message
     }
 
+
+    @JvmName("setApiLogPropertiesUnit")
+    private fun setApiLogProperties(
+        call: Call<Unit>?,
+        type: String,
+        code: Int?,
+        message: String
+    ) {
+        sahhaErrorLog.errorSource = API_ERROR
+        call?.also {
+            sahhaErrorLog.apiBody =
+                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+            sahhaErrorLog.apiMethod = it.request().method
+            sahhaErrorLog.apiURL = it.request().url.encodedPath
+        }
+        sahhaErrorLog.errorType = type
+        code?.also { sahhaErrorLog.errorCode = it }
+        sahhaErrorLog.errorMessage = message
+    }
+
+    @JvmName("setApiLogPropertiesDemographicDto")
     private fun setApiLogProperties(
         call: Call<DemographicDto>?,
         type: String,

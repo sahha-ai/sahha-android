@@ -44,10 +44,10 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = getRefreshTokenCall(tokenData)
             call.enqueue(
-                object : Callback<ResponseBody?> {
+                object : Callback<ResponseBody> {
                     override fun onResponse(
-                        call: Call<ResponseBody?>,
-                        response: Response<ResponseBody?>
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
                     ) {
                         ioScope.launch {
                             if (ResponseCode.isSuccessful(response.code())) {
@@ -65,7 +65,7 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeAuthentication,
@@ -108,8 +108,8 @@ class RemoteRepoImpl @Inject constructor(
                 return
             }
 
-            val response = getPhoneScreenLockResponse()
-            handleResponse(response, { getPhoneScreenLockResponse() }, callback) {
+            val call = getPhoneScreenLockResponse()
+            handleResponse(call, { getPhoneScreenLockResponse() }, callback) {
                 clearLocalPhoneScreenLockData()
             }
         } catch (e: Exception) {
@@ -136,15 +136,16 @@ class RemoteRepoImpl @Inject constructor(
         try {
             Log.w("getAnalysis", "try")
             val call = getDetectedAnalysisCall(dates)
+            if(call.isExecuted) Log.w("getAnalysis", "executed")
             call.enqueue(
-                object : Callback<ResponseBody?> {
+                object : Callback<ResponseBody> {
                     override fun onResponse(
-                        call: Call<ResponseBody?>,
-                        response: Response<ResponseBody?>
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
                     ) {
                         Log.w("getAnalysis", "onResponse")
                         ioScope.launch {
-                            Log.w("getAnalysis", "ioscope")
+                            Log.w("getAnalysis", "ioScope")
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -170,7 +171,7 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         Log.w("getAnalysis", "fail")
 
                         callback?.also { it(t.message, null) }
@@ -184,7 +185,7 @@ class RemoteRepoImpl @Inject constructor(
                 }
             )
         } catch (e: Exception) {
-            Log.w("getAnalysis", "catch")
+            Log.w("getAnalysis", "catch: ${e.message}")
             callback?.also { it(e.message, null) }
         }
     }
@@ -248,10 +249,10 @@ class RemoteRepoImpl @Inject constructor(
         try {
             val call = postDemographicResponse(sahhaDemographic)
             call.enqueue(
-                object : Callback<ResponseBody?> {
+                object : Callback<ResponseBody> {
                     override fun onResponse(
-                        call: Call<ResponseBody?>,
-                        response: Response<ResponseBody?>
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
                     ) {
                         ioScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
@@ -290,7 +291,7 @@ class RemoteRepoImpl @Inject constructor(
                         }
                     }
 
-                    override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeResponse,
@@ -307,7 +308,7 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private fun returnFormattedResponse(
-        response: Response<ResponseBody?>,
+        response: Response<ResponseBody>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         if (response.code() == 204) {
@@ -323,16 +324,16 @@ class RemoteRepoImpl @Inject constructor(
     }
 
     private suspend fun handleResponse(
-        call: Call<ResponseBody?>,
-        retryLogic: suspend (() -> Call<ResponseBody?>),
+        call: Call<ResponseBody>,
+        retryLogic: suspend (() -> Call<ResponseBody>),
         callback: ((error: String?, successful: Boolean) -> Unit)?,
         successfulLogic: (suspend () -> Unit)
     ) {
         call.enqueue(
-            object : Callback<ResponseBody?> {
+            object : Callback<ResponseBody> {
                 override fun onResponse(
-                    call: Call<ResponseBody?>,
-                    response: Response<ResponseBody?>
+                    call: Call<ResponseBody>,
+                    response: Response<ResponseBody>
                 ) {
                     ioScope.launch {
                         if (ResponseCode.isUnauthorized(response.code())) {
@@ -363,7 +364,7 @@ class RemoteRepoImpl @Inject constructor(
                     }
                 }
 
-                override fun onFailure(call: Call<ResponseBody?>, t: Throwable) {
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                     sahhaErrorLogger.api(
                         call,
                         SahhaErrors.typeResponse,
@@ -438,29 +439,45 @@ class RemoteRepoImpl @Inject constructor(
         return api.postRefreshToken(td)
     }
 
-    private suspend fun getSleepResponse(): Call<ResponseBody?> {
+    private suspend fun getSleepResponse(): Call<ResponseBody> {
         return api.postSleepDataRange(
             TokenBearer(decryptor.decrypt(UET)),
             sleepDao.getSleepDto()
         )
     }
 
-    private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody?> {
+    private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
         return api.postDeviceActivityRange(
             TokenBearer(decryptor.decrypt(UET)),
             deviceDao.getUsages()
         )
     }
 
-    private suspend fun getAnalysisResponse(): Call<ResponseBody?> {
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)))
+    private suspend fun getAnalysisResponse(): Call<ResponseBody> {
+        val sahhaTimeManager = SahhaTimeManager()
+
+        val datesBody = ApiBodyConverter.hashMapToRequestBody(
+            hashMapOf(
+                "startDateTime" to sahhaTimeManager.last24HoursInISO(),
+                "endDateTime" to sahhaTimeManager.nowInISO()
+            )
+        )
+
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
     }
 
     private suspend fun getAnalysisResponse(
         startDate: String,
         endDate: String
-    ): Call<ResponseBody?> {
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), startDate, endDate)
+    ): Call<ResponseBody> {
+        val datesBody = ApiBodyConverter.hashMapToRequestBody(
+            hashMapOf(
+                "startDateTime" to startDate,
+                "endDateTime" to endDate
+            )
+        )
+
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
@@ -471,7 +488,7 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody?> {
+    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody> {
         return datesISO?.let { it ->
             getAnalysisResponse(it.first, it.second)
         } ?: getAnalysisResponse()
