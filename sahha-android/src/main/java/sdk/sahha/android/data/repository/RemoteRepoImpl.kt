@@ -1,6 +1,5 @@
 package sdk.sahha.android.data.repository
 
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -98,6 +97,12 @@ class RemoteRepoImpl @Inject constructor(
             }
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postSleepData",
+                sleepDao.getSleepDto().toString()
+            )
         }
     }
 
@@ -125,6 +130,11 @@ class RemoteRepoImpl @Inject constructor(
             postSensorData(sensors, callback)
         } catch (e: Exception) {
             callback(e.message, false)
+            sahhaErrorLogger.application(
+                e.message,
+                "postAllSensorData",
+                sensors?.toString()
+            )
         }
     }
 
@@ -132,20 +142,15 @@ class RemoteRepoImpl @Inject constructor(
         dates: Pair<String, String>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
-        Log.w("getAnalysis", "getAnalysis")
         try {
-            Log.w("getAnalysis", "try")
             val call = getDetectedAnalysisCall(dates)
-            if(call.isExecuted) Log.w("getAnalysis", "executed")
             call.enqueue(
                 object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        Log.w("getAnalysis", "onResponse")
                         ioScope.launch {
-                            Log.w("getAnalysis", "ioScope")
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -155,7 +160,6 @@ class RemoteRepoImpl @Inject constructor(
                             }
 
                             if (ResponseCode.isSuccessful(response.code())) {
-                                Log.w("getAnalysis", "success")
                                 returnFormattedResponse(response, callback)
                                 return@launch
                             }
@@ -172,8 +176,6 @@ class RemoteRepoImpl @Inject constructor(
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        Log.w("getAnalysis", "fail")
-
                         callback?.also { it(t.message, null) }
                         sahhaErrorLogger.api(
                             call,
@@ -185,7 +187,11 @@ class RemoteRepoImpl @Inject constructor(
                 }
             )
         } catch (e: Exception) {
-            Log.w("getAnalysis", "catch: ${e.message}")
+            sahhaErrorLogger.application(
+                e.message,
+                "getAnalysis",
+                dates?.toString()
+            )
             callback?.also { it(e.message, null) }
         }
     }
@@ -228,6 +234,7 @@ class RemoteRepoImpl @Inject constructor(
                     }
 
                     override fun onFailure(call: Call<DemographicDto>, t: Throwable) {
+                        callback?.also { it(t.message, null) }
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeResponse,
@@ -239,6 +246,12 @@ class RemoteRepoImpl @Inject constructor(
             )
         } catch (e: Exception) {
             callback?.also { it(e.message, null) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "getDemographic",
+                null
+            )
         }
     }
 
@@ -260,13 +273,6 @@ class RemoteRepoImpl @Inject constructor(
                                 checkTokenExpired(response.code()) {
                                     postDemographic(sahhaDemographic, callback)
                                 }
-
-                                sahhaErrorLogger.api(
-                                    call,
-                                    SahhaErrors.typeAuthentication,
-                                    response.code(),
-                                    response.message()
-                                )
                                 return@launch
                             }
 
@@ -292,6 +298,7 @@ class RemoteRepoImpl @Inject constructor(
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        callback?.also { it(t.message, false) }
                         sahhaErrorLogger.api(
                             call,
                             SahhaErrors.typeResponse,
@@ -299,11 +306,16 @@ class RemoteRepoImpl @Inject constructor(
                             t.message ?: SahhaErrors.responseFailure
                         )
                     }
-
                 }
             )
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postDemographic",
+                sahhaDemographic.toString()
+            )
         }
     }
 
@@ -361,10 +373,19 @@ class RemoteRepoImpl @Inject constructor(
                         callback?.also {
                             it("${response.code()}: ${response.message()}", false)
                         }
+
+                        sahhaErrorLogger.api(
+                            call,
+                            SahhaErrors.typeResponse,
+                            response.code(),
+                            response.message()
+                        )
                     }
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    callback?.also { it(t.message, false) }
+
                     sahhaErrorLogger.api(
                         call,
                         SahhaErrors.typeResponse,

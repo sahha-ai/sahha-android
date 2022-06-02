@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.use_case
 
 import android.os.Build
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.repository.RemoteRepo
@@ -10,7 +11,8 @@ import javax.inject.Inject
 
 class AnalyzeProfileUseCase @Inject constructor(
     private val repository: RemoteRepo,
-    private val sahhaTimeManager: SahhaTimeManager?
+    private val sahhaTimeManager: SahhaTimeManager?,
+    private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
         callback: ((error: String?, success: String?) -> Unit)?
@@ -41,10 +43,24 @@ class AnalyzeProfileUseCase @Inject constructor(
                 }
 
                 repository.getAnalysis(datesISO, callback)
-            } ?: callback?.also { it(SahhaErrors.nullTimeManager, null) }
+            } ?: callback?.also {
+                it(SahhaErrors.nullTimeManager, null)
+
+                sahhaErrorLogger?.application(
+                    SahhaErrors.nullTimeManager,
+                    "AnalyzeProfileUseCase",
+                    dates.toString()
+                )
+            }
 
         } catch (e: Exception) {
             callback?.also { it("Error: ${e.message}", null) }
+
+            sahhaErrorLogger?.application(
+                e.message,
+                "AnalyzeProfileUseCase",
+                dates.toString()
+            )
         }
     }
 
@@ -71,9 +87,21 @@ class AnalyzeProfileUseCase @Inject constructor(
                 }
 
                 repository.getAnalysis(datesISO, callback)
-            } ?: callback?.also { it(SahhaErrors.nullTimeManager, null) }
+            } ?: callback?.also {
+                it(SahhaErrors.nullTimeManager, null)
+                sahhaErrorLogger?.application(
+                    SahhaErrors.nullTimeManager,
+                    "AnalyzeProfileUseCase",
+                    dates.toString()
+                )
+            }
         } catch (e: Exception) {
             callback?.also { it("Error: ${e.message}", null) }
+            sahhaErrorLogger?.application(
+                e.message,
+                "AnalyzeProfileUseCase",
+                dates.toString()
+            )
         }
     }
 }

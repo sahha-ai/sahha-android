@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.APPLICATION_ERROR
@@ -92,10 +95,6 @@ class SahhaErrorLogger @Inject constructor(
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApplicationLogProperties(error, appMethod, appBody)
-            sahhaErrorApi.postErrorLog(
-                decryptor.decrypt(UET),
-                sahhaErrorLog
-            )
         }
     }
 
@@ -171,7 +170,7 @@ class SahhaErrorLogger @Inject constructor(
         val config = configurationDao.getConfig()
 
         sahhaErrorLog.sdkId = config.framework
-        sahhaErrorLog.sdkVersion = sdk.sahha.android.BuildConfig.SAHHA_SDK_VERSION
+        sahhaErrorLog.sdkVersion = sdk.sahha.android.BuildConfig.SDK_VERSION_NAME
         sahhaErrorLog.appId = appId
         sahhaErrorLog.appVersion = versionName ?: "Unknown"
         sahhaErrorLog.deviceType = Build.MANUFACTURER

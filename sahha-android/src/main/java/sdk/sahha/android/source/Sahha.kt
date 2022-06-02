@@ -53,15 +53,16 @@ object Sahha {
     }
 
     fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
-        di.defaultScope.launch {
             try {
-                config = di.configurationDao.getConfig()
-                startDataCollection(callback)
-                checkAndStartPostWorkers()
+                di.defaultScope.launch {
+                    config = di.configurationDao.getConfig()
+                    startDataCollection(callback)
+                    checkAndStartPostWorkers()
+                }
             } catch (e: Exception) {
                 callback?.also { it("Error: ${e.message}", false) }
+                di.sahhaErrorLogger.application(e.message, "start", null)
             }
-        }
     }
 
     fun analyze(
@@ -224,12 +225,5 @@ object Sahha {
             sensorEnums.add(it.ordinal)
         }
         return sensorEnums
-    }
-
-    private fun getCorrectAppCenterKey(environment: Enum<SahhaEnvironment>): String {
-        if (environment == SahhaEnvironment.production) {
-            return BuildConfig.ERROR_API_PROD
-        }
-        return BuildConfig.ERROR_API_DEV
     }
 }

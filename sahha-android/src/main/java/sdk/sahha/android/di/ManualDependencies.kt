@@ -79,7 +79,7 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo, timeManager) }
+    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo, timeManager, sahhaErrorLogger) }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
     val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
