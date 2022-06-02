@@ -11,7 +11,7 @@ internal object Constants {
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
-    const val APPLICATION_ERROR = "application"
+    const val APPLICATION_ERROR = "app"
 
     // Worker tags
     const val SLEEP_WORKER_TAG = "sleepData"
