@@ -1,6 +1,8 @@
 package sdk.sahha.android.di
 
+import android.app.KeyguardManager
 import android.content.Context
+import android.os.PowerManager
 import androidx.room.Room
 import dagger.Module
 import dagger.Provides
@@ -37,6 +39,22 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 internal object AppModule {
+    @Provides
+    @Singleton
+    fun providePowerManager(
+        @ApplicationContext context: Context
+    ): PowerManager {
+        return context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    }
+
+    @Provides
+    @Singleton
+    fun provideKeyguardManager(
+        @ApplicationContext context: Context
+    ): KeyguardManager {
+        return context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+    }
+
     @Provides
     @Singleton
     fun provideGsonConverter(): GsonConverterFactory {

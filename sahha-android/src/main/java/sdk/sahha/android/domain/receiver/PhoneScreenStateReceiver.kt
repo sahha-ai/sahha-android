@@ -13,25 +13,23 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.Sahha
 
 @RequiresApi(Build.VERSION_CODES.O)
-class PhoneScreenOffReceiver : BroadcastReceiver() {
+class PhoneScreenStateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Default).launch {
             SahhaReconfigure(context)
-            saveLockAsync()
+            saveScreenStateAsync()
         }
     }
 
-    private fun saveLockAsync() {
-        Sahha.di.ioScope.launch {
-            Sahha.timeManager?.also { sahhaTime ->
-                Sahha.di.deviceUsageDao.saveUsage(
-                    PhoneUsage(
-                        isLocked = true,
-                        isScreenOn = false,
-                        sahhaTime.nowInISO()
-                    )
+    private suspend fun saveScreenStateAsync() {
+        Sahha.timeManager?.also { sahhaTime ->
+            Sahha.di.deviceUsageDao.saveUsage(
+                PhoneUsage(
+                    isLocked = Sahha.di.keyguardManager.isKeyguardLocked,
+                    isScreenOn = Sahha.di.powerManager.isInteractive,
+                    sahhaTime.nowInISO()
                 )
-            }
+            )
         }
     }
 }

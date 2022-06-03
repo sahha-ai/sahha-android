@@ -25,8 +25,7 @@ import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
-import sdk.sahha.android.domain.receiver.PhoneScreenOffReceiver
-import sdk.sahha.android.domain.receiver.PhoneScreenUnlockedReceiver
+import sdk.sahha.android.domain.receiver.PhoneScreenStateReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.SleepCollectionWorker
@@ -117,8 +116,7 @@ class BackgroundRepoImpl @Inject constructor(
         if (receiverRegistered) return true
         if (Build.VERSION.SDK_INT < 26) return false
 
-        registerScreenUnlockedReceiver(serviceContext)
-        registerScreenOffReceiver(serviceContext)
+        registerScreenStateReceiver(serviceContext)
         return true
     }
 
@@ -163,21 +161,12 @@ class BackgroundRepoImpl @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun registerScreenUnlockedReceiver(serviceContext: Context) {
+    private fun registerScreenStateReceiver(serviceContext: Context) {
         serviceContext.registerReceiver(
-            PhoneScreenUnlockedReceiver(),
+            PhoneScreenStateReceiver(),
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
                 addAction(Intent.ACTION_SCREEN_ON)
-            }
-        )
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun registerScreenOffReceiver(serviceContext: Context) {
-        serviceContext.registerReceiver(
-            PhoneScreenOffReceiver(),
-            IntentFilter().apply {
                 addAction(Intent.ACTION_SCREEN_OFF)
             }
         )

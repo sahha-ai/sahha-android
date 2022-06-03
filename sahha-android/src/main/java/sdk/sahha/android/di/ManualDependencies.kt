@@ -1,7 +1,9 @@
 package sdk.sahha.android.di
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
+import android.os.PowerManager
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
@@ -27,6 +29,8 @@ class ManualDependencies @Inject constructor(
     internal lateinit var backgroundRepo: BackgroundRepo
     internal lateinit var notifications: SahhaNotificationManager
     internal lateinit var sahhaErrorLogger: SahhaErrorLogger
+    internal lateinit var powerManager: PowerManager
+    internal lateinit var keyguardManager: KeyguardManager
 
     internal val gson by lazy { AppModule.provideGsonConverter() }
     internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
@@ -79,7 +83,13 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo, timeManager, sahhaErrorLogger) }
+    val analyzeProfileUseCase by lazy {
+        AnalyzeProfileUseCase(
+            remotePostRepo,
+            timeManager,
+            sahhaErrorLogger
+        )
+    }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
     val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
@@ -100,6 +110,16 @@ class ManualDependencies @Inject constructor(
         setBackgroundRepo(context)
         setNotifications(context)
         setSahhaErrorLogger(context)
+        setPowerManager(context)
+        setKeyguardManager(context)
+    }
+
+    private fun setPowerManager(context: Context) {
+        powerManager = AppModule.providePowerManager(context)
+    }
+
+    private fun setKeyguardManager(context: Context) {
+        keyguardManager = AppModule.provideKeyguardManager(context)
     }
 
     private fun setDatabase(context: Context) {
