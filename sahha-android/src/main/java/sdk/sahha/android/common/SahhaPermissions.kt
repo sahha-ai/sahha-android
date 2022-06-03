@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import sdk.sahha.android.source.SahhaSensor
@@ -71,10 +72,6 @@ class SahhaSensorPermissionActivity : AppCompatActivity() {
 }
 
 class SahhaSensorStatusActivity : AppCompatActivity() {
-
-    private val permissionRequestCode = 0
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -90,10 +87,8 @@ class SahhaSensorStatusActivity : AppCompatActivity() {
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
-//                sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
-//                sharedPrefs.edit().putBoolean(RATIONALE_KEY, shouldShowRationale).apply()
             }
         }
         finish()
@@ -126,25 +121,21 @@ object SahhaPermissions : BroadcastReceiver() {
     }
 
     private fun onPermissionEnabled() {
-        Log.d("Sahha", "onPermissionEnabled")
         permissionCallback?.invoke(SahhaSensorStatus.enabled)
         permissionCallback = null
     }
 
     private fun onPermissionPending() {
-        Log.d("Sahha", "onPermissionPending")
         permissionCallback?.invoke(SahhaSensorStatus.pending)
         permissionCallback = null
     }
 
     private fun onPermissionDisabled() {
-        Log.d("Sahha", "onPermissionDisabled")
         permissionCallback?.invoke(SahhaSensorStatus.disabled)
         permissionCallback = null
     }
 
     private fun onPermissionUnavailable() {
-        Log.d("Sahha", "onPermissionUnavailable")
         permissionCallback?.invoke(SahhaSensorStatus.unavailable)
         permissionCallback = null
     }
@@ -165,19 +156,8 @@ object SahhaPermissions : BroadcastReceiver() {
                 callback?.invoke(SahhaSensorStatus.enabled)
             }
             PackageManager.PERMISSION_DENIED -> {
-
                 permissionCallback = callback
-
-                val intentFilter = IntentFilter()
-                intentFilter.addAction(PERMISSION_ENABLED)
-                intentFilter.addAction(PERMISSION_PENDING)
-                intentFilter.addAction(PERMISSION_DISABLED)
-                context.registerReceiver(this, intentFilter)
-                val intent = Intent(context, SahhaSensorStatusActivity::class.java)
-                intent.putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-
+                startPermissionActivity(context)
             }
             else -> {
                 callback?.invoke(SahhaSensorStatus.unavailable)
@@ -197,16 +177,7 @@ object SahhaPermissions : BroadcastReceiver() {
         }
 
         permissionCallback = callback
-
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(PERMISSION_ENABLED)
-        intentFilter.addAction(PERMISSION_PENDING)
-        intentFilter.addAction(PERMISSION_DISABLED)
-        context.registerReceiver(this, intentFilter)
-        val intent = Intent(context, SahhaSensorPermissionActivity::class.java)
-        intent.putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
+        startPermissionActivity(context)
     }
 
     fun activityRecognitionGranted(context: Context): Enum<SahhaSensorStatus> {
@@ -224,6 +195,31 @@ object SahhaPermissions : BroadcastReceiver() {
             else -> {
                 SahhaSensorStatus.unavailable
             }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun startPermissionActivity(context: Context) {
+        val intentFilter = getPermissionIntentFilter()
+        val intent = getPermissionIntent(context)
+
+        context.registerReceiver(this, intentFilter)
+        context.startActivity(intent)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun getPermissionIntent(context: Context): Intent {
+        return Intent(context, SahhaSensorStatusActivity::class.java).apply {
+            putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    }
+
+    private fun getPermissionIntentFilter(): IntentFilter {
+        return IntentFilter().apply {
+            addAction(PERMISSION_ENABLED)
+            addAction(PERMISSION_PENDING)
+            addAction(PERMISSION_DISABLED)
         }
     }
 }

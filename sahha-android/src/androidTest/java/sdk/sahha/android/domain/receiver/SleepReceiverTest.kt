@@ -21,7 +21,7 @@ class SleepReceiverTest : TestCase() {
     class TestActivity : ComponentActivity() {
         override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
             super.onCreate(savedInstanceState, persistentState)
-            Sahha.configure(this, SahhaSettings(environment = SahhaEnvironment.DEVELOPMENT))
+            Sahha.configure(this.application, SahhaSettings(environment = SahhaEnvironment.development))
         }
     }
 

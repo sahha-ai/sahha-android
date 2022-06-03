@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName
 data class DeviceUsage(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val createdAtEpoch: Long,
-    val isLocked: Boolean
+    val isLocked: Boolean,
 ) {
     constructor(createdAtEpoch: Long, isLocked: Boolean) : this(0, createdAtEpoch, isLocked)
 }

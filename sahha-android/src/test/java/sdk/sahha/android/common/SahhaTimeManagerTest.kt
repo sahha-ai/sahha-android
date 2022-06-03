@@ -9,6 +9,12 @@ class SahhaTimeManagerTest : TestCase() {
     val sahhaTimeManager = SahhaTimeManager()
 
     @Test
+    fun test_last24Hours() {
+        val value = sahhaTimeManager.last24HoursInISO()
+        assertEquals("", value)
+    }
+
+    @Test
     fun test_offsetDateTimeToISO() {
         val value = sahhaTimeManager.localDateTimeToISO(
             LocalDateTime.of(

@@ -3,6 +3,7 @@ package sdk.sahha.android.common
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
+import sdk.sahha.android.data.Constants.ONE_DAY_IN_MILLIS
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
@@ -13,7 +14,8 @@ import java.util.*
 
 @Keep
 class SahhaTimeManager {
-    private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
+    private val simpleDateFormat =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
 
     fun nowInISO(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -24,6 +26,19 @@ class SahhaTimeManager {
             val now = Date()
             val nowInISO = simpleDateFormat.format(now)
             return removeDuplicateZ(nowInISO)
+        }
+    }
+
+    fun last24HoursInISO(): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val last24Hours =
+                ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone().minusHours(24)
+            val last24HoursISO = last24Hours.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            return removeDuplicateZ(last24HoursISO)
+        } else {
+            val last24Hours = Date().time - ONE_DAY_IN_MILLIS
+            val last24HoursISO = simpleDateFormat.format(last24Hours)
+            return removeDuplicateZ(last24HoursISO)
         }
     }
 

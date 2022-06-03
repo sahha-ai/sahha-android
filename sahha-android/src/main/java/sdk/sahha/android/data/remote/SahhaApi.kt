@@ -1,7 +1,8 @@
 package sdk.sahha.android.data.remote
 
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
@@ -12,43 +13,41 @@ import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
     @POST("oauth/profile/refreshToken")
-    suspend fun postRefreshToken(
+    fun postRefreshToken(
         @Body tokenData: TokenData
-    ): Response<ResponseBody>
+    ): Call<ResponseBody>
 
     @POST("sleep/logRange")
-    suspend fun postSleepDataRange(
+    fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepDto>
-    ): Response<ResponseBody>
+    ): Call<ResponseBody>
 
     @POST("deviceActivity/lockRange")
-    suspend fun postDeviceActivityRange(
+    fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsage>
-    ): Response<ResponseBody>
+    ): Call<ResponseBody>
 
-    @GET("profile/analyze")
-    suspend fun analyzeProfile(
+    @POST("profile/analyze")
+    fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-    ): Response<ResponseBody>
+    ): Call<ResponseBody>
 
-    @GET("profile/analyze")
-    suspend fun analyzeProfile(
+    @POST("profile/analyze")
+    fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Query("startDate") startDate: String,
-        @Query("endDate") endDate: String
-    ): Response<ResponseBody>
-
+        @Body requestBody: RequestBody
+    ): Call<ResponseBody>
 
     @GET("profile/demographic")
-    suspend fun getDemographic(
+    fun getDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String
-    ): Response<DemographicDto>
+    ): Call<DemographicDto>
 
     @PUT("profile/demographic")
-    suspend fun postDemographic(
+    fun postDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body demographics: SahhaDemographic
-    ): Response<ResponseBody>
+    ): Call<ResponseBody>
 }

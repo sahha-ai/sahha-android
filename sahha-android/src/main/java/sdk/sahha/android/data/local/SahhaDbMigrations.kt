@@ -12,4 +12,12 @@ object SahhaDbMigrations {
             }
         }
     }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("ALTER TABLE PhoneUsage ADD COLUMN isScreenOn INTEGER NOT NULL DEFAULT(0)")
+            }
+        }
+    }
 }

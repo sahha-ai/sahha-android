@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
-
+// Converter for Room Database to handle JSON
 class Converter {
     @TypeConverter
     fun fromJsonString(value: String?): ArrayList<Int?>? {
