@@ -17,6 +17,8 @@ object SahhaErrors {
     val emptyRefreshToken = "Error: The refresh token was null or empty"
     val somethingWentWrong = "Error: Something went wrong, please try again"
     val nullTimeManager = "Error: Sahha time manager was null"
+    val responseFailure = "Error: Failed to receive response"
+    val noData = "Error: No data found"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

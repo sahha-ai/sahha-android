@@ -3,9 +3,6 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
-import com.microsoft.appcenter.AppCenter
-import com.microsoft.appcenter.analytics.Analytics
-import com.microsoft.appcenter.crashes.Crashes
 import kotlinx.coroutines.launch
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaPermissions
@@ -42,11 +39,6 @@ object Sahha {
         di.setDependencies(application)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
-            AppCenter.start(
-                application,
-                getCorrectAppCenterKey(sahhaSettings.environment),
-                Analytics::class.java, Crashes::class.java
-            )
         }
     }
 
@@ -61,15 +53,16 @@ object Sahha {
     }
 
     fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
-        di.defaultScope.launch {
             try {
-                config = di.configurationDao.getConfig()
-                startDataCollection(callback)
-                checkAndStartPostWorkers()
+                di.defaultScope.launch {
+                    config = di.configurationDao.getConfig()
+                    startDataCollection(callback)
+                    checkAndStartPostWorkers()
+                }
             } catch (e: Exception) {
                 callback?.also { it("Error: ${e.message}", false) }
+                di.sahhaErrorLogger.application(e.message, "start", null)
             }
-        }
     }
 
     fun analyze(
@@ -94,15 +87,6 @@ object Sahha {
     @JvmName("analyzeLocalDateTime")
     fun analyze(
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?,
-    ) {
-        di.defaultScope.launch {
-            di.analyzeProfileUseCase(dates, callback)
-        }
-    }
-
-    fun analyze(
-        dates: Pair<Long, Long>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
@@ -241,12 +225,5 @@ object Sahha {
             sensorEnums.add(it.ordinal)
         }
         return sensorEnums
-    }
-
-    private fun getCorrectAppCenterKey(environment: Enum<SahhaEnvironment>): String {
-        if (environment == SahhaEnvironment.production) {
-            return BuildConfig.APP_CENTER_PROD
-        }
-        return BuildConfig.APP_CENTER_DEV
     }
 }

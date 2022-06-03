@@ -1,8 +1,10 @@
 package sdk.sahha.android.di
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
-import sdk.sahha.android.common.AppCenterLog
+import android.os.PowerManager
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
@@ -26,9 +28,13 @@ class ManualDependencies @Inject constructor(
     internal lateinit var database: SahhaDatabase
     internal lateinit var backgroundRepo: BackgroundRepo
     internal lateinit var notifications: SahhaNotificationManager
-    internal lateinit var appCenterLog: AppCenterLog
+    internal lateinit var sahhaErrorLogger: SahhaErrorLogger
+    internal lateinit var powerManager: PowerManager
+    internal lateinit var keyguardManager: KeyguardManager
 
-    internal val api by lazy { AppModule.provideSahhaApi(environment) }
+    internal val gson by lazy { AppModule.provideGsonConverter() }
+    internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
+    internal val sahhaErrorApi by lazy { AppModule.provideSahhaErrorApi(environment, gson) }
     internal val securityDao by lazy { AppModule.provideSecurityDao(database) }
     internal val movementDao by lazy { AppModule.provideMovementDao(database) }
     internal val sleepDao by lazy { AppModule.provideSleepDao(database) }
@@ -38,7 +44,7 @@ class ManualDependencies @Inject constructor(
     internal val authRepo by lazy {
         AppModule.provideAuthRepository(
             encryptor,
-            appCenterLog
+            sahhaErrorLogger
         )
     }
     internal val remotePostRepo by lazy {
@@ -48,7 +54,8 @@ class ManualDependencies @Inject constructor(
             encryptor,
             decryptor,
             api,
-            appCenterLog
+            sahhaErrorLogger,
+            ioScope
         )
     }
 
@@ -76,7 +83,13 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
-    val analyzeProfileUseCase by lazy { AnalyzeProfileUseCase(remotePostRepo, timeManager) }
+    val analyzeProfileUseCase by lazy {
+        AnalyzeProfileUseCase(
+            remotePostRepo,
+            timeManager,
+            sahhaErrorLogger
+        )
+    }
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
     val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
@@ -96,7 +109,17 @@ class ManualDependencies @Inject constructor(
         setDatabase(context)
         setBackgroundRepo(context)
         setNotifications(context)
-        setAppCenterLog(context)
+        setSahhaErrorLogger(context)
+        setPowerManager(context)
+        setKeyguardManager(context)
+    }
+
+    private fun setPowerManager(context: Context) {
+        powerManager = AppModule.providePowerManager(context)
+    }
+
+    private fun setKeyguardManager(context: Context) {
+        keyguardManager = AppModule.provideKeyguardManager(context)
     }
 
     private fun setDatabase(context: Context) {
@@ -116,8 +139,9 @@ class ManualDependencies @Inject constructor(
         notifications = SahhaNotificationManager(context, backgroundRepo)
     }
 
-    private fun setAppCenterLog(context: Context) {
-        appCenterLog = AppCenterLog(context, configurationDao, defaultScope)
+    private fun setSahhaErrorLogger(context: Context) {
+        sahhaErrorLogger =
+            SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager? {

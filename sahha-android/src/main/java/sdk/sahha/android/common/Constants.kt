@@ -9,23 +9,9 @@ internal object Constants {
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
 
-    // App Center parameters
-    const val SDK_ID = "sdk_id"
-    const val SDK_VERSION = "sdk_version"
-    const val APP_ID = "app_id"
-    const val APP_VERSION = "app_version"
-    const val DEVICE_ID = "device_id"
-    const val DEVICE_TYPE = "device_type"
-    const val DEVICE_MODEL = "device_model"
-    const val SYSTEM = "system"
-    const val SYSTEM_VERSION = "system_version"
-    const val API_AUTH = "api_auth"
-    const val API_METHOD = "api_method"
-    const val API_URL = "api_url"
-    const val API_BODY = "api_body"
-    const val ERROR_TYPE = "error_type"
-    const val API_ERROR = "api_error"
-    const val APPLICATION_ERROR = "application_error"
+    // Sahha Error API parameters
+    const val API_ERROR = "api"
+    const val APPLICATION_ERROR = "app"
 
     // Worker tags
     const val SLEEP_WORKER_TAG = "sleepData"
@@ -37,6 +23,8 @@ internal object Constants {
     const val AVG_STEP_DISTANCE_FEMALE = 0.7
     const val AVG_STEP_DISTANCE = 0.74
     const val ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS = 15000L
+    const val ONE_DAY_IN_MILLIS = 86400000L
+    const val SEVEN_DAYS_IN_MILLIS = 604800000L
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000

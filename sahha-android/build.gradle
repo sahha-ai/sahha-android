@@ -25,8 +25,9 @@ android {
         buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
         buildConfigField("String", "API_DEV", secretsProperties['API_DEV'])
         buildConfigField("String", "API_PROD", secretsProperties['API_PROD'])
-        buildConfigField("String", "APP_CENTER_DEV", secretsProperties['APP_CENTER_DEV'])
-        buildConfigField("String", "APP_CENTER_PROD", secretsProperties['APP_CENTER_PROD'])
+        buildConfigField("String", "ERROR_API_DEV", secretsProperties['ERROR_API_DEV'])
+        buildConfigField("String", "ERROR_API_PROD", secretsProperties['ERROR_API_PROD'])
+        buildConfigField("String", "SDK_VERSION_NAME", "\"$gVersionName\"")
         vectorDrawables {
             useSupportLibrary true
         }
@@ -105,27 +106,22 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:1.0.0"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
 
-    //App Center
-    def appCenterSdkVersion = '4.3.1'
-    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-
     // Local unit tests
     testImplementation "androidx.test:core:1.4.0"
     testImplementation "junit:junit:4.13.2"
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1"
     testImplementation "com.google.truth:truth:1.1.3"
     testImplementation "com.squareup.okhttp3:mockwebserver:4.9.1"
     testImplementation "io.mockk:mockk:1.10.5"
-    debugImplementation "androidx.compose.ui:ui-test-manifest:1.1.0-alpha04"
+    debugImplementation "androidx.compose.ui:ui-test-manifest:1.2.0-beta02"
     testImplementation 'org.json:json:20180813'
 
     // Instrumentation tests
     androidTestImplementation 'com.google.dagger:hilt-android-testing:2.37'
     kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.37'
     androidTestImplementation "junit:junit:4.13.2"
-    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.1"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1"
     androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
     androidTestImplementation "com.google.truth:truth:1.1.3"
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
