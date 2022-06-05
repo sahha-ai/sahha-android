@@ -157,7 +157,7 @@ object SahhaPermissions : BroadcastReceiver() {
             }
             PackageManager.PERMISSION_DENIED -> {
                 permissionCallback = callback
-                startPermissionActivity(context)
+                startPermissionActivity(context, SahhaSensorStatusActivity::class.java)
             }
             else -> {
                 callback?.invoke(SahhaSensorStatus.unavailable)
@@ -177,7 +177,7 @@ object SahhaPermissions : BroadcastReceiver() {
         }
 
         permissionCallback = callback
-        startPermissionActivity(context)
+        startPermissionActivity(context, SahhaSensorPermissionActivity::class.java)
     }
 
     fun activityRecognitionGranted(context: Context): Enum<SahhaSensorStatus> {
@@ -199,17 +199,17 @@ object SahhaPermissions : BroadcastReceiver() {
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun startPermissionActivity(context: Context) {
+    private fun startPermissionActivity(context: Context, activityClass: Class<*>) {
         val intentFilter = getPermissionIntentFilter()
-        val intent = getPermissionIntent(context)
+        val intent = getPermissionIntent(context, activityClass)
 
         context.registerReceiver(this, intentFilter)
         context.startActivity(intent)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
-    private fun getPermissionIntent(context: Context): Intent {
-        return Intent(context, SahhaSensorStatusActivity::class.java).apply {
+    private fun getPermissionIntent(context: Context, activityClass: Class<*>): Intent {
+        return Intent(context, activityClass).apply {
             putExtra(PERMISSIONS_KEY, arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
