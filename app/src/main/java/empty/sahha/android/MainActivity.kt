@@ -186,7 +186,19 @@ class MainActivity : ComponentActivity() {
                                     postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
-                                            31, "Male", "NZ", "KR"
+                                            31,
+                                            "Male",
+                                            "NZ",
+                                            "KR",
+                                            "South Korean",
+                                            "Software Developer",
+                                            "Information Technology",
+                                            "$40K - $69K",
+                                            "Tertiary",
+                                            "Spouse",
+                                            "Urban",
+                                            "Renting",
+                                            "1990-01-01"
                                         )
                                     ) { error, success ->
                                         if (success)
@@ -204,7 +216,7 @@ class MainActivity : ComponentActivity() {
                                         error?.also { getDemo = it }
                                         demographic?.also {
                                             getDemo =
-                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}"
+                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}, ${it.ethnicity}, ${it.occupation}, ${it.industry}, ${it.incomeRange}, ${it.education}, ${it.relationship}, ${it.locale}, ${it.livingArrangement}, ${it.birthDate}"
                                         }
                                     }
                                 }) {
