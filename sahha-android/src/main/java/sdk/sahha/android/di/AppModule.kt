@@ -168,7 +168,8 @@ internal object AppModule {
         )
             .addMigrations(
                 SahhaDbMigrations.MIGRATION_1_2,
-                SahhaDbMigrations.MIGRATION_2_3
+                SahhaDbMigrations.MIGRATION_2_3,
+                SahhaDbMigrations.MIGRATION_3_4,
             )
             .fallbackToDestructiveMigration()
             .build()
