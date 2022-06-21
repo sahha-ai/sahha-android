@@ -15,15 +15,17 @@ class AnalyzeProfileUseCase @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        repository.getAnalysis(callback = callback)
+        repository.getAnalysis(includeSourceData = includeSourceData, callback = callback)
     }
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         dates: Pair<Date, Date>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, success: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
@@ -42,7 +44,7 @@ class AnalyzeProfileUseCase @Inject constructor(
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
                 it(SahhaErrors.nullTimeManager, null)
 
@@ -66,8 +68,9 @@ class AnalyzeProfileUseCase @Inject constructor(
 
     @JvmName("invokeLocalDateTime")
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, success: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
@@ -86,7 +89,7 @@ class AnalyzeProfileUseCase @Inject constructor(
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
                 it(SahhaErrors.nullTimeManager, null)
                 sahhaErrorLogger?.application(

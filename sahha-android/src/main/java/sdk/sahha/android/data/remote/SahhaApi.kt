@@ -7,6 +7,7 @@ import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.SahhaDemographic
@@ -37,7 +38,7 @@ interface SahhaApi {
     @POST("profile/analyze")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body requestBody: RequestBody
+        @Body analyzeRequest: AnalyzeRequest
     ): Call<ResponseBody>
 
     @GET("profile/demographic")
