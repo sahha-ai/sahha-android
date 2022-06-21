@@ -17,6 +17,7 @@ import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
@@ -140,10 +141,11 @@ class RemoteRepoImpl @Inject constructor(
 
     override suspend fun getAnalysis(
         dates: Pair<String, String>?,
+        includeSourceData: Boolean,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val call = getDetectedAnalysisCall(dates)
+            val call = getDetectedAnalysisCall(dates, includeSourceData)
             call.enqueue(
                 object : Callback<ResponseBody> {
                     override fun onResponse(
@@ -154,7 +156,7 @@ class RemoteRepoImpl @Inject constructor(
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
-                                    getAnalysis(dates, callback)
+                                    getAnalysis(dates, includeSourceData, callback)
                                 }
                                 return@launch
                             }
@@ -474,31 +476,33 @@ class RemoteRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getAnalysisResponse(): Call<ResponseBody> {
+    private suspend fun getAnalysisResponse(
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
         val sahhaTimeManager = SahhaTimeManager()
 
-        val datesBody = ApiBodyConverter.hashMapToRequestBody(
-            hashMapOf(
-                "startDateTime" to sahhaTimeManager.last24HoursInISO(),
-                "endDateTime" to sahhaTimeManager.nowInISO()
-            )
+        val analyzeRequest = AnalyzeRequest(
+            sahhaTimeManager.last24HoursInISO(),
+            sahhaTimeManager.nowInISO(),
+            includeSourceData
         )
 
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
     }
 
     private suspend fun getAnalysisResponse(
         startDate: String,
-        endDate: String
+        endDate: String,
+        includeSourceData: Boolean
     ): Call<ResponseBody> {
-        val datesBody = ApiBodyConverter.hashMapToRequestBody(
-            hashMapOf(
-                "startDateTime" to startDate,
-                "endDateTime" to endDate
-            )
+        val analyzeRequest = AnalyzeRequest(
+            startDate,
+            endDate,
+            includeSourceData
         )
 
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
+
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
@@ -509,9 +513,12 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody> {
+    private suspend fun getDetectedAnalysisCall(
+        datesISO: Pair<String, String>?,
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
         return datesISO?.let { it ->
-            getAnalysisResponse(it.first, it.second)
-        } ?: getAnalysisResponse()
+            getAnalysisResponse(it.first, it.second, includeSourceData)
+        } ?: getAnalysisResponse(includeSourceData)
     }
 }

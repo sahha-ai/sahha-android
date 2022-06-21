@@ -145,7 +145,7 @@ class MainActivity : ComponentActivity() {
                                     val now = Date()
                                     val lastWeek = Date(now.time - SEVEN_DAYS_MILLIS)
 
-                                    Sahha.analyze { error, success ->
+                                    Sahha.analyze(includeSourceData = true) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
@@ -153,7 +153,8 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.analyze(
-                                        Pair(lastWeek, now)
+                                        dates = Pair(lastWeek, now),
+                                        includeSourceData = true
                                     ) { error, success ->
                                         error?.also { analyzeResponseDate = it }
                                         success?.also {
@@ -163,7 +164,8 @@ class MainActivity : ComponentActivity() {
 
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                         Sahha.analyze(
-                                            Pair(LocalDateTime.now(), LocalDateTime.now())
+                                            dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
+                                            includeSourceData = true
                                         ) { error, success ->
                                             error?.also { analyzeResponseLocalDateTime = it }
                                             success?.also {
@@ -178,7 +180,6 @@ class MainActivity : ComponentActivity() {
                                     Text("Analyze")
                                 }
                                 Text(analyzeResponse)
-                                Text(analyzeResponseEpoch)
                                 Text(analyzeResponseDate)
                                 Text(analyzeResponseLocalDateTime)
                                 Spacer(modifier = Modifier.padding(16.dp))

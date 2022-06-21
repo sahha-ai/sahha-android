@@ -14,6 +14,7 @@ interface RemoteRepo {
 
     suspend fun getAnalysis(
         dates: Pair<String, String>? = null,
+        includeSourceData: Boolean,
         callback: ((error: String?, successful: String?) -> Unit)?,
     )
 

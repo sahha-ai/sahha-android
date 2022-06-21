@@ -66,31 +66,34 @@ object Sahha {
     }
 
     fun analyze(
+        includeSourceData: Boolean = false,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(callback)
+            di.analyzeProfileUseCase(includeSourceData, callback)
         }
     }
 
 
     @JvmName("analyzeDate")
     fun analyze(
+        includeSourceData: Boolean = false,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(dates, callback)
+            di.analyzeProfileUseCase(includeSourceData, dates, callback)
         }
     }
 
     @JvmName("analyzeLocalDateTime")
     fun analyze(
+        includeSourceData: Boolean = false,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         di.defaultScope.launch {
-            di.analyzeProfileUseCase(dates, callback)
+            di.analyzeProfileUseCase(includeSourceData, dates, callback)
         }
     }
 
