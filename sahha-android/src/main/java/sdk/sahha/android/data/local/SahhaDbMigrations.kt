@@ -24,7 +24,7 @@ object SahhaDbMigrations {
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
-                execSQL("ALTER TABLE DemographicDTO ADD COLUMN birthDate TEXT NOT NULL")
+                execSQL("ALTER TABLE DemographicDto ADD COLUMN birthDate TEXT NOT NULL")
             }
         }
     }
