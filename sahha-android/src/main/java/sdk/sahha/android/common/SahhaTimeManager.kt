@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Keep
+@RequiresApi(Build.VERSION_CODES.N)
 class SahhaTimeManager {
     private val simpleDateFormat =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
