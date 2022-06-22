@@ -37,7 +37,7 @@ class AnalyzeProfileUseCase @Inject constructor(
                 } else {
                     callback?.also {
                         it(
-                            "Error: Android 7 or above required for specified dates",
+                            SahhaErrors.androidVersionTooLow(7),
                             null
                         )
                     }
@@ -46,10 +46,10 @@ class AnalyzeProfileUseCase @Inject constructor(
 
                 repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
-                it(SahhaErrors.nullTimeManager, null)
+                it(SahhaErrors.androidVersionTooLow(7), null)
 
                 sahhaErrorLogger?.application(
-                    SahhaErrors.nullTimeManager,
+                    SahhaErrors.androidVersionTooLow(7),
                     "AnalyzeProfileUseCase",
                     dates.toString()
                 )
@@ -82,7 +82,7 @@ class AnalyzeProfileUseCase @Inject constructor(
                 } else {
                     callback?.also {
                         it(
-                            "Error: Android 8 or above required for specified dates",
+                            SahhaErrors.androidVersionTooLow(8),
                             null
                         )
                     }
@@ -91,9 +91,9 @@ class AnalyzeProfileUseCase @Inject constructor(
 
                 repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
-                it(SahhaErrors.nullTimeManager, null)
+                it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(
-                    SahhaErrors.nullTimeManager,
+                    SahhaErrors.androidVersionTooLow(8),
                     "AnalyzeProfileUseCase",
                     dates.toString()
                 )

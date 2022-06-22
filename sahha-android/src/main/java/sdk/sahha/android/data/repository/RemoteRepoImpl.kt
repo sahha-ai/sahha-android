@@ -479,11 +479,9 @@ class RemoteRepoImpl @Inject constructor(
     private suspend fun getAnalysisResponse(
         includeSourceData: Boolean
     ): Call<ResponseBody> {
-        val sahhaTimeManager = SahhaTimeManager()
-
         val analyzeRequest = AnalyzeRequest(
-            sahhaTimeManager.last24HoursInISO(),
-            sahhaTimeManager.nowInISO(),
+            null,
+            null,
             includeSourceData
         )
 
