@@ -1,8 +1,10 @@
 package sdk.sahha.android.domain.model.callbacks
 
 import android.content.Context
+import android.os.Build
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
+import androidx.annotation.RequiresApi
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -93,6 +95,7 @@ class WindowCallback(
         return localCallback.onSearchRequested()
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onSearchRequested(searchEvent: SearchEvent?): Boolean {
         return localCallback.onSearchRequested(searchEvent)
     }
@@ -101,6 +104,7 @@ class WindowCallback(
         return localCallback.onWindowStartingActionMode(callback)
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onWindowStartingActionMode(
         callback: ActionMode.Callback?,
         type: Int
