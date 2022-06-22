@@ -43,6 +43,15 @@ class SahhaTimeManager {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
+    fun ISOtoEpoch(isoTime: String): Long {
+        val dateTime = ZonedDateTime.parse(isoTime)
+
+        return dateTime
+            .toInstant()
+            .toEpochMilli()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     fun localDateTimeToISO(localDateTime: LocalDateTime): String {
         val iso =
             localDateTime.atZone(ZoneId.systemDefault())
