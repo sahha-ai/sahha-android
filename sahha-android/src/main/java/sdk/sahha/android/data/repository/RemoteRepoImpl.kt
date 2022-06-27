@@ -166,14 +166,16 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.let {
+                                        it.charStream().readText()
+                                    } ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -224,14 +226,16 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.let {
+                                        it.charStream().readText()
+                                    } ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -285,17 +289,14 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.let {
+                                        it.charStream().readText()
+                                    } ?: "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -373,15 +374,15 @@ class RemoteRepoImpl @Inject constructor(
                         }
 
                         callback?.also {
-                            it("${response.code()}: ${response.message()}", false)
+                            it(
+                                response.errorBody()?.let {
+                                        it.charStream().readText()
+                                    } ?: "${response.code()}: ${response.message()}",
+                                false
+                            )
                         }
 
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            response.code(),
-                            response.message()
-                        )
+                        sahhaErrorLogger.api(call, response)
                     }
                 }
 

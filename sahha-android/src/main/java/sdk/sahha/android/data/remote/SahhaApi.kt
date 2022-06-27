@@ -24,6 +24,12 @@ interface SahhaApi {
         @Body sleepData: List<SleepDto>
     ): Call<ResponseBody>
 
+    @POST("sleep/log")
+    fun postSleepDataRangeTest(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body sleepData: RequestBody
+    ): Call<ResponseBody>
+
     @POST("deviceActivity/lockRange")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
