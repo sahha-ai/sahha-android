@@ -185,7 +185,7 @@ class SahhaErrorLogger @Inject constructor(
         response?.also { r ->
             sahhaResponseError = ApiBodyConverter.responseBodyToSahhaResponseError(r.errorBody())
             sahhaErrorLog.apiBody =
-                r.errorBody()?.string() ?: SahhaErrors.noData
+                r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
         }
 
         call?.also { c ->

@@ -168,9 +168,7 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.let {
-                                        it.charStream().readText()
-                                    } ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -228,9 +226,7 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.let {
-                                        it.charStream().readText()
-                                    } ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -289,9 +285,7 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.let {
-                                        it.charStream().readText()
-                                    } ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
@@ -375,9 +369,7 @@ class RemoteRepoImpl @Inject constructor(
 
                         callback?.also {
                             it(
-                                response.errorBody()?.let {
-                                        it.charStream().readText()
-                                    } ?: "${response.code()}: ${response.message()}",
+                                response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
                                 false
                             )
                         }
@@ -457,7 +449,7 @@ class RemoteRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getRefreshTokenCall(
+    private fun getRefreshTokenCall(
         td: TokenData
     ): Call<ResponseBody> {
         return api.postRefreshToken(td)
