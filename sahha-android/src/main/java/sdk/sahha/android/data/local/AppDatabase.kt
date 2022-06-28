@@ -8,6 +8,7 @@ import com.sahha.android.model.SleepQueueHistory
 import sdk.sahha.android.data.local.converter.Converter
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.data.remote.dto.StepDto
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -16,14 +17,11 @@ import sdk.sahha.android.domain.model.device.AppUsage
 import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.security.EncryptUtility
-import sdk.sahha.android.domain.model.steps.DetectedSteps
-import sdk.sahha.android.domain.model.steps.LastDetectedSteps
+import sdk.sahha.android.domain.model.steps.StepData
 
 @Database(
-    version = 3,
+    version = 4,
     entities = [
-        DetectedSteps::class,
-        LastDetectedSteps::class,
         RecognisedActivity::class,
         PreviousActivity::class,
         EncryptUtility::class,
@@ -34,7 +32,8 @@ import sdk.sahha.android.domain.model.steps.LastDetectedSteps
         DeviceUsage::class,
         SahhaConfiguration::class,
         SleepDto::class,
-        SahhaNotificationConfiguration::class
+        SahhaNotificationConfiguration::class,
+        StepData::class
     ]
 )
 

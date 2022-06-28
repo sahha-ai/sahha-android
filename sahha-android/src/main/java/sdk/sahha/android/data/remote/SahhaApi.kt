@@ -18,13 +18,13 @@ interface SahhaApi {
         @Body tokenData: TokenData
     ): Call<ResponseBody>
 
-    @POST("sleep/logRange")
+    @POST("sleep/log")
     fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepDto>
     ): Call<ResponseBody>
 
-    @POST("deviceActivity/lockRange")
+    @POST("deviceActivity/lock")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsage>

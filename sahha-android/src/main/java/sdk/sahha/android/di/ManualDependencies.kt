@@ -144,8 +144,7 @@ class ManualDependencies @Inject constructor(
             SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
-    private fun getSahhaTimeManager(): SahhaTimeManager? {
-        if (Build.VERSION.SDK_INT < 24) return null
+    private fun getSahhaTimeManager(): SahhaTimeManager {
         return SahhaTimeManager()
     }
 }
