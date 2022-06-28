@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.repository
 
 import android.app.Notification
 import android.content.Context
+import sdk.sahha.android.data.local.dao.MovementDao
 
 interface BackgroundRepo {
     var notification: Notification
@@ -24,4 +25,13 @@ interface BackgroundRepo {
     fun startPostWorkersAsync()
     fun stopWorkerByTag(workerTag: String)
     fun stopAllWorkers()
+    suspend fun startStepDetectorAsync(
+        movementDao: MovementDao,
+        stepDetectorRegistered: Boolean
+    ): Boolean
+
+    suspend fun startStepCounterAsync(
+        movementDao: MovementDao,
+        stepCounterRegistered: Boolean
+    ): Boolean
 }

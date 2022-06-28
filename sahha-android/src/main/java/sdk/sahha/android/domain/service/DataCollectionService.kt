@@ -58,8 +58,8 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-            runStepCounterAsync(this, Sahha.di.movementDao)
-            runStepDetectorAsync(this, Sahha.di.movementDao)
+            stepCounterRegistered = Sahha.di.startCollectingStepCounterData(Sahha.di.movementDao, stepCounterRegistered)
+            stepDetectorRegistered = Sahha.di.startCollectingStepDetectorData(Sahha.di.movementDao, stepDetectorRegistered)
         }
     }
 
@@ -76,74 +76,6 @@ class DataCollectionService : Service() {
     private suspend fun startForegroundService() {
         withContext(Main) {
             startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.backgroundRepo.notification)
-        }
-    }
-
-    private suspend fun runStepDetectorAsync(context: Context, movementDao: MovementDao) {
-        val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
-        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-
-        val listener = object : SensorEventListener2 {
-            override fun onSensorChanged(sensorEvent: SensorEvent?) {
-                sensorEvent?.also { event ->
-                    Sahha.di.ioScope.launch {
-                        val step = event.values[0].toInt()
-                        val detectedDateTime = Sahha.timeManager.nowInISO()
-
-                        movementDao.saveStepData(
-                            StepData(step, detectedDateTime)
-                        )
-                    }
-                }
-            }
-
-            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
-            override fun onFlushCompleted(p0: Sensor?) {}
-        }
-
-        sensor?.also {
-            if(stepDetectorRegistered) return
-
-            sensorManager.registerListener(
-                listener, it, SensorManager.SENSOR_DELAY_NORMAL
-            )
-
-            stepDetectorRegistered = true
-        }
-    }
-
-    private suspend fun runStepCounterAsync(context: Context, movementDao: MovementDao) {
-        val sensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
-        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        val listener = object : SensorEventListener2 {
-            override fun onSensorChanged(sensorEvent: SensorEvent?) {
-                sensorEvent?.also { event ->
-                    Sahha.di.ioScope.launch {
-                        val totalSteps = event.values[0].toInt()
-                        val detectedDateTime = Sahha.timeManager.nowInISO()
-
-                        movementDao.saveStepData(
-                            StepData(totalSteps, detectedDateTime)
-                        )
-                    }
-                }
-            }
-
-            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
-            override fun onFlushCompleted(p0: Sensor?) {}
-        }
-
-        sensor?.also {
-            if(stepCounterRegistered) return
-
-            sensorManager.registerListener(
-                listener,
-                it,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-
-            stepCounterRegistered = true
         }
     }
 }

@@ -3,9 +3,14 @@ package sdk.sahha.android.data.repository
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener2
+import android.hardware.SensorManager
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -23,7 +28,9 @@ import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MIL
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenStateReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
@@ -118,6 +125,82 @@ class BackgroundRepoImpl @Inject constructor(
 
         registerScreenStateReceiver(serviceContext)
         return true
+    }
+
+    override suspend fun startStepDetectorAsync(
+        movementDao: MovementDao,
+        stepDetectorRegistered: Boolean
+    ): Boolean {
+        val sensorManager = context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+
+        val listener = object : SensorEventListener2 {
+            override fun onSensorChanged(sensorEvent: SensorEvent?) {
+                sensorEvent?.also { event ->
+                    Sahha.di.ioScope.launch {
+                        val step = event.values[0].toInt()
+                        val detectedDateTime = Sahha.timeManager.nowInISO()
+
+                        movementDao.saveStepData(
+                            StepData(step, detectedDateTime)
+                        )
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
+            override fun onFlushCompleted(p0: Sensor?) {}
+        }
+
+        sensor?.also {
+            if (stepDetectorRegistered) return true
+
+            sensorManager.registerListener(
+                listener, it, SensorManager.SENSOR_DELAY_NORMAL
+            )
+
+            return true
+        }
+        return false
+    }
+
+    override suspend fun startStepCounterAsync(
+        movementDao: MovementDao,
+        stepCounterRegistered: Boolean
+    ): Boolean {
+        val sensorManager = context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        val listener = object : SensorEventListener2 {
+            override fun onSensorChanged(sensorEvent: SensorEvent?) {
+                sensorEvent?.also { event ->
+                    Sahha.di.ioScope.launch {
+                        val totalSteps = event.values[0].toInt()
+                        val detectedDateTime = Sahha.timeManager.nowInISO()
+
+                        movementDao.saveStepData(
+                            StepData(totalSteps, detectedDateTime)
+                        )
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
+            override fun onFlushCompleted(p0: Sensor?) {}
+        }
+
+        sensor?.also {
+            if (stepCounterRegistered) return true
+
+            sensorManager.registerListener(
+                listener,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+
+            return true
+        }
+        return false
     }
 
     override fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String) {
