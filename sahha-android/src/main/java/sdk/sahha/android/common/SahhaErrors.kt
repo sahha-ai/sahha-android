@@ -9,10 +9,6 @@ object SahhaErrors {
     val typeDecode = "decoding"
     val typeResponse = "response"
 
-    val typeToken = "Token Error"
-    val typeServer = "Server Error"
-    val typeMissing = "Missing Data"
-
     val attemptingTokenRefresh = "Error: Invalid token, attempting to refresh token..."
     val sensorInvalid = "Error: Sensor not valid"
     val datesInvalid = "Error: Both start and end dates must be entered or null"
