@@ -3,13 +3,12 @@ package sdk.sahha.android.common
 import sdk.sahha.android.source.SahhaSensor
 
 object SahhaErrors {
-    val typeAuthentication = "Authentication Error"
-    val typeToken = "Token Error"
-    val typeEncode = "Encode Error"
-    val typeServer = "Server Error"
-    val typeResponse = "Response Error"
-    val typeDecode = "Decoding Error"
-    val typeMissing = "Missing Data"
+    val typeAuthentication = "authentication"
+    val typeRequest = "request"
+    val typeEncode = "encoding"
+    val typeDecode = "decoding"
+    val typeResponse = "response"
+
     val attemptingTokenRefresh = "Error: Invalid token, attempting to refresh token..."
     val sensorInvalid = "Error: Sensor not valid"
     val datesInvalid = "Error: Both start and end dates must be entered or null"
