@@ -214,14 +214,14 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -272,14 +272,14 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -333,17 +333,12 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -421,15 +416,13 @@ class RemoteRepoImpl @Inject constructor(
                         }
 
                         callback?.also {
-                            it("${response.code()}: ${response.message()}", false)
+                            it(
+                                response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                false
+                            )
                         }
 
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            response.code(),
-                            response.message()
-                        )
+                        sahhaErrorLogger.api(call, response)
                     }
                 }
 
@@ -515,7 +508,7 @@ class RemoteRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getRefreshTokenCall(
+    private fun getRefreshTokenCall(
         td: TokenData
     ): Call<ResponseBody> {
         return api.postRefreshToken(td)

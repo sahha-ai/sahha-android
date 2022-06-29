@@ -4,13 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.json.JSONObject
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.API_ERROR
@@ -21,6 +18,7 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
+import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -79,6 +77,21 @@ class SahhaErrorLogger @Inject constructor(
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
+            sahhaErrorApi.postErrorLog(
+                decryptor.decrypt(UET),
+                sahhaErrorLog
+            )
+        }
+    }
+
+    fun api(
+        call: Call<*>?,
+        response: Response<*>?
+    ) {
+        defaultScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(call, response)
             sahhaErrorApi.postErrorLog(
                 decryptor.decrypt(UET),
                 sahhaErrorLog
@@ -160,6 +173,31 @@ class SahhaErrorLogger @Inject constructor(
         sahhaErrorLog.errorType = type
         code?.also { sahhaErrorLog.errorCode = it }
         sahhaErrorLog.errorMessage = message
+    }
+
+    private fun setApiLogProperties(
+        call: Call<*>?,
+        response: Response<*>?
+    ) {
+        var sahhaResponseError: SahhaResponseError? = null
+        sahhaErrorLog.errorSource = API_ERROR
+
+        response?.also { r ->
+            sahhaResponseError = ApiBodyConverter.responseBodyToSahhaResponseError(r.errorBody())
+            sahhaErrorLog.apiBody =
+                r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
+        }
+
+        call?.also { c ->
+            sahhaErrorLog.apiMethod = c.request().method
+            sahhaErrorLog.apiURL = c.request().url.encodedPath
+        }
+
+        sahhaResponseError?.also {
+            sahhaErrorLog.errorCode = it.status
+            sahhaErrorLog.errorType = it.location
+            sahhaErrorLog.errorMessage = it.title
+        }
     }
 
     @SuppressLint("HardwareIds")
