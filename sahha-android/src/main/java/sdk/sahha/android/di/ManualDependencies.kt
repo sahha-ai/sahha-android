@@ -2,7 +2,6 @@ package sdk.sahha.android.di
 
 import android.app.KeyguardManager
 import android.content.Context
-import android.os.Build
 import android.os.PowerManager
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
@@ -11,14 +10,14 @@ import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.domain.repository.BackgroundRepo
-import sdk.sahha.android.domain.use_case.*
+import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
+import sdk.sahha.android.domain.use_case.GetDemographicUseCase
+import sdk.sahha.android.domain.use_case.SaveTokensUseCase
+import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
-import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
-import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
-import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
-import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
+import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Inject
 
@@ -51,6 +50,7 @@ class ManualDependencies @Inject constructor(
         AppModule.provideRemotePostRepository(
             sleepDao,
             deviceUsageDao,
+            movementDao,
             encryptor,
             decryptor,
             api,
@@ -74,6 +74,7 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
+    val postStepDataUseCase by lazy { PostStepDataUseCase(remotePostRepo) }
     val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
     val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
@@ -83,6 +84,8 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
+    val startCollectingStepCounterData by lazy { StartCollectingStepCounterData(backgroundRepo) }
+    val startCollectingStepDetectorData by lazy { StartCollectingStepDetectorData(backgroundRepo) }
     val analyzeProfileUseCase by lazy {
         AnalyzeProfileUseCase(
             remotePostRepo,
@@ -144,8 +147,7 @@ class ManualDependencies @Inject constructor(
             SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
-    private fun getSahhaTimeManager(): SahhaTimeManager? {
-        if (Build.VERSION.SDK_INT < 24) return null
+    private fun getSahhaTimeManager(): SahhaTimeManager {
         return SahhaTimeManager()
     }
 }

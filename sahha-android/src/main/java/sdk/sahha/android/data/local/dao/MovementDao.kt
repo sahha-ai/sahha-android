@@ -6,27 +6,20 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.activities.PreviousActivity
-import sdk.sahha.android.domain.model.steps.DetectedSteps
-import sdk.sahha.android.domain.model.steps.LastDetectedSteps
+import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.domain.model.steps.StepData
 
 @Dao
 interface MovementDao {
-  // Detected Steps
+ // Steps
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun saveDetectedSteps(detectedSteps: DetectedSteps)
+  suspend fun saveStepData(stepData: StepData)
 
-  @Query("SELECT * FROM DetectedSteps")
-  suspend fun getDetectedSteps(): List<DetectedSteps>
+  @Query("SELECT * FROM StepData")
+  suspend fun getAllStepData(): List<StepData>
 
-  @Query("DELETE FROM DetectedSteps")
-  suspend fun clearDetectedSteps()
-
-  // Last Detected Steps
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun saveLastDetectedSteps(lastDetectedSteps: LastDetectedSteps)
-
-  @Query("SELECT * FROM LastDetectedSteps WHERE id=1")
-  suspend fun getLastDetectedSteps(): LastDetectedSteps
+  @Query("DELETE FROM StepData")
+  suspend fun clearAllStepData()
 
   // Activity Recognition
   @Insert(onConflict = OnConflictStrategy.REPLACE)

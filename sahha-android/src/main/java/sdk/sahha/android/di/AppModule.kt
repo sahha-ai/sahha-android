@@ -141,6 +141,7 @@ internal object AppModule {
     fun provideRemotePostRepository(
         sleepDao: SleepDao,
         deviceUsageDao: DeviceUsageDao,
+        movementDao: MovementDao,
         encryptor: Encryptor,
         decryptor: Decryptor,
         api: SahhaApi,
@@ -150,6 +151,7 @@ internal object AppModule {
         return RemoteRepoImpl(
             sleepDao,
             deviceUsageDao,
+            movementDao,
             encryptor,
             decryptor,
             api,

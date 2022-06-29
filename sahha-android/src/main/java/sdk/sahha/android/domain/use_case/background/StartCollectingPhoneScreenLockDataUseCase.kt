@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.use_case
+package sdk.sahha.android.domain.use_case.background
 
 import android.content.Context
 import sdk.sahha.android.domain.repository.BackgroundRepo
