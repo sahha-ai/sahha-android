@@ -194,7 +194,7 @@ class SahhaErrorLogger @Inject constructor(
         }
 
         sahhaResponseError?.also {
-            sahhaErrorLog.errorCode = it.status
+            sahhaErrorLog.errorCode = it.statusCode
             sahhaErrorLog.errorType = it.location
             sahhaErrorLog.errorMessage = it.title
         }
