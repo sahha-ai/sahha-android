@@ -13,12 +13,14 @@ import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
+import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
@@ -28,6 +30,7 @@ import javax.inject.Named
 class RemoteRepoImpl @Inject constructor(
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
+    private val movementDao: MovementDao,
     private val encryptor: Encryptor,
     private val decryptor: Decryptor,
     private val api: SahhaApi,
@@ -83,6 +86,51 @@ class RemoteRepoImpl @Inject constructor(
                 null
             )
         }
+    }
+
+    private suspend fun postData(
+        data: List<*>,
+        sensor: Enum<SahhaSensor>,
+        getDataResponse: (suspend () -> Call<ResponseBody>),
+        clearLocalData: (suspend () -> Unit),
+        appMethod: String,
+        appBody: String,
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        try {
+            if (data.isEmpty()) {
+                callback?.also { it(SahhaErrors.localDataIsEmpty(sensor), false) }
+                return
+            }
+
+            val response = getDataResponse()
+            handleResponse(response, { getDataResponse() }, callback) {
+                clearLocalData()
+            }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                appMethod,
+                appBody
+            )
+        }
+    }
+
+    override suspend fun postStepData(
+        stepData: List<StepData>,
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        postData(
+            stepData,
+            SahhaSensor.pedometer,
+            { getStepResponse() },
+            { clearLocalStepData() },
+            "postStepData",
+            stepData.toString(),
+            callback
+        )
     }
 
     override suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
@@ -430,6 +478,13 @@ class RemoteRepoImpl @Inject constructor(
                     successfulResults.add(successful)
                 }
             }
+
+            if (sensor == SahhaSensor.pedometer) {
+                postStepData(movementDao.getAllStepData()) { error, successful ->
+                    error?.also { errorSummary += "$it\n" }
+                    successfulResults.add(successful)
+                }
+            }
         }
 
         if (successfulResults.contains(false)) {
@@ -447,6 +502,10 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
+    private suspend fun clearLocalStepData() {
+        movementDao.clearAllStepData()
+    }
+
     private suspend fun clearLocalSleepData() {
         sleepDao.clearSleepDto()
         sleepDao.clearSleep()
@@ -460,6 +519,13 @@ class RemoteRepoImpl @Inject constructor(
         td: TokenData
     ): Call<ResponseBody> {
         return api.postRefreshToken(td)
+    }
+
+    private suspend fun getStepResponse(): Call<ResponseBody> {
+        return api.postStepData(
+            TokenBearer(decryptor.decrypt(UET)),
+            ApiBodyConverter.stepDataToStepDto(movementDao.getAllStepData())
+        )
     }
 
     private suspend fun getSleepResponse(): Call<ResponseBody> {

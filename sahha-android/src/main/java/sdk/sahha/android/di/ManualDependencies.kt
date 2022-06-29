@@ -50,6 +50,7 @@ class ManualDependencies @Inject constructor(
         AppModule.provideRemotePostRepository(
             sleepDao,
             deviceUsageDao,
+            movementDao,
             encryptor,
             decryptor,
             api,
@@ -73,6 +74,7 @@ class ManualDependencies @Inject constructor(
             backgroundRepo
         )
     }
+    val postStepDataUseCase by lazy { PostStepDataUseCase(remotePostRepo) }
     val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
     val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }

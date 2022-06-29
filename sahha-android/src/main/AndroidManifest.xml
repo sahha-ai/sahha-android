@@ -25,9 +25,6 @@
             android:label="@string/title_activity_sahha_permission"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
-       <!-- <activity android:name=".GetPermissionsActivity" android:allowEmbedded="true">
-        </activity> -->
-
         <service android:name=".domain.service.DataCollectionService" />
 
         <receiver

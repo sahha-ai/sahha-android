@@ -6,6 +6,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONObject
+import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.source.Sahha
 
 object ApiBodyConverter {
@@ -56,6 +59,10 @@ object ApiBodyConverter {
             }
         }
         return null
+    }
+
+    fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
+        return stepData.map { it.toStepDto() }
     }
 
     // This is case sensitive

@@ -26,7 +26,7 @@ object SahhaDbMigrations {
             with(database) {
                 execSQL("DROP TABLE LastDetectedSteps")
                 execSQL("DROP TABLE DetectedSteps")
-                execSQL("CREATE TABLE StepData (id INTEGER NOT NULL, count INTEGER NOT NULL, detectedAt TEXT NOT NULL)")
+                execSQL("CREATE TABLE StepData (id INTEGER NOT NULL, source TEXT NOT NULL, count INTEGER NOT NULL, detectedAt TEXT NOT NULL)")
             }
         }
     }

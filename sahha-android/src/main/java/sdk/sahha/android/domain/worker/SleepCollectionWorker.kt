@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.worker
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -45,6 +46,7 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
         }
     }
 
+    @SuppressLint("MissingPermission") //Code seems to believe it's missing permissions for this but it's not
     private fun getSleepSegmentTask(sleepPendingIntent: PendingIntent): Task<Void> {
         return ActivityRecognition.getClient(context).requestSleepSegmentUpdates(
             sleepPendingIntent,

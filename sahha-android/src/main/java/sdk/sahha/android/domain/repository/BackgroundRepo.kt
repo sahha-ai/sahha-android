@@ -20,7 +20,6 @@ interface BackgroundRepo {
         receiverRegistered: Boolean,
     ): Boolean
 
-    fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startPostWorkersAsync()
     fun stopWorkerByTag(workerTag: String)
