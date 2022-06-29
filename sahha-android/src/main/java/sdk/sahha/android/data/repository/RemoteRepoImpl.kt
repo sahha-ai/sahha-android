@@ -88,6 +88,7 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
+    //TODO: Improve/refactor this... Too many params
     private suspend fun postData(
         data: List<*>,
         sensor: Enum<SahhaSensor>,
@@ -168,6 +169,12 @@ class RemoteRepoImpl @Inject constructor(
             }
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postPhoneScreenLockData",
+                deviceDao.getUsages().toString()
+            )
         }
     }
 
