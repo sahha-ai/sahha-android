@@ -39,6 +39,7 @@ object Sahha {
         di.setDependencies(application)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
+            start()
         }
     }
 
@@ -135,19 +136,17 @@ object Sahha {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }
-                return
             }
             SahhaSensor.sleep -> {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
                 }
-                return
             }
             SahhaSensor.device -> {
                 callback(null, SahhaSensorStatus.enabled)
-                return
             }
         }
+        start()
     }
 
     fun getSensorStatus(
@@ -182,6 +181,7 @@ object Sahha {
         if (config.postSensorDataManually) {
             di.backgroundRepo.stopWorkerByTag(Constants.SLEEP_POST_WORKER_TAG)
             di.backgroundRepo.stopWorkerByTag(Constants.DEVICE_POST_WORKER_TAG)
+            di.backgroundRepo.stopWorkerByTag(Constants.STEP_POST_WORKER_TAG)
         } else {
             di.startPostWorkersUseCase()
         }

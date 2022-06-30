@@ -22,7 +22,7 @@ class PhoneScreenStateReceiver : BroadcastReceiver() {
     }
 
     private suspend fun saveScreenStateAsync() {
-        Sahha.timeManager?.also { sahhaTime ->
+        Sahha.timeManager.also { sahhaTime ->
             Sahha.di.deviceUsageDao.saveUsage(
                 PhoneUsage(
                     isLocked = Sahha.di.keyguardManager.isKeyguardLocked,

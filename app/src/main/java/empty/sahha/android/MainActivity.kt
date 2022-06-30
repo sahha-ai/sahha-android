@@ -26,7 +26,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.development
+            environment = SahhaEnvironment.development,
+            sensors = setOf(
+                SahhaSensor.pedometer,
+                SahhaSensor.device
+            ),
+            postSensorDataManually = true
         )
         Sahha.configure(application, config)
 
@@ -119,10 +124,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.start { error, success ->
-                                        if (success) start = "Successful test start"
-                                        error?.also { start = it }
-                                    }
+
                                 }) {
                                     Text("Test start")
                                 }
