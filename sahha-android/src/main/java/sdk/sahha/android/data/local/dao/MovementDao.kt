@@ -21,6 +21,9 @@ interface MovementDao {
   @Query("DELETE FROM StepData")
   suspend fun clearAllStepData()
 
+  @Query("DELETE FROM StepData WHERE id IN (SELECT id FROM StepData ORDER BY id DESC LIMIT :amount)")
+  suspend fun clearFirstStepData(amount: Int)
+
   // Activity Recognition
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun saveDetectedActivity(recognisedActivity: RecognisedActivity)

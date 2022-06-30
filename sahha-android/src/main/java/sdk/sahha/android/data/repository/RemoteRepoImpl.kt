@@ -17,6 +17,7 @@ import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.data.remote.dto.StepDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
@@ -88,50 +89,38 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
-    //TODO: Improve/refactor this... Too many params
-    private suspend fun postData(
-        data: List<*>,
-        sensor: Enum<SahhaSensor>,
-        getDataResponse: (suspend () -> Call<ResponseBody>),
-        clearLocalData: (suspend () -> Unit),
-        appMethod: String,
-        appBody: String,
-        callback: ((error: String?, successful: Boolean) -> Unit)?
-    ) {
-        try {
-            if (data.isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(sensor), false) }
-                return
-            }
-
-            val response = getDataResponse()
-            handleResponse(response, { getDataResponse() }, callback) {
-                clearLocalData()
-            }
-        } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
-
-            sahhaErrorLogger.application(
-                e.message,
-                appMethod,
-                appBody
-            )
-        }
+    private fun getFilteredStepData(stepData: List<StepData>): List<StepData> {
+        return if (stepData.count() > 1000) {
+            stepData.subList(0, 1000)
+        } else stepData
     }
 
     override suspend fun postStepData(
         stepData: List<StepData>,
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
-        postData(
-            stepData,
-            SahhaSensor.pedometer,
-            { getStepResponse() },
-            { clearLocalStepData() },
-            "postStepData",
-            stepData.toString(),
-            callback
-        )
+        try {
+            if (stepData.isEmpty()) {
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.pedometer), false) }
+                return
+            }
+
+            val stepDtoData = ApiBodyConverter.stepDataToStepDto(getFilteredStepData(stepData))
+            val response = getStepResponse(stepDtoData)
+            handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
+                if (stepData.count() > 1000)
+                    movementDao.clearFirstStepData(1000)
+                else clearLocalStepData()
+            }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postStepData",
+                stepData.toString()
+            )
+        }
     }
 
     override suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
@@ -223,7 +212,8 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -281,7 +271,8 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -340,7 +331,8 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
@@ -424,7 +416,8 @@ class RemoteRepoImpl @Inject constructor(
 
                         callback?.also {
                             it(
-                                response.errorBody()?.charStream()?.readText() ?: "${response.code()}: ${response.message()}",
+                                response.errorBody()?.charStream()?.readText()
+                                    ?: "${response.code()}: ${response.message()}",
                                 false
                             )
                         }
@@ -521,10 +514,10 @@ class RemoteRepoImpl @Inject constructor(
         return api.postRefreshToken(td)
     }
 
-    private suspend fun getStepResponse(): Call<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<StepDto>): Call<ResponseBody> {
         return api.postStepData(
             TokenBearer(decryptor.decrypt(UET)),
-            ApiBodyConverter.stepDataToStepDto(movementDao.getAllStepData())
+            stepData
         )
     }
 
