@@ -27,11 +27,7 @@ class MainActivity : ComponentActivity() {
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
-            sensors = setOf(
-                SahhaSensor.pedometer,
-                SahhaSensor.device
-            ),
-            postSensorDataManually = true
+            postSensorDataManually = false
         )
         Sahha.configure(application, config)
 
