@@ -24,7 +24,7 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(): StepDto {
+fun StepData.toStepDto(createdAt: String): StepDto {
     return StepDto(
         getDataType(source),
         count,
@@ -32,7 +32,7 @@ fun StepData.toStepDto(): StepDto {
         false,
         detectedAt,
         detectedAt,
-        Sahha.di.timeManager.nowInISO()
+        createdAt
     )
 }
 

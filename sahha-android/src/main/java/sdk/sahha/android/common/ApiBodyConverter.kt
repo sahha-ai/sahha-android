@@ -114,7 +114,8 @@ object ApiBodyConverter {
     }
 
     fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        return stepData.map { it.toStepDto() }
+        val createdAt = Sahha.di.timeManager.nowInISO()
+        return stepData.map { it.toStepDto(createdAt) }
     }
 
     // This is case sensitive
