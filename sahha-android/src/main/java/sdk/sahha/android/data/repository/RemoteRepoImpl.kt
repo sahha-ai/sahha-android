@@ -10,14 +10,19 @@ import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants.MAX_STEP_POST_VALUE
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
+import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.data.remote.dto.StepDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
@@ -27,6 +32,7 @@ import javax.inject.Named
 class RemoteRepoImpl @Inject constructor(
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
+    private val movementDao: MovementDao,
     private val encryptor: Encryptor,
     private val decryptor: Decryptor,
     private val api: SahhaApi,
@@ -84,6 +90,40 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
+    private fun getFilteredStepData(stepData: List<StepData>): List<StepData> {
+        return if (stepData.count() > 1000) {
+            stepData.subList(0, 1000)
+        } else stepData
+    }
+
+    override suspend fun postStepData(
+        stepData: List<StepData>,
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        try {
+            if (stepData.isEmpty()) {
+                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.pedometer), false) }
+                return
+            }
+
+            val stepDtoData = ApiBodyConverter.stepDataToStepDto(getFilteredStepData(stepData))
+            val response = getStepResponse(stepDtoData)
+            handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
+                if (stepData.count() > MAX_STEP_POST_VALUE)
+                    movementDao.clearFirstStepData(MAX_STEP_POST_VALUE)
+                else clearLocalStepData()
+            }
+        } catch (e: Exception) {
+            callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postStepData",
+                stepData.toString()
+            )
+        }
+    }
+
     override suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
         try {
             if (sleepDao.getSleepDto().isEmpty()) {
@@ -119,6 +159,12 @@ class RemoteRepoImpl @Inject constructor(
             }
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postPhoneScreenLockData",
+                deviceDao.getUsages().toString()
+            )
         }
     }
 
@@ -140,10 +186,11 @@ class RemoteRepoImpl @Inject constructor(
 
     override suspend fun getAnalysis(
         dates: Pair<String, String>?,
+        includeSourceData: Boolean,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val call = getDetectedAnalysisCall(dates)
+            val call = getDetectedAnalysisCall(dates, includeSourceData)
             call.enqueue(
                 object : Callback<ResponseBody> {
                     override fun onResponse(
@@ -154,7 +201,7 @@ class RemoteRepoImpl @Inject constructor(
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
-                                    getAnalysis(dates, callback)
+                                    getAnalysis(dates, includeSourceData, callback)
                                 }
                                 return@launch
                             }
@@ -164,14 +211,15 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -222,14 +270,15 @@ class RemoteRepoImpl @Inject constructor(
                                 return@launch
                             }
 
-                            callback?.also { it("${response.code()}: ${response.message()}", null) }
+                            callback?.also {
+                                it(
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -283,17 +332,13 @@ class RemoteRepoImpl @Inject constructor(
 
                             callback?.also {
                                 it(
-                                    "${response.code()}: ${response.message()}",
+                                    response.errorBody()?.charStream()?.readText()
+                                        ?: "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
 
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
+                            sahhaErrorLogger.api(call, response)
                         }
                     }
 
@@ -371,15 +416,14 @@ class RemoteRepoImpl @Inject constructor(
                         }
 
                         callback?.also {
-                            it("${response.code()}: ${response.message()}", false)
+                            it(
+                                response.errorBody()?.charStream()?.readText()
+                                    ?: "${response.code()}: ${response.message()}",
+                                false
+                            )
                         }
 
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            response.code(),
-                            response.message()
-                        )
+                        sahhaErrorLogger.api(call, response)
                     }
                 }
 
@@ -428,6 +472,13 @@ class RemoteRepoImpl @Inject constructor(
                     successfulResults.add(successful)
                 }
             }
+
+            if (sensor == SahhaSensor.pedometer) {
+                postStepData(movementDao.getAllStepData()) { error, successful ->
+                    error?.also { errorSummary += "$it\n" }
+                    successfulResults.add(successful)
+                }
+            }
         }
 
         if (successfulResults.contains(false)) {
@@ -445,6 +496,10 @@ class RemoteRepoImpl @Inject constructor(
         }
     }
 
+    private suspend fun clearLocalStepData() {
+        movementDao.clearAllStepData()
+    }
+
     private suspend fun clearLocalSleepData() {
         sleepDao.clearSleepDto()
         sleepDao.clearSleep()
@@ -454,10 +509,17 @@ class RemoteRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getRefreshTokenCall(
+    private fun getRefreshTokenCall(
         td: TokenData
     ): Call<ResponseBody> {
         return api.postRefreshToken(td)
+    }
+
+    private suspend fun getStepResponse(stepData: List<StepDto>): Call<ResponseBody> {
+        return api.postStepData(
+            TokenBearer(decryptor.decrypt(UET)),
+            stepData
+        )
     }
 
     private suspend fun getSleepResponse(): Call<ResponseBody> {
@@ -474,31 +536,31 @@ class RemoteRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getAnalysisResponse(): Call<ResponseBody> {
-        val sahhaTimeManager = SahhaTimeManager()
-
-        val datesBody = ApiBodyConverter.hashMapToRequestBody(
-            hashMapOf(
-                "startDateTime" to sahhaTimeManager.last24HoursInISO(),
-                "endDateTime" to sahhaTimeManager.nowInISO()
-            )
+    private suspend fun getAnalysisResponse(
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
+        val analyzeRequest = AnalyzeRequest(
+            null,
+            null,
+            includeSourceData
         )
 
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
     }
 
     private suspend fun getAnalysisResponse(
         startDate: String,
-        endDate: String
+        endDate: String,
+        includeSourceData: Boolean
     ): Call<ResponseBody> {
-        val datesBody = ApiBodyConverter.hashMapToRequestBody(
-            hashMapOf(
-                "startDateTime" to startDate,
-                "endDateTime" to endDate
-            )
+        val analyzeRequest = AnalyzeRequest(
+            startDate,
+            endDate,
+            includeSourceData
         )
 
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), datesBody)
+
+        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
@@ -509,9 +571,12 @@ class RemoteRepoImpl @Inject constructor(
         return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
-    private suspend fun getDetectedAnalysisCall(datesISO: Pair<String, String>?): Call<ResponseBody> {
+    private suspend fun getDetectedAnalysisCall(
+        datesISO: Pair<String, String>?,
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
         return datesISO?.let { it ->
-            getAnalysisResponse(it.first, it.second)
-        } ?: getAnalysisResponse()
+            getAnalysisResponse(it.first, it.second, includeSourceData)
+        } ?: getAnalysisResponse(includeSourceData)
     }
 }

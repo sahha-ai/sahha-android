@@ -8,6 +8,7 @@ internal object Constants {
     const val UERT = "uert"
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
+    const val MAX_STEP_POST_VALUE = 1000
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
@@ -17,6 +18,7 @@ internal object Constants {
     const val SLEEP_WORKER_TAG = "sleepData"
     const val SLEEP_POST_WORKER_TAG = "sleepPost"
     const val DEVICE_POST_WORKER_TAG = "devicePost"
+    const val STEP_POST_WORKER_TAG = "stepPost"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

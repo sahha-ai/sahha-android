@@ -26,7 +26,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.development
+            environment = SahhaEnvironment.development,
+            postSensorDataManually = false
         )
         Sahha.configure(application, config)
 
@@ -119,10 +120,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.start { error, success ->
-                                        if (success) start = "Successful test start"
-                                        error?.also { start = it }
-                                    }
+
                                 }) {
                                     Text("Test start")
                                 }
@@ -145,7 +143,7 @@ class MainActivity : ComponentActivity() {
                                     val now = Date()
                                     val lastWeek = Date(now.time - SEVEN_DAYS_MILLIS)
 
-                                    Sahha.analyze { error, success ->
+                                    Sahha.analyze(includeSourceData = true) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
@@ -153,7 +151,8 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.analyze(
-                                        Pair(lastWeek, now)
+                                        dates = Pair(lastWeek, now),
+                                        includeSourceData = true
                                     ) { error, success ->
                                         error?.also { analyzeResponseDate = it }
                                         success?.also {
@@ -163,7 +162,8 @@ class MainActivity : ComponentActivity() {
 
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                         Sahha.analyze(
-                                            Pair(LocalDateTime.now(), LocalDateTime.now())
+                                            dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
+                                            includeSourceData = true
                                         ) { error, success ->
                                             error?.also { analyzeResponseLocalDateTime = it }
                                             success?.also {
@@ -178,7 +178,6 @@ class MainActivity : ComponentActivity() {
                                     Text("Analyze")
                                 }
                                 Text(analyzeResponse)
-                                Text(analyzeResponseEpoch)
                                 Text(analyzeResponseDate)
                                 Text(analyzeResponseLocalDateTime)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -186,7 +185,19 @@ class MainActivity : ComponentActivity() {
                                     postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
-                                            31, "Male", "NZ", "KR"
+                                            31,
+                                            "Male",
+                                            "NZ",
+                                            "KR",
+                                            "South Korean",
+                                            "Software Developer",
+                                            "Information Technology",
+                                            "$40K - $69K",
+                                            "Tertiary",
+                                            "Spouse",
+                                            "Urban",
+                                            "Renting",
+                                            "1990-01-01"
                                         )
                                     ) { error, success ->
                                         if (success)
@@ -204,7 +215,7 @@ class MainActivity : ComponentActivity() {
                                         error?.also { getDemo = it }
                                         demographic?.also {
                                             getDemo =
-                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}"
+                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}, ${it.ethnicity}, ${it.occupation}, ${it.industry}, ${it.incomeRange}, ${it.education}, ${it.relationship}, ${it.locale}, ${it.livingArrangement}, ${it.birthDate}"
                                         }
                                     }
                                 }) {

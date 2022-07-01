@@ -15,15 +15,17 @@ class AnalyzeProfileUseCase @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        repository.getAnalysis(callback = callback)
+        repository.getAnalysis(includeSourceData = includeSourceData, callback = callback)
     }
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         dates: Pair<Date, Date>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, success: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
@@ -35,19 +37,19 @@ class AnalyzeProfileUseCase @Inject constructor(
                 } else {
                     callback?.also {
                         it(
-                            "Error: Android 7 or above required for specified dates",
+                            SahhaErrors.androidVersionTooLow(7),
                             null
                         )
                     }
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
-                it(SahhaErrors.nullTimeManager, null)
+                it(SahhaErrors.androidVersionTooLow(7), null)
 
                 sahhaErrorLogger?.application(
-                    SahhaErrors.nullTimeManager,
+                    SahhaErrors.androidVersionTooLow(7),
                     "AnalyzeProfileUseCase",
                     dates.toString()
                 )
@@ -66,8 +68,9 @@ class AnalyzeProfileUseCase @Inject constructor(
 
     @JvmName("invokeLocalDateTime")
     suspend operator fun invoke(
+        includeSourceData: Boolean,
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, success: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
@@ -79,18 +82,18 @@ class AnalyzeProfileUseCase @Inject constructor(
                 } else {
                     callback?.also {
                         it(
-                            "Error: Android 8 or above required for specified dates",
+                            SahhaErrors.androidVersionTooLow(8),
                             null
                         )
                     }
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getAnalysis(datesISO, includeSourceData, callback)
             } ?: callback?.also {
-                it(SahhaErrors.nullTimeManager, null)
+                it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(
-                    SahhaErrors.nullTimeManager,
+                    SahhaErrors.androidVersionTooLow(8),
                     "AnalyzeProfileUseCase",
                     dates.toString()
                 )

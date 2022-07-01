@@ -3,9 +3,14 @@ package sdk.sahha.android.data.repository
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener2
+import android.hardware.SensorManager
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -22,16 +27,20 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
+import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepDataSource
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.receiver.PhoneScreenStateReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.SleepCollectionWorker
-import sdk.sahha.android.domain.worker.StepWorker
 import sdk.sahha.android.domain.worker.post.DevicePostWorker
 import sdk.sahha.android.domain.worker.post.SleepPostWorker
+import sdk.sahha.android.domain.worker.post.StepPostWorker
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import java.util.concurrent.TimeUnit
@@ -120,11 +129,88 @@ class BackgroundRepoImpl @Inject constructor(
         return true
     }
 
-    override fun startStepWorker(repeatIntervalMinutes: Long, workerTag: String) {
-        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
-        val workRequest: PeriodicWorkRequest =
-            getStepWorkRequest(checkedIntervalMinutes, workerTag)
-        startWorkManager(workRequest, workerTag)
+    override suspend fun startStepDetectorAsync(
+        movementDao: MovementDao,
+        stepDetectorRegistered: Boolean
+    ): Boolean {
+        val sensorManager = context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
+
+        val listener = object : SensorEventListener2 {
+            override fun onSensorChanged(sensorEvent: SensorEvent?) {
+                sensorEvent?.also { event ->
+                    Sahha.di.ioScope.launch {
+                        val step = event.values[0].toInt()
+                        val detectedDateTime = Sahha.timeManager.nowInISO()
+
+                        movementDao.saveStepData(
+                            StepData(
+                                StepDataSource.AndroidStepDetector.name,
+                                step,
+                                detectedDateTime
+                            )
+                        )
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
+            override fun onFlushCompleted(p0: Sensor?) {}
+        }
+
+        sensor?.also {
+            if (stepDetectorRegistered) return true
+
+            sensorManager.registerListener(
+                listener, it, SensorManager.SENSOR_DELAY_NORMAL
+            )
+
+            return true
+        }
+        return false
+    }
+
+    override suspend fun startStepCounterAsync(
+        movementDao: MovementDao,
+        stepCounterRegistered: Boolean
+    ): Boolean {
+        val sensorManager = context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        val listener = object : SensorEventListener2 {
+            override fun onSensorChanged(sensorEvent: SensorEvent?) {
+                sensorEvent?.also { event ->
+                    Sahha.di.ioScope.launch {
+                        val totalSteps = event.values[0].toInt()
+                        val detectedDateTime = Sahha.timeManager.nowInISO()
+
+                        movementDao.saveStepData(
+                            StepData(
+                                StepDataSource.AndroidStepCounter.name,
+                                totalSteps,
+                                detectedDateTime
+                            )
+                        )
+                    }
+                }
+            }
+
+            override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
+            override fun onFlushCompleted(p0: Sensor?) {}
+        }
+
+        sensor?.also {
+            if (stepCounterRegistered) return true
+
+            sensorManager.registerListener(
+                listener,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+
+            return true
+        }
+        return false
     }
 
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
@@ -147,7 +233,7 @@ class BackgroundRepoImpl @Inject constructor(
             }
 
             if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                startPedometerPostWorker()
+                startStepPostWorker(15, STEP_POST_WORKER_TAG)
             }
         }
     }
@@ -184,20 +270,15 @@ class BackgroundRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag)
     }
 
-    private fun startPedometerPostWorker() {}
+    private fun startStepPostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest = getStepPostWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
 
     // Force default minimum value of 15 minutes
     private fun getCheckedIntervalMinutes(interval: Long): Long {
         return if (interval < 15) 15 else interval
-    }
-
-    private fun getStepWorkRequest(
-        repeatIntervalMinutes: Long,
-        workerTag: String
-    ): PeriodicWorkRequest {
-        return PeriodicWorkRequestBuilder<StepWorker>(repeatIntervalMinutes, TimeUnit.MINUTES)
-            .addTag(workerTag)
-            .build()
     }
 
     private fun getSleepPostWorkRequest(
@@ -205,6 +286,18 @@ class BackgroundRepoImpl @Inject constructor(
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<SleepPostWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .build()
+    }
+
+    private fun getStepPostWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<StepPostWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
         )

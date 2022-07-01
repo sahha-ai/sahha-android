@@ -4,47 +4,42 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.activities.PreviousActivity
-import sdk.sahha.android.domain.model.steps.DetectedSteps
-import sdk.sahha.android.domain.model.steps.LastDetectedSteps
+import sdk.sahha.android.domain.model.activities.RecognisedActivity
+import sdk.sahha.android.domain.model.steps.StepData
 
 @Dao
 interface MovementDao {
-  // Detected Steps
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun saveDetectedSteps(detectedSteps: DetectedSteps)
+    // Steps
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveStepData(stepData: StepData)
 
-  @Query("SELECT * FROM DetectedSteps")
-  suspend fun getDetectedSteps(): List<DetectedSteps>
+    @Query("SELECT * FROM StepData")
+    suspend fun getAllStepData(): List<StepData>
 
-  @Query("DELETE FROM DetectedSteps")
-  suspend fun clearDetectedSteps()
+    @Query("DELETE FROM StepData")
+    suspend fun clearAllStepData()
 
-  // Last Detected Steps
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun saveLastDetectedSteps(lastDetectedSteps: LastDetectedSteps)
+    @Query("DELETE FROM StepData WHERE id IN (SELECT id FROM StepData ORDER BY id DESC LIMIT :amount)")
+    suspend fun clearFirstStepData(amount: Int)
 
-  @Query("SELECT * FROM LastDetectedSteps WHERE id=1")
-  suspend fun getLastDetectedSteps(): LastDetectedSteps
+    // Activity Recognition
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveDetectedActivity(recognisedActivity: RecognisedActivity)
 
-  // Activity Recognition
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun saveDetectedActivity(recognisedActivity: RecognisedActivity)
+    @Query("SELECT * FROM RecognisedActivity")
+    suspend fun getRecognisedActivities(): List<RecognisedActivity>
 
-  @Query("SELECT * FROM RecognisedActivity")
-  suspend fun getRecognisedActivities(): List<RecognisedActivity>
+    @Query("DELETE FROM RecognisedActivity")
+    suspend fun clearActivities()
 
-  @Query("DELETE FROM RecognisedActivity")
-  suspend fun clearActivities()
+    @Query("UPDATE RecognisedActivity SET movementType=:activity, confidence=:confidence WHERE id=:id")
+    suspend fun updateDetectedActivity(id: Int, activity: Int, confidence: Int)
 
-  @Query("UPDATE RecognisedActivity SET movementType=:activity, confidence=:confidence WHERE id=:id")
-  suspend fun updateDetectedActivity(id: Int, activity: Int, confidence: Int)
+    // Previous Activity
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun savePreviousActivity(previousActivity: PreviousActivity)
 
-  // Previous Activity
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun savePreviousActivity(previousActivity: PreviousActivity)
-
-  @Query("SELECT * FROM PreviousActivity WHERE id = 1")
-  suspend fun getPreviousActivity(): PreviousActivity
+    @Query("SELECT * FROM PreviousActivity WHERE id = 1")
+    suspend fun getPreviousActivity(): PreviousActivity
 }
