@@ -10,6 +10,7 @@ import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants.MAX_STEP_POST_VALUE
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
@@ -108,8 +109,8 @@ class RemoteRepoImpl @Inject constructor(
             val stepDtoData = ApiBodyConverter.stepDataToStepDto(getFilteredStepData(stepData))
             val response = getStepResponse(stepDtoData)
             handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
-                if (stepData.count() > 1000)
-                    movementDao.clearFirstStepData(1000)
+                if (stepData.count() > MAX_STEP_POST_VALUE)
+                    movementDao.clearFirstStepData(MAX_STEP_POST_VALUE)
                 else clearLocalStepData()
             }
         } catch (e: Exception) {

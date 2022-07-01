@@ -11,24 +11,18 @@ import sdk.sahha.android.source.SahhaEnvironment
 
 object SahhaReconfigure {
     suspend operator fun invoke(context: Context) {
-        try {
-            Sahha.di = ManualDependencies(SahhaEnvironment.development) //Temporary
+        val settings =
+            AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
+        Sahha.di = ManualDependencies(settings.environment)
+        Sahha.di.setDependencies(context)
+        delay(250)
 
-            val settings =
-                AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
-            Sahha.di = ManualDependencies(settings.environment)
-            Sahha.di.setDependencies(context)
-
-            if (Build.VERSION.SDK_INT < 26) return
-            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-            Sahha.notifications.setNewPersistent(
-                notificationConfig.icon,
-                notificationConfig.title,
-                notificationConfig.shortDescription,
-            )
-        } catch (e: Exception) {
-            delay(5000)
-            invoke(context)
-        }
+        if (Build.VERSION.SDK_INT < 26) return
+        val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+        Sahha.notifications.setNewPersistent(
+            notificationConfig.icon,
+            notificationConfig.title,
+            notificationConfig.shortDescription,
+        )
     }
 }
