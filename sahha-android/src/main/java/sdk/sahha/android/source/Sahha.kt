@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
-import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
@@ -53,17 +52,17 @@ object Sahha {
         }
     }
 
-    fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
-            try {
-                di.defaultScope.launch {
-                    config = di.configurationDao.getConfig()
-                    startDataCollection(callback)
-                    checkAndStartPostWorkers()
-                }
-            } catch (e: Exception) {
-                callback?.also { it("Error: ${e.message}", false) }
-                di.sahhaErrorLogger.application(e.message, "start", null)
+    internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+        try {
+            di.defaultScope.launch {
+                config = di.configurationDao.getConfig()
+                startDataCollection(callback)
+                checkAndStartPostWorkers()
             }
+        } catch (e: Exception) {
+            callback?.also { it("Error: ${e.message}", false) }
+            di.sahhaErrorLogger.application(e.message, "start", null)
+        }
     }
 
     fun analyze(

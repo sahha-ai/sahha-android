@@ -27,7 +27,11 @@ class MainActivity : ComponentActivity() {
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
-            postSensorDataManually = false
+            postSensorDataManually = false,
+            sensors = setOf(
+                SahhaSensor.sleep,
+                SahhaSensor.pedometer
+            )
         )
         Sahha.configure(application, config)
 
@@ -77,6 +81,14 @@ class MainActivity : ComponentActivity() {
                                     Sahha.enableSensor(
                                         this@MainActivity,
                                         SahhaSensor.sleep
+                                    ) { error, newStatus ->
+                                        permissionStatus = newStatus
+                                        error?.also { permissionStatus.name }
+                                    }
+
+                                    Sahha.enableSensor(
+                                        this@MainActivity,
+                                        SahhaSensor.pedometer
                                     ) { error, newStatus ->
                                         permissionStatus = newStatus
                                         error?.also { permissionStatus.name }
