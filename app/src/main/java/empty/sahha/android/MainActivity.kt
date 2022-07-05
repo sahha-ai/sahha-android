@@ -2,6 +2,7 @@ package empty.sahha.android
 
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -33,7 +34,9 @@ class MainActivity : ComponentActivity() {
                 SahhaSensor.pedometer
             )
         )
-        Sahha.configure(application, config)
+        Sahha.configure(application, config) { error, success ->
+            Toast.makeText(this, error ?: "Successful configuration", Toast.LENGTH_LONG).show()
+        }
 
         setContent {
             SahhasdkemptyTheme {

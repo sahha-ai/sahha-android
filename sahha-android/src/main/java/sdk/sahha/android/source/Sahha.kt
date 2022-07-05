@@ -32,13 +32,14 @@ object Sahha {
 
     fun configure(
         application: Application,
-        sahhaSettings: SahhaSettings
+        sahhaSettings: SahhaSettings,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
-            start()
+            start(callback)
         }
     }
 

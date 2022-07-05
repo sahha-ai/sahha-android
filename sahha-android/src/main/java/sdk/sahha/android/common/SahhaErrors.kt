@@ -17,6 +17,7 @@ object SahhaErrors {
     val somethingWentWrong = "Error: Something went wrong, please try again"
     val responseFailure = "Error: Failed to receive response"
     val noData = "Error: No data found"
+    val noSettings = "Error: No Sahha settings found"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."
