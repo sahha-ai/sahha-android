@@ -135,18 +135,25 @@ object Sahha {
             SahhaSensor.pedometer -> {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
+
+                    if (sensorStatus == SahhaSensorStatus.enabled)
+                        start()
                 }
             }
             SahhaSensor.sleep -> {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
+
+                    if (sensorStatus == SahhaSensorStatus.enabled)
+                        start()
                 }
             }
             SahhaSensor.device -> {
                 callback(null, SahhaSensorStatus.enabled)
+
+                start()
             }
         }
-        start()
     }
 
     fun getSensorStatus(

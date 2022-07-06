@@ -1,6 +1,9 @@
 package sdk.sahha.android.data
 
 internal object Constants {
+    //Action
+    const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
+
     // Configs
     const val TRANSFORMATION = "AES/GCM/NoPadding"
     const val ANDROID_KEY_STORE = "AndroidKeyStore"

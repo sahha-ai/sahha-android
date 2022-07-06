@@ -29,10 +29,6 @@ class MainActivity : ComponentActivity() {
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
             postSensorDataManually = false,
-            sensors = setOf(
-                SahhaSensor.sleep,
-                SahhaSensor.pedometer
-            )
         )
         Sahha.configure(application, config) { error, success ->
             Toast.makeText(this, error ?: "Successful configuration", Toast.LENGTH_LONG).show()
