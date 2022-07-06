@@ -17,7 +17,9 @@ class SahhaNotificationManager @Inject constructor(
     private val repository: BackgroundRepo
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
-    fun setNewPersistent(icon: Int?, title: String?, shortDescription: String?) {
+    fun setNewPersistent(
+        icon: Int?, title: String?, shortDescription: String?,
+    ) {
         val notification = getNewNotification(
             context,
             "analytics",

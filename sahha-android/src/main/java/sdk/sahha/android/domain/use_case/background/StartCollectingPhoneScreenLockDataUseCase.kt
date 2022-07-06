@@ -9,8 +9,7 @@ class StartCollectingPhoneScreenLockDataUseCase @Inject constructor(
 ) {
     operator fun invoke(
         serviceContext: Context,
-        receiverRegistered: Boolean,
-    ): Boolean {
-        return repository.startPhoneScreenReceivers(serviceContext, receiverRegistered)
+    ) {
+        repository.startPhoneScreenReceivers(serviceContext)
     }
 }

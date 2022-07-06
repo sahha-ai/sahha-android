@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
-import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
@@ -33,13 +32,14 @@ object Sahha {
 
     fun configure(
         application: Application,
-        sahhaSettings: SahhaSettings
+        sahhaSettings: SahhaSettings,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
         di.ioScope.launch {
             saveConfiguration(sahhaSettings)
-            start()
+            start(callback)
         }
     }
 
@@ -53,17 +53,17 @@ object Sahha {
         }
     }
 
-    fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
-            try {
-                di.defaultScope.launch {
-                    config = di.configurationDao.getConfig()
-                    startDataCollection(callback)
-                    checkAndStartPostWorkers()
-                }
-            } catch (e: Exception) {
-                callback?.also { it("Error: ${e.message}", false) }
-                di.sahhaErrorLogger.application(e.message, "start", null)
+    internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+        try {
+            di.defaultScope.launch {
+                config = di.configurationDao.getConfig()
+                startDataCollection(callback)
+                checkAndStartPostWorkers()
             }
+        } catch (e: Exception) {
+            callback?.also { it("Error: ${e.message}", false) }
+            di.sahhaErrorLogger.application(e.message, "start", null)
+        }
     }
 
     fun analyze(
@@ -135,18 +135,25 @@ object Sahha {
             SahhaSensor.pedometer -> {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
+
+                    if (sensorStatus == SahhaSensorStatus.enabled)
+                        start()
                 }
             }
             SahhaSensor.sleep -> {
                 SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
                     callback(null, sensorStatus)
+
+                    if (sensorStatus == SahhaSensorStatus.enabled)
+                        start()
                 }
             }
             SahhaSensor.device -> {
                 callback(null, SahhaSensorStatus.enabled)
+
+                start()
             }
         }
-        start()
     }
 
     fun getSensorStatus(
