@@ -2,6 +2,7 @@ package sdk.sahha.android.di
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.hardware.SensorManager
 import android.os.PowerManager
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
@@ -30,6 +31,7 @@ class ManualDependencies @Inject constructor(
     internal lateinit var sahhaErrorLogger: SahhaErrorLogger
     internal lateinit var powerManager: PowerManager
     internal lateinit var keyguardManager: KeyguardManager
+    internal lateinit var sensorManager: SensorManager
 
     internal val gson by lazy { AppModule.provideGsonConverter() }
     internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
@@ -115,6 +117,11 @@ class ManualDependencies @Inject constructor(
         setSahhaErrorLogger(context)
         setPowerManager(context)
         setKeyguardManager(context)
+        setSensorManager(context)
+    }
+
+    private fun setSensorManager(context: Context) {
+        sensorManager = AppModule.provideSensorManager(context)
     }
 
     private fun setPowerManager(context: Context) {

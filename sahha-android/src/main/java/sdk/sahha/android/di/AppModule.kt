@@ -1,7 +1,9 @@
 package sdk.sahha.android.di
 
 import android.app.KeyguardManager
+import android.app.Service
 import android.content.Context
+import android.hardware.SensorManager
 import android.os.PowerManager
 import androidx.room.Room
 import dagger.Module
@@ -238,5 +240,13 @@ internal object AppModule {
         @Named("defaultScope") defaultScope: CoroutineScope
     ): SahhaErrorLogger {
         return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSensorManager(
+        @ApplicationContext context: Context,
+    ): SensorManager {
+        return context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
     }
 }

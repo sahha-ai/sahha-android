@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import sdk.sahha.android.common.SahhaReceivers
+import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
@@ -31,16 +31,22 @@ class DataCollectionService : Service() {
 
     override fun onDestroy() {
         Sahha.di.defaultScope.launch {
-            try {
-                unregisterReceiver(SahhaReceivers.screenLocks)
-            } catch (e: Exception) {
-                Log.w(tag, e.message ?: "Could not unregister receiver", e)
-            }
+            unregisterExistingReceiversAndListeners()
         }
 
         startForegroundService(
             Intent(this@DataCollectionService, DataCollectionService::class.java)
         )
+    }
+
+    private fun unregisterExistingReceiversAndListeners() {
+        try {
+            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
