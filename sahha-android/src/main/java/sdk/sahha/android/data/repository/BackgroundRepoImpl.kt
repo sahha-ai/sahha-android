@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -20,9 +21,12 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaReceivers
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
@@ -101,7 +105,10 @@ class BackgroundRepoImpl @Inject constructor(
             Sahha.notifications.setNewPersistent(icon, title, shortDescription)
 
             try {
-                context.startForegroundService(Intent(context, DataCollectionService::class.java))
+                context.startForegroundService(
+                    Intent(context, DataCollectionService::class.java)
+                        .setAction(Constants.ACTION_RESTART_SERVICE)
+                )
             } catch (e: Exception) {
                 callback?.also { it(e.message, false) }
             }
@@ -120,16 +127,14 @@ class BackgroundRepoImpl @Inject constructor(
 
     override fun startPhoneScreenReceivers(
         serviceContext: Context,
-        receiverRegistered: Boolean,
-    ): Boolean {
-        if (receiverRegistered) return true
-        if (Build.VERSION.SDK_INT < 26) return false
+    ) {
+        if (Build.VERSION.SDK_INT < 26) return
 
         registerScreenStateReceiver(serviceContext)
-        return true
     }
 
     override suspend fun startStepDetectorAsync(
+        context: Context,
         movementDao: MovementDao,
         stepDetectorRegistered: Boolean
     ): Boolean {
@@ -171,6 +176,7 @@ class BackgroundRepoImpl @Inject constructor(
     }
 
     override suspend fun startStepCounterAsync(
+        context: Context,
         movementDao: MovementDao,
         stepCounterRegistered: Boolean
     ): Boolean {
@@ -217,7 +223,7 @@ class BackgroundRepoImpl @Inject constructor(
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest: PeriodicWorkRequest =
             getSleepWorkRequest(checkedIntervalMinutes, workerTag)
-        startWorkManager(workRequest, workerTag)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
 
     override fun startPostWorkersAsync() {
@@ -249,7 +255,7 @@ class BackgroundRepoImpl @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     private fun registerScreenStateReceiver(serviceContext: Context) {
         serviceContext.registerReceiver(
-            PhoneScreenStateReceiver(),
+            SahhaReceivers.screenLocks,
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
                 addAction(Intent.ACTION_SCREEN_ON)
@@ -329,10 +335,14 @@ class BackgroundRepoImpl @Inject constructor(
             .build()
     }
 
-    private fun startWorkManager(workRequest: PeriodicWorkRequest, workerTag: String) {
+    private fun startWorkManager(
+        workRequest: PeriodicWorkRequest,
+        workerTag: String,
+        policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
+    ) {
         workManager.enqueueUniquePeriodicWork(
             workerTag,
-            ExistingPeriodicWorkPolicy.KEEP,
+            policy,
             workRequest
         )
     }

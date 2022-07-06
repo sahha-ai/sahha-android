@@ -17,19 +17,20 @@ interface BackgroundRepo {
     fun startActivityRecognitionReceiver(callback: ((error: String?, success: Boolean) -> Unit)? = null)
     fun startPhoneScreenReceivers(
         serviceContext: Context,
-        receiverRegistered: Boolean,
-    ): Boolean
+    )
 
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startPostWorkersAsync()
     fun stopWorkerByTag(workerTag: String)
     fun stopAllWorkers()
     suspend fun startStepDetectorAsync(
+        context: Context,
         movementDao: MovementDao,
         stepDetectorRegistered: Boolean
     ): Boolean
 
     suspend fun startStepCounterAsync(
+        context: Context,
         movementDao: MovementDao,
         stepCounterRegistered: Boolean
     ): Boolean
