@@ -21,8 +21,6 @@ import sdk.sahha.android.source.SahhaSensor
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
-    private var stepCounterRegistered = false
-    private var stepDetectorRegistered = false
     private lateinit var config: SahhaConfiguration
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -80,16 +78,13 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-            stepCounterRegistered =
-                Sahha.di.startCollectingStepCounterData(
-                    this,
-                    Sahha.di.movementDao,
-                    stepCounterRegistered
-                )
-            stepDetectorRegistered = Sahha.di.startCollectingStepDetectorData(
+            Sahha.di.startCollectingStepCounterData(
                 this,
                 Sahha.di.movementDao,
-                stepDetectorRegistered
+            )
+            Sahha.di.startCollectingStepDetectorData(
+                this,
+                Sahha.di.movementDao,
             )
         }
     }

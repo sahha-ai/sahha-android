@@ -127,43 +127,31 @@ class BackgroundRepoImpl @Inject constructor(
     override suspend fun startStepDetectorAsync(
         context: Context,
         movementDao: MovementDao,
-        stepDetectorRegistered: Boolean
-    ): Boolean {
+    ) {
         val sensorManager = Sahha.di.sensorManager
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
 
         sensor?.also {
-            if (stepDetectorRegistered) return true
-
             sensorManager.registerListener(
                 SahhaReceiversAndListeners.stepDetector, it, SensorManager.SENSOR_DELAY_NORMAL
             )
-
-            return true
         }
-        return false
     }
 
     override suspend fun startStepCounterAsync(
         context: Context,
         movementDao: MovementDao,
-        stepCounterRegistered: Boolean
-    ): Boolean {
+    ) {
         val sensorManager = Sahha.di.sensorManager
         val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
         sensor?.also {
-            if (stepCounterRegistered) return true
-
             sensorManager.registerListener(
                 SahhaReceiversAndListeners.stepCounter,
                 it,
                 SensorManager.SENSOR_DELAY_NORMAL
             )
-
-            return true
         }
-        return false
     }
 
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
