@@ -11,10 +11,9 @@ class StartCollectingStepDetectorData @Inject constructor(
     suspend operator fun invoke(
         context: Context,
         movementDao: MovementDao,
-        stepDetectorRegistered: Boolean
-    ): Boolean {
-        return repository.startStepDetectorAsync(
-            context, movementDao, stepDetectorRegistered
+    ) {
+        repository.startStepDetectorAsync(
+            context, movementDao
         )
     }
 }

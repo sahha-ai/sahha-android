@@ -11,10 +11,9 @@ class StartCollectingStepCounterData @Inject constructor(
     suspend operator fun invoke(
         context: Context,
         movementDao: MovementDao,
-        stepCounterRegistered: Boolean
-    ): Boolean {
-        return repository.startStepCounterAsync(
-            context, movementDao, stepCounterRegistered
+    ) {
+        repository.startStepCounterAsync(
+            context, movementDao
         )
     }
 }
