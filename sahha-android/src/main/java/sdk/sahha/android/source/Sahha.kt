@@ -128,58 +128,32 @@ object Sahha {
 
     fun enableSensor(
         context: Context,
-        sensor: SahhaSensor,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+        sensors: Set<SahhaSensor>,
+        callback: ((error: String?, statuses: HashMap<SahhaSensor, Enum<SahhaSensorStatus>>) -> Unit)
     ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
+        val sensorStatuses = hashMapOf<SahhaSensor, Enum<SahhaSensorStatus>>()
 
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
-                }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-
-                start()
+        sensors.forEach {
+            SahhaPermissions.enableSensor(context, it) { sensorStatus ->
+                sensorStatuses[it] = sensorStatus
+                if (sensorStatus == SahhaSensorStatus.enabled) start()
             }
         }
+
+        callback(null, sensorStatuses)
     }
 
     fun getSensorStatus(
         context: Context,
-        sensor: SahhaSensor,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+        sensors: Set<SahhaSensor>,
+        callback: ((error: String?, statuses: HashMap<SahhaSensor, Enum<SahhaSensorStatus>>) -> Unit)
     ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-            }
-            else -> {
-                callback(
-                    null,
-                    SahhaSensorStatus.enabled
-                )
+        val sensorStatuses = hashMapOf<SahhaSensor, Enum<SahhaSensorStatus>>()
+
+        for(i in sensors.indices) {
+            SahhaPermissions.getSensorStatus(context, sensors.elementAt(i)) { sensorStatus ->
+                sensorStatuses[sensors.elementAt(i)] = sensorStatus
+                callback(null, sensorStatuses)
             }
         }
     }

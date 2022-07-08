@@ -144,9 +144,13 @@ object SahhaPermissions : BroadcastReceiver() {
         sensor: SahhaSensor,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
+            return
+        }
+
+        if (sensor == SahhaSensor.device) {
+            callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
 
@@ -172,6 +176,11 @@ object SahhaPermissions : BroadcastReceiver() {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
+            return
+        }
+
+        if (sensor == SahhaSensor.device) {
+            callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
 
