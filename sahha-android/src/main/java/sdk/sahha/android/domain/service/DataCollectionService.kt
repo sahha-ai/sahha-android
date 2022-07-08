@@ -50,30 +50,39 @@ class DataCollectionService : Service() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         CoroutineScope(Main).launch {
-            SahhaReconfigure(this@DataCollectionService.applicationContext)
+            try {
+                SahhaReconfigure(this@DataCollectionService.applicationContext)
 
-            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-            Sahha.di.notifications.setNewPersistent(
-                notificationConfig.icon,
-                notificationConfig.title,
-                notificationConfig.shortDescription
-            )
+                val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+                Sahha.di.notifications.setNewPersistent(
+                    notificationConfig.icon,
+                    notificationConfig.title,
+                    notificationConfig.shortDescription
+                )
 
-            startForegroundService()
-            config = Sahha.di.configurationDao.getConfig() ?: return@launch
-            checkAndStartCollectingScreenLockData()
-            checkAndStartCollectingPedometerData()
+                startForegroundService()
+                config = Sahha.di.configurationDao.getConfig() ?: return@launch
+                checkAndStartCollectingScreenLockData()
+                checkAndStartCollectingPedometerData()
 
-            intent?.also {
-                if (it.action == Constants.ACTION_RESTART_SERVICE) {
-                    stopForeground(true)
-                    stopSelf()
-                    return@also
+                intent?.also {
+                    if (it.action == Constants.ACTION_RESTART_SERVICE) {
+                        stopService()
+                        return@also
+                    }
                 }
+            } catch (e: Exception) {
+                stopService()
+                Log.w(tag, e.message, e)
             }
         }
 
         return START_STICKY
+    }
+
+    private fun stopService() {
+        stopForeground(true)
+        stopSelf()
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
