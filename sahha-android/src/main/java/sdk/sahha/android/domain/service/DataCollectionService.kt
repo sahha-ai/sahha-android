@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import sdk.sahha.android.common.SahhaReceivers
+import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
@@ -21,8 +21,6 @@ import sdk.sahha.android.source.SahhaSensor
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
-    private var stepCounterRegistered = false
-    private var stepDetectorRegistered = false
     private lateinit var config: SahhaConfiguration
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -31,16 +29,22 @@ class DataCollectionService : Service() {
 
     override fun onDestroy() {
         Sahha.di.defaultScope.launch {
-            try {
-                unregisterReceiver(SahhaReceivers.screenLocks)
-            } catch (e: Exception) {
-                Log.w(tag, e.message ?: "Could not unregister receiver", e)
-            }
+            unregisterExistingReceiversAndListeners()
         }
 
         startForegroundService(
             Intent(this@DataCollectionService, DataCollectionService::class.java)
         )
+    }
+
+    private fun unregisterExistingReceiversAndListeners() {
+        try {
+            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -74,16 +78,13 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-            stepCounterRegistered =
-                Sahha.di.startCollectingStepCounterData(
-                    this,
-                    Sahha.di.movementDao,
-                    stepCounterRegistered
-                )
-            stepDetectorRegistered = Sahha.di.startCollectingStepDetectorData(
+            Sahha.di.startCollectingStepCounterData(
                 this,
                 Sahha.di.movementDao,
-                stepDetectorRegistered
+            )
+            Sahha.di.startCollectingStepDetectorData(
+                this,
+                Sahha.di.movementDao,
             )
         }
     }

@@ -26,12 +26,10 @@ interface BackgroundRepo {
     suspend fun startStepDetectorAsync(
         context: Context,
         movementDao: MovementDao,
-        stepDetectorRegistered: Boolean
-    ): Boolean
+    )
 
     suspend fun startStepCounterAsync(
         context: Context,
         movementDao: MovementDao,
-        stepCounterRegistered: Boolean
-    ): Boolean
+    )
 }
