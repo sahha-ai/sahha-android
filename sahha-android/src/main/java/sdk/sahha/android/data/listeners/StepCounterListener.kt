@@ -17,7 +17,7 @@ class StepCounterListener : SensorEventListener2 {
 
                 val stepData = checkStepCountDuplicate(
                     totalSteps,
-                    Sahha.di.movementDao.getLastStepCount(),
+                    Sahha.di.movementDao.getExistingStepCount(totalSteps),
                     detectedDateTime
                 )
                 stepData?.also { Sahha.di.movementDao.saveStepData(it) }
@@ -30,17 +30,10 @@ class StepCounterListener : SensorEventListener2 {
 
     fun checkStepCountDuplicate(
         totalSteps: Int,
-        lastStepCount: Int?,
+        existingStepCount: Int?,
         detectedDateTime: String
     ): StepData? {
-        lastStepCount?.also {
-            if (totalSteps != lastStepCount)
-                return StepData(
-                    StepDataSource.AndroidStepCounter.name,
-                    totalSteps,
-                    detectedDateTime
-                )
-        } ?: return StepData(
+        existingStepCount ?: return StepData(
             StepDataSource.AndroidStepCounter.name,
             totalSteps,
             detectedDateTime

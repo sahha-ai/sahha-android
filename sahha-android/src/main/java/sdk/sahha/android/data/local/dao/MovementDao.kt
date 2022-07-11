@@ -17,8 +17,11 @@ interface MovementDao {
     @Query("SELECT * FROM StepData")
     suspend fun getAllStepData(): List<StepData>
 
-    @Query("SELECT count FROM StepData WHERE id=(SELECT MAX(id) FROM StepData WHERE source=\"AndroidStepCounter\")")
+    @Query("SELECT count FROM StepData WHERE id=(SELECT MAX(id) FROM StepData WHERE source='AndroidStepCounter')")
     suspend fun getLastStepCount(): Int?
+
+    @Query("SELECT count FROM StepData WHERE source='AndroidStepCounter' AND count=:count")
+    suspend fun getExistingStepCount(count: Int): Int?
 
     @Query("DELETE FROM StepData")
     suspend fun clearAllStepData()
