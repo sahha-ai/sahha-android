@@ -4,8 +4,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener2
 import kotlinx.coroutines.launch
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.StepDataSource
 import sdk.sahha.android.source.Sahha
 
 class StepDetectorListener : SensorEventListener2 {
@@ -17,7 +17,7 @@ class StepDetectorListener : SensorEventListener2 {
 
                 Sahha.di.movementDao.saveStepData(
                     StepData(
-                        StepDataSource.AndroidStepDetector.name,
+                        Constants.STEP_DETECTOR_DATA_SOURCE,
                         step,
                         detectedDateTime
                     )

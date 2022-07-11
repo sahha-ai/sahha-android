@@ -2,8 +2,8 @@ package sdk.sahha.android.domain.model.steps
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.StepDto
-import sdk.sahha.android.source.Sahha
 
 @Entity
 data class StepData(
@@ -38,11 +38,11 @@ fun StepData.toStepDto(createdAt: String): StepDto {
 
 private fun getDataType(source: String): String {
     return when (source) {
-        StepDataSource.AndroidStepCounter.name -> {
-            "TotalSteps"
+        Constants.STEP_COUNTER_DATA_SOURCE -> {
+            Constants.STEP_COUNTER_DATA_TYPE
         }
-        StepDataSource.AndroidStepDetector.name -> {
-            "SingleStep"
+        Constants.STEP_DETECTOR_DATA_SOURCE -> {
+            Constants.STEP_DETECTOR_DATA_TYPE
         }
         else -> "Unknown"
     }

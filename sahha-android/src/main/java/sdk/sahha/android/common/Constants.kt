@@ -1,7 +1,7 @@
 package sdk.sahha.android.data
 
 internal object Constants {
-    //Action
+    // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
 
     // Configs
@@ -12,6 +12,15 @@ internal object Constants {
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
     const val MAX_STEP_POST_VALUE = 1000
+
+    // Data Source
+    const val SLEEP_DATA_SOURCE = "AndroidSleep"
+    const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
+    const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
+
+    // Data Type
+    const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
+    const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

@@ -4,8 +4,8 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener2
 import kotlinx.coroutines.launch
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.StepDataSource
 import sdk.sahha.android.source.Sahha
 
 class StepCounterListener : SensorEventListener2 {
@@ -34,7 +34,7 @@ class StepCounterListener : SensorEventListener2 {
         detectedDateTime: String
     ): StepData? {
         existingStepCount ?: return StepData(
-            StepDataSource.AndroidStepCounter.name,
+            Constants.STEP_COUNTER_DATA_SOURCE,
             totalSteps,
             detectedDateTime
         )

@@ -2,6 +2,7 @@ package sdk.sahha.android.data.local
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import sdk.sahha.android.data.Constants
 
 object SahhaDbMigrations {
     val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -27,6 +28,14 @@ object SahhaDbMigrations {
                 execSQL("DROP TABLE LastDetectedSteps")
                 execSQL("DROP TABLE DetectedSteps")
                 execSQL("CREATE TABLE StepData (id INTEGER NOT NULL, source TEXT NOT NULL, count INTEGER NOT NULL, detectedAt TEXT NOT NULL, PRIMARY KEY(id))")
+            }
+        }
+    }
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("ALTER TABLE SleepDto ADD COLUMN source TEXT NOT NULL DEFAULT('${Constants.SLEEP_DATA_SOURCE}')")
             }
         }
     }
