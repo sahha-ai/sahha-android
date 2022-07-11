@@ -37,7 +37,7 @@ object Sahha {
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
-        di.ioScope.launch {
+        di.mainScope.launch {
             saveConfiguration(sahhaSettings)
             start(callback)
         }
