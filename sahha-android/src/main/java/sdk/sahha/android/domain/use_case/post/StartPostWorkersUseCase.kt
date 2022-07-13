@@ -1,9 +1,8 @@
 package sdk.sahha.android.domain.use_case.post
 
 import sdk.sahha.android.domain.repository.BackgroundRepo
-import javax.inject.Inject
 
-class StartPostWorkersUseCase @Inject constructor(
+class StartPostWorkersUseCase (
     private val repository: BackgroundRepo
 ) {
     operator fun invoke() {

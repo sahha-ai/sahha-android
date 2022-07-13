@@ -7,9 +7,8 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.repository.RemoteRepo
 import java.time.LocalDateTime
 import java.util.*
-import javax.inject.Inject
 
-class AnalyzeProfileUseCase @Inject constructor(
+class AnalyzeProfileUseCase (
     private val repository: RemoteRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
     private val sahhaErrorLogger: SahhaErrorLogger? = null

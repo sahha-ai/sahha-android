@@ -1,9 +1,8 @@
 package sdk.sahha.android.domain.use_case
 
 import sdk.sahha.android.domain.repository.AuthRepo
-import javax.inject.Inject
 
-class SaveTokensUseCase @Inject constructor(
+class SaveTokensUseCase (
     private val repository: AuthRepo
 ) {
     suspend operator fun invoke(

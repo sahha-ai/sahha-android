@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 
-class DevicePostWorker(private val context: Context, workerParameters: WorkerParameters) :
+class DevicePostWorker (private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
     override fun doWork(): Result {
         CoroutineScope(Default).launch {

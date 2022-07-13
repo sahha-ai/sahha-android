@@ -27,10 +27,8 @@ import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
-import javax.inject.Inject
-import javax.inject.Named
 
-class RemoteRepoImpl @Inject constructor(
+class RemoteRepoImpl (
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
     private val movementDao: MovementDao,
@@ -38,7 +36,7 @@ class RemoteRepoImpl @Inject constructor(
     private val decryptor: Decryptor,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    @Named("ioScope") private val ioScope: CoroutineScope
+    private val ioScope: CoroutineScope
 ) : RemoteRepo {
 
     override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {

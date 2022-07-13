@@ -10,9 +10,8 @@ import androidx.core.app.NotificationCompat
 import sdk.sahha.android.R
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.repository.BackgroundRepo
-import javax.inject.Inject
 
-class SahhaNotificationManager @Inject constructor(
+class SahhaNotificationManager (
     private val context: Context,
     private val repository: BackgroundRepo
 ) {

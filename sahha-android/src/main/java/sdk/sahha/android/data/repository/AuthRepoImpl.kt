@@ -6,9 +6,8 @@ import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.domain.repository.AuthRepo
-import javax.inject.Inject
 
-class AuthRepoImpl @Inject constructor(
+class AuthRepoImpl (
     private val encryptor: Encryptor,
     private val sahhaErrorLogger: SahhaErrorLogger
 ) : AuthRepo {
