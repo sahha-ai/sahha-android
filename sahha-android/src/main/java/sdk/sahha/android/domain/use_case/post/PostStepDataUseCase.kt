@@ -2,9 +2,8 @@ package sdk.sahha.android.domain.use_case.post
 
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
-import javax.inject.Inject
 
-class PostStepDataUseCase @Inject constructor(
+class PostStepDataUseCase (
     val repository: RemoteRepo
 ) {
     suspend operator fun invoke(

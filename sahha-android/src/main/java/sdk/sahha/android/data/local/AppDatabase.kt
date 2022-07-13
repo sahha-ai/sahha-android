@@ -20,7 +20,7 @@ import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 
 @Database(
-    version = 4,
+    version = 5,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,

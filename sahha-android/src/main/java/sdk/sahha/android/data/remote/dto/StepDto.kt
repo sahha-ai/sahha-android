@@ -1,5 +1,8 @@
 package sdk.sahha.android.data.remote.dto
 
+import androidx.annotation.Keep
+
+@Keep
 data class StepDto(
     val dataType: String,
     val count: Int,

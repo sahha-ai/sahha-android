@@ -1,9 +1,8 @@
 package sdk.sahha.android.domain.use_case
 
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
-import javax.inject.Inject
 
-class GetSdkVersionUseCase @Inject constructor(
+class GetSdkVersionUseCase (
     private val repository: DeviceInfoRepo
 ) {
     operator fun invoke() {

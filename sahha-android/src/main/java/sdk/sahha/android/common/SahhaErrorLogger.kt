@@ -19,15 +19,13 @@ import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
-import javax.inject.Inject
-import javax.inject.Named
 
-class SahhaErrorLogger @Inject constructor(
+class SahhaErrorLogger (
     private val context: Context,
     private val configurationDao: ConfigurationDao,
     private val decryptor: Decryptor,
     private val sahhaErrorApi: SahhaErrorApi,
-    @Named("defaultScope") private val defaultScope: CoroutineScope
+    private val defaultScope: CoroutineScope
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
 

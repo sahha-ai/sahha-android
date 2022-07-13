@@ -2,9 +2,8 @@ package sdk.sahha.android.domain.use_case.background
 
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.repository.BackgroundRepo
-import javax.inject.Inject
 
-class StartCollectingSleepDataUseCase @Inject constructor(
+class StartCollectingSleepDataUseCase (
     private val repository: BackgroundRepo
 ) {
     operator fun invoke() {

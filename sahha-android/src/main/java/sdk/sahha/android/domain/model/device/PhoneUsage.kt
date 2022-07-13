@@ -2,6 +2,8 @@ package sdk.sahha.android.domain.model.device
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
+
 
 @Entity
 data class PhoneUsage(
@@ -12,4 +14,12 @@ data class PhoneUsage(
 ) {
     constructor(isLocked: Boolean, isScreenOn: Boolean, createdAt: String)
             : this(0, isLocked, isScreenOn, createdAt)
+}
+
+fun PhoneUsage.toPhoneUsageSendDto(): PhoneUsageSendDto {
+    return PhoneUsageSendDto(
+        isLocked,
+        isScreenOn,
+        createdAt
+    )
 }

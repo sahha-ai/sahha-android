@@ -6,11 +6,6 @@ import android.content.Context
 import android.hardware.SensorManager
 import android.os.PowerManager
 import androidx.room.Room
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
@@ -35,36 +30,27 @@ import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaEnvironment
-import javax.inject.Named
-import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
 internal object AppModule {
-    @Provides
-    @Singleton
     fun providePowerManager(
-        @ApplicationContext context: Context
+        context: Context
     ): PowerManager {
         return context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 
-    @Provides
-    @Singleton
+
     fun provideKeyguardManager(
-        @ApplicationContext context: Context
+        context: Context
     ): KeyguardManager {
         return context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     }
 
-    @Provides
-    @Singleton
+
     fun provideGsonConverter(): GsonConverterFactory {
         return GsonConverterFactory.create()
     }
 
-    @Provides
-    @Singleton
+
     fun provideSahhaApi(
         environment: Enum<SahhaEnvironment>,
         gson: GsonConverterFactory
@@ -84,8 +70,7 @@ internal object AppModule {
         }
     }
 
-    @Provides
-    @Singleton
+
     fun provideSahhaErrorApi(
         environment: Enum<SahhaEnvironment>,
         gson: GsonConverterFactory
@@ -106,8 +91,6 @@ internal object AppModule {
     }
 
 
-    @Provides
-    @Singleton
     fun provideAuthRepository(
         encryptor: Encryptor,
         sahhaErrorLogger: SahhaErrorLogger
@@ -115,12 +98,11 @@ internal object AppModule {
         return AuthRepoImpl(encryptor, sahhaErrorLogger)
     }
 
-    @Provides
-    @Singleton
+
     fun provideBackgroundRepository(
-        @ApplicationContext context: Context,
-        @Named("defaultScope") defaultScope: CoroutineScope,
-        @Named("ioScope") ioScope: CoroutineScope,
+        context: Context,
+        defaultScope: CoroutineScope,
+        ioScope: CoroutineScope,
         configurationDao: ConfigurationDao,
     ): BackgroundRepo {
         return BackgroundRepoImpl(
@@ -131,15 +113,13 @@ internal object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
+
     fun providePermissionsRepository(
     ): PermissionsRepo {
         return PermissionsRepoImpl()
     }
 
-    @Provides
-    @Singleton
+
     fun provideRemotePostRepository(
         sleepDao: SleepDao,
         deviceUsageDao: DeviceUsageDao,
@@ -148,7 +128,7 @@ internal object AppModule {
         decryptor: Decryptor,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger,
-        @Named("ioScope") ioScope: CoroutineScope
+        ioScope: CoroutineScope
     ): RemoteRepo {
         return RemoteRepoImpl(
             sleepDao,
@@ -162,9 +142,8 @@ internal object AppModule {
         )
     }
 
-    @Provides
-    @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): SahhaDatabase {
+
+    fun provideDatabase(context: Context): SahhaDatabase {
         return Room.databaseBuilder(
             context,
             SahhaDatabase::class.java,
@@ -175,77 +154,65 @@ internal object AppModule {
                 SahhaDbMigrations.MIGRATION_1_2,
                 SahhaDbMigrations.MIGRATION_2_3,
                 SahhaDbMigrations.MIGRATION_3_4,
+                SahhaDbMigrations.MIGRATION_4_5
             )
             .build()
     }
 
-    @Provides
-    @Singleton
+
     fun provideMovementDao(db: SahhaDatabase): MovementDao {
         return db.movementDao()
     }
 
-    @Provides
-    @Singleton
+
     fun provideSecurityDao(db: SahhaDatabase): SecurityDao {
         return db.securityDao()
     }
 
-    @Provides
-    @Singleton
+
     fun provideSleepDao(db: SahhaDatabase): SleepDao {
         return db.sleepDao()
     }
 
-    @Provides
-    @Singleton
+
     fun provideDeviceUsageDao(db: SahhaDatabase): DeviceUsageDao {
         return db.deviceUsageDao()
     }
 
-    @Provides
-    @Singleton
+
     fun provideConfigDao(db: SahhaDatabase): ConfigurationDao {
         return db.configurationDao()
     }
 
-    @Provides
-    @Singleton
-    @Named("defaultScope")
+
     fun provideDefaultScope(): CoroutineScope {
         return CoroutineScope(Default)
     }
 
-    @Provides
-    @Singleton
-    @Named("ioScope")
+
     fun provideIoScope(): CoroutineScope {
         return CoroutineScope(IO)
     }
 
-    @Provides
-    @Singleton
-    @Named("mainScope")
+
     fun provideMainScope(): CoroutineScope {
         return CoroutineScope(Main)
     }
 
-    @Provides
-    @Singleton
+
     fun provideSahhaErrorLogger(
-        @ApplicationContext context: Context,
+        context: Context,
         configurationDao: ConfigurationDao,
         decryptor: Decryptor,
         sahhaErrorApi: SahhaErrorApi,
-        @Named("defaultScope") defaultScope: CoroutineScope
+        defaultScope: CoroutineScope
     ): SahhaErrorLogger {
         return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
-    @Provides
-    @Singleton
+
     fun provideSensorManager(
-        @ApplicationContext context: Context,
+        context: Context,
     ): SensorManager {
         return context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
     }

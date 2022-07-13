@@ -5,11 +5,11 @@ import retrofit2.Call
 import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
-import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
+import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
-import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
@@ -27,13 +27,13 @@ interface SahhaApi {
     @POST("sleep/log")
     fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body sleepData: List<SleepDto>
+        @Body sleepData: List<SleepSendDto>
     ): Call<ResponseBody>
 
     @POST("deviceActivity/lock")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body lockData: List<PhoneUsage>
+        @Body lockData: List<PhoneUsageSendDto>
     ): Call<ResponseBody>
 
     @POST("profile/analyze")
