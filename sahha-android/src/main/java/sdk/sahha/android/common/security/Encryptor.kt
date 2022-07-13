@@ -2,18 +2,17 @@ package sdk.sahha.android.common.security
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import sdk.sahha.android.data.local.dao.SecurityDao
-import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.data.Constants.ANDROID_KEY_STORE
 import sdk.sahha.android.data.Constants.TRANSFORMATION
+import sdk.sahha.android.data.local.dao.SecurityDao
+import sdk.sahha.android.domain.model.security.EncryptUtility
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
-import javax.inject.Inject
 
 
 // Credit to JosiasSena Github user
-class Encryptor @Inject constructor(
+class Encryptor (
     private val securityDao: SecurityDao
 ) {
     private lateinit var encryption: ByteArray

@@ -1,10 +1,9 @@
 package sdk.sahha.android.domain.use_case
 
-import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.domain.repository.RemoteRepo
-import javax.inject.Inject
+import sdk.sahha.android.source.SahhaDemographic
 
-class GetDemographicUseCase @Inject constructor(
+class GetDemographicUseCase (
     private val repository: RemoteRepo
 ) {
     suspend operator fun invoke(

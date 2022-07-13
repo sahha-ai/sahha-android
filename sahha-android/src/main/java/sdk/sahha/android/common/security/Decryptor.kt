@@ -2,16 +2,14 @@ package sdk.sahha.android.common.security
 
 import sdk.sahha.android.data.Constants.ANDROID_KEY_STORE
 import sdk.sahha.android.data.Constants.TRANSFORMATION
-import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.SecurityDao
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import javax.inject.Inject
 
 // Credit to JosiasSena Github user
-class Decryptor @Inject constructor(
+class Decryptor (
     private val securityDao: SecurityDao
 ) {
     private val keyStore by lazy { KeyStore.getInstance(ANDROID_KEY_STORE) }

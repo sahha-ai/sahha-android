@@ -20,9 +20,8 @@ import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
-import javax.inject.Inject
 
-class ManualDependencies @Inject constructor(
+class ManualDependencies (
     internal val environment: Enum<SahhaEnvironment>
 ) {
     internal lateinit var database: SahhaDatabase

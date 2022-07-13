@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 
-class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
+class StepPostWorker (private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
 
     override fun doWork(): Result {

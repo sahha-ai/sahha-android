@@ -3,9 +3,8 @@ package sdk.sahha.android.domain.use_case.background
 import android.content.Context
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.repository.BackgroundRepo
-import javax.inject.Inject
 
-class StartCollectingStepCounterData @Inject constructor(
+class StartCollectingStepCounterData (
     private val repository: BackgroundRepo
 ) {
     suspend operator fun invoke(

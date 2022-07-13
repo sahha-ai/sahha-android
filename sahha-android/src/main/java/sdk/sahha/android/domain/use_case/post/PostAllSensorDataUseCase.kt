@@ -2,9 +2,8 @@ package sdk.sahha.android.domain.use_case.post
 
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaSensor
-import javax.inject.Inject
 
-class PostAllSensorDataUseCase @Inject constructor(
+class PostAllSensorDataUseCase (
     val repository: RemoteRepo
 ) {
     suspend operator fun invoke(

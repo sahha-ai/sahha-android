@@ -39,14 +39,12 @@ import sdk.sahha.android.domain.worker.post.StepPostWorker
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import javax.inject.Named
 
 @SuppressLint("NewApi")
-class BackgroundRepoImpl @Inject constructor(
+class BackgroundRepoImpl(
     private val context: Context,
-    @Named("defaultScope") private val defaultScope: CoroutineScope,
-    @Named("ioScope") private val ioScope: CoroutineScope,
+    private val defaultScope: CoroutineScope,
+    private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,
 ) : BackgroundRepo {
     override lateinit var notification: Notification

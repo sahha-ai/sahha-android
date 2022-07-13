@@ -7,11 +7,17 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
+import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.data.remote.dto.StepDto
-import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
+import sdk.sahha.android.data.remote.dto.send.SleepSendDto
+import sdk.sahha.android.data.remote.dto.toSleepSendDto
+import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
+import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.source.Sahha
 
 object ApiBodyConverter {
@@ -38,7 +44,7 @@ object ApiBodyConverter {
     private fun convertErrorItemErrorsToList(errorsJsonArray: JSONArray): List<String> {
         val errors = mutableListOf<String>()
 
-        for(j in 0 until errorsJsonArray.length()) {
+        for (j in 0 until errorsJsonArray.length()) {
             errors.add(errorsJsonArray[j].toString())
         }
 
@@ -116,6 +122,18 @@ object ApiBodyConverter {
     fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
         val createdAt = Sahha.di.timeManager.nowInISO()
         return stepData.map { it.toStepDto(createdAt) }
+    }
+
+    fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
+        return sleepData.map {
+            it.toSleepSendDto()
+        }
+    }
+
+    fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
+        return usageData.map {
+            it.toPhoneUsageSendDto()
+        }
     }
 
     // This is case sensitive
