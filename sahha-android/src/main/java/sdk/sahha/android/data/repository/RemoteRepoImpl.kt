@@ -24,6 +24,7 @@ import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
@@ -540,8 +541,8 @@ class RemoteRepoImpl @Inject constructor(
         includeSourceData: Boolean
     ): Call<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
-            null,
-            null,
+            Sahha.timeManager.last24HoursInISO(),
+            Sahha.timeManager.nowInISO(),
             includeSourceData
         )
 

@@ -1,9 +1,11 @@
 package sdk.sahha.android.data.remote.dto
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
 
+@Keep
 @Entity
 data class SleepDto(
     @PrimaryKey(autoGenerate = true) val id: Int,
