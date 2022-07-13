@@ -1,11 +1,10 @@
 package sdk.sahha.android.data.remote.dto
 
-import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
+import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 
-@Keep
 @Entity
 data class SleepDto(
     @PrimaryKey(autoGenerate = true) val id: Int,
@@ -29,5 +28,16 @@ data class SleepDto(
         startDateTime,
         endDateTime,
         createdAt
+    )
+}
+
+fun SleepDto.toSleepSendDto(): SleepSendDto {
+    return SleepSendDto(
+        source,
+        durationInMinutes,
+        sleepStage,
+        startDateTime,
+        endDateTime,
+        createdAt,
     )
 }

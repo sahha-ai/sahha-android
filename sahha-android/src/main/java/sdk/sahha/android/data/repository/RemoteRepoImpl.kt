@@ -526,14 +526,14 @@ class RemoteRepoImpl @Inject constructor(
     private suspend fun getSleepResponse(): Call<ResponseBody> {
         return api.postSleepDataRange(
             TokenBearer(decryptor.decrypt(UET)),
-            sleepDao.getSleepDto()
+            ApiBodyConverter.sleepDtoToSleepSendDto(sleepDao.getSleepDto())
         )
     }
 
     private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
         return api.postDeviceActivityRange(
             TokenBearer(decryptor.decrypt(UET)),
-            deviceDao.getUsages()
+            ApiBodyConverter.phoneUsageToPhoneUsageSendDto(deviceDao.getUsages())
         )
     }
 
