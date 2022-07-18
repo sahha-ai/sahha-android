@@ -4,17 +4,17 @@ import androidx.annotation.Keep
 
 @Keep
 data class SahhaDemographic(
-    val age: Int?,
-    val gender: String?,
-    val country: String?,
-    val birthCountry: String?,
-    var ethnicity: String?,
-    var occupation: String?,
-    var industry: String?,
-    var incomeRange: String?,
-    var education: String?,
-    var relationship: String?,
-    var locale: String?,
-    var livingArrangement: String?,
-    var birthDate: String?
+    val age: Int? = null,
+    val gender: String? = null,
+    val country: String? = null,
+    val birthCountry: String? = null,
+    val ethnicity: String? = null,
+    val occupation: String? = null,
+    val industry: String? = null,
+    val incomeRange: String? = null,
+    val education: String? = null,
+    val relationship: String? = null,
+    val locale: String? = null,
+    val livingArrangement: String? = null,
+    val birthDate: String? = null
 )

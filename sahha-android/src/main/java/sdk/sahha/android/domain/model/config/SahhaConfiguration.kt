@@ -31,11 +31,11 @@ data class SahhaConfiguration(
 
 fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
     return SahhaSettings(
-        SahhaEnvironment.values()[environment],
-        SahhaFramework.valueOf(framework),
-        sensorArray.mapTo(mutableSetOf()) {
+        environment = SahhaEnvironment.values()[environment],
+        framework = SahhaFramework.valueOf(framework),
+        sensors = sensorArray.mapTo(mutableSetOf()) {
             SahhaSensor.values()[it]
         },
-        postSensorDataManually
+        postSensorDataManually = postSensorDataManually
     )
 }
