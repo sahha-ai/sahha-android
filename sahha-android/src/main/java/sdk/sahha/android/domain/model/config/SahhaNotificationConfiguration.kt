@@ -1,8 +1,11 @@
 package sdk.sahha.android.domain.model.config
 
+import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import sdk.sahha.android.R
 
+@Keep
 @Entity
 data class SahhaNotificationConfiguration(
     @PrimaryKey val id: Int,
@@ -11,9 +14,9 @@ data class SahhaNotificationConfiguration(
     val shortDescription: String
 ) {
     constructor(
-        icon: Int,
-        title: String,
-        shortDescription: String
+        icon: Int = R.drawable.ic_sahha_no_bg,
+        title: String = "Analytics are running",
+        shortDescription: String = "Swipe for options to hide this notification."
     ) : this(
         1,
         icon,

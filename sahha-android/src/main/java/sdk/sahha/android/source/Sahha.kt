@@ -9,6 +9,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import java.time.LocalDateTime
 import java.util.*
 
@@ -33,12 +34,14 @@ object Sahha {
     fun configure(
         application: Application,
         sahhaSettings: SahhaSettings,
+        notificationSettings: SahhaNotificationConfiguration? = null,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
         di.mainScope.launch {
             saveConfiguration(sahhaSettings)
+            saveNotificationConfig(notificationSettings)
             start(callback)
         }
     }
@@ -226,6 +229,12 @@ object Sahha {
                 sensorEnums,
                 settings.postSensorDataManually
             )
+        )
+    }
+
+    private suspend fun saveNotificationConfig(config: SahhaNotificationConfiguration?) {
+        di.configurationDao.saveNotificationConfig(
+            config ?: SahhaNotificationConfiguration()
         )
     }
 

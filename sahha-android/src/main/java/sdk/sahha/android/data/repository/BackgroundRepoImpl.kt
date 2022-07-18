@@ -79,19 +79,12 @@ class BackgroundRepoImpl(
                 return@launch
             }
 
-            val icon = _icon ?: R.drawable.ic_sahha_no_bg
-            val title = _title ?: "Analytics are running"
-            val shortDescription =
-                _shortDescription ?: "Swipe for options to hide this notification."
-
-            Sahha.di.configurationDao.saveNotificationConfig(
-                SahhaNotificationConfiguration(
-                    icon,
-                    title,
-                    shortDescription
-                )
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+            Sahha.notifications.setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
             )
-            Sahha.notifications.setNewPersistent(icon, title, shortDescription)
 
             try {
                 context.startForegroundService(

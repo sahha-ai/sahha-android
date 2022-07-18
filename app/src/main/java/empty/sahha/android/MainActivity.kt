@@ -2,7 +2,6 @@ package empty.sahha.android
 
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -15,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
@@ -30,9 +30,15 @@ class MainActivity : ComponentActivity() {
             environment = SahhaEnvironment.development,
             postSensorDataManually = false,
         )
-        Sahha.configure(application, config) { error, success ->
-            Toast.makeText(this, error ?: "Successful configuration", Toast.LENGTH_LONG).show()
-        }
+        Sahha.configure(
+            application,
+            config,
+            SahhaNotificationConfiguration(
+                icon = sdk.sahha.android.R.drawable.ic_test,
+                title = "SDK Data",
+                shortDescription = "Collecting, swipe for settings to hide"
+            )
+        )
 
         setContent {
             SahhasdkemptyTheme {
