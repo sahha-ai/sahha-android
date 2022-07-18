@@ -28,16 +28,16 @@ class MainActivity : ComponentActivity() {
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
+            notificationSettings = SahhaNotificationConfiguration(
+                icon = sdk.sahha.android.R.drawable.ic_test,
+                title = "Test",
+                shortDescription = "This is a test."
+            ),
             postSensorDataManually = false,
         )
         Sahha.configure(
             application,
             config,
-            SahhaNotificationConfiguration(
-                icon = sdk.sahha.android.R.drawable.ic_test,
-                title = "SDK Data",
-                shortDescription = "Collecting, swipe for settings to hide"
-            )
         )
 
         setContent {

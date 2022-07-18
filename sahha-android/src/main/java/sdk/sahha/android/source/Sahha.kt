@@ -34,14 +34,15 @@ object Sahha {
     fun configure(
         application: Application,
         sahhaSettings: SahhaSettings,
-        notificationSettings: SahhaNotificationConfiguration? = null,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
         di.mainScope.launch {
             saveConfiguration(sahhaSettings)
-            saveNotificationConfig(notificationSettings)
+            sahhaSettings.notificationSettings?.also {
+                saveNotificationConfig(it)
+            }
             start(callback)
         }
     }
