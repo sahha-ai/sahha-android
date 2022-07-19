@@ -40,9 +40,7 @@ object Sahha {
         di.setDependencies(application)
         di.mainScope.launch {
             saveConfiguration(sahhaSettings)
-            sahhaSettings.notificationSettings?.also {
-                saveNotificationConfig(it)
-            }
+            saveNotificationConfig(sahhaSettings.notificationSettings)
             start(callback)
         }
     }

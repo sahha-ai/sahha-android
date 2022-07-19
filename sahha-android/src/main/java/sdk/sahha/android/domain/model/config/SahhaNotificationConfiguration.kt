@@ -14,13 +14,13 @@ data class SahhaNotificationConfiguration(
     val shortDescription: String
 ) {
     constructor(
-        icon: Int = R.drawable.ic_sahha_no_bg,
-        title: String = "Analytics are running",
-        shortDescription: String = "Swipe for options to hide this notification."
+        icon: Int? = null,
+        title: String? = null,
+        shortDescription: String? = null
     ) : this(
         1,
-        icon,
-        title,
-        shortDescription
+        icon ?: R.drawable.ic_sahha_no_bg,
+        title ?: "Analytics are running",
+        shortDescription ?: "Swipe for options to hide this notification."
     )
 }

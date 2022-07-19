@@ -139,8 +139,12 @@ object SahhaConverterUtility {
         }
     }
 
-    fun stringToDrawableResource(context: Context, iconString: String): Int {
-        return context.resources.getIdentifier(iconString, "drawable", context.packageName)
+    fun stringToDrawableResource(context: Context, iconString: String?): Int? {
+        return try {
+            context.resources.getIdentifier(iconString, "drawable", context.packageName)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     // This is case sensitive
