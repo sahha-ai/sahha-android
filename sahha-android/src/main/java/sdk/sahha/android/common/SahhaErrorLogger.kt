@@ -125,7 +125,7 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.apiBody =
-                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
         }
@@ -145,7 +145,7 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.apiBody =
-                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
         }
@@ -164,7 +164,7 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.apiBody =
-                ApiBodyConverter.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
         }
@@ -181,7 +181,7 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
 
         response?.also { r ->
-            sahhaResponseError = ApiBodyConverter.responseBodyToSahhaResponseError(r.errorBody())
+            sahhaResponseError = SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
             sahhaErrorLog.apiBody =
                 r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
         }

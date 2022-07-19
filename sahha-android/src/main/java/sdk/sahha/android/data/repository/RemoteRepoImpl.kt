@@ -105,7 +105,7 @@ class RemoteRepoImpl (
                 return
             }
 
-            val stepDtoData = ApiBodyConverter.stepDataToStepDto(getFilteredStepData(stepData))
+            val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(stepData))
             val response = getStepResponse(stepDtoData)
             handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
                 if (stepData.count() > MAX_STEP_POST_VALUE)
@@ -488,7 +488,7 @@ class RemoteRepoImpl (
     }
 
     private suspend fun storeNewTokens(responseBody: ResponseBody?) {
-        val json = ApiBodyConverter.responseBodyToJson(responseBody)
+        val json = SahhaConverterUtility.responseBodyToJson(responseBody)
         json?.also {
             encryptor.encryptText(UET, it["profileToken"].toString())
             encryptor.encryptText(UERT, it["refreshToken"].toString())
@@ -524,14 +524,14 @@ class RemoteRepoImpl (
     private suspend fun getSleepResponse(): Call<ResponseBody> {
         return api.postSleepDataRange(
             TokenBearer(decryptor.decrypt(UET)),
-            ApiBodyConverter.sleepDtoToSleepSendDto(sleepDao.getSleepDto())
+            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepDao.getSleepDto())
         )
     }
 
     private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
         return api.postDeviceActivityRange(
             TokenBearer(decryptor.decrypt(UET)),
-            ApiBodyConverter.phoneUsageToPhoneUsageSendDto(deviceDao.getUsages())
+            SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(deviceDao.getUsages())
         )
     }
 
