@@ -13,6 +13,7 @@ import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
+import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
 import sdk.sahha.android.domain.use_case.SaveTokensUseCase
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
@@ -108,6 +109,7 @@ class ManualDependencies (
     }
     val openAppSettingsUseCase by lazy { OpenAppSettingsUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
+    val getSensorDataUseCase by lazy { GetSensorDataUseCase(backgroundRepo) }
 
     fun setDependencies(context: Context) {
         setDatabase(context)
@@ -141,6 +143,9 @@ class ManualDependencies (
             defaultScope,
             ioScope,
             configurationDao,
+            deviceUsageDao,
+            sleepDao,
+            movementDao
         )
     }
 

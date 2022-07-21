@@ -124,6 +124,15 @@ object Sahha {
         }
     }
 
+    fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        di.ioScope.launch {
+            di.getSensorDataUseCase(sensor, callback)
+        }
+    }
+
     fun openAppSettings(context: Context) {
         di.openAppSettingsUseCase(context)
     }

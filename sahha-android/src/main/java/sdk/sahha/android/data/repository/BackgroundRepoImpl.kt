@@ -27,7 +27,9 @@ import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
@@ -46,6 +48,9 @@ class BackgroundRepoImpl(
     private val defaultScope: CoroutineScope,
     private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,
+    private val deviceDao: DeviceUsageDao,
+    private val sleepDao: SleepDao,
+    private val movementDao: MovementDao
 ) : BackgroundRepo {
     override lateinit var notification: Notification
 
@@ -176,6 +181,64 @@ class BackgroundRepoImpl(
 
     override fun stopAllWorkers() {
         workManager.cancelAllWork()
+    }
+
+    override suspend fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, successful: String?) -> Unit)
+    ) {
+        try {
+            when (sensor) {
+                SahhaSensor.device -> {
+                    getDeviceDataSummary()?.also {
+                        callback(null, it)
+                        return
+                    }
+                }
+                SahhaSensor.sleep -> {
+                    getSleepDataSummary()?.also {
+                        callback(null, it)
+                        return
+                    }
+                }
+                SahhaSensor.pedometer -> {
+                    getStepDataSummary()?.also {
+                        callback(null, it)
+                        return
+                    }
+                }
+            }
+            callback("No data found", null)
+        } catch (e: Exception) {
+            callback("Error: " + e.message, null)
+        }
+    }
+
+    private suspend fun getDeviceDataSummary(): String? {
+        var dataSummary = ""
+        deviceDao.getUsages().forEach {
+            dataSummary += "Locked: ${it.isLocked}\nScreen on: ${it.isScreenOn}\nAt: ${it.createdAt}\n\n"
+        }
+        return dataSummary
+    }
+
+    private suspend fun getStepDataSummary(): String? {
+        var dataSummary = ""
+        movementDao.getAllStepData().forEach {
+            if (it.source == Constants.STEP_DETECTOR_DATA_SOURCE)
+                dataSummary += "${it.count} step\nAt: ${it.detectedAt}\n\n"
+            if (it.source == Constants.STEP_COUNTER_DATA_SOURCE)
+                dataSummary += "${it.count} total steps since last phone boot\nAt: ${it.detectedAt}\n\n"
+        }
+        return dataSummary
+    }
+
+    private suspend fun getSleepDataSummary(): String? {
+        var dataSummary: String? = null
+        sleepDao.getSleepDto().forEach {
+            dataSummary += "Slept: ${it.durationInMinutes} minutes\nFrom: ${it.startDateTime}\nTo: ${it.endDateTime}\n\n"
+        }
+        return dataSummary
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

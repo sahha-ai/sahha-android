@@ -104,12 +104,18 @@ internal object AppModule {
         defaultScope: CoroutineScope,
         ioScope: CoroutineScope,
         configurationDao: ConfigurationDao,
+        deviceDao: DeviceUsageDao,
+        sleepDao: SleepDao,
+        movementDao: MovementDao
     ): BackgroundRepo {
         return BackgroundRepoImpl(
             context,
             defaultScope,
             ioScope,
             configurationDao,
+            deviceDao,
+            sleepDao,
+            movementDao
         )
     }
 
