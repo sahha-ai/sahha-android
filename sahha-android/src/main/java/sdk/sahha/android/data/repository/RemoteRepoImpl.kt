@@ -38,7 +38,7 @@ class RemoteRepoImpl(
     private val decryptor: Decryptor,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val ioScope: CoroutineScope
+    private val mainScope: CoroutineScope
 ) : RemoteRepo {
 
     override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
@@ -55,7 +55,7 @@ class RemoteRepoImpl(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isSuccessful(response.code())) {
                                 storeNewTokens(response.body())
                                 retryLogic()
@@ -198,7 +198,7 @@ class RemoteRepoImpl(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -254,7 +254,7 @@ class RemoteRepoImpl(
                         call: Call<DemographicDto>,
                         response: Response<DemographicDto>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -317,7 +317,7 @@ class RemoteRepoImpl(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                                 checkTokenExpired(response.code()) {
@@ -393,7 +393,7 @@ class RemoteRepoImpl(
                     call: Call<ResponseBody>,
                     response: Response<ResponseBody>
                 ) {
-                    ioScope.launch {
+                    mainScope.launch {
                         if (ResponseCode.isUnauthorized(response.code())) {
                             callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                             checkTokenExpired(response.code()) {

@@ -18,7 +18,6 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
@@ -30,7 +29,6 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
@@ -45,8 +43,7 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("NewApi")
 class BackgroundRepoImpl(
     private val context: Context,
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
+    private val mainScope: CoroutineScope,
     private val configDao: ConfigurationDao,
     private val deviceDao: DeviceUsageDao,
     private val sleepDao: SleepDao,
@@ -78,7 +75,7 @@ class BackgroundRepoImpl(
         _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        Sahha.di.defaultScope.launch {
+        Sahha.di.mainScope.launch {
             if (Build.VERSION.SDK_INT < 26) {
                 callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
                 return@launch
@@ -105,7 +102,7 @@ class BackgroundRepoImpl(
     override fun startActivityRecognitionReceiver(callback: ((error: String?, success: Boolean) -> Unit)?) {
         if (activityRecognitionReceiverRegistered) return
 
-        defaultScope.launch {
+        mainScope.launch {
             setActivityRecognitionClient()
             setActivityRecognitionPendingIntent(callback = callback)
             requestActivityRecognitionUpdates(callback)
@@ -158,7 +155,7 @@ class BackgroundRepoImpl(
     }
 
     override fun startPostWorkersAsync() {
-        ioScope.launch {
+        mainScope.launch {
             val config = configDao.getConfig()
 
             if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
@@ -190,20 +187,23 @@ class BackgroundRepoImpl(
         try {
             when (sensor) {
                 SahhaSensor.device -> {
-                    getDeviceDataSummary()?.also {
-                        callback(null, it)
+                    val deviceSummary = getDeviceDataSummary()
+                    if (deviceSummary.isNotEmpty()) {
+                        callback(null, deviceSummary)
                         return
                     }
                 }
                 SahhaSensor.sleep -> {
-                    getSleepDataSummary()?.also {
-                        callback(null, it)
+                    val sleepSummary = getSleepDataSummary()
+                    if (sleepSummary.isNotEmpty()) {
+                        callback(null, sleepSummary)
                         return
                     }
                 }
                 SahhaSensor.pedometer -> {
-                    getStepDataSummary()?.also {
-                        callback(null, it)
+                    val stepSummary = getStepDataSummary()
+                    if (stepSummary.isNotEmpty()) {
+                        callback(null, stepSummary)
                         return
                     }
                 }
@@ -214,7 +214,7 @@ class BackgroundRepoImpl(
         }
     }
 
-    private suspend fun getDeviceDataSummary(): String? {
+    private suspend fun getDeviceDataSummary(): String {
         var dataSummary = ""
         deviceDao.getUsages().forEach {
             dataSummary += "Locked: ${it.isLocked}\nScreen on: ${it.isScreenOn}\nAt: ${it.createdAt}\n\n"
@@ -222,7 +222,7 @@ class BackgroundRepoImpl(
         return dataSummary
     }
 
-    private suspend fun getStepDataSummary(): String? {
+    private suspend fun getStepDataSummary(): String {
         var dataSummary = ""
         movementDao.getAllStepData().forEach {
             if (it.source == Constants.STEP_DETECTOR_DATA_SOURCE)
@@ -233,8 +233,8 @@ class BackgroundRepoImpl(
         return dataSummary
     }
 
-    private suspend fun getSleepDataSummary(): String? {
-        var dataSummary: String? = null
+    private suspend fun getSleepDataSummary(): String {
+        var dataSummary = ""
         sleepDao.getSleepDto().forEach {
             dataSummary += "Slept: ${it.durationInMinutes} minutes\nFrom: ${it.startDateTime}\nTo: ${it.endDateTime}\n\n"
         }

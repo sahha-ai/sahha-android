@@ -64,6 +64,7 @@ internal object AppModule {
         } else {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_DEV)
+//                .baseUrl("https://3ce6-2407-7000-9890-e300-c0bd-121f-3dc0-df80.au.ngrok.io/api/v1/")
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
@@ -101,8 +102,7 @@ internal object AppModule {
 
     fun provideBackgroundRepository(
         context: Context,
-        defaultScope: CoroutineScope,
-        ioScope: CoroutineScope,
+        mainScope: CoroutineScope,
         configurationDao: ConfigurationDao,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
@@ -110,8 +110,7 @@ internal object AppModule {
     ): BackgroundRepo {
         return BackgroundRepoImpl(
             context,
-            defaultScope,
-            ioScope,
+            mainScope,
             configurationDao,
             deviceDao,
             sleepDao,

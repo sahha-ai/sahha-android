@@ -59,7 +59,7 @@ class SleepReceiver : BroadcastReceiver() {
             Log.w(tag, "hasEvents")
             val sleepSegmentEvents = SleepSegmentEvent.extractEvents(intent)
 
-            Sahha.di.ioScope.launch {
+            Sahha.di.mainScope.launch {
                 Log.w(tag, "ioScope")
                 for (segment in sleepSegmentEvents) {
                     start = segment.startTimeMillis

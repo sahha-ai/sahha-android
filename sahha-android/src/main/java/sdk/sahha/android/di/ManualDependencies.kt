@@ -140,8 +140,7 @@ class ManualDependencies (
     private fun setBackgroundRepo(context: Context) {
         backgroundRepo = AppModule.provideBackgroundRepository(
             context,
-            defaultScope,
-            ioScope,
+            mainScope,
             configurationDao,
             deviceUsageDao,
             sleepDao,
