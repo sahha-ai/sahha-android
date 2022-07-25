@@ -1,5 +1,7 @@
 package sdk.sahha.android.common
 
+import android.content.Context
+import androidx.annotation.Keep
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -20,7 +22,8 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.source.Sahha
 
-object ApiBodyConverter {
+@Keep
+object SahhaConverterUtility {
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
         val jsonObject = JSONObject()
 
@@ -70,7 +73,7 @@ object ApiBodyConverter {
         return items
     }
 
-    fun responseBodyToSahhaResponseError(response: ResponseBody?): SahhaResponseError? {
+    internal fun responseBodyToSahhaResponseError(response: ResponseBody?): SahhaResponseError? {
         response?.also { rb ->
             return try {
                 val errorBodyJson = responseBodyToJson(rb)
@@ -119,20 +122,28 @@ object ApiBodyConverter {
         return null
     }
 
-    fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
+    internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
         val createdAt = Sahha.di.timeManager.nowInISO()
         return stepData.map { it.toStepDto(createdAt) }
     }
 
-    fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
+    internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
         return sleepData.map {
             it.toSleepSendDto()
         }
     }
 
-    fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
+    internal fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
         return usageData.map {
             it.toPhoneUsageSendDto()
+        }
+    }
+
+    fun stringToDrawableResource(context: Context, iconString: String?): Int? {
+        return try {
+            context.resources.getIdentifier(iconString, "drawable", context.packageName)
+        } catch (e: Exception) {
+            null
         }
     }
 

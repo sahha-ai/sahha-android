@@ -18,7 +18,6 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
@@ -27,8 +26,9 @@ import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
@@ -43,9 +43,11 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("NewApi")
 class BackgroundRepoImpl(
     private val context: Context,
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
+    private val mainScope: CoroutineScope,
     private val configDao: ConfigurationDao,
+    private val deviceDao: DeviceUsageDao,
+    private val sleepDao: SleepDao,
+    private val movementDao: MovementDao
 ) : BackgroundRepo {
     override lateinit var notification: Notification
 
@@ -73,25 +75,18 @@ class BackgroundRepoImpl(
         _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        Sahha.di.defaultScope.launch {
+        Sahha.di.mainScope.launch {
             if (Build.VERSION.SDK_INT < 26) {
                 callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
                 return@launch
             }
 
-            val icon = _icon ?: R.drawable.ic_sahha_no_bg
-            val title = _title ?: "Analytics are running"
-            val shortDescription =
-                _shortDescription ?: "Swipe for options to hide this notification."
-
-            Sahha.di.configurationDao.saveNotificationConfig(
-                SahhaNotificationConfiguration(
-                    icon,
-                    title,
-                    shortDescription
-                )
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+            Sahha.notifications.setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
             )
-            Sahha.notifications.setNewPersistent(icon, title, shortDescription)
 
             try {
                 context.startForegroundService(
@@ -107,7 +102,7 @@ class BackgroundRepoImpl(
     override fun startActivityRecognitionReceiver(callback: ((error: String?, success: Boolean) -> Unit)?) {
         if (activityRecognitionReceiverRegistered) return
 
-        defaultScope.launch {
+        mainScope.launch {
             setActivityRecognitionClient()
             setActivityRecognitionPendingIntent(callback = callback)
             requestActivityRecognitionUpdates(callback)
@@ -160,7 +155,7 @@ class BackgroundRepoImpl(
     }
 
     override fun startPostWorkersAsync() {
-        ioScope.launch {
+        mainScope.launch {
             val config = configDao.getConfig()
 
             if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
@@ -183,6 +178,67 @@ class BackgroundRepoImpl(
 
     override fun stopAllWorkers() {
         workManager.cancelAllWork()
+    }
+
+    override suspend fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, successful: String?) -> Unit)
+    ) {
+        try {
+            when (sensor) {
+                SahhaSensor.device -> {
+                    val deviceSummary = getDeviceDataSummary()
+                    if (deviceSummary.isNotEmpty()) {
+                        callback(null, deviceSummary)
+                        return
+                    }
+                }
+                SahhaSensor.sleep -> {
+                    val sleepSummary = getSleepDataSummary()
+                    if (sleepSummary.isNotEmpty()) {
+                        callback(null, sleepSummary)
+                        return
+                    }
+                }
+                SahhaSensor.pedometer -> {
+                    val stepSummary = getStepDataSummary()
+                    if (stepSummary.isNotEmpty()) {
+                        callback(null, stepSummary)
+                        return
+                    }
+                }
+            }
+            callback("No data found", null)
+        } catch (e: Exception) {
+            callback("Error: " + e.message, null)
+        }
+    }
+
+    private suspend fun getDeviceDataSummary(): String {
+        var dataSummary = ""
+        deviceDao.getUsages().forEach {
+            dataSummary += "Locked: ${it.isLocked}\nScreen on: ${it.isScreenOn}\nAt: ${it.createdAt}\n\n"
+        }
+        return dataSummary
+    }
+
+    private suspend fun getStepDataSummary(): String {
+        var dataSummary = ""
+        movementDao.getAllStepData().forEach {
+            if (it.source == Constants.STEP_DETECTOR_DATA_SOURCE)
+                dataSummary += "${it.count} step\nAt: ${it.detectedAt}\n\n"
+            if (it.source == Constants.STEP_COUNTER_DATA_SOURCE)
+                dataSummary += "${it.count} total steps since last phone boot\nAt: ${it.detectedAt}\n\n"
+        }
+        return dataSummary
+    }
+
+    private suspend fun getSleepDataSummary(): String {
+        var dataSummary = ""
+        sleepDao.getSleepDto().forEach {
+            dataSummary += "Slept: ${it.durationInMinutes} minutes\nFrom: ${it.startDateTime}\nTo: ${it.endDateTime}\n\n"
+        }
+        return dataSummary
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -101,15 +101,19 @@ internal object AppModule {
 
     fun provideBackgroundRepository(
         context: Context,
-        defaultScope: CoroutineScope,
-        ioScope: CoroutineScope,
+        mainScope: CoroutineScope,
         configurationDao: ConfigurationDao,
+        deviceDao: DeviceUsageDao,
+        sleepDao: SleepDao,
+        movementDao: MovementDao
     ): BackgroundRepo {
         return BackgroundRepoImpl(
             context,
-            defaultScope,
-            ioScope,
+            mainScope,
             configurationDao,
+            deviceDao,
+            sleepDao,
+            movementDao
         )
     }
 
