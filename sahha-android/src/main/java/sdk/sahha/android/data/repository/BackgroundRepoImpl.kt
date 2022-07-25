@@ -18,6 +18,7 @@ import androidx.work.WorkManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
@@ -29,6 +30,9 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.data.remote.dto.toJSONObject
+import sdk.sahha.android.domain.model.device.toJSONObject
+import sdk.sahha.android.domain.model.steps.toJSONObject
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
@@ -204,6 +208,48 @@ class BackgroundRepoImpl(
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
                         callback(null, stepSummary)
+                        return
+                    }
+                }
+            }
+            callback("No data found", null)
+        } catch (e: Exception) {
+            callback("Error: " + e.message, null)
+        }
+    }
+
+    override suspend fun getSensorDataAsJSONArray(
+        sensor: SahhaSensor,
+        callback: (error: String?, successJSONArray: JSONArray?) -> Unit
+    ) {
+        try {
+            when (sensor) {
+                SahhaSensor.device -> {
+                    val deviceData = deviceDao.getUsages()
+                    if (deviceData.isNotEmpty()) {
+                        val jsonObjects = deviceData.map { it.toJSONObject() }
+                        val deviceDataJSONArray =
+                            JSONArray(jsonObjects)
+                        callback(null, deviceDataJSONArray)
+                        return
+                    }
+                }
+                SahhaSensor.sleep -> {
+                    val sleepData = sleepDao.getSleepDto()
+                    if (sleepData.isNotEmpty()) {
+                        val jsonObjects = sleepData.map { it.toJSONObject() }
+                        val sleepDataJSONArray = JSONArray(jsonObjects)
+                        callback(null, sleepDataJSONArray)
+                        return
+                    }
+                }
+                SahhaSensor.pedometer -> {
+                    val stepData = movementDao.getAllStepData()
+                    if (stepData.isNotEmpty()) {
+                        val jsonObjects =
+                            stepData.map { it.toJSONObject(Sahha.di.timeManager.nowInISO()) }
+                        val stepDataJSONArray = JSONArray(jsonObjects)
+                        callback(null, stepDataJSONArray)
                         return
                     }
                 }

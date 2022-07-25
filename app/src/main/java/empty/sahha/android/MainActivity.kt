@@ -4,15 +4,21 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import org.json.JSONArray
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import sdk.sahha.android.source.*
@@ -239,6 +245,61 @@ class MainActivity : ComponentActivity() {
                                     Text("Get Demographic")
                                 }
                                 Text(getDemo)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                var sensorData by remember { mutableStateOf<JSONArray?>(null) }
+                                var sensorError by remember { mutableStateOf<String?>(null) }
+                                var sensorExpanded by remember { mutableStateOf(false) }
+                                var selectedSensor by remember { mutableStateOf(SahhaSensor.device) }
+                                Box {
+                                    Row(
+                                        modifier = Modifier.clickable {
+                                            sensorExpanded = true
+                                        }
+                                    ) {
+                                        Text(selectedSensor.name)
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowDropDown,
+                                            contentDescription = "Down arrow"
+                                        )
+                                        DropdownMenu(
+                                            expanded = sensorExpanded,
+                                            onDismissRequest = { sensorExpanded = false }) {
+                                            DropdownMenuItem(onClick = {
+                                                selectedSensor = SahhaSensor.device
+                                                sensorExpanded = false
+                                            }) {
+                                                Text("Device")
+                                            }
+                                            DropdownMenuItem(onClick = {
+                                                selectedSensor = SahhaSensor.sleep
+                                                sensorExpanded = false
+                                            }) {
+                                                Text("Sleep")
+                                            }
+                                            DropdownMenuItem(onClick = {
+                                                selectedSensor = SahhaSensor.pedometer
+                                                sensorExpanded = false
+                                            }) {
+                                                Text("Pedometer")
+                                            }
+                                        }
+                                    }
+                                }
+                                Button(onClick = {
+                                    sensorError = null
+                                    sensorData = null
+                                    Sahha.getSensorData(selectedSensor) { error: String?, success: JSONArray? ->
+                                        error?.also { sensorError = it }
+                                        success?.also { sensorData = it }
+                                    }
+                                }) {
+                                    Text("Get Sensor Data")
+                                }
+                                Text(
+                                    sensorError ?: sensorData?.toString(6)
+                                    ?: "Something went wrong",
+                                    modifier = Modifier.horizontalScroll(state = rememberScrollState())
+                                )
                                 Spacer(modifier = Modifier.padding(16.dp))
                             }
                         }

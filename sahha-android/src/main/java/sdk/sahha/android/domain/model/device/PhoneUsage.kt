@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.model.device
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.json.JSONObject
 import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
 
 
@@ -21,5 +22,11 @@ fun PhoneUsage.toPhoneUsageSendDto(): PhoneUsageSendDto {
         isLocked,
         isScreenOn,
         createdAt
+    )
+}
+
+fun PhoneUsage.toJSONObject(): JSONObject {
+    return JSONObject(
+        "{ 'isLocked': ${isLocked}, 'isScreenOn': ${isScreenOn}, 'createdAt':'${createdAt}'}"
     )
 }

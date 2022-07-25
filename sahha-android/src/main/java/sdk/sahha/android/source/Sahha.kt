@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
@@ -124,9 +125,19 @@ object Sahha {
         }
     }
 
-    internal fun getSensorData(
+    fun getSensorData(
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.getSensorDataUseCase(sensor, callback)
+        }
+    }
+
+    @JvmName("getSensorJSONArray")
+    fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, successJSONArray: JSONArray?) -> Unit)
     ) {
         di.mainScope.launch {
             di.getSensorDataUseCase(sensor, callback)

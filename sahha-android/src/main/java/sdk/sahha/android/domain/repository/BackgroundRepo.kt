@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.repository
 
 import android.app.Notification
 import android.content.Context
+import org.json.JSONArray
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.source.SahhaSensor
 
@@ -35,6 +36,10 @@ interface BackgroundRepo {
     )
     suspend fun getSensorData(
         sensor: SahhaSensor,
-        callback: ((error: String?, successful: String?) -> Unit)
+        callback: ((error: String?, success: String?) -> Unit)
+    )
+    suspend fun getSensorDataAsJSONArray(
+        sensor: SahhaSensor,
+        callback: ((error: String?, success: JSONArray?) -> Unit)
     )
 }

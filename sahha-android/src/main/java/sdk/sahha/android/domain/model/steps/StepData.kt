@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.model.steps
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.json.JSONObject
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.StepDto
 
@@ -26,13 +27,19 @@ data class StepData(
 
 fun StepData.toStepDto(createdAt: String): StepDto {
     return StepDto(
-        getDataType(source),
-        count,
-        source,
-        false,
-        detectedAt,
-        detectedAt,
-        createdAt
+        dataType = getDataType(source),
+        count = count,
+        source = source,
+        manuallyEntered = false,
+        startDateTime = detectedAt,
+        endDateTime = detectedAt,
+        createdAt = createdAt
+    )
+}
+
+fun StepData.toJSONObject(createdAt: String): JSONObject {
+    return JSONObject(
+        "{'dataType':'${getDataType(source)}', 'count':$count, 'source':'$source', 'manuallyEntered':false, 'startDateTime':'$detectedAt', 'endDateTime':'$detectedAt', 'createdAt':'$createdAt'}"
     )
 }
 

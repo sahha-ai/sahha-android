@@ -2,6 +2,7 @@ package sdk.sahha.android.data.remote.dto
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.json.JSONObject
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 
@@ -33,11 +34,17 @@ data class SleepDto(
 
 fun SleepDto.toSleepSendDto(): SleepSendDto {
     return SleepSendDto(
-        source,
-        durationInMinutes,
-        sleepStage,
-        startDateTime,
-        endDateTime,
-        createdAt,
+        source = source,
+        durationInMinutes = durationInMinutes,
+        sleepStage = sleepStage,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        createdAt = createdAt,
+    )
+}
+
+fun SleepDto.toJSONObject(): JSONObject {
+    return JSONObject(
+        "{'source':'$source', 'durationInMinutes':'$durationInMinutes', 'sleepStage':'$sleepStage', 'startDateTime':'$startDateTime', 'endDateTime':'$endDateTime', 'createdAt':'$createdAt'}"
     )
 }
