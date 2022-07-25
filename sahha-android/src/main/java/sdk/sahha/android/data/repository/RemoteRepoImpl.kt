@@ -11,6 +11,8 @@ import sdk.sahha.android.common.*
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.MAX_STEP_POST_VALUE
+import sdk.sahha.android.data.Constants.STEP_COUNTER_DATA_SOURCE
+import sdk.sahha.android.data.Constants.STEP_DETECTOR_DATA_SOURCE
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
@@ -28,7 +30,7 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
 
-class RemoteRepoImpl (
+class RemoteRepoImpl(
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
     private val movementDao: MovementDao,
@@ -36,7 +38,7 @@ class RemoteRepoImpl (
     private val decryptor: Decryptor,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val ioScope: CoroutineScope
+    private val mainScope: CoroutineScope
 ) : RemoteRepo {
 
     override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
@@ -53,7 +55,7 @@ class RemoteRepoImpl (
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isSuccessful(response.code())) {
                                 storeNewTokens(response.body())
                                 retryLogic()
@@ -196,7 +198,7 @@ class RemoteRepoImpl (
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -252,7 +254,7 @@ class RemoteRepoImpl (
                         call: Call<DemographicDto>,
                         response: Response<DemographicDto>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 checkTokenExpired(response.code()) {
@@ -315,7 +317,7 @@ class RemoteRepoImpl (
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        ioScope.launch {
+                        mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                                 checkTokenExpired(response.code()) {
@@ -391,7 +393,7 @@ class RemoteRepoImpl (
                     call: Call<ResponseBody>,
                     response: Response<ResponseBody>
                 ) {
-                    ioScope.launch {
+                    mainScope.launch {
                         if (ResponseCode.isUnauthorized(response.code())) {
                             callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                             checkTokenExpired(response.code()) {

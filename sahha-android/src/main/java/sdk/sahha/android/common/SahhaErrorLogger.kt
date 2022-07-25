@@ -25,7 +25,7 @@ class SahhaErrorLogger (
     private val configurationDao: ConfigurationDao,
     private val decryptor: Decryptor,
     private val sahhaErrorApi: SahhaErrorApi,
-    private val defaultScope: CoroutineScope
+    private val mainScope: CoroutineScope
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
 
@@ -35,7 +35,7 @@ class SahhaErrorLogger (
         code: Int?,
         message: String
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
@@ -53,7 +53,7 @@ class SahhaErrorLogger (
         code: Int?,
         message: String
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
@@ -71,7 +71,7 @@ class SahhaErrorLogger (
         code: Int?,
         message: String
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
@@ -86,7 +86,7 @@ class SahhaErrorLogger (
         call: Call<*>?,
         response: Response<*>?
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, response)
@@ -102,7 +102,7 @@ class SahhaErrorLogger (
         appMethod: String,
         appBody: String?
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApplicationLogProperties(error, appMethod, appBody)

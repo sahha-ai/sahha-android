@@ -50,14 +50,14 @@ object Sahha {
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        di.ioScope.launch {
+        di.mainScope.launch {
             di.saveTokensUseCase(profileToken, refreshToken, callback)
         }
     }
 
     internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
-            di.defaultScope.launch {
+            di.mainScope.launch {
                 config = di.configurationDao.getConfig()
                 startDataCollection(callback)
                 checkAndStartPostWorkers()
@@ -72,7 +72,7 @@ object Sahha {
         includeSourceData: Boolean = false,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        di.defaultScope.launch {
+        di.mainScope.launch {
             di.analyzeProfileUseCase(includeSourceData, callback)
         }
     }
@@ -84,7 +84,7 @@ object Sahha {
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        di.defaultScope.launch {
+        di.mainScope.launch {
             di.analyzeProfileUseCase(includeSourceData, dates, callback)
         }
     }
@@ -95,13 +95,13 @@ object Sahha {
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        di.defaultScope.launch {
+        di.mainScope.launch {
             di.analyzeProfileUseCase(includeSourceData, dates, callback)
         }
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
-        di.defaultScope.launch {
+        di.mainScope.launch {
             di.getDemographicUseCase(callback)
         }
     }
@@ -110,7 +110,7 @@ object Sahha {
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        di.defaultScope.launch {
+        di.mainScope.launch {
             di.postDemographicUseCase(sahhaDemographic, callback)
         }
     }
@@ -119,8 +119,17 @@ object Sahha {
         sensors: Set<Enum<SahhaSensor>>? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        di.ioScope.launch {
+        di.mainScope.launch {
             di.postAllSensorDataUseCase(sensors, callback)
+        }
+    }
+
+    internal fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.getSensorDataUseCase(sensor, callback)
         }
     }
 

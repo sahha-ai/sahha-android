@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.repository
 import android.app.Notification
 import android.content.Context
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.source.SahhaSensor
 
 interface BackgroundRepo {
     var notification: Notification
@@ -31,5 +32,9 @@ interface BackgroundRepo {
     suspend fun startStepCounterAsync(
         context: Context,
         movementDao: MovementDao,
+    )
+    suspend fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, successful: String?) -> Unit)
     )
 }

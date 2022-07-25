@@ -28,7 +28,7 @@ class DataCollectionService : Service() {
     }
 
     override fun onDestroy() {
-        Sahha.di.defaultScope.launch {
+        Sahha.di.mainScope.launch {
             unregisterExistingReceiversAndListeners()
         }
 

@@ -239,6 +239,7 @@ class MainActivity : ComponentActivity() {
                                     Text("Get Demographic")
                                 }
                                 Text(getDemo)
+                                Spacer(modifier = Modifier.padding(16.dp))
                             }
                         }
                     }

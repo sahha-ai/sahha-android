@@ -11,7 +11,7 @@ import sdk.sahha.android.source.Sahha
 class StepDetectorListener : SensorEventListener2 {
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         sensorEvent?.also { event ->
-            Sahha.di.ioScope.launch {
+            Sahha.di.mainScope.launch {
                 val step = event.values[0].toInt()
                 val detectedDateTime = Sahha.timeManager.nowInISO()
 
