@@ -124,7 +124,7 @@ object Sahha {
         }
     }
 
-    fun getSensorData(
+    internal fun getSensorData(
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)
     ) {

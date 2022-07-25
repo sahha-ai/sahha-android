@@ -240,19 +240,6 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Text(getDemo)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                var sensorData by remember { mutableStateOf("") }
-                                Button(onClick = {
-                                    sensorData = ""
-                                    Sahha.getSensorData(
-                                        SahhaSensor.pedometer
-                                    ) { error, success ->
-                                        error?.also { sensorData = it }
-                                        success?.also { sensorData = it }
-                                    }
-                                }) {
-                                    Text("Get Step Data")
-                                }
-                                Text(sensorData)
                             }
                         }
                     }

@@ -64,7 +64,6 @@ internal object AppModule {
         } else {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_DEV)
-//                .baseUrl("https://3ce6-2407-7000-9890-e300-c0bd-121f-3dc0-df80.au.ngrok.io/api/v1/")
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
