@@ -47,60 +47,58 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
+                    var greeting by remember { mutableStateOf("Android") }
+                    var permissionStatuses by remember { mutableStateOf("") }
+                    var permissionStatus: Enum<SahhaSensorStatus> by remember {
+                        mutableStateOf(SahhaSensorStatus.unavailable)
+                    }
+                    var manualPost by remember { mutableStateOf("") }
+                    var manualPostDevice by remember { mutableStateOf("") }
+                    var analyzeResponse by remember { mutableStateOf("") }
+                    var analyzeResponseEpoch by remember { mutableStateOf("") }
+                    var analyzeResponseDate by remember { mutableStateOf("") }
+                    var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
+                    var postDemo by remember { mutableStateOf("") }
+                    var getDemo by remember { mutableStateOf("") }
+                    var token by remember { mutableStateOf("") }
+                    var refreshToken by remember { mutableStateOf("") }
+                    var start by remember { mutableStateOf("") }
+
+                    Sahha.getSensorStatus(
+                        this@MainActivity,
+                        SahhaSensor.sleep
+                    ) { error, sensorStatus ->
+                        permissionStatus = sensorStatus
+                    }
+                    Sahha.getSensorStatuses(
+                        this@MainActivity
+                    ) { error, sensorStatuses ->
+                        permissionStatuses = ""
+                        sensorStatuses.forEach {
+                            permissionStatuses += "${it.key.name} is ${it.value.name}\n"
+                        }
+                    }
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LazyColumn(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
-                                var greeting by remember { mutableStateOf("Android") }
-                                var permissionStatuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>> by remember {
-                                    mutableStateOf(
-                                        mapOf(
-                                            SahhaSensor.pedometer to SahhaSensorStatus.unavailable,
-                                            SahhaSensor.device to SahhaSensorStatus.unavailable,
-                                            SahhaSensor.sleep to SahhaSensorStatus.unavailable,
-                                        )
-                                    )
-                                }
-                                var permissionStatus: Enum<SahhaSensorStatus> by remember {
-                                    mutableStateOf(SahhaSensorStatus.unavailable)
-                                }
-                                var manualPost by remember { mutableStateOf("") }
-                                var manualPostDevice by remember { mutableStateOf("") }
-                                var analyzeResponse by remember { mutableStateOf("") }
-                                var analyzeResponseEpoch by remember { mutableStateOf("") }
-                                var analyzeResponseDate by remember { mutableStateOf("") }
-                                var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
-                                var postDemo by remember { mutableStateOf("") }
-                                var getDemo by remember { mutableStateOf("") }
-                                var token by remember { mutableStateOf("") }
-                                var refreshToken by remember { mutableStateOf("") }
-                                var start by remember { mutableStateOf("") }
-
-                                Sahha.getSensorStatus(
-                                    this@MainActivity,
-                                    SahhaSensor.sleep
-                                ) { error, sensorStatus ->
-                                    permissionStatus = sensorStatus
-                                }
-
-                                Sahha.getSensorStatuses(
-                                    this@MainActivity
-                                ) { error, sensorStatuses ->
-                                    permissionStatuses = sensorStatuses
-                                }
-
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus.name)
-                                Text(permissionStatuses.toString())
+                                Text(permissionStatuses)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
                                     ) { error, statuses ->
-                                        permissionStatuses = statuses
+                                        error?.also { println(it) }
+                                        permissionStatuses = ""
+                                        statuses.forEach {
+                                            permissionStatuses += "${it.key.name} is ${it.value.name}\n"
+                                        }
                                     }
 
 //                                    Sahha.enableSensor(

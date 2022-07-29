@@ -38,6 +38,7 @@ import sdk.sahha.android.domain.worker.post.SleepPostWorker
 import sdk.sahha.android.domain.worker.post.StepPostWorker
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 import java.util.concurrent.TimeUnit
 
 @SuppressLint("NewApi")
@@ -148,26 +149,42 @@ class BackgroundRepoImpl(
     }
 
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
-        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
-        val workRequest: PeriodicWorkRequest =
-            getSleepWorkRequest(checkedIntervalMinutes, workerTag)
-        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
+        Sahha.getSensorStatuses(
+            context,
+            setOf(SahhaSensor.sleep)
+        ) { _, statuses ->
+            if (statuses[SahhaSensor.sleep] == SahhaSensorStatus.enabled) {
+                val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+                val workRequest: PeriodicWorkRequest =
+                    getSleepWorkRequest(checkedIntervalMinutes, workerTag)
+                startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
+            }
+        }
     }
 
     override fun startPostWorkersAsync() {
         mainScope.launch {
             val config = configDao.getConfig()
+            Sahha.getSensorStatuses(
+                context,
+                config.sensorArray.map {
+                    SahhaSensor.values()[it]
+                }.toSet(),
+            ) { _, statuses ->
+                if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+                    if (statuses[SahhaSensor.sleep] == SahhaSensorStatus.enabled)
+                        startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
+                }
 
-            if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-                startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
-            }
+                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+                    if (statuses[SahhaSensor.device] == SahhaSensorStatus.enabled)
+                        startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
+                }
 
-            if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-                startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
-            }
-
-            if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                startStepPostWorker(15, STEP_POST_WORKER_TAG)
+                if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
+                    if (statuses[SahhaSensor.pedometer] == SahhaSensorStatus.enabled)
+                        startStepPostWorker(15, STEP_POST_WORKER_TAG)
+                }
             }
         }
     }

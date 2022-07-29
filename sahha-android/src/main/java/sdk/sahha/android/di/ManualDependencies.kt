@@ -130,39 +130,46 @@ class ManualDependencies(
     }
 
     private fun setSensorManager(context: Context) {
-        sensorManager = AppModule.provideSensorManager(context)
+        if (!::sensorManager.isInitialized)
+            sensorManager = AppModule.provideSensorManager(context)
     }
 
     private fun setPowerManager(context: Context) {
-        powerManager = AppModule.providePowerManager(context)
+        if (!::powerManager.isInitialized)
+            powerManager = AppModule.providePowerManager(context)
     }
 
     private fun setKeyguardManager(context: Context) {
-        keyguardManager = AppModule.provideKeyguardManager(context)
+        if (!::keyguardManager.isInitialized)
+            keyguardManager = AppModule.provideKeyguardManager(context)
     }
 
     private fun setDatabase(context: Context) {
-        database = AppModule.provideDatabase(context)
+        if (!::database.isInitialized)
+            database = AppModule.provideDatabase(context)
     }
 
     private fun setBackgroundRepo(context: Context) {
-        backgroundRepo = AppModule.provideBackgroundRepository(
-            context,
-            mainScope,
-            configurationDao,
-            deviceUsageDao,
-            sleepDao,
-            movementDao
-        )
+        if (!::backgroundRepo.isInitialized)
+            backgroundRepo = AppModule.provideBackgroundRepository(
+                context,
+                mainScope,
+                configurationDao,
+                deviceUsageDao,
+                sleepDao,
+                movementDao
+            )
     }
 
     private fun setNotifications(context: Context) {
-        notifications = SahhaNotificationManager(context, backgroundRepo)
+        if (!::notifications.isInitialized)
+            notifications = SahhaNotificationManager(context, backgroundRepo)
     }
 
     private fun setSahhaErrorLogger(context: Context) {
-        sahhaErrorLogger =
-            SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
+        if (!::sahhaErrorLogger.isInitialized)
+            sahhaErrorLogger =
+                SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager {

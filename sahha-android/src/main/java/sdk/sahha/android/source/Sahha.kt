@@ -34,12 +34,17 @@ object Sahha {
 
     val timeManager by lazy { di.timeManager }
 
+    fun diInitialized(): Boolean {
+        return ::di.isInitialized
+    }
+
     fun configure(
         application: Application,
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        di = ManualDependencies(sahhaSettings.environment)
+        if (!diInitialized())
+            di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
 
         di.mainScope.launch {
@@ -161,6 +166,7 @@ object Sahha {
                 sensors.forEach { sensor ->
                     if (sensor == SahhaSensor.device) {
                         map[sensor] = SahhaSensorStatus.enabled
+                        println(map)
                     } else {
                         val awaitStatus =
                             suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
@@ -169,6 +175,7 @@ object Sahha {
                                 }
                             }
                         map[awaitStatus.first] = awaitStatus.second
+                        println(map)
                     }
                 }
                 cont.resume(map)
@@ -181,6 +188,7 @@ object Sahha {
             di.configurationDao.updateConfig(sensorsArrayList)
             start()
             callback(null, statuses)
+            println(statuses)
         }
     }
 
@@ -193,13 +201,18 @@ object Sahha {
             val map = mutableMapOf<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>()
             launch {
                 sensors.forEach { sensor ->
-                    val awaitStatus =
-                        suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
-                            SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                                statusCont.resume(Pair(sensor, sensorStatus))
+                    if (sensor == SahhaSensor.device) {
+                        map[sensor] = SahhaSensorStatus.enabled
+                        println(map)
+                    } else {
+                        val awaitStatus =
+                            suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
+                                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
+                                    statusCont.resume(Pair(sensor, sensorStatus))
+                                }
                             }
-                        }
-                    map[awaitStatus.first] = awaitStatus.second
+                        map[awaitStatus.first] = awaitStatus.second
+                    }
                 }
                 cont.resume(map)
             }
