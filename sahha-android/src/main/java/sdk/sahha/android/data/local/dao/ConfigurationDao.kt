@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSensor
 
 @Dao
 interface ConfigurationDao {
@@ -14,6 +15,9 @@ interface ConfigurationDao {
 
     @Query("SELECT * FROM SahhaConfiguration WHERE id=1")
     suspend fun getConfig(): SahhaConfiguration
+
+    @Query("UPDATE SahhaConfiguration SET sensorArray=:sensors WHERE id=1 ")
+    suspend fun updateConfig(sensors: ArrayList<Int>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveNotificationConfig(notificationConfiguration: SahhaNotificationConfiguration)

@@ -54,10 +54,17 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 var greeting by remember { mutableStateOf("Android") }
-                                var permissionStatus: Enum<SahhaSensorStatus> by remember {
+                                var permissionStatuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>> by remember {
                                     mutableStateOf(
-                                        SahhaSensorStatus.unavailable
+                                        mapOf(
+                                            SahhaSensor.pedometer to SahhaSensorStatus.unavailable,
+                                            SahhaSensor.device to SahhaSensorStatus.unavailable,
+                                            SahhaSensor.sleep to SahhaSensorStatus.unavailable,
+                                        )
                                     )
+                                }
+                                var permissionStatus: Enum<SahhaSensorStatus> by remember {
+                                    mutableStateOf(SahhaSensorStatus.unavailable)
                                 }
                                 var manualPost by remember { mutableStateOf("") }
                                 var manualPostDevice by remember { mutableStateOf("") }
@@ -78,26 +85,39 @@ class MainActivity : ComponentActivity() {
                                     permissionStatus = sensorStatus
                                 }
 
+                                Sahha.getSensorStatuses(
+                                    this@MainActivity
+                                ) { error, sensorStatuses ->
+                                    permissionStatuses = sensorStatuses
+                                }
+
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus.name)
+                                Text(permissionStatuses.toString())
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.enableSensor(
+                                    Sahha.enableSensors(
                                         this@MainActivity,
-                                        SahhaSensor.sleep
-                                    ) { error, newStatus ->
-                                        permissionStatus = newStatus
-                                        error?.also { permissionStatus.name }
+                                    ) { error, statuses ->
+                                        permissionStatuses = statuses
                                     }
 
-                                    Sahha.enableSensor(
-                                        this@MainActivity,
-                                        SahhaSensor.pedometer
-                                    ) { error, newStatus ->
-                                        permissionStatus = newStatus
-                                        error?.also { permissionStatus.name }
-                                    }
+//                                    Sahha.enableSensor(
+//                                        this@MainActivity,
+//                                        SahhaSensor.sleep
+//                                    ) { error, newStatus ->
+//                                        permissionStatus = newStatus
+//                                        error?.also { permissionStatus.name }
+//                                    }
+//
+//                                    Sahha.enableSensor(
+//                                        this@MainActivity,
+//                                        SahhaSensor.pedometer
+//                                    ) { error, newStatus ->
+//                                        permissionStatus = newStatus
+//                                        error?.also { permissionStatus.name }
+//                                    }
                                 }) {
                                     Text("Permission Test")
                                 }

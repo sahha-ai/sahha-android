@@ -11,6 +11,8 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 

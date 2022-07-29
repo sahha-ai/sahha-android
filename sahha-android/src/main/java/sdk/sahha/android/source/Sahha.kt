@@ -3,15 +3,18 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 @Keep
@@ -38,9 +41,15 @@ object Sahha {
     ) {
         di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
+
         di.mainScope.launch {
-            saveConfiguration(sahhaSettings)
-            saveNotificationConfig(sahhaSettings.notificationSettings)
+            config = di.configurationDao.getConfig()
+
+            listOf(
+                async { saveConfiguration(sahhaSettings) },
+                async { saveNotificationConfig(sahhaSettings.notificationSettings) }
+            ).joinAll()
+
             start(callback)
         }
     }
@@ -58,9 +67,12 @@ object Sahha {
     internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
             di.mainScope.launch {
+                di.backgroundRepo.stopAllWorkers()
                 config = di.configurationDao.getConfig()
-                startDataCollection(callback)
-                checkAndStartPostWorkers()
+                listOf(
+                    async { startDataCollection(callback) },
+                    async { checkAndStartPostWorkers() }
+                ).joinAll()
             }
         } catch (e: Exception) {
             callback?.also { it("Error: ${e.message}", false) }
@@ -137,34 +149,62 @@ object Sahha {
         di.openAppSettingsUseCase(context)
     }
 
-    fun enableSensor(
+    fun enableSensors(
         context: Context,
-        sensor: SahhaSensor,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
-    ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
+        sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
+        callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
+    ) = di.mainScope.launch {
+        val statuses = suspendCoroutine<Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { cont ->
+            val map = mutableMapOf<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>()
 
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
+            launch {
+                sensors.forEach { sensor ->
+                    if (sensor == SahhaSensor.device) {
+                        map[sensor] = SahhaSensorStatus.enabled
+                    } else {
+                        val awaitStatus =
+                            suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
+                                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
+                                    statusCont.resume(Pair(sensor, sensorStatus))
+                                }
+                            }
+                        map[awaitStatus.first] = awaitStatus.second
+                    }
                 }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-
-                start()
+                cont.resume(map)
             }
         }
+
+        di.mainScope.launch {
+            val sensorsArrayList: ArrayList<Int> = arrayListOf()
+            sensors.mapTo(sensorsArrayList) { it.ordinal }
+            di.configurationDao.updateConfig(sensorsArrayList)
+            start()
+            callback(null, statuses)
+        }
+    }
+
+    fun getSensorStatuses(
+        context: Context,
+        sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
+        callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
+    ) = di.mainScope.launch {
+        val statuses = suspendCoroutine<Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { cont ->
+            val map = mutableMapOf<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>()
+            launch {
+                sensors.forEach { sensor ->
+                    val awaitStatus =
+                        suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
+                            SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
+                                statusCont.resume(Pair(sensor, sensorStatus))
+                            }
+                        }
+                    map[awaitStatus.first] = awaitStatus.second
+                }
+                cont.resume(map)
+            }
+        }
+        callback(null, statuses)
     }
 
     fun getSensorStatus(
@@ -196,13 +236,7 @@ object Sahha {
     }
 
     private fun checkAndStartPostWorkers() {
-        if (config.postSensorDataManually) {
-            di.backgroundRepo.stopWorkerByTag(Constants.SLEEP_POST_WORKER_TAG)
-            di.backgroundRepo.stopWorkerByTag(Constants.DEVICE_POST_WORKER_TAG)
-            di.backgroundRepo.stopWorkerByTag(Constants.STEP_POST_WORKER_TAG)
-        } else {
-            di.startPostWorkersUseCase()
-        }
+        if (!config.postSensorDataManually) di.startPostWorkersUseCase()
     }
 
     private fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)?) {
@@ -226,9 +260,7 @@ object Sahha {
     private suspend fun saveConfiguration(
         settings: SahhaSettings
     ) {
-        val sensorEnums = settings.sensors?.let {
-            convertToEnums(it)
-        } ?: convertToEnums(SahhaSensor.values().toSet())
+        val sensorEnums = if (::config.isInitialized) config.sensorArray else arrayListOf()
 
         di.configurationDao.saveConfig(
             SahhaConfiguration(
