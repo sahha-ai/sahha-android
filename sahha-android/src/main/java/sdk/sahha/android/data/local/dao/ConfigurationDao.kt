@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Dao
 interface ConfigurationDao {

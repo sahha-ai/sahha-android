@@ -19,6 +19,7 @@ import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
+import sdk.sahha.android.source.SahhaConverterUtility
 
 class SahhaErrorLogger (
     private val context: Context,

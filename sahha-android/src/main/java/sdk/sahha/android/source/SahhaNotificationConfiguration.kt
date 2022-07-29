@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.model.config
+package sdk.sahha.android.source
 
 import androidx.annotation.Keep
 import androidx.room.Entity

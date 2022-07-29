@@ -1,7 +1,6 @@
 package sdk.sahha.android.source
 
 import androidx.annotation.Keep
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 
 @Keep
 class SahhaSettings(

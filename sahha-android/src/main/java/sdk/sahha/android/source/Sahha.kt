@@ -9,7 +9,6 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import java.time.LocalDateTime
 import java.util.*
 
