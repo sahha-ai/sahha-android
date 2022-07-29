@@ -4,6 +4,8 @@ import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.R
+import sdk.sahha.android.data.Constants.NOTIFICATION_DESC_DEFAULT
+import sdk.sahha.android.data.Constants.NOTIFICATION_TITLE_DEFAULT
 
 @Keep
 @Entity
@@ -20,7 +22,7 @@ data class SahhaNotificationConfiguration(
     ) : this(
         1,
         icon ?: R.drawable.ic_sahha_no_bg,
-        title ?: "Analytics are running",
-        shortDescription ?: "Swipe for options to hide this notification."
+        title?.ifEmpty { NOTIFICATION_TITLE_DEFAULT } ?: NOTIFICATION_TITLE_DEFAULT,
+        shortDescription?.ifEmpty { NOTIFICATION_DESC_DEFAULT } ?: NOTIFICATION_DESC_DEFAULT
     )
 }
