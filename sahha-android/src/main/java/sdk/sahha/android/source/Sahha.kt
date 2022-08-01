@@ -6,15 +6,12 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 
 @Keep
@@ -158,94 +155,16 @@ object Sahha {
         context: Context,
         sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
         callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
-    ) = di.mainScope.launch {
-        val statuses = suspendCoroutine<Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { cont ->
-            val map = mutableMapOf<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>()
-
-            launch {
-                sensors.forEach { sensor ->
-                    if (sensor == SahhaSensor.device) {
-                        map[sensor] = SahhaSensorStatus.enabled
-                        println(map)
-                    } else {
-                        val awaitStatus =
-                            suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
-                                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                                    statusCont.resume(Pair(sensor, sensorStatus))
-                                }
-                            }
-                        map[awaitStatus.first] = awaitStatus.second
-                        println(map)
-                    }
-                }
-                cont.resume(map)
-            }
-        }
-
-        di.mainScope.launch {
-            val sensorsArrayList: ArrayList<Int> = arrayListOf()
-            sensors.mapTo(sensorsArrayList) { it.ordinal }
-            di.configurationDao.updateConfig(sensorsArrayList)
-            start()
-            callback(null, statuses)
-            println(statuses)
-        }
+    ) {
+        di.permissionRepo.enableSensors(context, sensors, callback)
     }
 
     fun getSensorStatuses(
         context: Context,
         sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
         callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
-    ) = di.mainScope.launch {
-        val statuses = suspendCoroutine<Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { cont ->
-            val map = mutableMapOf<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>()
-            launch {
-                sensors.forEach { sensor ->
-                    if (sensor == SahhaSensor.device) {
-                        map[sensor] = SahhaSensorStatus.enabled
-                        println(map)
-                    } else {
-                        val awaitStatus =
-                            suspendCoroutine<Pair<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>> { statusCont ->
-                                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                                    statusCont.resume(Pair(sensor, sensorStatus))
-                                }
-                            }
-                        map[awaitStatus.first] = awaitStatus.second
-                    }
-                }
-                cont.resume(map)
-            }
-        }
-        callback(null, statuses)
-    }
-
-    fun getSensorStatus(
-        context: Context,
-        sensor: SahhaSensor,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-            }
-            else -> {
-                callback(
-                    null,
-                    SahhaSensorStatus.enabled
-                )
-            }
-        }
+        di.permissionRepo.getSensorStatuses(context, sensors, callback)
     }
 
     private fun checkAndStartPostWorkers() {

@@ -12,6 +12,7 @@ internal object Constants {
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
     const val MAX_STEP_POST_VALUE = 1000
+    const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"

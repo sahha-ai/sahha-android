@@ -49,9 +49,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
                     var permissionStatuses by remember { mutableStateOf("") }
-                    var permissionStatus: Enum<SahhaSensorStatus> by remember {
-                        mutableStateOf(SahhaSensorStatus.unavailable)
-                    }
                     var manualPost by remember { mutableStateOf("") }
                     var manualPostDevice by remember { mutableStateOf("") }
                     var analyzeResponse by remember { mutableStateOf("") }
@@ -64,12 +61,6 @@ class MainActivity : ComponentActivity() {
                     var refreshToken by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
 
-                    Sahha.getSensorStatus(
-                        this@MainActivity,
-                        SahhaSensor.sleep
-                    ) { error, sensorStatus ->
-                        permissionStatus = sensorStatus
-                    }
                     Sahha.getSensorStatuses(
                         this@MainActivity
                     ) { error, sensorStatuses ->
@@ -87,7 +78,6 @@ class MainActivity : ComponentActivity() {
                             item {
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Text(permissionStatus.name)
                                 Text(permissionStatuses)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -100,22 +90,6 @@ class MainActivity : ComponentActivity() {
                                             permissionStatuses += "${it.key.name} is ${it.value.name}\n"
                                         }
                                     }
-
-//                                    Sahha.enableSensor(
-//                                        this@MainActivity,
-//                                        SahhaSensor.sleep
-//                                    ) { error, newStatus ->
-//                                        permissionStatus = newStatus
-//                                        error?.also { permissionStatus.name }
-//                                    }
-//
-//                                    Sahha.enableSensor(
-//                                        this@MainActivity,
-//                                        SahhaSensor.pedometer
-//                                    ) { error, newStatus ->
-//                                        permissionStatus = newStatus
-//                                        error?.also { permissionStatus.name }
-//                                    }
                                 }) {
                                     Text("Permission Test")
                                 }
