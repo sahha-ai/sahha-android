@@ -1,4 +1,4 @@
-package sdk.sahha.android.common
+package sdk.sahha.android.source
 
 import android.content.Context
 import androidx.annotation.Keep
@@ -20,7 +20,6 @@ import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.toStepDto
-import sdk.sahha.android.source.Sahha
 
 @Keep
 object SahhaConverterUtility {

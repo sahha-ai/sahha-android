@@ -13,8 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.domain.model.config.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
-                icon = sdk.sahha.android.R.drawable.ic_test,
+                icon = R.drawable.ic_test,
                 title = "Test",
                 shortDescription = "This is a test."
             ),
