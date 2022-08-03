@@ -15,6 +15,9 @@ interface ConfigurationDao {
     @Query("SELECT * FROM SahhaConfiguration WHERE id=1")
     suspend fun getConfig(): SahhaConfiguration
 
+    @Query("UPDATE SahhaConfiguration SET sensorArray=:sensors WHERE id=1 ")
+    suspend fun updateConfig(sensors: ArrayList<Int>)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveNotificationConfig(notificationConfiguration: SahhaNotificationConfiguration)
 

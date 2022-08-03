@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                 title = "Test",
                 shortDescription = "This is a test."
             ),
-            postSensorDataManually = false,
+            postSensorDataManually = true,
         )
         Sahha.configure(
             application,
@@ -48,56 +48,41 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
+                    var greeting by remember { mutableStateOf("Android") }
+                    var permissionStatus by remember { mutableStateOf("") }
+                    var manualPost by remember { mutableStateOf("") }
+                    var manualPostDevice by remember { mutableStateOf("") }
+                    var analyzeResponse by remember { mutableStateOf("") }
+                    var analyzeResponseEpoch by remember { mutableStateOf("") }
+                    var analyzeResponseDate by remember { mutableStateOf("") }
+                    var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
+                    var postDemo by remember { mutableStateOf("") }
+                    var getDemo by remember { mutableStateOf("") }
+                    var token by remember { mutableStateOf("") }
+                    var refreshToken by remember { mutableStateOf("") }
+                    var start by remember { mutableStateOf("") }
+
+                    Sahha.getSensorStatus(
+                        this@MainActivity
+                    ) { error, sensorStatus ->
+                        permissionStatus = sensorStatus.name
+                    }
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LazyColumn(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
-                                var greeting by remember { mutableStateOf("Android") }
-                                var permissionStatus: Enum<SahhaSensorStatus> by remember {
-                                    mutableStateOf(
-                                        SahhaSensorStatus.unavailable
-                                    )
-                                }
-                                var manualPost by remember { mutableStateOf("") }
-                                var manualPostDevice by remember { mutableStateOf("") }
-                                var analyzeResponse by remember { mutableStateOf("") }
-                                var analyzeResponseEpoch by remember { mutableStateOf("") }
-                                var analyzeResponseDate by remember { mutableStateOf("") }
-                                var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
-                                var postDemo by remember { mutableStateOf("") }
-                                var getDemo by remember { mutableStateOf("") }
-                                var token by remember { mutableStateOf("") }
-                                var refreshToken by remember { mutableStateOf("") }
-                                var start by remember { mutableStateOf("") }
-
-                                Sahha.getSensorStatus(
-                                    this@MainActivity,
-                                    SahhaSensor.sleep
-                                ) { error, sensorStatus ->
-                                    permissionStatus = sensorStatus
-                                }
-
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Text(permissionStatus.name)
+                                Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.enableSensor(
+                                    Sahha.enableSensors(
                                         this@MainActivity,
-                                        SahhaSensor.sleep
-                                    ) { error, newStatus ->
-                                        permissionStatus = newStatus
-                                        error?.also { permissionStatus.name }
-                                    }
-
-                                    Sahha.enableSensor(
-                                        this@MainActivity,
-                                        SahhaSensor.pedometer
-                                    ) { error, newStatus ->
-                                        permissionStatus = newStatus
-                                        error?.also { permissionStatus.name }
+                                    ) { error, status ->
+                                        permissionStatus = status.name
                                     }
                                 }) {
                                     Text("Permission Test")

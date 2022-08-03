@@ -4,6 +4,9 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.hardware.SensorManager
 import android.os.PowerManager
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
@@ -22,7 +25,7 @@ import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
 
-class ManualDependencies (
+class ManualDependencies(
     internal val environment: Enum<SahhaEnvironment>
 ) {
     internal lateinit var database: SahhaDatabase
@@ -115,46 +118,58 @@ class ManualDependencies (
         setDatabase(context)
         setBackgroundRepo(context)
         setNotifications(context)
-        setSahhaErrorLogger(context)
-        setPowerManager(context)
-        setKeyguardManager(context)
-        setSensorManager(context)
+
+        mainScope.launch {
+            listOf(
+                async { setSahhaErrorLogger(context) },
+                async { setPowerManager(context) },
+                async { setKeyguardManager(context) },
+                async { setSensorManager(context) },
+            ).joinAll()
+        }
     }
 
     private fun setSensorManager(context: Context) {
-        sensorManager = AppModule.provideSensorManager(context)
+        if (!::sensorManager.isInitialized)
+            sensorManager = AppModule.provideSensorManager(context)
     }
 
     private fun setPowerManager(context: Context) {
-        powerManager = AppModule.providePowerManager(context)
+        if (!::powerManager.isInitialized)
+            powerManager = AppModule.providePowerManager(context)
     }
 
     private fun setKeyguardManager(context: Context) {
-        keyguardManager = AppModule.provideKeyguardManager(context)
+        if (!::keyguardManager.isInitialized)
+            keyguardManager = AppModule.provideKeyguardManager(context)
     }
 
     private fun setDatabase(context: Context) {
-        database = AppModule.provideDatabase(context)
+        if (!::database.isInitialized)
+            database = AppModule.provideDatabase(context)
     }
 
     private fun setBackgroundRepo(context: Context) {
-        backgroundRepo = AppModule.provideBackgroundRepository(
-            context,
-            mainScope,
-            configurationDao,
-            deviceUsageDao,
-            sleepDao,
-            movementDao
-        )
+        if (!::backgroundRepo.isInitialized)
+            backgroundRepo = AppModule.provideBackgroundRepository(
+                context,
+                mainScope,
+                configurationDao,
+                deviceUsageDao,
+                sleepDao,
+                movementDao
+            )
     }
 
     private fun setNotifications(context: Context) {
-        notifications = SahhaNotificationManager(context, backgroundRepo)
+        if (!::notifications.isInitialized)
+            notifications = SahhaNotificationManager(context, backgroundRepo)
     }
 
     private fun setSahhaErrorLogger(context: Context) {
-        sahhaErrorLogger =
-            SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
+        if (!::sahhaErrorLogger.isInitialized)
+            sahhaErrorLogger =
+                SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager {

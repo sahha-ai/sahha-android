@@ -7,7 +7,10 @@ import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import sdk.sahha.android.common.*
+import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.MAX_STEP_POST_VALUE
@@ -22,6 +25,7 @@ import sdk.sahha.android.data.remote.dto.StepDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.Sahha
@@ -169,17 +173,16 @@ class RemoteRepoImpl(
     }
 
     override suspend fun postAllSensorData(
-        sensors: Set<Enum<SahhaSensor>>?,
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
         try {
-            postSensorData(sensors, callback)
+            postSensorData(callback)
         } catch (e: Exception) {
             callback(e.message, false)
             sahhaErrorLogger.application(
                 e.message,
                 "postAllSensorData",
-                sensors?.toString()
+                null
             )
         }
     }
@@ -451,14 +454,14 @@ class RemoteRepoImpl(
     }
 
     private suspend fun postSensorData(
-        sensors: Set<Enum<SahhaSensor>>?,
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
         var errorSummary = ""
         val successfulResults = mutableListOf<Boolean>()
 
-        val specificOrAllSensors = sensors ?: SahhaSensor.values().toSet()
-        specificOrAllSensors.forEach { sensor ->
+        val sensors = Sahha.di.configurationDao.getConfig().toSetOfSensors()
+            .ifEmpty { SahhaSensor.values().toSet() }
+        sensors.forEach { sensor ->
             if (sensor == SahhaSensor.sleep) {
                 postSleepData { error, successful ->
                     error?.also { errorSummary += "$it\n" }
