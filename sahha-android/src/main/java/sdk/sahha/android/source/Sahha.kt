@@ -129,11 +129,10 @@ object Sahha {
     }
 
     fun postSensorData(
-        sensors: Set<Enum<SahhaSensor>>? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         di.mainScope.launch {
-            di.postAllSensorDataUseCase(sensors, callback)
+            di.postAllSensorDataUseCase(callback)
         }
     }
 
@@ -152,18 +151,16 @@ object Sahha {
 
     fun enableSensors(
         context: Context,
-        sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
-        callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        di.permissionRepo.enableSensors(context, sensors, callback)
+        di.permissionRepo.enableSensors(context, callback)
     }
 
-    fun getSensorStatuses(
+    fun getSensorStatus(
         context: Context,
-        sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
-        callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        di.permissionRepo.getSensorStatuses(context, sensors, callback)
+        di.permissionRepo.getSensorStatus(context, callback)
     }
 
     private fun checkAndStartPostWorkers() {
@@ -191,7 +188,9 @@ object Sahha {
     private suspend fun saveConfiguration(
         settings: SahhaSettings
     ) {
-        val sensorEnums = if (::config.isInitialized) config.sensorArray else arrayListOf()
+        val sensorEnums = settings.sensors?.let {
+            convertToEnums(it)
+        } ?: convertToEnums(SahhaSensor.values().toSet())
 
         di.configurationDao.saveConfig(
             SahhaConfiguration(

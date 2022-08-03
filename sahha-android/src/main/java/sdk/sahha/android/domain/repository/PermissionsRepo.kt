@@ -16,13 +16,11 @@ interface PermissionsRepo {
 
     fun enableSensors(
         context: Context,
-        sensors: Set<SahhaSensor>,
-        callback: (error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit
-    ): Job
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    )
 
-    fun getSensorStatuses(
+    fun getSensorStatus(
         context: Context,
-        sensors: Set<SahhaSensor> = SahhaSensor.values().toSet(),
-        callback: ((error: String?, statuses: Map<Enum<SahhaSensor>, Enum<SahhaSensorStatus>>) -> Unit)
-    ): Job
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    )
 }

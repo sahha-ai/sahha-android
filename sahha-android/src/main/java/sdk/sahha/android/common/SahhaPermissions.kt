@@ -143,7 +143,6 @@ object SahhaPermissions : BroadcastReceiver() {
 
     fun getSensorStatus(
         context: Context,
-        sensor: SahhaSensor,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
 
@@ -168,7 +167,6 @@ object SahhaPermissions : BroadcastReceiver() {
 
     fun enableSensor(
         context: Context,
-        sensor: SahhaSensor,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
 

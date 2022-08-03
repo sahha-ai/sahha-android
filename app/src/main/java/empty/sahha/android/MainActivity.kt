@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                 title = "Test",
                 shortDescription = "This is a test."
             ),
-            postSensorDataManually = false,
+            postSensorDataManually = true,
         )
         Sahha.configure(
             application,
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
-                    var permissionStatuses by remember { mutableStateOf("") }
+                    var permissionStatus by remember { mutableStateOf("") }
                     var manualPost by remember { mutableStateOf("") }
                     var manualPostDevice by remember { mutableStateOf("") }
                     var analyzeResponse by remember { mutableStateOf("") }
@@ -62,13 +62,10 @@ class MainActivity : ComponentActivity() {
                     var refreshToken by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
 
-                    Sahha.getSensorStatuses(
+                    Sahha.getSensorStatus(
                         this@MainActivity
-                    ) { error, sensorStatuses ->
-                        permissionStatuses = ""
-                        sensorStatuses.forEach {
-                            permissionStatuses += "${it.key.name} is ${it.value.name}\n"
-                        }
+                    ) { error, sensorStatus ->
+                        permissionStatus = sensorStatus.name
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -79,17 +76,13 @@ class MainActivity : ComponentActivity() {
                             item {
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Text(permissionStatuses)
+                                Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                    ) { error, statuses ->
-                                        error?.also { println(it) }
-                                        permissionStatuses = ""
-                                        statuses.forEach {
-                                            permissionStatuses += "${it.key.name} is ${it.value.name}\n"
-                                        }
+                                    ) { error, status ->
+                                        permissionStatus = status.name
                                     }
                                 }) {
                                     Text("Permission Test")

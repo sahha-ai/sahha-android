@@ -13,7 +13,6 @@ interface RemoteRepo {
         callback: ((error: String?, successful: Boolean) -> Unit)?
     )
     suspend fun postAllSensorData(
-        sensors: Set<Enum<SahhaSensor>>?,
         callback: ((error: String?, successful: Boolean) -> Unit)
     )
 

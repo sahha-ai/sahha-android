@@ -7,9 +7,8 @@ class PostAllSensorDataUseCase (
     val repository: RemoteRepo
 ) {
     suspend operator fun invoke(
-        sensors: Set<Enum<SahhaSensor>>?,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        repository.postAllSensorData(sensors, callback)
+        repository.postAllSensorData(callback)
     }
 }

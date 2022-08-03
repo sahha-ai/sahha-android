@@ -17,11 +17,10 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
     override fun doWork(): Result {
         CoroutineScope(IO).launch {
             SahhaReconfigure(context)
-            Sahha.getSensorStatuses(
+            Sahha.getSensorStatus(
                 context,
-                setOf(SahhaSensor.pedometer)
-            ) { _, statuses ->
-                if (statuses.containsValue(SahhaSensorStatus.enabled)) {
+            ) { _, status ->
+                if (status == SahhaSensorStatus.enabled) {
                     launch {
                         Sahha.di.postStepDataUseCase(Sahha.di.movementDao.getAllStepData(), null)
                     }
