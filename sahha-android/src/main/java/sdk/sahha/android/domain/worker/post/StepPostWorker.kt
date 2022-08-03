@@ -8,14 +8,24 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 
-class StepPostWorker (private val context: Context, workerParameters: WorkerParameters) :
+class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
 
     override fun doWork(): Result {
         CoroutineScope(IO).launch {
             SahhaReconfigure(context)
-            Sahha.di.postStepDataUseCase(Sahha.di.movementDao.getAllStepData(), null)
+            Sahha.getSensorStatus(
+                context,
+            ) { _, status ->
+                if (status == SahhaSensorStatus.enabled) {
+                    launch {
+                        Sahha.di.postStepDataUseCase(Sahha.di.movementDao.getAllStepData(), null)
+                    }
+                }
+            }
         }
 
         return Result.success()

@@ -3,9 +3,9 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -30,16 +30,27 @@ object Sahha {
 
     val timeManager by lazy { di.timeManager }
 
+    fun diInitialized(): Boolean {
+        return ::di.isInitialized
+    }
+
     fun configure(
         application: Application,
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        di = ManualDependencies(sahhaSettings.environment)
+        if (!diInitialized())
+            di = ManualDependencies(sahhaSettings.environment)
         di.setDependencies(application)
+
         di.mainScope.launch {
-            saveConfiguration(sahhaSettings)
-            saveNotificationConfig(sahhaSettings.notificationSettings)
+            config = di.configurationDao.getConfig()
+
+            listOf(
+                async { saveConfiguration(sahhaSettings) },
+                async { saveNotificationConfig(sahhaSettings.notificationSettings) }
+            ).joinAll()
+
             start(callback)
         }
     }
@@ -57,9 +68,12 @@ object Sahha {
     internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
             di.mainScope.launch {
+                di.backgroundRepo.stopAllWorkers()
                 config = di.configurationDao.getConfig()
-                startDataCollection(callback)
-                checkAndStartPostWorkers()
+                listOf(
+                    async { startDataCollection(callback) },
+                    async { checkAndStartPostWorkers() }
+                ).joinAll()
             }
         } catch (e: Exception) {
             callback?.also { it("Error: ${e.message}", false) }
@@ -115,11 +129,10 @@ object Sahha {
     }
 
     fun postSensorData(
-        sensors: Set<Enum<SahhaSensor>>? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         di.mainScope.launch {
-            di.postAllSensorDataUseCase(sensors, callback)
+            di.postAllSensorDataUseCase(callback)
         }
     }
 
@@ -136,72 +149,22 @@ object Sahha {
         di.openAppSettingsUseCase(context)
     }
 
-    fun enableSensor(
+    fun enableSensors(
         context: Context,
-        sensor: SahhaSensor,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
-                }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.enableSensor(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-
-                    if (sensorStatus == SahhaSensorStatus.enabled)
-                        start()
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-
-                start()
-            }
-        }
+        di.permissionRepo.enableSensors(context, callback)
     }
 
     fun getSensorStatus(
         context: Context,
-        sensor: SahhaSensor,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        when (sensor) {
-            SahhaSensor.pedometer -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.sleep -> {
-                SahhaPermissions.getSensorStatus(context, sensor) { sensorStatus ->
-                    callback(null, sensorStatus)
-                }
-            }
-            SahhaSensor.device -> {
-                callback(null, SahhaSensorStatus.enabled)
-            }
-            else -> {
-                callback(
-                    null,
-                    SahhaSensorStatus.enabled
-                )
-            }
-        }
+        di.permissionRepo.getSensorStatus(context, callback)
     }
 
     private fun checkAndStartPostWorkers() {
-        if (config.postSensorDataManually) {
-            di.backgroundRepo.stopWorkerByTag(Constants.SLEEP_POST_WORKER_TAG)
-            di.backgroundRepo.stopWorkerByTag(Constants.DEVICE_POST_WORKER_TAG)
-            di.backgroundRepo.stopWorkerByTag(Constants.STEP_POST_WORKER_TAG)
-        } else {
-            di.startPostWorkersUseCase()
-        }
+        if (!config.postSensorDataManually) di.startPostWorkersUseCase()
     }
 
     private fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)?) {

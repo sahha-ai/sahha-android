@@ -95,6 +95,14 @@ class DataCollectionService : Service() {
                 this,
                 Sahha.di.movementDao,
             )
+            return
+        }
+
+        try {
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
+            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 
@@ -103,6 +111,13 @@ class DataCollectionService : Service() {
             Sahha.di.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )
+            return
+        }
+
+        try {
+            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 

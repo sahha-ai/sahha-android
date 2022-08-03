@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import sdk.sahha.android.SahhaPermissionActivity
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
+import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.domain.repository.PermissionsRepo
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -55,5 +56,24 @@ class PermissionsRepoImpl : PermissionsRepo {
     private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaSensorStatus> {
         if (enabled) return SahhaSensorStatus.enabled
         else return SahhaSensorStatus.disabled
+    }
+
+    override fun enableSensors(
+        context: Context,
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    ) {
+        SahhaPermissions.enableSensor(context) {
+            callback(null, it)
+            Sahha.start()
+        }
+    }
+
+    override fun getSensorStatus(
+        context: Context,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        SahhaPermissions.getSensorStatus(context) {
+            callback(null, it)
+        }
     }
 }

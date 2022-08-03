@@ -39,3 +39,9 @@ fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
         postSensorDataManually = postSensorDataManually
     )
 }
+
+fun SahhaConfiguration.toSetOfSensors(): Set<SahhaSensor> {
+    return sensorArray.mapTo(mutableSetOf()) {
+        SahhaSensor.values()[it]
+    }
+}
