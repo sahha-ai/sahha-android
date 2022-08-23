@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
@@ -38,12 +39,16 @@ class DataCollectionService : Service() {
     }
 
     private fun unregisterExistingReceiversAndListeners() {
-        try {
+        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister screen locks") {
             unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+        }
+
+        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step detector") {
             Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
+        }
+
+        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step counter") {
             Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 
@@ -91,18 +96,19 @@ class DataCollectionService : Service() {
                 this,
                 Sahha.di.movementDao,
             )
-            Sahha.di.startCollectingStepDetectorData(
-                this,
-                Sahha.di.movementDao,
-            )
+//            Sahha.di.startCollectingStepDetectorData(
+//                this,
+//                Sahha.di.movementDao,
+//            )
             return
         }
 
-        try {
+        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step counter") {
             Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
+        }
+
+        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step detector") {
             Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 
