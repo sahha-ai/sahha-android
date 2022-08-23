@@ -1,5 +1,6 @@
 package sdk.sahha.android.common
 
+import android.util.Log
 import sdk.sahha.android.source.SahhaSensor
 
 object SahhaErrors {
@@ -29,5 +30,31 @@ object SahhaErrors {
 
     fun androidVersionTooLow(requiredVersion: Int): String {
         return "Error: Android $requiredVersion or above is required."
+    }
+
+    fun wrapFunctionTryCatch(
+        tag: String,
+        defaultErrorMsg: String? = "Something went wrong",
+        function: (() -> Unit)
+    ) {
+        try {
+            function()
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: defaultErrorMsg, e)
+        }
+    }
+
+    fun wrapMultipleFunctionTryCatch(
+        tag: String,
+        defaultErrorMsg: String? = "Something went wrong",
+        functionList: List<(() -> Unit)>
+    ) {
+        functionList.forEach {
+            try {
+                it()
+            } catch (e: Exception) {
+                Log.w(tag, e.message ?: defaultErrorMsg, e)
+            }
+        }
     }
 }
