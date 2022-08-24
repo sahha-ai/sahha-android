@@ -39,17 +39,11 @@ class DataCollectionService : Service() {
     }
 
     private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister screen locks") {
-            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
-        }
-
-        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step detector") {
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
-        }
-
-        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step counter") {
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
-        }
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) }
+        ))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -103,13 +97,10 @@ class DataCollectionService : Service() {
             return
         }
 
-        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step counter") {
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
-        }
-
-        SahhaErrors.wrapFunctionTryCatch(tag, "Could not unregister step detector") {
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
-        }
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) }
+        ))
     }
 
     private fun checkAndStartCollectingScreenLockData() {
