@@ -75,8 +75,9 @@ object Sahha {
                     async { checkAndStartPostWorkers() }
                 ).joinAll()
             }
+            callback?.invoke(null, true)
         } catch (e: Exception) {
-            callback?.also { it("Error: ${e.message}", false) }
+            callback?.invoke("Error: ${e.message}", false)
             di.sahhaErrorLogger.application(e.message, "start", null)
         }
     }
