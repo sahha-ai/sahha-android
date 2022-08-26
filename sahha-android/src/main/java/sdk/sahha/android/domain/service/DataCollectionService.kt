@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
@@ -38,13 +39,11 @@ class DataCollectionService : Service() {
     }
 
     private fun unregisterExistingReceiversAndListeners() {
-        try {
-            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
-        }
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) }
+        ))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -91,19 +90,17 @@ class DataCollectionService : Service() {
                 this,
                 Sahha.di.movementDao,
             )
-            Sahha.di.startCollectingStepDetectorData(
-                this,
-                Sahha.di.movementDao,
-            )
+//            Sahha.di.startCollectingStepDetectorData(
+//                this,
+//                Sahha.di.movementDao,
+//            )
             return
         }
 
-        try {
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter)
-            Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
-        }
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) }
+        ))
     }
 
     private fun checkAndStartCollectingScreenLockData() {

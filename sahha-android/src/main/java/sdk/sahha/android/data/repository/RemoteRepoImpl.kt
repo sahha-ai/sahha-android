@@ -216,8 +216,7 @@ class RemoteRepoImpl(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText()
-                                        ?: "${response.code()}: ${response.message()}",
+                                    "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -275,8 +274,7 @@ class RemoteRepoImpl(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText()
-                                        ?: "${response.code()}: ${response.message()}",
+                                    "${response.code()}: ${response.message()}",
                                     null
                                 )
                             }
@@ -335,8 +333,7 @@ class RemoteRepoImpl(
 
                             callback?.also {
                                 it(
-                                    response.errorBody()?.charStream()?.readText()
-                                        ?: "${response.code()}: ${response.message()}",
+                                    "${response.code()}: ${response.message()}",
                                     false
                                 )
                             }
@@ -420,8 +417,7 @@ class RemoteRepoImpl(
 
                         callback?.also {
                             it(
-                                response.errorBody()?.charStream()?.readText()
-                                    ?: "${response.code()}: ${response.message()}",
+                                "${response.code()}: ${response.message()}",
                                 false
                             )
                         }
