@@ -122,4 +122,14 @@ class SahhaTimeManager {
     fun convertNanosToMillis(nano: Long): Long {
         return nano / 1000000
     }
+
+    fun getTimezone(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ZonedDateTime.now().offset.toString()
+        } else {
+            val now = Date()
+            val nowInISO = simpleDateFormat.format(now)
+            correctFormatting(nowInISO).substring(23)
+        }
+    }
 }

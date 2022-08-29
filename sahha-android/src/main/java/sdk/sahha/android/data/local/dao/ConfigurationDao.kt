@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Dao
@@ -23,4 +24,10 @@ interface ConfigurationDao {
 
     @Query("SELECT * FROM SahhaNotificationConfiguration WHERE id=1")
     suspend fun getNotificationConfig(): SahhaNotificationConfiguration
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveDeviceInformation(deviceInformation: DeviceInformation)
+
+    @Query("SELECT * FROM DeviceInformation WHERE id=1")
+    suspend fun getDeviceInformation(): DeviceInformation?
 }

@@ -26,6 +26,7 @@ import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.config.toSetOfSensors
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.Sahha
@@ -567,7 +568,7 @@ class RemoteRepoImpl(
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
-        return api.postDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
+        return api.putDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
     }
 
     private suspend fun getDetectedAnalysisCall(
@@ -577,5 +578,9 @@ class RemoteRepoImpl(
         return datesISO?.let { it ->
             getAnalysisResponse(it.first, it.second, includeSourceData)
         } ?: getAnalysisResponse(includeSourceData)
+    }
+
+    override suspend fun putDeviceInformation(deviceInformation: DeviceInformation): Call<ResponseBody> {
+        return api.putDeviceInformation(TokenBearer(decryptor.decrypt(UET)), deviceInformation)
     }
 }

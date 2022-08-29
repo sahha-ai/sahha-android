@@ -2,16 +2,21 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import java.time.LocalDateTime
 import java.util.*
 
+private val tag = "Sahha"
 
 @Keep
 object Sahha {
@@ -48,11 +53,43 @@ object Sahha {
 
             listOf(
                 async { saveConfiguration(sahhaSettings) },
-                async { saveNotificationConfig(sahhaSettings.notificationSettings) }
+                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                async { processAndPutDeviceInfo() }
             ).joinAll()
 
             start(callback)
         }
+    }
+
+    private suspend fun processAndPutDeviceInfo() {
+        try {
+            val lastDeviceInfo = di.configurationDao.getDeviceInformation()
+            lastDeviceInfo?.also {
+                if (!deviceInfoIsEqual(it))
+                    saveAndPutDeviceInfo()
+            } ?: saveAndPutDeviceInfo()
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Error sending device info")
+        }
+    }
+
+    private suspend fun saveAndPutDeviceInfo() {
+        val currentDeviceInfo = DeviceInformation()
+        di.configurationDao.saveDeviceInformation(currentDeviceInfo)
+        di.api.putDeviceInformation(TokenBearer(di.decryptor.decrypt(UET)), currentDeviceInfo)
+    }
+
+    private fun deviceInfoIsEqual(lastDeviceInfo: DeviceInformation): Boolean {
+        val currentDeviceInfo = DeviceInformation()
+        if (currentDeviceInfo.deviceType != lastDeviceInfo.deviceType) return false
+        if (currentDeviceInfo.deviceModel != lastDeviceInfo.deviceModel) return false
+        if (currentDeviceInfo.appId != lastDeviceInfo.appId) return false
+        if (currentDeviceInfo.sdkId != lastDeviceInfo.sdkId) return false
+        if (currentDeviceInfo.sdkVersion != lastDeviceInfo.sdkVersion) return false
+        if (currentDeviceInfo.system != lastDeviceInfo.system) return false
+        if (currentDeviceInfo.systemVersion != lastDeviceInfo.systemVersion) return false
+        if (currentDeviceInfo.timezone != lastDeviceInfo.timezone) return false
+        return true
     }
 
     fun authenticate(
@@ -72,10 +109,10 @@ object Sahha {
                 config = di.configurationDao.getConfig()
                 listOf(
                     async { startDataCollection(callback) },
-                    async { checkAndStartPostWorkers() }
+                    async { checkAndStartPostWorkers() },
                 ).joinAll()
+                callback?.invoke(null, true)
             }
-            callback?.invoke(null, true)
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)
             di.sahhaErrorLogger.application(e.message, "start", null)
