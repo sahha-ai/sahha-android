@@ -580,7 +580,32 @@ class RemoteRepoImpl(
         } ?: getAnalysisResponse(includeSourceData)
     }
 
-    override suspend fun putDeviceInformation(deviceInformation: DeviceInformation): Call<ResponseBody> {
-        return api.putDeviceInformation(TokenBearer(decryptor.decrypt(UET)), deviceInformation)
+    override suspend fun putDeviceInformation(deviceInformation: DeviceInformation) {
+        val call = putDeviceInformationResponse(deviceInformation)
+        call.enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                if (ResponseCode.isSuccessful(response.code())) {
+                    return
+                }
+
+                sahhaErrorLogger.api(call, response)
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                sahhaErrorLogger.api(
+                    call,
+                    SahhaErrors.typeResponse,
+                    null,
+                    t.message ?: SahhaErrors.responseFailure
+                )
+            }
+        })
+    }
+
+    private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Call<ResponseBody> {
+        return api.putDeviceInformation(
+            TokenBearer(decryptor.decrypt(UET)),
+            SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)
+        )
     }
 }

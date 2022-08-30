@@ -11,11 +11,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.data.remote.dto.send.DeviceInformationSendDto
 import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 import sdk.sahha.android.data.remote.dto.toSleepSendDto
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
@@ -136,6 +139,10 @@ object SahhaConverterUtility {
         return usageData.map {
             it.toPhoneUsageSendDto()
         }
+    }
+
+    internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationSendDto {
+        return deviceInfo.toDeviceInformationSendDto()
     }
 
     fun stringToDrawableResource(context: Context, iconString: String?): Int? {

@@ -31,5 +31,5 @@ interface RemoteRepo {
         callback: ((error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun putDeviceInformation(deviceInformation: DeviceInformation): Call<ResponseBody>
+    suspend fun putDeviceInformation(deviceInformation: DeviceInformation)
 }

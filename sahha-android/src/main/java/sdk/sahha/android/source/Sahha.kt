@@ -7,8 +7,6 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -54,33 +52,44 @@ object Sahha {
             listOf(
                 async { saveConfiguration(sahhaSettings) },
                 async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                async { processAndPutDeviceInfo() }
+                async { processAndPutDeviceInfo(application) }
             ).joinAll()
 
             start(callback)
         }
     }
 
-    private suspend fun processAndPutDeviceInfo() {
+    internal suspend fun processAndPutDeviceInfo(context: Context) {
         try {
             val lastDeviceInfo = di.configurationDao.getDeviceInformation()
             lastDeviceInfo?.also {
-                if (!deviceInfoIsEqual(it))
-                    saveAndPutDeviceInfo()
-            } ?: saveAndPutDeviceInfo()
+                if (!deviceInfoIsEqual(context, it))
+                    saveAndPutDeviceInfo(context)
+            } ?: saveAndPutDeviceInfo(context)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
         }
     }
 
-    private suspend fun saveAndPutDeviceInfo() {
-        val currentDeviceInfo = DeviceInformation()
+    private suspend fun saveAndPutDeviceInfo(context: Context) {
+        val framework = di.configurationDao.getConfig().framework
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val currentDeviceInfo = DeviceInformation(
+            sdkId = framework,
+            appId = packageName
+        )
         di.configurationDao.saveDeviceInformation(currentDeviceInfo)
-        di.api.putDeviceInformation(TokenBearer(di.decryptor.decrypt(UET)), currentDeviceInfo)
+        di.remotePostRepo.putDeviceInformation(currentDeviceInfo)
     }
 
-    private fun deviceInfoIsEqual(lastDeviceInfo: DeviceInformation): Boolean {
-        val currentDeviceInfo = DeviceInformation()
+    private suspend fun deviceInfoIsEqual(
+        context: Context,
+        lastDeviceInfo: DeviceInformation
+    ): Boolean {
+        val framework = di.configurationDao.getConfig().framework
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val currentDeviceInfo = DeviceInformation(sdkId = framework, appId = packageName)
+
         if (currentDeviceInfo.deviceType != lastDeviceInfo.deviceType) return false
         if (currentDeviceInfo.deviceModel != lastDeviceInfo.deviceModel) return false
         if (currentDeviceInfo.appId != lastDeviceInfo.appId) return false
