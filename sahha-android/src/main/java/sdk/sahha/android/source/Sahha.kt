@@ -97,7 +97,7 @@ object Sahha {
         if (currentDeviceInfo.sdkVersion != lastDeviceInfo.sdkVersion) return false
         if (currentDeviceInfo.system != lastDeviceInfo.system) return false
         if (currentDeviceInfo.systemVersion != lastDeviceInfo.systemVersion) return false
-        if (currentDeviceInfo.timezone != lastDeviceInfo.timezone) return false
+        if (currentDeviceInfo.timeZone != lastDeviceInfo.timeZone) return false
         return true
     }
 

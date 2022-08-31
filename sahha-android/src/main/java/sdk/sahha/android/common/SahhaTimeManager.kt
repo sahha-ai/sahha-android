@@ -18,7 +18,7 @@ class SahhaTimeManager {
     private val simpleDateFormat =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             SimpleDateFormat(formatterPattern, Locale.getDefault())
-        } else SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZ", Locale.getDefault())
+        } else SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZZ", Locale.getDefault())
 
     fun nowInISO(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

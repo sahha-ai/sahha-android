@@ -5,11 +5,13 @@ import androidx.annotation.RequiresApi
 import sdk.sahha.android.data.listeners.StepCounterListener
 import sdk.sahha.android.data.listeners.StepDetectorListener
 import sdk.sahha.android.domain.receiver.PhoneScreenStateReceiver
+import sdk.sahha.android.domain.receiver.TimeZoneChangedReceiver
 
 object SahhaReceiversAndListeners {
     //Receivers
     @RequiresApi(Build.VERSION_CODES.O)
     val screenLocks = PhoneScreenStateReceiver()
+    val timezoneDetector = TimeZoneChangedReceiver()
 
     //Listeners
     val stepDetector = StepDetectorListener()

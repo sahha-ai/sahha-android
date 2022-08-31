@@ -42,7 +42,8 @@ class DataCollectionService : Service() {
         SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
             { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
             { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) }
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
         ))
     }
 
@@ -63,6 +64,7 @@ class DataCollectionService : Service() {
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
                 checkAndStartCollectingScreenLockData()
                 checkAndStartCollectingPedometerData()
+                startTimeZoneChangedReceiver()
 
                 intent?.also {
                     if (it.action == Constants.ACTION_RESTART_SERVICE) {
@@ -82,6 +84,10 @@ class DataCollectionService : Service() {
     private fun stopService() {
         stopForeground(true)
         stopSelf()
+    }
+
+    private fun startTimeZoneChangedReceiver() {
+        Sahha.di.backgroundRepo.startTimeZoneChangedReceiver(this)
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {

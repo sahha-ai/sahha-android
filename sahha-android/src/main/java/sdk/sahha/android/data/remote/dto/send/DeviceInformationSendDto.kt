@@ -11,5 +11,5 @@ data class DeviceInformationSendDto(
     val deviceModel: String,
     val system: String,
     val systemVersion: String,
-    val timezone: String
+    val timeZone: String
 )

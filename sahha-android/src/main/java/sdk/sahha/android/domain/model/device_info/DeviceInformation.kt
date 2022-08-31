@@ -18,7 +18,7 @@ data class DeviceInformation(
     val deviceModel: String = "${Build.DEVICE}:${Build.MODEL}",
     val system: String = PLATFORM_NAME,
     val systemVersion: String = "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
-    val timezone: String = Sahha.di.timeManager.getTimezone()
+    val timeZone: String = Sahha.di.timeManager.getTimezone()
 )
 
 fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationSendDto {
@@ -30,6 +30,6 @@ fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationSendDto {
         deviceModel,
         system,
         systemVersion,
-        timezone
+        timeZone
     )
 }

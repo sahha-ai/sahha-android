@@ -540,8 +540,8 @@ class RemoteRepoImpl(
         includeSourceData: Boolean
     ): Call<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
-            Sahha.timeManager.last24HoursInISO(),
-            Sahha.timeManager.nowInISO(),
+            null,
+            null,
             includeSourceData
         )
 
