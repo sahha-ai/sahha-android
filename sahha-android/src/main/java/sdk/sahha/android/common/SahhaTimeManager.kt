@@ -18,7 +18,7 @@ class SahhaTimeManager {
     private val simpleDateFormat =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             SimpleDateFormat(formatterPattern, Locale.getDefault())
-        } else SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZ", Locale.getDefault())
+        } else SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZZ", Locale.getDefault())
 
     fun nowInISO(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -121,5 +121,15 @@ class SahhaTimeManager {
 
     fun convertNanosToMillis(nano: Long): Long {
         return nano / 1000000
+    }
+
+    fun getTimezone(): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ZonedDateTime.now().offset.toString()
+        } else {
+            val now = Date()
+            val nowInISO = simpleDateFormat.format(now)
+            correctFormatting(nowInISO).substring(23)
+        }
     }
 }

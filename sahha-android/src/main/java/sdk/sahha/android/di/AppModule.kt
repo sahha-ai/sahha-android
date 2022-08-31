@@ -158,7 +158,8 @@ internal object AppModule {
                 SahhaDbMigrations.MIGRATION_1_2,
                 SahhaDbMigrations.MIGRATION_2_3,
                 SahhaDbMigrations.MIGRATION_3_4,
-                SahhaDbMigrations.MIGRATION_4_5
+                SahhaDbMigrations.MIGRATION_4_5,
+                SahhaDbMigrations.MIGRATION_5_6
             )
             .build()
     }

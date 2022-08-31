@@ -3,6 +3,7 @@ package sdk.sahha.android.common
 import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.ManualDependencies
@@ -14,7 +15,7 @@ object SahhaReconfigure {
         withContext(Main) {
             val settings =
                 AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
-            if(!Sahha.diInitialized())
+            if (!Sahha.diInitialized())
                 Sahha.di = ManualDependencies(settings.environment)
             Sahha.di.setDependencies(context)
 

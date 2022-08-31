@@ -118,6 +118,10 @@ class BackgroundRepoImpl(
         registerScreenStateReceiver(serviceContext)
     }
 
+    override fun startTimeZoneChangedReceiver(context: Context) {
+        registerTimeZoneChangedReceiver(context)
+    }
+
     override suspend fun startStepDetectorAsync(
         context: Context,
         movementDao: MovementDao,
@@ -260,6 +264,15 @@ class BackgroundRepoImpl(
                 addAction(Intent.ACTION_USER_PRESENT)
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_SCREEN_OFF)
+            }
+        )
+    }
+
+    private fun registerTimeZoneChangedReceiver(context: Context) {
+        context.registerReceiver(
+            SahhaReceiversAndListeners.timezoneDetector,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_TIMEZONE_CHANGED)
             }
         )
     }
