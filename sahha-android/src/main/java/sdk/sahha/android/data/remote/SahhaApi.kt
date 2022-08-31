@@ -6,10 +6,12 @@ import retrofit2.http.*
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.data.remote.dto.send.DeviceInformationSendDto
 import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
@@ -53,8 +55,14 @@ interface SahhaApi {
     ): Call<DemographicDto>
 
     @PUT("profile/demographic")
-    fun postDemographic(
+    fun putDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body demographics: SahhaDemographic
+    ): Call<ResponseBody>
+
+    @PUT("profile/deviceInformation")
+    fun putDeviceInformation(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body deviceInformation: DeviceInformationSendDto
     ): Call<ResponseBody>
 }

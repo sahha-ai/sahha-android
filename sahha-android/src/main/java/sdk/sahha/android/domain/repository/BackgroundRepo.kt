@@ -19,6 +19,7 @@ interface BackgroundRepo {
     fun startPhoneScreenReceivers(
         serviceContext: Context,
     )
+    fun startTimeZoneChangedReceiver(context: Context)
 
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startPostWorkersAsync()

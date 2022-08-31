@@ -2,6 +2,7 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
@@ -9,9 +10,11 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import java.time.LocalDateTime
 import java.util.*
 
+private val tag = "Sahha"
 
 @Keep
 object Sahha {
@@ -48,11 +51,54 @@ object Sahha {
 
             listOf(
                 async { saveConfiguration(sahhaSettings) },
-                async { saveNotificationConfig(sahhaSettings.notificationSettings) }
+                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                async { processAndPutDeviceInfo(application) }
             ).joinAll()
 
             start(callback)
         }
+    }
+
+    internal suspend fun processAndPutDeviceInfo(context: Context) {
+        try {
+            val lastDeviceInfo = di.configurationDao.getDeviceInformation()
+            lastDeviceInfo?.also {
+                if (!deviceInfoIsEqual(context, it))
+                    saveAndPutDeviceInfo(context)
+            } ?: saveAndPutDeviceInfo(context)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Error sending device info")
+        }
+    }
+
+    private suspend fun saveAndPutDeviceInfo(context: Context) {
+        val framework = di.configurationDao.getConfig().framework
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val currentDeviceInfo = DeviceInformation(
+            sdkId = framework,
+            appId = packageName
+        )
+        di.configurationDao.saveDeviceInformation(currentDeviceInfo)
+        di.remotePostRepo.putDeviceInformation(currentDeviceInfo)
+    }
+
+    private suspend fun deviceInfoIsEqual(
+        context: Context,
+        lastDeviceInfo: DeviceInformation
+    ): Boolean {
+        val framework = di.configurationDao.getConfig().framework
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val currentDeviceInfo = DeviceInformation(sdkId = framework, appId = packageName)
+
+        if (currentDeviceInfo.deviceType != lastDeviceInfo.deviceType) return false
+        if (currentDeviceInfo.deviceModel != lastDeviceInfo.deviceModel) return false
+        if (currentDeviceInfo.appId != lastDeviceInfo.appId) return false
+        if (currentDeviceInfo.sdkId != lastDeviceInfo.sdkId) return false
+        if (currentDeviceInfo.sdkVersion != lastDeviceInfo.sdkVersion) return false
+        if (currentDeviceInfo.system != lastDeviceInfo.system) return false
+        if (currentDeviceInfo.systemVersion != lastDeviceInfo.systemVersion) return false
+        if (currentDeviceInfo.timeZone != lastDeviceInfo.timeZone) return false
+        return true
     }
 
     fun authenticate(
@@ -72,10 +118,10 @@ object Sahha {
                 config = di.configurationDao.getConfig()
                 listOf(
                     async { startDataCollection(callback) },
-                    async { checkAndStartPostWorkers() }
+                    async { checkAndStartPostWorkers() },
                 ).joinAll()
+                callback?.invoke(null, true)
             }
-            callback?.invoke(null, true)
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)
             di.sahhaErrorLogger.application(e.message, "start", null)

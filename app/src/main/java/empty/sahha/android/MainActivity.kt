@@ -12,10 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import kotlinx.coroutines.launch
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
@@ -86,6 +88,23 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }) {
                                     Text("Permission Test")
+                                }
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.configure(
+                                        application,
+                                        SahhaSettings(SahhaEnvironment.development)
+                                    )
+                                }) {
+                                    Text("Configure")
+                                }
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    lifecycleScope.launch {
+                                        SahhaReconfigure(application)
+                                    }
+                                }) {
+                                    Text("Reconfigure")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 OutlinedTextField(
