@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaPermissions
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.source.Sahha
@@ -30,6 +31,8 @@ class SleepReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.w(tag, "onReceive")
         CoroutineScope(Default).launch {
+            SahhaReconfigure(context)
+
             // First check activity permissions
             if (SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled) {
                 notifyPermissionsIssue(context)
