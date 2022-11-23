@@ -166,7 +166,8 @@ class SahhaNotificationManager (
         _contentText: String,
         _isOngoing: Boolean,
         _notificationId: Int,
-        _intent: Intent
+        _intent: Intent,
+        _icon: Int = R.drawable.ic_sahha_no_bg
     ) {
         // App settings
         val intent = Intent(_intent)
@@ -201,6 +202,7 @@ class SahhaNotificationManager (
             .setCategory(Notification.CATEGORY_SERVICE)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
+            .setSmallIcon(_icon)
             .build()
 
         manager.notify(_notificationId, notification)

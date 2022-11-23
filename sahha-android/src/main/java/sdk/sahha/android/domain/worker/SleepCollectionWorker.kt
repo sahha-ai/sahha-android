@@ -27,8 +27,6 @@ class SleepCollectionWorker (private val context: Context, workerParameters: Wor
 
     override fun doWork(): Result {
         CoroutineScope(Default).launch {
-            SahhaReconfigure(context)
-
             val sleepIntent = Intent(context, SleepReceiver::class.java)
             val sleepPendingIntent = getSleepPendingIntent(sleepIntent)
             val task = getSleepSegmentTask(sleepPendingIntent)
