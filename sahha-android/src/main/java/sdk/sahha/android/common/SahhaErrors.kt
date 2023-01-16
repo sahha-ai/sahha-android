@@ -57,4 +57,9 @@ object SahhaErrors {
             }
         }
     }
+
+    object healthConnect {
+        val notInstalled = "Error: Health Connect must be installed"
+        val noPermissions = "Error: There are no granted permissions"
+    }
 }

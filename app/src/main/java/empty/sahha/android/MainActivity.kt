@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
                     var token by remember { mutableStateOf("") }
                     var refreshToken by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
+                    var healthConnectStatus by remember { mutableStateOf("Pending") }
 
                     Sahha.getSensorStatus(
                         this@MainActivity
@@ -76,6 +77,21 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Text(healthConnectStatus)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.enableHealthConnect(
+                                        this@MainActivity,
+                                    ) { error, success ->
+                                        healthConnectStatus =
+                                            error ?: if(success) "Successful" else "Unsuccessful"
+                                    }
+                                }) {
+                                    Text("HealthConnect Test")
+                                }
+                                Spacer(modifier = Modifier.padding(16.dp))
+
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)

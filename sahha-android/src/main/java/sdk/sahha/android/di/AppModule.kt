@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Context
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
@@ -21,14 +22,8 @@ import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
-import sdk.sahha.android.data.repository.AuthRepoImpl
-import sdk.sahha.android.data.repository.BackgroundRepoImpl
-import sdk.sahha.android.data.repository.PermissionsRepoImpl
-import sdk.sahha.android.data.repository.RemoteRepoImpl
-import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.repository.BackgroundRepo
-import sdk.sahha.android.domain.repository.PermissionsRepo
-import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.data.repository.*
+import sdk.sahha.android.domain.repository.*
 import sdk.sahha.android.source.SahhaEnvironment
 
 internal object AppModule {
@@ -220,5 +215,17 @@ internal object AppModule {
         context: Context,
     ): SensorManager {
         return context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+    }
+
+    fun provideHealthConnectClient(
+        context: Context,
+    ): HealthConnectClient {
+        return HealthConnectClient.getOrCreate(context)
+    }
+
+    fun provideHealthConnectRepository(
+        healthConnectClient: HealthConnectClient
+    ): HealthConnectRepo {
+        return HealthConnectRepoImpl(healthConnectClient)
     }
 }

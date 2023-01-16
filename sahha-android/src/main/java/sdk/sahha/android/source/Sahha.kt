@@ -2,11 +2,15 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import sdk.sahha.android.SahhaHealthConnectActivity
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -20,6 +24,7 @@ private val tag = "Sahha"
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
+    internal var healthConnectCallback: ((error: String?, success: Boolean) -> Unit)? = null
     internal val notifications by lazy { di.notifications }
     internal val motion by lazy {
         Motion(
@@ -201,6 +206,22 @@ object Sahha {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         di.permissionRepo.enableSensors(context, callback)
+    }
+
+    fun enableHealthConnect(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        healthConnectCallback = callback
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            context.startActivity(
+                Intent(context, SahhaHealthConnectActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } else {
+            healthConnectCallback?.invoke(SahhaErrors.androidVersionTooLow(10), false)
+        }
     }
 
     fun getSensorStatus(

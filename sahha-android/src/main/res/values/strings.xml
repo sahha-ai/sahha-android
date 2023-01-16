@@ -1,3 +1,4 @@
 <resources>
     <string name="title_activity_sahha_permission">SahhaPermissionActivity</string>
+    <string name="title_activity_sahha_health_connect">SahhaHealthConnectActivity</string>
 </resources>
