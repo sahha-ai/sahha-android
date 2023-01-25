@@ -2,15 +2,13 @@
 
 The Sahha SDK provides a convenient way for Android apps to connect to the Sahha API.
 
-[Sahha API](https://sandbox-api.sahha.ai/api-docs/)
-
 ---
 
 ## Docs
 
 The Sahha Docs provide detailed instructions for installation and usage of the Sahha SDK.
 
-[Sahha Docs](https://developer.sahha.ai/docs/android/)
+[Sahha Docs](https://developer.sahha.ai/docs)
 
 ---
 
