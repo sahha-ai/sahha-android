@@ -1,9 +1,9 @@
-package sdk.sahha.android.data.remote.dto
+package sdk.sahha.android.data.remote.dto.send
 
 import androidx.annotation.Keep
 
 @Keep
-data class StepDto(
+data class StepSendDto(
     val dataType: String,
     val count: Int,
     val source: String,

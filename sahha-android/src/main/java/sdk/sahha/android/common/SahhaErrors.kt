@@ -1,6 +1,7 @@
 package sdk.sahha.android.common
 
 import android.util.Log
+import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.source.SahhaSensor
 
 object SahhaErrors {
@@ -59,7 +60,14 @@ object SahhaErrors {
     }
 
     object healthConnect {
+        val unknownError = "Error: Please ensure Health Connect is installed and permissions are granted"
         val notInstalled = "Error: Health Connect must be installed"
         val noPermissions = "Error: There are no granted permissions"
+        val permissionRequestDenied =
+            "Error: Maximum requests reached. Please open HealthConnect manually to enable permissions"
+
+        fun localDataIsEmpty(healthConnectSensor: HealthConnectSensor): String {
+            return "Error: The local ${healthConnectSensor.name.lowercase()} data is empty."
+        }
     }
 }

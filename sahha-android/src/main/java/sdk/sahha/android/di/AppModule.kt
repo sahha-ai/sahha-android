@@ -15,6 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
@@ -127,7 +128,8 @@ internal object AppModule {
         decryptor: Decryptor,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger,
-        ioScope: CoroutineScope
+        ioScope: CoroutineScope,
+        timeManager: SahhaTimeManager
     ): RemoteRepo {
         return RemoteRepoImpl(
             sleepDao,
@@ -137,7 +139,8 @@ internal object AppModule {
             decryptor,
             api,
             sahhaErrorLogger,
-            ioScope
+            ioScope,
+            timeManager
         )
     }
 
@@ -219,12 +222,12 @@ internal object AppModule {
 
     fun provideHealthConnectClient(
         context: Context,
-    ): HealthConnectClient {
-        return HealthConnectClient.getOrCreate(context)
+    ): HealthConnectClient? {
+        return if (HealthConnectClient.isAvailable(context)) HealthConnectClient.getOrCreate(context) else null
     }
 
     fun provideHealthConnectRepository(
-        healthConnectClient: HealthConnectClient
+        healthConnectClient: HealthConnectClient,
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(healthConnectClient)
     }

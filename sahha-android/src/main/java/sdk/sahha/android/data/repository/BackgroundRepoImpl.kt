@@ -23,23 +23,28 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
+import sdk.sahha.android.data.Constants.HEALTH_CONNECT_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.service.DataCollectionService
 import sdk.sahha.android.domain.worker.SleepCollectionWorker
 import sdk.sahha.android.domain.worker.post.DevicePostWorker
+import sdk.sahha.android.domain.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.domain.worker.post.SleepPostWorker
 import sdk.sahha.android.domain.worker.post.StepPostWorker
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import java.util.concurrent.TimeUnit
+
+private const val defaultWorkerRepeatIntervalMinutes = 360L
 
 @SuppressLint("NewApi")
 class BackgroundRepoImpl(
@@ -168,20 +173,35 @@ class BackgroundRepoImpl(
     override fun startPostWorkersAsync() {
         mainScope.launch {
             val config = configDao.getConfig()
-            Sahha.getSensorStatus(
-                context,
-            ) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-                    startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
-                }
+            startSensorWorkers(config)
+            startHealthConnectWorker(config)
+        }
+    }
 
-                if (status == SahhaSensorStatus.enabled) {
-                    if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-                        startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
-                    }
-                    if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                        startStepPostWorker(15, STEP_POST_WORKER_TAG)
-                    }
+    private fun startSensorWorkers(config: SahhaConfiguration) {
+        Sahha.getSensorStatus(
+            context,
+        ) { _, status ->
+            if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+                startDevicePostWorker(workerTag = DEVICE_POST_WORKER_TAG)
+            }
+
+            if (status == SahhaSensorStatus.enabled) {
+                if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+                    startSleepPostWorker(workerTag = SLEEP_POST_WORKER_TAG)
+                }
+                if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
+                    startStepPostWorker(15, STEP_POST_WORKER_TAG)
+                }
+            }
+        }
+    }
+
+    private fun startHealthConnectWorker(config: SahhaConfiguration) {
+        Sahha.getHealthConnectStatus(context) { _, status ->
+            if (status == SahhaSensorStatus.enabled) {
+                if (config.sensorArray.contains(SahhaSensor.health_connect.ordinal)) {
+                    startHealthConnectPostWorker(workerTag = HEALTH_CONNECT_POST_WORKER_TAG)
                 }
             }
         }
@@ -277,21 +297,39 @@ class BackgroundRepoImpl(
         )
     }
 
-    private fun startSleepPostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+    private fun startSleepPostWorker(
+        repeatIntervalMinutes: Long = defaultWorkerRepeatIntervalMinutes,
+        workerTag: String
+    ) {
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest = getSleepPostWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
     }
 
-    private fun startDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+    private fun startDevicePostWorker(
+        repeatIntervalMinutes: Long = defaultWorkerRepeatIntervalMinutes,
+        workerTag: String
+    ) {
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest = getDevicePostWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
     }
 
-    private fun startStepPostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+    private fun startStepPostWorker(
+        repeatIntervalMinutes: Long = defaultWorkerRepeatIntervalMinutes,
+        workerTag: String
+    ) {
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest = getStepPostWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
+
+    private fun startHealthConnectPostWorker(
+        repeatIntervalMinutes: Long = defaultWorkerRepeatIntervalMinutes,
+        workerTag: String
+    ) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest = getHealthConnectPostWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
     }
 
@@ -341,6 +379,18 @@ class BackgroundRepoImpl(
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<SleepCollectionWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .build()
+    }
+
+    private fun getHealthConnectPostWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<HealthConnectPostWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
         )

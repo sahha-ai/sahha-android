@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import sdk.sahha.android.domain.model.config.LastHealthConnectPost
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.source.SahhaNotificationConfiguration
@@ -30,4 +31,10 @@ interface ConfigurationDao {
 
     @Query("SELECT * FROM DeviceInformation WHERE id=1")
     suspend fun getDeviceInformation(): DeviceInformation?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveLastHealthConnectPost(lastHealthConnectPost: LastHealthConnectPost)
+
+    @Query("SELECT * FROM LastHealthConnectPost WHERE id=1")
+    suspend fun getLastHealthConnectPost(): LastHealthConnectPost?
 }

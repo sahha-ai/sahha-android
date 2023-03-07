@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     var refreshToken by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
                     var healthConnectStatus by remember { mutableStateOf("Pending") }
+                    var healthConnectData by remember { mutableStateOf("") }
 
                     Sahha.getSensorStatus(
                         this@MainActivity
@@ -83,12 +85,29 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableHealthConnect(
                                         this@MainActivity,
-                                    ) { error, success ->
+                                    ) { error, status ->
                                         healthConnectStatus =
-                                            error ?: if(success) "Successful" else "Unsuccessful"
+                                            error ?: status.name
                                     }
                                 }) {
                                     Text("HealthConnect Test")
+                                }
+                                Spacer(modifier = Modifier.padding(16.dp))
+
+                                Text(healthConnectData)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    lifecycleScope.launch {
+                                        healthConnectData = ""
+                                        healthConnectData = "Loading..."
+                                        Sahha.getHealthConnectData(
+                                            HealthConnectSensor.sleep_session,
+                                        ) { error, status ->
+                                            healthConnectData = error ?: status ?: "error"
+                                        }
+                                    }
+                                }) {
+                                    Text("HealthConnect Data")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
 

@@ -6,15 +6,24 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.source.Sahha
 
-class SleepPostWorker (private val context: Context, workerParameters: WorkerParameters) :
+class SleepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
     override fun doWork(): Result {
         CoroutineScope(IO).launch {
             SahhaReconfigure(context)
-            Sahha.di.postSleepDataUseCase(null)
+            val sleepData = Sahha.di.sleepDao.getSleepDto()
+            Sahha.di.remotePostRepo.postSleepData(sleepData) { error, _ ->
+                error?.also { e ->
+                    Sahha.di.sahhaErrorLogger.application(
+                        error = e,
+                        appMethod = "SleepPostWorker, doWork",
+                        appBody = sleepData.toString()
+                    )
+                }
+            }
         }
         return Result.success()
     }

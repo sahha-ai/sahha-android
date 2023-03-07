@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
@@ -22,7 +23,12 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
             ) { _, status ->
                 if (status == SahhaSensorStatus.enabled) {
                     launch {
-                        Sahha.di.postStepDataUseCase(Sahha.di.movementDao.getAllStepData(), null)
+                        Sahha.di.postStepDataUseCase(
+                            SahhaConverterUtility.stepDataToStepDto(
+                                Sahha.di.movementDao.getAllStepData()
+                            ),
+                            null
+                        )
                     }
                 }
             }

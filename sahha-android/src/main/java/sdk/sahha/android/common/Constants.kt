@@ -11,7 +11,7 @@ internal object Constants {
     const val UERT = "uert"
     const val AUTHORIZATION_HEADER = "Authorization"
     const val PLATFORM_NAME = "android"
-    const val MAX_STEP_POST_VALUE = 1000
+    const val MAX_BATCH_POST_VALUE = 1000
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
     const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
@@ -20,10 +20,15 @@ internal object Constants {
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
+    const val HEALTH_CONNECT_SLEEP_SESSION_DATA_SOURCE = "HealthConnectSleepSession"
+    const val HEALTH_CONNECT_SLEEP_STAGE_DATA_SOURCE = "HealthConnectSleepStage"
+    const val HEALTH_CONNECT_STEP_DATA_SOURCE = "HealthConnectSteps"
+    const val HEALTH_CONNECT_HEART_RATE_DATA_SOURCE = "HealthConnectHeartRate"
 
     // Data Type
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
     const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
+    const val HEALTH_CONNECT_STEP_DATA_TYPE = "TimeRangeSteps"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
@@ -34,6 +39,7 @@ internal object Constants {
     const val SLEEP_POST_WORKER_TAG = "sleepPost"
     const val DEVICE_POST_WORKER_TAG = "devicePost"
     const val STEP_POST_WORKER_TAG = "stepPost"
+    const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

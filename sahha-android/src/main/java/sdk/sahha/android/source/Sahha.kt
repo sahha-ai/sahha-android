@@ -2,15 +2,13 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.SahhaHealthConnectActivity
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -24,7 +22,6 @@ private val tag = "Sahha"
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
-    internal var healthConnectCallback: ((error: String?, success: Boolean) -> Unit)? = null
     internal val notifications by lazy { di.notifications }
     internal val motion by lazy {
         Motion(
@@ -47,20 +44,24 @@ object Sahha {
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        if (!diInitialized())
-            di = ManualDependencies(sahhaSettings.environment)
-        di.setDependencies(application)
+        try {
+            if (!diInitialized())
+                di = ManualDependencies(sahhaSettings.environment)
+            di.setDependencies(application)
 
-        di.mainScope.launch {
-            config = di.configurationDao.getConfig()
+            di.mainScope.launch {
+                config = di.configurationDao.getConfig()
 
-            listOf(
-                async { saveConfiguration(sahhaSettings) },
-                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                async { processAndPutDeviceInfo(application) }
-            ).joinAll()
+                listOf(
+                    async { saveConfiguration(sahhaSettings) },
+                    async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                    async { processAndPutDeviceInfo(application) }
+                ).joinAll()
 
-            start(callback)
+                start(callback)
+            }
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
         }
     }
 
@@ -188,12 +189,72 @@ object Sahha {
         }
     }
 
+    fun postHealthConnectData(
+        healthConnectData: Set<Enum<HealthConnectSensor>>,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.healthConnectRepo?.also {
+                di.remotePostRepo.postHealthConnectData(
+                    if (healthConnectData.contains(HealthConnectSensor.sleep_session)) it.getSleepData() else emptyList(),
+                    if (healthConnectData.contains(HealthConnectSensor.sleep_stage)) it.getSleepStageData() else emptyList(),
+                    if (healthConnectData.contains(HealthConnectSensor.step)) it.getStepData() else emptyList(),
+                    if (healthConnectData.contains(HealthConnectSensor.heart_rate)) it.getHeartRateData() else emptyList(),
+                    callback = callback
+                )
+            } ?: callback(SahhaErrors.healthConnect.unknownError, false)
+        }
+    }
+
     internal fun getSensorData(
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)
     ) {
         di.mainScope.launch {
             di.getSensorDataUseCase(sensor, callback)
+        }
+    }
+
+    suspend fun getHealthConnectData(
+        healthConnectSensor: HealthConnectSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        if (di.healthConnectRepo == null) {
+            callback("repo not init", null)
+            return
+        }
+
+        when (healthConnectSensor) {
+            HealthConnectSensor.heart_rate -> {
+                di.healthConnectRepo?.getHeartRateData()?.also {
+                    val data = SahhaConverterUtility.heartRateToHeartRateSendDto(
+                        it,
+                        timeManager.nowInISO()
+                    )
+                    callback(null, data.toString())
+                } ?: callback("no heart data", null)
+            }
+            HealthConnectSensor.sleep_session -> {
+                di.healthConnectRepo?.getSleepData()?.also {
+                    val data =
+                        SahhaConverterUtility.sleepSessionToSleepDto(it, timeManager.nowInISO())
+                    callback(null, data.toString())
+                } ?: callback("no sleep data", null)
+            }
+            HealthConnectSensor.sleep_stage -> {
+                di.healthConnectRepo?.getSleepStageData()?.also {
+                    val data =
+                        SahhaConverterUtility.sleepStageToSleepDto(it, timeManager.nowInISO())
+                    callback(null, data.toString())
+                } ?: callback("no sleep stage data", null)
+            }
+            HealthConnectSensor.step -> {
+                di.healthConnectRepo?.getStepData()?.also {
+                    val data =
+                        SahhaConverterUtility.healthConnectStepToStepDto(it, timeManager.nowInISO())
+                    callback(null, data.toString())
+                } ?: callback("no step data", null)
+            }
         }
     }
 
@@ -210,18 +271,9 @@ object Sahha {
 
     fun enableHealthConnect(
         context: Context,
-        callback: ((error: String?, success: Boolean) -> Unit)
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        healthConnectCallback = callback
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            context.startActivity(
-                Intent(context, SahhaHealthConnectActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        } else {
-            healthConnectCallback?.invoke(SahhaErrors.androidVersionTooLow(10), false)
-        }
+        di.permissionRepo.enableHealthConnect(context, callback)
     }
 
     fun getSensorStatus(
@@ -229,6 +281,15 @@ object Sahha {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         di.permissionRepo.getSensorStatus(context, callback)
+    }
+
+    fun getHealthConnectStatus(
+        context: Context,
+        callback: suspend ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.permissionRepo.getHealthConnectStatus(context, callback)
+        }
     }
 
     private fun checkAndStartPostWorkers() {
@@ -258,7 +319,7 @@ object Sahha {
     ) {
         val sensorEnums = settings.sensors?.let {
             convertToEnums(it)
-        } ?: convertToEnums(SahhaSensor.values().toSet())
+        } ?: convertToEnums(getDefaultSensors())
 
         di.configurationDao.saveConfig(
             SahhaConfiguration(
@@ -268,6 +329,16 @@ object Sahha {
                 settings.postSensorDataManually
             )
         )
+    }
+
+    internal fun getDefaultSensors(): Set<SahhaSensor> {
+        val sensors = mutableSetOf<SahhaSensor>()
+        val sensorsExcludingHealthConnect = SahhaSensor.values().size - 1
+        for (i in 0 until sensorsExcludingHealthConnect) {
+            sensors.add(SahhaSensor.values()[i])
+        }
+
+        return sensors
     }
 
     private suspend fun saveNotificationConfig(config: SahhaNotificationConfiguration?) {

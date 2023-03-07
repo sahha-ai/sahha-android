@@ -4,6 +4,7 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.domain.repository.BackgroundRepo
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
@@ -35,6 +37,8 @@ class ManualDependencies(
     internal lateinit var powerManager: PowerManager
     internal lateinit var keyguardManager: KeyguardManager
     internal lateinit var sensorManager: SensorManager
+    internal var healthConnectClient: HealthConnectClient? = null
+    internal var healthConnectRepo: HealthConnectRepo? = null
 
     internal val gson by lazy { AppModule.provideGsonConverter() }
     internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
@@ -60,7 +64,8 @@ class ManualDependencies(
             decryptor,
             api,
             sahhaErrorLogger,
-            ioScope
+            ioScope,
+            timeManager
         )
     }
 
@@ -80,7 +85,6 @@ class ManualDependencies(
         )
     }
     val postStepDataUseCase by lazy { PostStepDataUseCase(remotePostRepo) }
-    val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
     val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
     val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
     val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(backgroundRepo) }
@@ -125,6 +129,7 @@ class ManualDependencies(
                 async { setPowerManager(context) },
                 async { setKeyguardManager(context) },
                 async { setSensorManager(context) },
+                async { setHealthConnectClientAndRepo(context) },
             ).joinAll()
         }
     }
@@ -159,6 +164,13 @@ class ManualDependencies(
                 sleepDao,
                 movementDao
             )
+    }
+
+    private fun setHealthConnectClientAndRepo(context: Context) {
+        healthConnectClient = AppModule.provideHealthConnectClient(context)
+        healthConnectClient?.also {
+            healthConnectRepo = AppModule.provideHealthConnectRepository(it)
+        }
     }
 
     private fun setNotifications(context: Context) {

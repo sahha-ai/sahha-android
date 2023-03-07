@@ -47,4 +47,12 @@ object SahhaDbMigrations {
             }
         }
     }
+
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("CREATE TABLE LastHealthConnectPost (id INTEGER NOT NULL, epochMillis INTEGER NOT NULL, PRIMARY KEY(id))")
+            }
+        }
+    }
 }
