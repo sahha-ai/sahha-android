@@ -21,7 +21,7 @@ import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.source.SahhaConverterUtility
 
-class SahhaErrorLogger (
+class SahhaErrorLogger(
     private val context: Context,
     private val configurationDao: ConfigurationDao,
     private val decryptor: Decryptor,
@@ -182,7 +182,8 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
 
         response?.also { r ->
-            sahhaResponseError = SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
+            sahhaResponseError =
+                SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
             sahhaErrorLog.apiBody =
                 r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
         }
@@ -218,25 +219,6 @@ class SahhaErrorLogger (
     }
 
     private fun getNewSahhaErrorLog(): SahhaErrorLog {
-        return SahhaErrorLog(
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        )
+        return SahhaErrorLog()
     }
 }

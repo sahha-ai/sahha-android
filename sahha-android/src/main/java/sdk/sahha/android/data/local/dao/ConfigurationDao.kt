@@ -35,6 +35,6 @@ interface ConfigurationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveLastHealthConnectPost(lastHealthConnectPost: LastHealthConnectPost)
 
-    @Query("SELECT * FROM LastHealthConnectPost WHERE id=1")
-    suspend fun getLastHealthConnectPost(): LastHealthConnectPost?
+    @Query("SELECT epochMillis FROM LastHealthConnectPost WHERE id=:sensorId")
+    suspend fun getLastHealthConnectPost(sensorId: Int): Long?
 }

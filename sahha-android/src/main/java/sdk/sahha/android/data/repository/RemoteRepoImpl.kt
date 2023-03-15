@@ -50,56 +50,6 @@ class RemoteRepoImpl(
     private val timeManager: SahhaTimeManager
 ) : RemoteRepo {
 
-    override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
-        val tokenData = TokenData(
-            decryptor.decrypt(UET),
-            decryptor.decrypt(UERT)
-        )
-
-        try {
-            val call = getRefreshTokenCall(tokenData)
-            call.enqueue(
-                object : Callback<ResponseBody> {
-                    override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
-                    ) {
-                        mainScope.launch {
-                            if (ResponseCode.isSuccessful(response.code())) {
-                                storeNewTokens(response.body())
-                                retryLogic()
-                                return@launch
-                            }
-
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeAuthentication,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
-                        )
-                    }
-
-                }
-            )
-        } catch (e: Exception) {
-            sahhaErrorLogger.application(
-                e.message ?: "Error refreshing token",
-                "postRefreshToken",
-                null
-            )
-        }
-    }
-
     private fun getFilteredStepDto(stepData: List<StepSendDto>): List<StepSendDto> {
         return if (stepData.count() > 1000) {
             stepData.subList(0, 1000)
@@ -118,7 +68,7 @@ class RemoteRepoImpl(
 
             val filteredStepDtoData = getFilteredStepDto(stepData)
             val response = getStepResponse(filteredStepDtoData)
-            handleResponse(response, { getStepResponse(filteredStepDtoData) }, callback) {
+            SahhaResponseHandler.handleResponse(response, { getStepResponse(filteredStepDtoData) }, callback) {
                 if (stepData.count() > MAX_BATCH_POST_VALUE)
                     movementDao.clearFirstStepData(MAX_BATCH_POST_VALUE)
                 else clearLocalStepData()
@@ -145,7 +95,7 @@ class RemoteRepoImpl(
             }
 
             val response = getSleepResponse()
-            handleResponse(response, { getSleepResponse() }, callback) {
+            SahhaResponseHandler.handleResponse(response, { getSleepResponse() }, callback) {
                 clearLocalSleepData()
             }
         } catch (e: Exception) {
@@ -170,7 +120,7 @@ class RemoteRepoImpl(
             }
 
             val call = getHeartRateResponse(heartRateData)
-            handleResponse(call, { getHeartRateResponse(heartRateData) }, callback)
+            SahhaResponseHandler.handleResponse(call, { getHeartRateResponse(heartRateData) }, callback)
         } catch (e: Exception) {
             callback?.invoke(e.message, false)
 
@@ -190,7 +140,7 @@ class RemoteRepoImpl(
             }
 
             val call = getPhoneScreenLockResponse()
-            handleResponse(call, { getPhoneScreenLockResponse() }, callback) {
+            SahhaResponseHandler.handleResponse(call, { getPhoneScreenLockResponse() }, callback) {
                 clearLocalPhoneScreenLockData()
             }
         } catch (e: Exception) {
@@ -200,78 +150,6 @@ class RemoteRepoImpl(
                 e.message,
                 "postPhoneScreenLockData",
                 deviceDao.getUsages().toString()
-            )
-        }
-    }
-
-    override suspend fun postHealthConnectData(
-        sleepSessionData: List<SleepSessionRecord>,
-        sleepStageData: List<SleepStageRecord>,
-        stepData: List<StepsRecord>,
-        heartRateData: List<HeartRateRecord>,
-        callback: ((error: String?, successful: Boolean) -> Unit)?
-    ) {
-        try {
-            val successfulResults = mutableListOf<Boolean>()
-            var errorSummary = ""
-            val now = timeManager.nowInISO()
-
-            if (sleepSessionData.isNotEmpty())
-                postSleepData(
-                    SahhaConverterUtility.sleepSessionToSleepDto(
-                        sleepSessionData, now
-                    )
-                ) { error, success ->
-                    successfulResults.add(success)
-                    error?.also { errorSummary += "$it\n" }
-                }
-            if (sleepStageData.isNotEmpty())
-                postSleepData(
-                    SahhaConverterUtility.sleepStageToSleepDto(
-                        sleepStageData,
-                        now
-                    )
-                ) { error, success ->
-                    successfulResults.add(success)
-                    error?.also { errorSummary += "$it\n" }
-                }
-            if (stepData.isNotEmpty())
-                postStepData(
-                    SahhaConverterUtility.healthConnectStepToStepDto(
-                        stepData,
-                        now
-                    )
-                ) { error, success ->
-                    successfulResults.add(success)
-                    error?.also { errorSummary += "$it\n" }
-                }
-            if (heartRateData.isNotEmpty())
-                postHeartRateData(
-                    SahhaConverterUtility.heartRateToHeartRateSendDto(
-                        heartRateData,
-                        now
-                    )
-                ) { error, success ->
-                    successfulResults.add(success)
-                    error?.also { errorSummary += "$it\n" }
-                }
-
-            if(successfulResults.contains(false)) {
-                callback?.invoke(errorSummary, false)
-                return
-            }
-
-            callback?.invoke(null, true)
-        } catch (e: Exception) {
-            callback?.invoke(e.message, false)
-
-            sahhaErrorLogger.application(
-                e.message,
-                "postHealthConnectData",
-                "sleepSession count: ${sleepSessionData.count()}\n" +
-                        "sleepStage count: ${sleepStageData.count()}\n" +
-                        "stepData count: ${stepData.count()}\n" +
-                        "heartRate count: ${heartRateData.count()}\n"
             )
         }
     }
@@ -314,14 +192,14 @@ class RemoteRepoImpl(
                         mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
-                                checkTokenExpired(response.code()) {
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     getAnalysis(dates, includeSourceData, callback)
                                 }
                                 return@launch
                             }
 
                             if (ResponseCode.isSuccessful(response.code())) {
-                                returnFormattedResponse(response, callback)
+                                SahhaResponseHandler.returnFormattedResponse(response, callback)
                                 return@launch
                             }
 
@@ -369,7 +247,7 @@ class RemoteRepoImpl(
                         mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
-                                checkTokenExpired(response.code()) {
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     getDemographic(callback)
                                 }
 
@@ -431,7 +309,7 @@ class RemoteRepoImpl(
                         mainScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
-                                checkTokenExpired(response.code()) {
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     postDemographic(sahhaDemographic, callback)
                                 }
                                 return@launch
@@ -475,91 +353,6 @@ class RemoteRepoImpl(
         }
     }
 
-    private fun returnFormattedResponse(
-        response: Response<ResponseBody>,
-        callback: ((error: String?, success: String?) -> Unit)?,
-    ) {
-        if (response.code() == 204) {
-            callback?.also { it(null, "{}") }
-            return
-        }
-
-        val reader = response.body()?.charStream()
-        val bodyString = reader?.readText()
-        val json = JSONObject(bodyString ?: "")
-        val jsonString = json.toString(6)
-        callback?.also { it(null, jsonString) }
-    }
-
-    private suspend fun handleResponse(
-        call: Call<ResponseBody>,
-        retryLogic: suspend (() -> Call<ResponseBody>),
-        callback: ((error: String?, successful: Boolean) -> Unit)?,
-        successfulLogic: (suspend () -> Unit) = {}
-    ) {
-        call.enqueue(
-            object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
-                ) {
-                    mainScope.launch {
-                        if (ResponseCode.isUnauthorized(response.code())) {
-                            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
-                            checkTokenExpired(response.code()) {
-                                val retryResponse = retryLogic()
-                                handleResponse(
-                                    retryResponse,
-                                    retryLogic,
-                                    callback,
-                                    successfulLogic
-                                )
-                            }
-                            return@launch
-                        }
-
-                        if (ResponseCode.isSuccessful(response.code())) {
-                            successfulLogic()
-                            callback?.also {
-                                it(null, true)
-                            }
-                            return@launch
-                        }
-
-                        callback?.also {
-                            it(
-                                "${response.code()}: ${response.message()}",
-                                false
-                            )
-                        }
-
-                        sahhaErrorLogger.api(call, response)
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    callback?.also { it(t.message, false) }
-
-                    sahhaErrorLogger.api(
-                        call,
-                        SahhaErrors.typeResponse,
-                        null,
-                        t.message ?: SahhaErrors.responseFailure
-                    )
-                }
-            }
-        )
-    }
-
-    private suspend fun checkTokenExpired(
-        code: Int,
-        retryLogic: suspend () -> Unit
-    ) {
-        if (ResponseCode.isUnauthorized(code)) {
-            postRefreshToken(retryLogic)
-        }
-    }
-
     private suspend fun postSensorData(
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
@@ -600,14 +393,6 @@ class RemoteRepoImpl(
         callback(null, true)
     }
 
-    private suspend fun storeNewTokens(responseBody: ResponseBody?) {
-        val json = SahhaConverterUtility.responseBodyToJson(responseBody)
-        json?.also {
-            encryptor.encryptText(UET, it["profileToken"].toString())
-            encryptor.encryptText(UERT, it["refreshToken"].toString())
-        }
-    }
-
     private suspend fun clearLocalStepData() {
         movementDao.clearAllStepData()
     }
@@ -621,11 +406,7 @@ class RemoteRepoImpl(
         deviceDao.clearUsages()
     }
 
-    private fun getRefreshTokenCall(
-        td: TokenData
-    ): Call<ResponseBody> {
-        return api.postRefreshToken(td)
-    }
+
 
     private suspend fun getStepResponse(stepData: List<StepSendDto>): Call<ResponseBody> {
         return api.postStepData(

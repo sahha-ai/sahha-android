@@ -7,12 +7,13 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.enums.HealthConnectSensor
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.use_case.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -190,19 +191,14 @@ object Sahha {
     }
 
     fun postHealthConnectData(
-        healthConnectData: Set<Enum<HealthConnectSensor>>,
-        callback: ((error: String?, success: Boolean) -> Unit)
+        healthConnectSensors: Set<Enum<HealthConnectSensor>> = HealthConnectSensor.values().toSet(),
+        callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
         di.mainScope.launch {
-            di.healthConnectRepo?.also {
-                di.remotePostRepo.postHealthConnectData(
-                    if (healthConnectData.contains(HealthConnectSensor.sleep_session)) it.getSleepData() else emptyList(),
-                    if (healthConnectData.contains(HealthConnectSensor.sleep_stage)) it.getSleepStageData() else emptyList(),
-                    if (healthConnectData.contains(HealthConnectSensor.step)) it.getStepData() else emptyList(),
-                    if (healthConnectData.contains(HealthConnectSensor.heart_rate)) it.getHeartRateData() else emptyList(),
-                    callback = callback
-                )
-            } ?: callback(SahhaErrors.healthConnect.unknownError, false)
+            di.postHealthConnectDataUseCase(
+                healthConnectSensors,
+                callback
+            )
         }
     }
 
@@ -219,43 +215,10 @@ object Sahha {
         healthConnectSensor: HealthConnectSensor,
         callback: ((error: String?, success: String?) -> Unit)
     ) {
-        if (di.healthConnectRepo == null) {
-            callback("repo not init", null)
-            return
-        }
-
-        when (healthConnectSensor) {
-            HealthConnectSensor.heart_rate -> {
-                di.healthConnectRepo?.getHeartRateData()?.also {
-                    val data = SahhaConverterUtility.heartRateToHeartRateSendDto(
-                        it,
-                        timeManager.nowInISO()
-                    )
-                    callback(null, data.toString())
-                } ?: callback("no heart data", null)
-            }
-            HealthConnectSensor.sleep_session -> {
-                di.healthConnectRepo?.getSleepData()?.also {
-                    val data =
-                        SahhaConverterUtility.sleepSessionToSleepDto(it, timeManager.nowInISO())
-                    callback(null, data.toString())
-                } ?: callback("no sleep data", null)
-            }
-            HealthConnectSensor.sleep_stage -> {
-                di.healthConnectRepo?.getSleepStageData()?.also {
-                    val data =
-                        SahhaConverterUtility.sleepStageToSleepDto(it, timeManager.nowInISO())
-                    callback(null, data.toString())
-                } ?: callback("no sleep stage data", null)
-            }
-            HealthConnectSensor.step -> {
-                di.healthConnectRepo?.getStepData()?.also {
-                    val data =
-                        SahhaConverterUtility.healthConnectStepToStepDto(it, timeManager.nowInISO())
-                    callback(null, data.toString())
-                } ?: callback("no step data", null)
-            }
-        }
+        di.getHealthConnectDataUseCase(
+            healthConnectSensor,
+            callback
+        )
     }
 
     fun openAppSettings(context: Context) {

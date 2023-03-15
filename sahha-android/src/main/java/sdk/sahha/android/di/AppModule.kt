@@ -157,7 +157,8 @@ internal object AppModule {
                 SahhaDbMigrations.MIGRATION_2_3,
                 SahhaDbMigrations.MIGRATION_3_4,
                 SahhaDbMigrations.MIGRATION_4_5,
-                SahhaDbMigrations.MIGRATION_5_6
+                SahhaDbMigrations.MIGRATION_5_6,
+                SahhaDbMigrations.MIGRATION_6_7
             )
             .build()
     }
@@ -213,7 +214,6 @@ internal object AppModule {
         return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
-
     fun provideSensorManager(
         context: Context,
     ): SensorManager {
@@ -228,7 +228,19 @@ internal object AppModule {
 
     fun provideHealthConnectRepository(
         healthConnectClient: HealthConnectClient,
+        timeManager: SahhaTimeManager,
+        configurationDao: ConfigurationDao,
+        sahhaApi: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger,
+        decryptor: Decryptor
     ): HealthConnectRepo {
-        return HealthConnectRepoImpl(healthConnectClient)
+        return HealthConnectRepoImpl(
+            healthConnectClient,
+            timeManager,
+            configurationDao,
+            sahhaApi,
+            sahhaErrorLogger,
+            decryptor
+        )
     }
 }

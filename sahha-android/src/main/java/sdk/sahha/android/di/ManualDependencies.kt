@@ -16,10 +16,7 @@ import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
-import sdk.sahha.android.domain.use_case.GetDemographicUseCase
-import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
-import sdk.sahha.android.domain.use_case.SaveTokensUseCase
+import sdk.sahha.android.domain.use_case.*
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
 import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
@@ -105,6 +102,18 @@ class ManualDependencies(
     val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
     val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
     val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
+    val postHealthConnectDataUseCase by lazy {
+        PostHealthConnectDataUseCase(
+            timeManager,
+            healthConnectRepo
+        )
+    }
+    val getHealthConnectDataUseCase by lazy {
+        GetHealthConnectDataUseCase(
+            healthConnectRepo,
+            timeManager
+        )
+    }
 
     val permissionRepo by lazy {
         AppModule.providePermissionsRepository()
@@ -168,8 +177,10 @@ class ManualDependencies(
 
     private fun setHealthConnectClientAndRepo(context: Context) {
         healthConnectClient = AppModule.provideHealthConnectClient(context)
-        healthConnectClient?.also {
-            healthConnectRepo = AppModule.provideHealthConnectRepository(it)
+        healthConnectClient?.also { client ->
+            healthConnectRepo = AppModule.provideHealthConnectRepository(
+                client, timeManager, configurationDao, api, sahhaErrorLogger, decryptor
+            )
         }
     }
 
