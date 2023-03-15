@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 
@@ -14,7 +15,7 @@ private const val tag = "HealthConnectPostWorker"
 class HealthConnectPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     Worker(context, workerParameters) {
     override fun doWork(): Result {
-        CoroutineScope(Dispatchers.IO).launch {
+        runBlocking {
             SahhaReconfigure(context)
             Sahha.di.postHealthConnectDataUseCase()
         }

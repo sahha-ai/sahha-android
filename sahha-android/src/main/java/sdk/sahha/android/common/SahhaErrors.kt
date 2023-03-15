@@ -65,8 +65,16 @@ object SahhaErrors {
         const val noPermissions = "Error: There are no granted permissions"
         const val permissionRequestDenied =
             "Error: Maximum requests reached. Please open HealthConnect manually to enable permissions"
-        const val minimumPostInterval = "Error: A minimum interval of 1 day is required"
+        const val minimumPostInterval = "Error: A minimum interval of 6 hours is required"
         const val unavailable = "Error: HealthConnect is unavailable on this device"
+
+        fun minimumPostInterval(sensor: String): String {
+            return "${sensor.uppercase()} $minimumPostInterval"
+        }
+
+        fun noPermissions(sensor: String): String {
+            return "${sensor.uppercase()} $noPermissions"
+        }
 
         fun localDataIsEmpty(healthConnectSensor: Enum<HealthConnectSensor>): String {
             return "Error: The local ${healthConnectSensor.name.lowercase()} data is empty."

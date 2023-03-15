@@ -48,6 +48,7 @@ internal object Constants {
     const val ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS = 15000L
     const val ONE_DAY_IN_MILLIS = 86400000L
     const val SEVEN_DAYS_IN_MILLIS = 604800000L
+    const val MINIMUM_POST_INTERVAL = 21600000L // 6 hours
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000

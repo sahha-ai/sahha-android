@@ -1,5 +1,10 @@
 package sdk.sahha.android.domain.use_case
 
+import androidx.health.connect.client.permission.Permission
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.enums.HealthConnectSensor
@@ -20,6 +25,7 @@ class GetHealthConnectDataUseCase constructor(
             return
         }
 
+        val permissions = healthConnectRepo.getGrantedPermissions()
         val nowEpoch = timeManager.nowInEpoch()
         val timeRangeFilter = timeManager.getTimeRangeFilter(
             nowEpoch - Constants.ONE_DAY_IN_MILLIS,
@@ -28,6 +34,10 @@ class GetHealthConnectDataUseCase constructor(
 
         when (healthConnectSensor) {
             HealthConnectSensor.heart_rate -> {
+                if(!permissions.contains(Permission.createReadPermission(HeartRateRecord::class))) {
+                    callback("Heart rate permissions not granted", null)
+                    return
+                }
                 healthConnectRepo.getHeartRateData(timeRangeFilter).also {
                     val data = SahhaConverterUtility.heartRateToHeartRateSendDto(
                         it,
@@ -47,6 +57,10 @@ class GetHealthConnectDataUseCase constructor(
                 }
             }
             HealthConnectSensor.sleep_session -> {
+                if(!permissions.contains(Permission.createReadPermission(SleepSessionRecord::class))) {
+                    callback("Sleep session permissions not granted", null)
+                    return
+                }
                 healthConnectRepo.getSleepData(timeRangeFilter).also {
                     val data =
                         SahhaConverterUtility.sleepSessionToSleepDto(
@@ -65,6 +79,10 @@ class GetHealthConnectDataUseCase constructor(
                 }
             }
             HealthConnectSensor.sleep_stage -> {
+                if(!permissions.contains(Permission.createReadPermission(SleepStageRecord::class))) {
+                    callback("Sleep stage permissions not granted", null)
+                    return
+                }
                 healthConnectRepo.getSleepStageData(timeRangeFilter).also {
                     val data =
                         SahhaConverterUtility.sleepStageToSleepDto(it, timeManager.nowInISO())
@@ -80,6 +98,10 @@ class GetHealthConnectDataUseCase constructor(
                 }
             }
             HealthConnectSensor.step -> {
+                if(!permissions.contains(Permission.createReadPermission(StepsRecord::class))) {
+                    callback("Step permissions not granted", null)
+                    return
+                }
                 healthConnectRepo.getStepData(timeRangeFilter).also {
                     val data =
                         SahhaConverterUtility.healthConnectStepToStepDto(

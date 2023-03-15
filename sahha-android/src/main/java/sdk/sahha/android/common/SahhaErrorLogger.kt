@@ -99,9 +99,9 @@ class SahhaErrorLogger(
     }
 
     fun application(
-        error: String?,
+        error: String? = null,
         appMethod: String,
-        appBody: String?
+        appBody: String? = null
     ) {
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()

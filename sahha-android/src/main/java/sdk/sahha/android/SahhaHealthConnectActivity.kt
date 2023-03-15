@@ -27,13 +27,12 @@ import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
 @RequiresApi(Build.VERSION_CODES.Q)
 class SahhaHealthConnectActivity : ComponentActivity() {
     private var isInitialResume = true
-    private var healthConnectClient: HealthConnectClient? = null
     private lateinit var healthConnectPermissionRequest: ActivityResultLauncher<Set<Permission>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        checkAndSetPermissionRequest()
+        checkAndSetPermissionRequest(AppModule.provideHealthConnectClient(this))
 
         setContent {
             SahhasdkemptyTheme {
@@ -57,9 +56,7 @@ class SahhaHealthConnectActivity : ComponentActivity() {
         finish()
     }
 
-    private fun checkAndSetPermissionRequest() {
-        healthConnectClient = AppModule.provideHealthConnectClient(this)
-
+    private fun checkAndSetPermissionRequest(healthConnectClient: HealthConnectClient?) {
         healthConnectClient?.also {
             val resultContract =
                 it.permissionController.createRequestPermissionActivityContract()

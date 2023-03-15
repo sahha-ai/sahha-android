@@ -28,24 +28,28 @@ class PostHealthConnectDataUseCase constructor(
         healthConnectSensors: Set<Enum<HealthConnectSensor>> = HealthConnectSensor.values().toSet(),
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        repo?.also { repo ->
-            this.grantedPermissions = repo.getGrantedPermissions()
-            this.healthConnectSensors = healthConnectSensors
+        try {
+            repo?.also { repo ->
+                this.grantedPermissions = repo.getGrantedPermissions()
+                this.healthConnectSensors = healthConnectSensors
 
-            resetData()
+                resetData()
 
-            postSleepSessionData()
-            postSleepStageData()
-            postStepData()
-            postHeartRateData()
+                postSleepSessionData()
+                postSleepStageData()
+                postStepData()
+                postHeartRateData()
 
-            if (successes.contains(false)) {
-                callback?.invoke(errorSummary, false)
-                return
-            }
+                if (successes.contains(false)) {
+                    callback?.invoke(errorSummary, false)
+                    return
+                }
 
-            callback?.invoke(null, true)
-        } ?: callback?.invoke(SahhaErrors.healthConnect.unavailable, false)
+                callback?.invoke(null, true)
+            } ?: callback?.invoke(SahhaErrors.healthConnect.unavailable, false)
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
+        }
     }
 
     private fun resetData() {
@@ -59,13 +63,12 @@ class PostHealthConnectDataUseCase constructor(
             val sleepSensor = HealthConnectSensor.sleep_session
             val startTime = repo.getLastPostTimestamp(sleepSensor.ordinal)?.let { lastPost ->
                 val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.ONE_DAY_IN_MILLIS)
+                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
 
                 if (oneDaySinceLastPost)
                     lastPost
                 else {
-                    successes.add(false)
-                    errorSummary += "${sleepSensor.name} ${SahhaErrors.healthConnect.minimumPostInterval}\n"
+                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(sleepSensor.name))
                     return
                 }
             } ?: timeManager.getEpochMillisFrom(7)
@@ -82,11 +85,10 @@ class PostHealthConnectDataUseCase constructor(
                             }
 
                             error?.also { e ->
-                                errorSummary += "$e\n"
+                                saveCallbackError(e)
                             }
-                        } else errorSummary += "${
-                        SahhaErrors.healthConnect.localDataIsEmpty(sleepSensor)
-                    }\n"
+                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(sleepSensor))
+                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(sleepSensor.name))
         }
     }
 
@@ -95,13 +97,12 @@ class PostHealthConnectDataUseCase constructor(
             val sleepStageSensor = HealthConnectSensor.sleep_stage
             val startTime = repo.getLastPostTimestamp(sleepStageSensor.ordinal)?.let { lastPost ->
                 val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.ONE_DAY_IN_MILLIS)
+                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
 
                 if (oneDaySinceLastPost)
                     lastPost
                 else {
-                    successes.add(false)
-                    errorSummary += "${sleepStageSensor.name} ${SahhaErrors.healthConnect.minimumPostInterval}\n"
+                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(sleepStageSensor.name))
                     return
                 }
             } ?: timeManager.getEpochMillisFrom(7)
@@ -121,11 +122,10 @@ class PostHealthConnectDataUseCase constructor(
                             }
 
                             error?.also { e ->
-                                errorSummary += "$e\n"
+                                saveCallbackError(e)
                             }
-                        } else errorSummary += "${
-                        SahhaErrors.healthConnect.localDataIsEmpty(sleepStageSensor)
-                    }\n"
+                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(sleepStageSensor))
+                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(sleepStageSensor.name))
         }
     }
 
@@ -134,13 +134,12 @@ class PostHealthConnectDataUseCase constructor(
             val stepSensor = HealthConnectSensor.step
             val startTime = repo.getLastPostTimestamp(stepSensor.ordinal)?.let { lastPost ->
                 val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.ONE_DAY_IN_MILLIS)
+                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
 
                 if (oneDaySinceLastPost)
                     lastPost
                 else {
-                    successes.add(false)
-                    errorSummary += "${stepSensor.name} ${SahhaErrors.healthConnect.minimumPostInterval}\n"
+                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(stepSensor.name))
                     return
                 }
             } ?: timeManager.getEpochMillisFrom(7)
@@ -157,26 +156,31 @@ class PostHealthConnectDataUseCase constructor(
                             }
 
                             error?.also { e ->
-                                errorSummary += "$e\n"
+                                saveCallbackError(e)
                             }
-                        } else errorSummary += "${
-                        SahhaErrors.healthConnect.localDataIsEmpty(stepSensor)
-                    }\n"
+                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(stepSensor))
+                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(stepSensor.name))
         }
     }
 
     private suspend fun postHeartRateData() {
         repo?.also { repo ->
             val heartRateSensor = HealthConnectSensor.heart_rate
+
+            // Block until API implemented
+            if(healthConnectSensors.contains(heartRateSensor)) {
+                saveCallbackError("${heartRateSensor.name.uppercase()} Error: Heart rate posting is not yet available")
+                return
+            }
+
             val startTime = repo.getLastPostTimestamp(heartRateSensor.ordinal)?.let { lastPost ->
                 val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.ONE_DAY_IN_MILLIS)
+                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
 
                 if (oneDaySinceLastPost)
                     lastPost
                 else {
-                    successes.add(false)
-                    errorSummary += "${heartRateSensor.name} ${SahhaErrors.healthConnect.minimumPostInterval}\n"
+                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(heartRateSensor.name))
                     return
                 }
             } ?: timeManager.getEpochMillisFrom(7)
@@ -193,12 +197,15 @@ class PostHealthConnectDataUseCase constructor(
                             }
 
                             error?.also { e ->
-                                errorSummary += "$e\n"
+                                saveCallbackError(e)
                             }
-                        }
-                    else errorSummary += "${
-                        SahhaErrors.healthConnect.localDataIsEmpty(heartRateSensor)
-                    }\n"
+                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(heartRateSensor))
+                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(heartRateSensor.name))
         }
+    }
+
+    private fun saveCallbackError(error: String) {
+        successes.add(false)
+        errorSummary += "$error\n"
     }
 }

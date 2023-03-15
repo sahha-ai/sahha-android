@@ -23,11 +23,11 @@ import sdk.sahha.android.source.SahhaSensorStatus
 class PermissionsRepoImpl : PermissionsRepo {
     override val healthConnectPermissions = setOf(
         Permission.createReadPermission(HeartRateRecord::class),
-        Permission.createWritePermission(HeartRateRecord::class),
+//        Permission.createWritePermission(HeartRateRecord::class),
         Permission.createReadPermission(StepsRecord::class),
-        Permission.createWritePermission(StepsRecord::class),
+//        Permission.createWritePermission(StepsRecord::class),
         Permission.createReadPermission(SleepSessionRecord::class),
-        Permission.createWritePermission(SleepSessionRecord::class)
+//        Permission.createWritePermission(SleepSessionRecord::class)
     )
     private lateinit var permission: ActivityResultLauncher<String>
     override var healthConnectCallback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? =
