@@ -25,6 +25,20 @@
             android:label="@string/title_activity_sahha_permission"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
+        <activity
+            android:name=".SahhaHealthConnectActivity"
+            android:exported="true"
+            android:label="@string/title_activity_sahha_health_connect"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" >
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="health_permissions"
+                android:resource="@array/health_permissions" />
+        </activity>
+
         <service android:name=".domain.service.DataCollectionService" />
 
         <receiver
@@ -45,5 +59,10 @@
             </intent-filter>
         </receiver>
     </application>
+
+    <!-- Check whether Health Connect is installed or not -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
 
 </manifest>

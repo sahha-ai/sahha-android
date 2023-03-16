@@ -43,7 +43,7 @@ class SahhaPermissionActivity : ComponentActivity() {
     }
 
     private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaSensorStatus> {
-        if (enabled) return SahhaSensorStatus.enabled
-        else return SahhaSensorStatus.disabled
+        return if (enabled) SahhaSensorStatus.enabled
+        else SahhaSensorStatus.disabled
     }
 }

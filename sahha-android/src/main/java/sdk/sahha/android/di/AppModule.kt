@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Context
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
@@ -14,6 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
@@ -21,14 +23,8 @@ import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
-import sdk.sahha.android.data.repository.AuthRepoImpl
-import sdk.sahha.android.data.repository.BackgroundRepoImpl
-import sdk.sahha.android.data.repository.PermissionsRepoImpl
-import sdk.sahha.android.data.repository.RemoteRepoImpl
-import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.repository.BackgroundRepo
-import sdk.sahha.android.domain.repository.PermissionsRepo
-import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.data.repository.*
+import sdk.sahha.android.domain.repository.*
 import sdk.sahha.android.source.SahhaEnvironment
 
 internal object AppModule {
@@ -132,7 +128,8 @@ internal object AppModule {
         decryptor: Decryptor,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger,
-        ioScope: CoroutineScope
+        ioScope: CoroutineScope,
+        timeManager: SahhaTimeManager
     ): RemoteRepo {
         return RemoteRepoImpl(
             sleepDao,
@@ -142,7 +139,8 @@ internal object AppModule {
             decryptor,
             api,
             sahhaErrorLogger,
-            ioScope
+            ioScope,
+            timeManager
         )
     }
 
@@ -159,7 +157,8 @@ internal object AppModule {
                 SahhaDbMigrations.MIGRATION_2_3,
                 SahhaDbMigrations.MIGRATION_3_4,
                 SahhaDbMigrations.MIGRATION_4_5,
-                SahhaDbMigrations.MIGRATION_5_6
+                SahhaDbMigrations.MIGRATION_5_6,
+                SahhaDbMigrations.MIGRATION_6_7
             )
             .build()
     }
@@ -215,10 +214,33 @@ internal object AppModule {
         return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
     }
 
-
     fun provideSensorManager(
         context: Context,
     ): SensorManager {
         return context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+    }
+
+    fun provideHealthConnectClient(
+        context: Context,
+    ): HealthConnectClient? {
+        return if (HealthConnectClient.isAvailable(context)) HealthConnectClient.getOrCreate(context) else null
+    }
+
+    fun provideHealthConnectRepository(
+        healthConnectClient: HealthConnectClient,
+        timeManager: SahhaTimeManager,
+        configurationDao: ConfigurationDao,
+        sahhaApi: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger,
+        decryptor: Decryptor
+    ): HealthConnectRepo {
+        return HealthConnectRepoImpl(
+            healthConnectClient,
+            timeManager,
+            configurationDao,
+            sahhaApi,
+            sahhaErrorLogger,
+            decryptor
+        )
     }
 }

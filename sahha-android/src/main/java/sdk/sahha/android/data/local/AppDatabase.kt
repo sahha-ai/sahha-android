@@ -10,6 +10,7 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
+import sdk.sahha.android.domain.model.config.LastHealthConnectPost
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device.AppUsage
 import sdk.sahha.android.domain.model.device.DeviceUsage
@@ -20,7 +21,7 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 6,
+    version = 7,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -34,7 +35,8 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         SleepDto::class,
         SahhaNotificationConfiguration::class,
         StepData::class,
-        DeviceInformation::class
+        DeviceInformation::class,
+        LastHealthConnectPost::class
     ]
 )
 

@@ -3,11 +3,14 @@ package sdk.sahha.android.common
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
+import androidx.health.connect.client.time.TimeRangeFilter
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.ONE_DAY_IN_MILLIS
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -88,6 +91,10 @@ class SahhaTimeManager {
         }
     }
 
+    fun getEpochMillisFrom(days: Int): Long {
+        return nowInEpoch() - (ONE_DAY_IN_MILLIS * days)
+    }
+
     fun epochFrom(time: Long, minusInterval: Int, intervalType: Int): Long {
         val cal = Calendar.getInstance()
         cal.timeInMillis = time
@@ -131,5 +138,25 @@ class SahhaTimeManager {
             val nowInISO = simpleDateFormat.format(now)
             correctFormatting(nowInISO).substring(23)
         }
+    }
+
+    fun getTimeRangeFilter(startEpochMillis: Long, endEpochMillis: Long): TimeRangeFilter {
+        return TimeRangeFilter.between(
+            Instant.ofEpochMilli(startEpochMillis),
+            Instant.ofEpochMilli(endEpochMillis)
+        )
+    }
+
+    fun instantToIsoTime(
+        instant: Instant,
+        offset: ZoneOffset? = null
+    ): String {
+        return offset?.let {
+            instant.atOffset(it).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        } ?: instant.atZone(ZonedDateTime.now().offset).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    }
+
+    fun calculateDurationFromInstant(start: Instant, end: Instant): Int {
+        return ((end.epochSecond - start.epochSecond) / 60).toInt()
     }
 }

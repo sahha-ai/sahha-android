@@ -7,10 +7,13 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.enums.HealthConnectSensor
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.use_case.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -42,20 +45,24 @@ object Sahha {
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        if (!diInitialized())
-            di = ManualDependencies(sahhaSettings.environment)
-        di.setDependencies(application)
+        try {
+            if (!diInitialized())
+                di = ManualDependencies(sahhaSettings.environment)
+            di.setDependencies(application)
 
-        di.mainScope.launch {
-            config = di.configurationDao.getConfig()
+            di.mainScope.launch {
+                config = di.configurationDao.getConfig()
 
-            listOf(
-                async { saveConfiguration(sahhaSettings) },
-                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                async { processAndPutDeviceInfo(application) }
-            ).joinAll()
+                listOf(
+                    async { saveConfiguration(sahhaSettings) },
+                    async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                    async { processAndPutDeviceInfo(application) }
+                ).joinAll()
 
-            start(callback)
+                start(callback)
+            }
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
         }
     }
 
@@ -183,6 +190,18 @@ object Sahha {
         }
     }
 
+    fun postHealthConnectData(
+        healthConnectSensors: Set<Enum<HealthConnectSensor>> = HealthConnectSensor.values().toSet(),
+        callback: ((error: String?, successful: Boolean) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.postHealthConnectDataUseCase(
+                healthConnectSensors,
+                callback
+            )
+        }
+    }
+
     internal fun getSensorData(
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)
@@ -190,6 +209,16 @@ object Sahha {
         di.mainScope.launch {
             di.getSensorDataUseCase(sensor, callback)
         }
+    }
+
+    suspend fun getHealthConnectData(
+        healthConnectSensor: HealthConnectSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        di.getHealthConnectDataUseCase(
+            healthConnectSensor,
+            callback
+        )
     }
 
     fun openAppSettings(context: Context) {
@@ -203,11 +232,27 @@ object Sahha {
         di.permissionRepo.enableSensors(context, callback)
     }
 
+    fun enableHealthConnect(
+        context: Context,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        di.permissionRepo.enableHealthConnect(context, callback)
+    }
+
     fun getSensorStatus(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         di.permissionRepo.getSensorStatus(context, callback)
+    }
+
+    fun getHealthConnectStatus(
+        context: Context,
+        callback: suspend ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
+        di.mainScope.launch {
+            di.permissionRepo.getHealthConnectStatus(context, callback)
+        }
     }
 
     private fun checkAndStartPostWorkers() {
@@ -237,7 +282,7 @@ object Sahha {
     ) {
         val sensorEnums = settings.sensors?.let {
             convertToEnums(it)
-        } ?: convertToEnums(SahhaSensor.values().toSet())
+        } ?: convertToEnums(getDefaultSensors())
 
         di.configurationDao.saveConfig(
             SahhaConfiguration(
@@ -247,6 +292,16 @@ object Sahha {
                 settings.postSensorDataManually
             )
         )
+    }
+
+    internal fun getDefaultSensors(): Set<SahhaSensor> {
+        val sensors = mutableSetOf<SahhaSensor>()
+        val sensorsExcludingHealthConnect = SahhaSensor.values().size - 1
+        for (i in 0 until sensorsExcludingHealthConnect) {
+            sensors.add(SahhaSensor.values()[i])
+        }
+
+        return sensors
     }
 
     private suspend fun saveNotificationConfig(config: SahhaNotificationConfiguration?) {

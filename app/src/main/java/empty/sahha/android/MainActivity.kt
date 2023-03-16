@@ -4,13 +4,17 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
@@ -18,11 +22,12 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
 
-const val SEVEN_DAYS_MILLIS = 604800000L
+private const val SEVEN_DAYS_MILLIS = 604800000L
 
 class MainActivity : ComponentActivity() {
 
@@ -32,9 +37,9 @@ class MainActivity : ComponentActivity() {
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
-                icon = R.drawable.ic_test,
-                title = "Test",
-                shortDescription = "This is a test."
+                icon = empty.sahha.android.R.drawable.ic_launcher_foreground,
+                title = "Sahha SDK",
+                shortDescription = "Sahha SDK foreground service"
             ),
             postSensorDataManually = true,
         )
@@ -63,6 +68,12 @@ class MainActivity : ComponentActivity() {
                     var token by remember { mutableStateOf("") }
                     var refreshToken by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
+                    var healthConnectStatus by remember { mutableStateOf("Pending") }
+                    var healthConnectData by remember { mutableStateOf("") }
+                    var healthConnectPostStatus by remember { mutableStateOf("Pending") }
+
+                    var hcSelectedSensor: HealthConnectSensor? by remember { mutableStateOf(null) }
+                    var hcSensorExpanded by remember { mutableStateOf(false) }
 
                     Sahha.getSensorStatus(
                         this@MainActivity
@@ -76,10 +87,58 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                MySpacer()
+                                Text(healthConnectStatus)
+                                MySpacer()
+                                Button(onClick = {
+                                    Sahha.enableHealthConnect(
+                                        this@MainActivity,
+                                    ) { error, status ->
+                                        healthConnectStatus =
+                                            error ?: status.name
+                                    }
+                                }) {
+                                    Text("HealthConnect Permission")
+                                }
+
+                                MySpacer()
+                                Text(healthConnectPostStatus)
+                                MySpacer()
+                                Button(onClick = {
+                                    healthConnectPostStatus = "Loading..."
+                                    Sahha.postHealthConnectData { error, _ ->
+                                        healthConnectPostStatus = error ?: "Successful"
+                                    }
+                                }) {
+                                    Text("HealthConnect Post")
+                                }
+                                MySpacer()
+
+                                DropDownWrapper(options = HealthConnectSensor.values()) {
+                                    hcSelectedSensor = it
+                                }
+                                Button(onClick = {
+                                    lifecycleScope.launch {
+                                        healthConnectData = ""
+                                        healthConnectData = "Loading..."
+                                        hcSelectedSensor?.also { sensor ->
+                                            Sahha.getHealthConnectData(
+                                                sensor,
+                                            ) { error, status ->
+                                                healthConnectData = error ?: status ?: "error"
+                                            }
+                                        }
+                                    }
+                                }) {
+                                    Text("HealthConnect Read")
+                                }
+                                Text(healthConnectData)
+                                MySpacer()
+
                                 Greeting(greeting)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Text(permissionStatus)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
@@ -89,7 +148,7 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Permission Test")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     Sahha.configure(
                                         application,
@@ -98,7 +157,7 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Configure")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     lifecycleScope.launch {
                                         SahhaReconfigure(application)
@@ -106,7 +165,7 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Reconfigure")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 OutlinedTextField(
                                     value = token,
                                     singleLine = true,
@@ -134,20 +193,20 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Authenticate")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     Sahha.openAppSettings(this@MainActivity)
                                 }) {
                                     Text("Open Settings")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
 
                                 }) {
                                     Text("Test start")
                                 }
                                 Text(start)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     manualPost = ""
                                     Sahha.postSensorData { error, success ->
@@ -158,7 +217,7 @@ class MainActivity : ComponentActivity() {
                                     Text("Manual Post All")
                                 }
                                 Text(manualPost)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     analyzeResponse = ""
 
@@ -202,7 +261,7 @@ class MainActivity : ComponentActivity() {
                                 Text(analyzeResponse)
                                 Text(analyzeResponseDate)
                                 Text(analyzeResponseLocalDateTime)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     postDemo = ""
                                     Sahha.postDemographic(
@@ -231,7 +290,7 @@ class MainActivity : ComponentActivity() {
                                     Text("Post Demographic")
                                 }
                                 Text(postDemo)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                                 Button(onClick = {
                                     Sahha.getDemographic { error, demographic ->
                                         error?.also { getDemo = it }
@@ -244,7 +303,7 @@ class MainActivity : ComponentActivity() {
                                     Text("Get Demographic")
                                 }
                                 Text(getDemo)
-                                Spacer(modifier = Modifier.padding(16.dp))
+                                MySpacer()
                             }
                         }
                     }
@@ -252,6 +311,62 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+fun DropDownWrapper(
+    options: Array<HealthConnectSensor>,
+    callback: ((sensor: HealthConnectSensor?) -> Unit)
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selected: HealthConnectSensor? by remember { mutableStateOf(null) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(selected?.name ?: "Please select")
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.End,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = "Down arrow"
+                )
+            }
+            DropdownMenu(
+                expanded = expanded, onDismissRequest = { expanded = false },
+                modifier = Modifier.wrapContentSize(),
+            ) {
+                for (option in options) {
+                    DropdownMenuItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            selected = option
+                            callback(selected)
+                            expanded = false
+                        }
+                    ) {
+                        Text(option.name)
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun MySpacer(padding: Dp = 16.dp) {
+    Spacer(modifier = Modifier.padding(padding))
 }
 
 @Composable

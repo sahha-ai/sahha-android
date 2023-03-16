@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.steps
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.data.remote.dto.send.StepSendDto
 
 @Entity
 data class StepData(
@@ -24,8 +24,8 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(createdAt: String): StepDto {
-    return StepDto(
+fun StepData.toStepDto(createdAt: String): StepSendDto {
+    return StepSendDto(
         getDataType(source),
         count,
         source,
@@ -43,6 +43,9 @@ private fun getDataType(source: String): String {
         }
         Constants.STEP_DETECTOR_DATA_SOURCE -> {
             Constants.STEP_DETECTOR_DATA_TYPE
+        }
+        Constants.HEALTH_CONNECT_STEP_DATA_SOURCE -> {
+            Constants.HEALTH_CONNECT_STEP_DATA_TYPE
         }
         else -> "Unknown"
     }
