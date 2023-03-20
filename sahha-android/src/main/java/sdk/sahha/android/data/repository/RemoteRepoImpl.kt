@@ -1,22 +1,16 @@
 package sdk.sahha.android.data.repository
 
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.*
-import sdk.sahha.android.common.enums.HealthConnectSensor
+import sdk.sahha.android.source.HealthConnectSensor
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants.MAX_BATCH_POST_VALUE
-import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
@@ -29,7 +23,6 @@ import sdk.sahha.android.data.remote.dto.send.SleepSendDto
 import sdk.sahha.android.data.remote.dto.send.StepSendDto
 import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
-import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.RemoteRepo
@@ -68,7 +61,11 @@ class RemoteRepoImpl(
 
             val filteredStepDtoData = getFilteredStepDto(stepData)
             val response = getStepResponse(filteredStepDtoData)
-            SahhaResponseHandler.handleResponse(response, { getStepResponse(filteredStepDtoData) }, callback) {
+            SahhaResponseHandler.handleResponse(
+                response,
+                { getStepResponse(filteredStepDtoData) },
+                callback
+            ) {
                 if (stepData.count() > MAX_BATCH_POST_VALUE)
                     movementDao.clearFirstStepData(MAX_BATCH_POST_VALUE)
                 else clearLocalStepData()
@@ -114,13 +111,20 @@ class RemoteRepoImpl(
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
-            if(heartRateData.isEmpty()) {
-                callback?.invoke(SahhaErrors.healthConnect.localDataIsEmpty(HealthConnectSensor.heart_rate), false)
+            if (heartRateData.isEmpty()) {
+                callback?.invoke(
+                    SahhaErrors.healthConnect.localDataIsEmpty(HealthConnectSensor.heart_rate),
+                    false
+                )
                 return
             }
 
             val call = getHeartRateResponse(heartRateData)
-            SahhaResponseHandler.handleResponse(call, { getHeartRateResponse(heartRateData) }, callback)
+            SahhaResponseHandler.handleResponse(
+                call,
+                { getHeartRateResponse(heartRateData) },
+                callback
+            )
         } catch (e: Exception) {
             callback?.invoke(e.message, false)
 
@@ -405,7 +409,6 @@ class RemoteRepoImpl(
     private suspend fun clearLocalPhoneScreenLockData() {
         deviceDao.clearUsages()
     }
-
 
 
     private suspend fun getStepResponse(stepData: List<StepSendDto>): Call<ResponseBody> {

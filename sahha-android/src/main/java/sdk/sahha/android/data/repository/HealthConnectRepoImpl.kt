@@ -2,10 +2,7 @@ package sdk.sahha.android.data.repository
 
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.runBlocking
@@ -15,6 +12,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.source.HealthConnectSensor
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
@@ -34,47 +32,11 @@ class HealthConnectRepoImpl(
 ) : HealthConnectRepo {
     private val tokenBearer by lazy { runBlocking { TokenBearer(decryptor.decrypt(UET)) } }
 
-    override suspend fun getStepData(
-        timeRangeFilter: TimeRangeFilter
-    ): List<StepsRecord> {
+    override suspend fun <T : Record> getSensorData(
+        readRecordsRequest: ReadRecordsRequest<T>
+    ): List<T> {
         return healthConnectClient.readRecords(
-            ReadRecordsRequest(
-                recordType = StepsRecord::class,
-                timeRangeFilter = timeRangeFilter,
-            )
-        ).records
-    }
-
-    override suspend fun getSleepData(
-        timeRangeFilter: TimeRangeFilter,
-    ): List<SleepSessionRecord> {
-        return healthConnectClient.readRecords(
-            ReadRecordsRequest(
-                recordType = SleepSessionRecord::class,
-                timeRangeFilter = timeRangeFilter
-            )
-        ).records
-    }
-
-    override suspend fun getSleepStageData(
-        timeRangeFilter: TimeRangeFilter,
-    ): List<SleepStageRecord> {
-        return healthConnectClient.readRecords(
-            ReadRecordsRequest(
-                recordType = SleepStageRecord::class,
-                timeRangeFilter = timeRangeFilter
-            )
-        ).records
-    }
-
-    override suspend fun getHeartRateData(
-        timeRangeFilter: TimeRangeFilter,
-    ): List<HeartRateRecord> {
-        return healthConnectClient.readRecords(
-            ReadRecordsRequest(
-                recordType = HeartRateRecord::class,
-                timeRangeFilter = timeRangeFilter
-            )
+            readRecordsRequest
         ).records
     }
 
@@ -105,7 +67,20 @@ class HealthConnectRepoImpl(
         )
     }
 
-    override suspend fun postSleepSessions(
+    override suspend fun postHealthConnectData(
+        healthConnectSensor: Enum<HealthConnectSensor>,
+        timeRangeFilter: TimeRangeFilter,
+        callback: (error: String?, successful: Boolean) -> Unit
+    ) {
+        when (healthConnectSensor) {
+            HealthConnectSensor.sleep_session -> postSleepSessions(timeRangeFilter, callback)
+            HealthConnectSensor.sleep_stage -> postSleepStages(timeRangeFilter, callback)
+            HealthConnectSensor.step -> postSteps(timeRangeFilter, callback)
+            HealthConnectSensor.heart_rate -> postHeartRates(timeRangeFilter, callback)
+        }
+    }
+
+    private suspend fun postSleepSessions(
         timeRangeFilter: TimeRangeFilter,
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
@@ -113,13 +88,19 @@ class HealthConnectRepoImpl(
             val call = getSleepDataCall(timeRangeFilter)
             SahhaResponseHandler.handleResponse(
                 call, { getSleepDataCall(timeRangeFilter) }, callback
-            ) { callback(null, true) }
+            )
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message,
                 "postSleepSessions",
-                getSleepData(timeRangeFilter).toString()
+                getSensorData(
+                    ReadRecordsRequest(
+                        SleepSessionRecord::class,
+                        timeRangeFilter
+                    )
+                ).toString()
             )
+            callback(e.message, false)
         }
     }
 
@@ -129,12 +110,13 @@ class HealthConnectRepoImpl(
         return api.postSleepDataRange(
             tokenBearer,
             SahhaConverterUtility.sleepSessionToSleepDto(
-                getSleepData(timeRangeFilter), timeManager.nowInISO()
+                getSensorData(ReadRecordsRequest(SleepSessionRecord::class, timeRangeFilter)),
+                timeManager.nowInISO()
             ).map { it.toSleepSendDto() }
         )
     }
 
-    override suspend fun postSleepStages(
+    private suspend fun postSleepStages(
         timeRangeFilter: TimeRangeFilter,
         callback: (error: String?, successful: Boolean) -> Unit
     ) {
@@ -142,15 +124,19 @@ class HealthConnectRepoImpl(
             val call = getSleepStageDataCall(timeRangeFilter)
             SahhaResponseHandler.handleResponse(
                 call, { getSleepStageDataCall(timeRangeFilter) }, callback
-            ) {
-                callback(null, true)
-            }
+            )
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message,
                 "postSleepStages",
-                getSleepStageData(timeRangeFilter).toString()
+                getSensorData(
+                    ReadRecordsRequest(
+                        SleepStageRecord::class,
+                        timeRangeFilter
+                    )
+                ).toString()
             )
+            callback(e.message, false)
         }
     }
 
@@ -158,27 +144,27 @@ class HealthConnectRepoImpl(
         return api.postSleepDataRange(
             tokenBearer,
             SahhaConverterUtility.sleepStageToSleepDto(
-                getSleepStageData(timeRangeFilter), timeManager.nowInISO()
+                getSensorData(ReadRecordsRequest(SleepStageRecord::class, timeRangeFilter)),
+                timeManager.nowInISO()
             ).map { it.toSleepSendDto() }
         )
     }
 
-    override suspend fun postSteps(
+    private suspend fun postSteps(
         timeRangeFilter: TimeRangeFilter, callback: (error: String?, successful: Boolean) -> Unit
     ) {
         try {
             val call = getStepDataCall(timeRangeFilter)
             SahhaResponseHandler.handleResponse(
                 call, { getStepDataCall(timeRangeFilter) }, callback
-            ) {
-                callback(null, true)
-            }
+            )
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message,
                 "postSteps",
-                getStepDataCall(timeRangeFilter).toString()
+                getSensorData(ReadRecordsRequest(StepsRecord::class, timeRangeFilter)).toString()
             )
+            callback(e.message, false)
         }
     }
 
@@ -186,12 +172,17 @@ class HealthConnectRepoImpl(
         return api.postStepData(
             tokenBearer,
             SahhaConverterUtility.healthConnectStepToStepDto(
-                getStepData(timeRangeFilter), timeManager.nowInISO()
+                getSensorData(
+                    ReadRecordsRequest(
+                        StepsRecord::class,
+                        timeRangeFilter
+                    )
+                ), timeManager.nowInISO()
             )
         )
     }
 
-    override suspend fun postHeartRates(
+    private suspend fun postHeartRates(
         timeRangeFilter: TimeRangeFilter,
         callback: (error: String?, successful: Boolean) -> Unit
     ) {
@@ -199,15 +190,19 @@ class HealthConnectRepoImpl(
             val call = getHeartRateDataCall(timeRangeFilter)
             SahhaResponseHandler.handleResponse(
                 call, { getHeartRateDataCall(timeRangeFilter) }, callback
-            ) {
-                callback(null, true)
-            }
+            )
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message,
                 "postHeartRates",
-                getHeartRateDataCall(timeRangeFilter).toString()
+                getSensorData(
+                    ReadRecordsRequest(
+                        HeartRateRecord::class,
+                        timeRangeFilter
+                    )
+                ).toString()
             )
+            callback(e.message, false)
         }
     }
 
@@ -215,7 +210,8 @@ class HealthConnectRepoImpl(
         return api.postHeartRateRange(
             tokenBearer,
             SahhaConverterUtility.heartRateToHeartRateSendDto(
-                getHeartRateData(timeRangeFilter), timeManager.nowInISO()
+                getSensorData(ReadRecordsRequest(HeartRateRecord::class, timeRangeFilter)),
+                timeManager.nowInISO()
             )
         )
     }

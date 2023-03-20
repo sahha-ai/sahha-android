@@ -7,8 +7,6 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.enums.HealthConnectSensor
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -194,7 +192,7 @@ object Sahha {
         healthConnectSensors: Set<Enum<HealthConnectSensor>> = HealthConnectSensor.values().toSet(),
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.postHealthConnectDataUseCase(
                 healthConnectSensors,
                 callback
@@ -213,7 +211,7 @@ object Sahha {
 
     suspend fun getHealthConnectData(
         healthConnectSensor: HealthConnectSensor,
-        callback: ((error: String?, success: String?) -> Unit)
+        callback: ((error: String?, data: String?) -> Unit)
     ) {
         di.getHealthConnectDataUseCase(
             healthConnectSensor,

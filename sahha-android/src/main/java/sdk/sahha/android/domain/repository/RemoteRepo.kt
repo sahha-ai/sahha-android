@@ -1,10 +1,5 @@
 package sdk.sahha.android.domain.repository
 
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
-import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.data.remote.dto.SleepDto
 import sdk.sahha.android.data.remote.dto.send.HeartRateSendDto
 import sdk.sahha.android.data.remote.dto.send.StepSendDto

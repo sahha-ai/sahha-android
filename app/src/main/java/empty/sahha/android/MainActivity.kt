@@ -19,10 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.launch
-import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.common.enums.HealthConnectSensor
+import sdk.sahha.android.source.HealthConnectSensor
 import sdk.sahha.android.source.*
 import java.time.LocalDateTime
 import java.util.*
@@ -34,10 +33,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val config = SahhaSettings(
+        val settings = SahhaSettings(
             environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
-                icon = empty.sahha.android.R.drawable.ic_launcher_foreground,
+                icon = R.drawable.ic_launcher_foreground,
                 title = "Sahha SDK",
                 shortDescription = "Sahha SDK foreground service"
             ),
@@ -45,7 +44,7 @@ class MainActivity : ComponentActivity() {
         )
         Sahha.configure(
             application,
-            config,
+            settings,
         )
 
         setContent {
@@ -124,8 +123,8 @@ class MainActivity : ComponentActivity() {
                                         hcSelectedSensor?.also { sensor ->
                                             Sahha.getHealthConnectData(
                                                 sensor,
-                                            ) { error, status ->
-                                                healthConnectData = error ?: status ?: "error"
+                                            ) { error, data ->
+                                                healthConnectData = error ?: data ?: "error"
                                             }
                                         }
                                     }

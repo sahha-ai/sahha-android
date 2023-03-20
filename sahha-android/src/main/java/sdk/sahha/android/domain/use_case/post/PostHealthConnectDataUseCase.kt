@@ -1,16 +1,18 @@
 package sdk.sahha.android.domain.use_case.post
 
 import androidx.health.connect.client.permission.Permission
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.ReadRecordsRequest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.common.enums.HealthConnectSensor
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.HealthConnectSensor
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
 class PostHealthConnectDataUseCase constructor(
     private val timeManager: SahhaTimeManager,
@@ -34,11 +36,51 @@ class PostHealthConnectDataUseCase constructor(
                 this.healthConnectSensors = healthConnectSensors
 
                 resetData()
+                val latch = CountDownLatch(4)
 
-                postSleepSessionData()
-                postSleepStageData()
-                postStepData()
-                postHeartRateData()
+                runBlocking {
+                    launch {
+                        postHealthConnectData(
+                            HealthConnectSensor.step,
+                            StepsRecord::class
+                        ) { error, successful ->
+                            summariseCallback(error, successful)
+                            latch.countDown()
+                        }
+                    }
+
+                    launch {
+                        postHealthConnectData(
+                            HealthConnectSensor.sleep_session,
+                            SleepSessionRecord::class
+                        ) { error, successful ->
+                            summariseCallback(error, successful)
+                            latch.countDown()
+                        }
+                    }
+
+                    launch {
+                        postHealthConnectData(
+                            HealthConnectSensor.sleep_stage,
+                            SleepStageRecord::class
+                        ) { error, successful ->
+                            summariseCallback(error, successful)
+                            latch.countDown()
+                        }
+                    }
+
+                    launch {
+                        postHealthConnectData(
+                            HealthConnectSensor.heart_rate,
+                            HeartRateRecord::class
+                        ) { error, successful ->
+                            summariseCallback(error, successful)
+                            latch.countDown()
+                        }
+                    }
+                }
+
+                latch.await(10, TimeUnit.SECONDS)
 
                 if (successes.contains(false)) {
                     callback?.invoke(errorSummary, false)
@@ -58,154 +100,63 @@ class PostHealthConnectDataUseCase constructor(
         successes.clear()
     }
 
-    private suspend fun postSleepSessionData() {
+    private suspend fun <T : Record> postHealthConnectData(
+        sensor: Enum<HealthConnectSensor>,
+        recordClass: KClass<T>,
+        callback: ((error: String?, successful: Boolean) -> Unit)
+    ) {
         repo?.also { repo ->
-            val sleepSensor = HealthConnectSensor.sleep_session
-            val startTime = repo.getLastPostTimestamp(sleepSensor.ordinal)?.let { lastPost ->
+            // Block heart rate until API implemented
+//            if (sensor == HealthConnectSensor.heart_rate) {
+//                callback(
+//                    "${sensor.name.uppercase()} Error: Heart rate posting is not yet available",
+//                    false
+//                )
+//                return
+//            }
+
+            val startTime = repo.getLastPostTimestamp(sensor.ordinal)?.let { lastPost ->
                 val oneDaySinceLastPost =
                     nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
 
                 if (oneDaySinceLastPost)
                     lastPost
                 else {
-                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(sleepSensor.name))
+                    callback(SahhaErrors.healthConnect.minimumPostInterval(sensor.name), false)
                     return
                 }
             } ?: timeManager.getEpochMillisFrom(7)
             val timeRangeFilter = timeManager.getTimeRangeFilter(startTime, nowEpoch)
 
-            if (healthConnectSensors.contains(sleepSensor))
-                if (grantedPermissions.contains(Permission.createReadPermission(SleepSessionRecord::class)))
-                    if (repo.getSleepData(timeRangeFilter).isNotEmpty())
-                        repo.postSleepSessions(timeRangeFilter) { error, successful ->
-                            successes.add(successful)
-
-                            if (successful) runBlocking {
-                                repo.saveLastPost(sleepSensor.ordinal, nowEpoch)
-                            }
-
-                            error?.also { e ->
-                                saveCallbackError(e)
-                            }
-                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(sleepSensor))
-                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(sleepSensor.name))
-        }
-    }
-
-    private suspend fun postSleepStageData() {
-        repo?.also { repo ->
-            val sleepStageSensor = HealthConnectSensor.sleep_stage
-            val startTime = repo.getLastPostTimestamp(sleepStageSensor.ordinal)?.let { lastPost ->
-                val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
-
-                if (oneDaySinceLastPost)
-                    lastPost
-                else {
-                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(sleepStageSensor.name))
-                    return
-                }
-            } ?: timeManager.getEpochMillisFrom(7)
-            val timeRangeFilter = timeManager.getTimeRangeFilter(startTime, nowEpoch)
-
-            if (healthConnectSensors.contains(sleepStageSensor))
-                if (grantedPermissions.contains(Permission.createReadPermission(SleepStageRecord::class)))
-                    if (repo.getSleepStageData(timeRangeFilter).isNotEmpty())
-                        repo.postSleepStages(timeRangeFilter) { error, successful ->
-                            successes.add(successful)
-
-                            if (successful) runBlocking {
-                                repo.saveLastPost(
-                                    sleepStageSensor.ordinal,
-                                    nowEpoch
-                                )
-                            }
-
-                            error?.also { e ->
-                                saveCallbackError(e)
-                            }
-                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(sleepStageSensor))
-                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(sleepStageSensor.name))
-        }
-    }
-
-    private suspend fun postStepData() {
-        repo?.also { repo ->
-            val stepSensor = HealthConnectSensor.step
-            val startTime = repo.getLastPostTimestamp(stepSensor.ordinal)?.let { lastPost ->
-                val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
-
-                if (oneDaySinceLastPost)
-                    lastPost
-                else {
-                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(stepSensor.name))
-                    return
-                }
-            } ?: timeManager.getEpochMillisFrom(7)
-            val timeRangeFilter = timeManager.getTimeRangeFilter(startTime, nowEpoch)
-
-            if (healthConnectSensors.contains(stepSensor))
-                if (grantedPermissions.contains(Permission.createReadPermission(StepsRecord::class)))
-                    if (repo.getStepData(timeRangeFilter).isNotEmpty())
-                        repo.postSteps(timeRangeFilter) { error, successful ->
-                            successes.add(successful)
-
-                            if (successful) runBlocking {
-                                repo.saveLastPost(stepSensor.ordinal, nowEpoch)
-                            }
-
-                            error?.also { e ->
-                                saveCallbackError(e)
-                            }
-                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(stepSensor))
-                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(stepSensor.name))
-        }
-    }
-
-    private suspend fun postHeartRateData() {
-        repo?.also { repo ->
-            val heartRateSensor = HealthConnectSensor.heart_rate
-
-            // Block until API implemented
-            if(healthConnectSensors.contains(heartRateSensor)) {
-                saveCallbackError("${heartRateSensor.name.uppercase()} Error: Heart rate posting is not yet available")
+            // Guards
+            if (!healthConnectSensors.contains(sensor)) return
+            if (!grantedPermissions.contains(Permission.createReadPermission(recordClass))) {
+                callback(SahhaErrors.healthConnect.noPermissions(sensor.name), false)
+                return
+            }
+            if (repo.getSensorData(ReadRecordsRequest(recordClass, timeRangeFilter))
+                    .isEmpty()
+            ) {
+                callback(SahhaErrors.healthConnect.localDataIsEmpty(sensor), false)
                 return
             }
 
-            val startTime = repo.getLastPostTimestamp(heartRateSensor.ordinal)?.let { lastPost ->
-                val oneDaySinceLastPost =
-                    nowEpoch > (lastPost + Constants.MINIMUM_POST_INTERVAL)
-
-                if (oneDaySinceLastPost)
-                    lastPost
-                else {
-                    saveCallbackError(SahhaErrors.healthConnect.minimumPostInterval(heartRateSensor.name))
-                    return
+            repo.postHealthConnectData(sensor, timeRangeFilter) { error, successful ->
+                if (successful) runBlocking {
+                    repo.saveLastPost(sensor.ordinal, nowEpoch)
+                    callback(null, true)
+                    return@runBlocking
                 }
-            } ?: timeManager.getEpochMillisFrom(7)
-            val timeRangeFilter = timeManager.getTimeRangeFilter(startTime, nowEpoch)
 
-            if (healthConnectSensors.contains(heartRateSensor))
-                if (grantedPermissions.contains(Permission.createReadPermission(HeartRateRecord::class)))
-                    if (repo.getHeartRateData(timeRangeFilter).isNotEmpty())
-                        repo.postHeartRates(timeRangeFilter) { error, successful ->
-                            successes.add(successful)
-
-                            if (successful) runBlocking {
-                                repo.saveLastPost(heartRateSensor.ordinal, nowEpoch)
-                            }
-
-                            error?.also { e ->
-                                saveCallbackError(e)
-                            }
-                        } else saveCallbackError(SahhaErrors.healthConnect.localDataIsEmpty(heartRateSensor))
-                else saveCallbackError(SahhaErrors.healthConnect.noPermissions(heartRateSensor.name))
+                error?.also { e ->
+                    callback(e, false)
+                }
+            }
         }
     }
 
-    private fun saveCallbackError(error: String) {
-        successes.add(false)
-        errorSummary += "$error\n"
+    private fun summariseCallback(error: String?, successful: Boolean) {
+        error?.also { errorSummary += "$it\n" }
+        successes.add(successful)
     }
 }

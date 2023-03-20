@@ -1,7 +1,7 @@
 package sdk.sahha.android.common
 
 import android.util.Log
-import sdk.sahha.android.common.enums.HealthConnectSensor
+import sdk.sahha.android.source.HealthConnectSensor
 import sdk.sahha.android.source.SahhaSensor
 
 object SahhaErrors {
@@ -76,8 +76,8 @@ object SahhaErrors {
             return "${sensor.uppercase()} $noPermissions"
         }
 
-        fun localDataIsEmpty(healthConnectSensor: Enum<HealthConnectSensor>): String {
-            return "Error: The local ${healthConnectSensor.name.lowercase()} data is empty."
+        fun localDataIsEmpty(sensor: Enum<HealthConnectSensor>): String {
+            return "Error: The local ${sensor.name.lowercase()} data is empty."
         }
     }
 }

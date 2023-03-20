@@ -1,6 +1,7 @@
 package sdk.sahha.android.common
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
@@ -10,6 +11,8 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaConverterUtility
+
+private const val tag = "SahhaResponseHandler"
 
 object SahhaResponseHandler {
     internal fun returnFormattedResponse(
@@ -40,9 +43,9 @@ object SahhaResponseHandler {
                     call: Call<ResponseBody>,
                     response: Response<ResponseBody>
                 ) {
-                    Sahha.di.mainScope.launch {
-                        if (ResponseCode.isUnauthorized(response.code())) {
-                            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
+                    if (ResponseCode.isUnauthorized(response.code())) {
+                        callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
+                        runBlocking {
                             checkTokenExpired(response.code()) {
                                 val retryResponse = retryLogic()
                                 handleResponse(
@@ -52,30 +55,32 @@ object SahhaResponseHandler {
                                     successfulLogic
                                 )
                             }
-                            return@launch
                         }
-
-                        if (ResponseCode.isSuccessful(response.code())) {
-                            successfulLogic()
-                            callback?.also {
-                                it(null, true)
-                            }
-                            return@launch
-                        }
-
-                        callback?.also {
-                            it(
-                                "${response.code()}: ${response.message()}",
-                                false
-                            )
-                        }
-
-                        Sahha.di.sahhaErrorLogger.api(call, response)
+                        return
                     }
+
+                    if (ResponseCode.isSuccessful(response.code())) {
+                        runBlocking { successfulLogic() }
+                        callback?.also {
+                            it(null, true)
+                        }
+                        return
+                    }
+
+                    callback?.also {
+                        it(
+                            "${response.code()}: ${response.message()}",
+                            false
+                        )
+                    }
+
+                    Sahha.di.sahhaErrorLogger.api(call, response)
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    callback?.also { it(t.message, false) }
+                    callback?.also {
+                        it(t.message, false)
+                    }
 
                     Sahha.di.sahhaErrorLogger.api(
                         call,
