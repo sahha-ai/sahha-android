@@ -17,6 +17,8 @@ class Encryptor (
 ) {
     private lateinit var encryption: ByteArray
 
+    // To test commit
+
     suspend fun encryptText(alias: String, textToEncrypt: String) {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(alias))
