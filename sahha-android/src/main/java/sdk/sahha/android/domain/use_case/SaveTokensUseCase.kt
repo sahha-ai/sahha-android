@@ -45,7 +45,7 @@ class SaveTokensUseCase(
             null -> callback(SahhaErrors.noToken, false)
             else -> repository.saveEncryptedTokens(
                 tokens.profileToken,
-                tokens.refreshToken // TODO: Change back to refresh token once API is updated
+                tokens.profileToken // TODO: Change back to refresh token once API is updated
             ) { error, success ->
                 callback(error, success)
             }

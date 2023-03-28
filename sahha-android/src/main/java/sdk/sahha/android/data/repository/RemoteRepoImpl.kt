@@ -219,7 +219,11 @@ class RemoteRepoImpl(
 
                             if (ResponseCode.isSuccessful(response.code())) {
                                 val sahhaDemographic = response.body()?.toSahhaDemographic()
-                                callback?.also { it(null, sahhaDemographic) }
+
+                                when(sahhaDemographic) {
+                                    null -> callback?.invoke(SahhaErrors.noDemographics, null)
+                                    else -> callback?.invoke(null, sahhaDemographic)
+                                }
 
                                 return@launch
                             }
