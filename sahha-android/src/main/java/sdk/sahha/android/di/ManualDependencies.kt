@@ -2,6 +2,7 @@ package sdk.sahha.android.di
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
 import kotlinx.coroutines.async
@@ -13,6 +14,7 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BackgroundRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
@@ -35,6 +37,7 @@ class ManualDependencies(
     internal lateinit var powerManager: PowerManager
     internal lateinit var keyguardManager: KeyguardManager
     internal lateinit var sensorManager: SensorManager
+    internal lateinit var encryptedSharedPreferences: SharedPreferences
 
     internal val gson by lazy { AppModule.provideGsonConverter() }
     internal val api by lazy { AppModule.provideSahhaApi(environment, gson) }
@@ -47,17 +50,16 @@ class ManualDependencies(
 
     internal val authRepo by lazy {
         AppModule.provideAuthRepository(
-            encryptor,
-            sahhaErrorLogger
+            api,
+            encryptedSharedPreferences,
         )
     }
     internal val remotePostRepo by lazy {
         AppModule.provideRemotePostRepository(
+            authRepo,
             sleepDao,
             deviceUsageDao,
             movementDao,
-            encryptor,
-            decryptor,
             api,
             sahhaErrorLogger,
             ioScope
@@ -71,7 +73,6 @@ class ManualDependencies(
     val timeManager by lazy { getSahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
-
 
     val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {
@@ -118,6 +119,7 @@ class ManualDependencies(
         setDatabase(context)
         setBackgroundRepo(context)
         setNotifications(context)
+        setEncryptedSharedPreferences(context)
 
         mainScope.launch {
             listOf(
@@ -144,7 +146,7 @@ class ManualDependencies(
             keyguardManager = AppModule.provideKeyguardManager(context)
     }
 
-    private fun setDatabase(context: Context) {
+    internal fun setDatabase(context: Context) {
         if (!::database.isInitialized)
             database = AppModule.provideDatabase(context)
     }
@@ -166,10 +168,21 @@ class ManualDependencies(
             notifications = SahhaNotificationManager(context, backgroundRepo)
     }
 
+    private fun setEncryptedSharedPreferences(context: Context) {
+        if(!::encryptedSharedPreferences.isInitialized)
+            encryptedSharedPreferences = AppModule.provideEncryptedSharedPreferences(context)
+    }
+
     private fun setSahhaErrorLogger(context: Context) {
         if (!::sahhaErrorLogger.isInitialized)
             sahhaErrorLogger =
-                SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
+                AppModule.provideSahhaErrorLogger(
+                    context,
+                    configurationDao,
+                    sahhaErrorApi,
+                    defaultScope,
+                    authRepo
+                )
     }
 
     private fun getSahhaTimeManager(): SahhaTimeManager {

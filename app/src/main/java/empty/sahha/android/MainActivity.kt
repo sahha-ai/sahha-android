@@ -2,6 +2,7 @@ package empty.sahha.android
 
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -38,10 +39,13 @@ class MainActivity : ComponentActivity() {
             ),
             postSensorDataManually = true,
         )
+
         Sahha.configure(
             application,
             config,
-        )
+        ) { error, success ->
+            Toast.makeText(this, error ?: "Successful $success", Toast.LENGTH_LONG).show()
+        }
 
         setContent {
             SahhasdkemptyTheme {
@@ -60,9 +64,11 @@ class MainActivity : ComponentActivity() {
                     var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
                     var postDemo by remember { mutableStateOf("") }
                     var getDemo by remember { mutableStateOf("") }
-                    var token by remember { mutableStateOf("") }
-                    var refreshToken by remember { mutableStateOf("") }
+                    var appId by remember { mutableStateOf("") }
+                    var appSecret by remember { mutableStateOf("") }
+                    var externalId by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
+                    var authStatus by remember { mutableStateOf("Pending") }
 
                     Sahha.getSensorStatus(
                         this@MainActivity
@@ -93,8 +99,14 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.configure(
                                         application,
-                                        SahhaSettings(SahhaEnvironment.development)
-                                    )
+                                        config
+                                    ) { error, success ->
+                                        Toast.makeText(
+                                            this@MainActivity,
+                                            error ?: "Successful $success",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
                                 }) {
                                     Text("Configure")
                                 }
@@ -108,32 +120,43 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 OutlinedTextField(
-                                    value = token,
+                                    value = appId,
                                     singleLine = true,
                                     onValueChange = {
-                                        token = it
+                                        appId = it
                                     }, label = {
-                                        Text("Token")
+                                        Text("App ID")
                                     })
                                 OutlinedTextField(
-                                    value = refreshToken,
+                                    value = appSecret,
                                     singleLine = true,
                                     onValueChange = {
-                                        refreshToken = it
+                                        appSecret = it
                                     }, label = {
-                                        Text("Refresh Token")
+                                        Text("App Secret")
+                                    })
+                                OutlinedTextField(
+                                    value = externalId,
+                                    singleLine = true,
+                                    onValueChange = {
+                                        externalId = it
+                                    }, label = {
+                                        Text("External ID")
                                     })
                                 Button(onClick = {
+                                    authStatus = "Loading..."
                                     Sahha.authenticate(
-                                        token,
-                                        refreshToken
+                                        appId,
+                                        appSecret,
+                                        externalId
                                     ) { error, success ->
-                                        if (success) greeting = "Successful" else greeting =
+                                        if (success) authStatus = "Successful" else authStatus =
                                             error ?: "Failed"
                                     }
                                 }) {
                                     Text("Authenticate")
                                 }
+                                Text(authStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.openAppSettings(this@MainActivity)
@@ -251,6 +274,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     }
 }
 

@@ -7,7 +7,6 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.source.SahhaDemographic
 
 interface RemoteRepo {
-    suspend fun postRefreshToken(retryLogic: (suspend () -> Unit))
     suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?)
     suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: Boolean) -> Unit)?)
     suspend fun postStepData(

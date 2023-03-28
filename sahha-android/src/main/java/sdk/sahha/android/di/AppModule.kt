@@ -3,9 +3,12 @@ package sdk.sahha.android.di
 import android.app.KeyguardManager
 import android.app.Service
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
@@ -14,8 +17,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.common.security.Decryptor
-import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
@@ -32,12 +33,23 @@ import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.SahhaEnvironment
 
 internal object AppModule {
+    fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+
+        return EncryptedSharedPreferences.create(
+            "encrypted_prefs",
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
     fun providePowerManager(
         context: Context
     ): PowerManager {
         return context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
-
 
     fun provideKeyguardManager(
         context: Context
@@ -92,10 +104,13 @@ internal object AppModule {
 
 
     fun provideAuthRepository(
-        encryptor: Encryptor,
-        sahhaErrorLogger: SahhaErrorLogger
+        api: SahhaApi,
+        encryptedSharedPreferences: SharedPreferences,
     ): AuthRepo {
-        return AuthRepoImpl(encryptor, sahhaErrorLogger)
+        return AuthRepoImpl(
+            api,
+            encryptedSharedPreferences,
+        )
     }
 
 
@@ -125,21 +140,19 @@ internal object AppModule {
 
 
     fun provideRemotePostRepository(
+        authRepo: AuthRepo,
         sleepDao: SleepDao,
         deviceUsageDao: DeviceUsageDao,
         movementDao: MovementDao,
-        encryptor: Encryptor,
-        decryptor: Decryptor,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger,
         ioScope: CoroutineScope
     ): RemoteRepo {
         return RemoteRepoImpl(
+            authRepo,
             sleepDao,
             deviceUsageDao,
             movementDao,
-            encryptor,
-            decryptor,
             api,
             sahhaErrorLogger,
             ioScope
@@ -159,7 +172,7 @@ internal object AppModule {
                 SahhaDbMigrations.MIGRATION_2_3,
                 SahhaDbMigrations.MIGRATION_3_4,
                 SahhaDbMigrations.MIGRATION_4_5,
-                SahhaDbMigrations.MIGRATION_5_6
+                SahhaDbMigrations.MIGRATION_5_6,
             )
             .build()
     }
@@ -208,11 +221,17 @@ internal object AppModule {
     fun provideSahhaErrorLogger(
         context: Context,
         configurationDao: ConfigurationDao,
-        decryptor: Decryptor,
         sahhaErrorApi: SahhaErrorApi,
-        defaultScope: CoroutineScope
+        defaultScope: CoroutineScope,
+        authRepo: AuthRepo
     ): SahhaErrorLogger {
-        return SahhaErrorLogger(context, configurationDao, decryptor, sahhaErrorApi, defaultScope)
+        return SahhaErrorLogger(
+            context,
+            configurationDao,
+            sahhaErrorApi,
+            defaultScope,
+            authRepo
+        )
     }
 
 

@@ -7,9 +7,12 @@ internal object Constants {
     // Configs
     const val TRANSFORMATION = "AES/GCM/NoPadding"
     const val ANDROID_KEY_STORE = "AndroidKeyStore"
+    const val ALIAS_UUID = "alias_uuid"
     const val UET = "uet"
     const val UERT = "uert"
     const val AUTHORIZATION_HEADER = "Authorization"
+    const val APP_ID_HEADER = "AppId"
+    const val APP_SECRET_HEADER = "AppSecret"
     const val PLATFORM_NAME = "android"
     const val MAX_STEP_POST_VALUE = 1000
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"

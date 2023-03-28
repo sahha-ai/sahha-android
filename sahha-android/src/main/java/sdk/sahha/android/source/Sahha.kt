@@ -7,10 +7,14 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.Session
+import sdk.sahha.android.data.Constants.UERT
+import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.categories.Motion
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.model.security.EncryptUtility
 import java.time.LocalDateTime
 import java.util.*
 
@@ -44,20 +48,92 @@ object Sahha {
     ) {
         if (!diInitialized())
             di = ManualDependencies(sahhaSettings.environment)
-        di.setDependencies(application)
 
         di.mainScope.launch {
-            config = di.configurationDao.getConfig()
+            di.setDatabase(application)
+            saveConfiguration(sahhaSettings)
+            di.setDependencies(application)
 
-            listOf(
-                async { saveConfiguration(sahhaSettings) },
-                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                async { processAndPutDeviceInfo(application) }
-            ).joinAll()
+            migrateDataIfNeeded { error, success ->
+                if (!success) {
+                    callback?.invoke(error, false)
+                    return@migrateDataIfNeeded
+                }
 
-            start(callback)
+                launch {
+                    config = di.configurationDao.getConfig()
+
+                    listOf(
+                        async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                        async { processAndPutDeviceInfo(application) }
+                    ).joinAll()
+
+                    start(callback)
+                }
+            }
+        }
+
+    }
+
+    internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {
+        val oldData = getOldDataFromEncryptUtilityTable()
+
+        if (oldData.isEmpty()) {
+            callback(null, true)
+            return
+        }
+
+        val oldToken: String? = decryptOldData(UET)
+        val oldRefreshToken: String? = decryptOldData(UERT)
+
+        val bothTokensAreNull = setOf(oldToken, oldRefreshToken).all { it == null }
+        if(bothTokensAreNull) {
+            callback(null, true)
+            return
+        }
+
+        saveDataToEncryptedSharedPreferences(setOf(oldToken!!, oldRefreshToken!!)) { error, success ->
+            if (success) {
+                di.ioScope.launch {
+                    deleteOldDataFromEncryptUtilityTable()
+                    callback(null, true)
+                }
+            } else {
+                callback(error, false)
+            }
         }
     }
+
+    private suspend fun getOldDataFromEncryptUtilityTable(): Set<EncryptUtility> {
+        return setOf(
+            di.securityDao.getEncryptUtility(UET),
+            di.securityDao.getEncryptUtility(UERT),
+        )
+    }
+
+    private suspend fun decryptOldData(alias: String): String? {
+        val data = di.securityDao.getEncryptUtility(alias)
+        return when (data) {
+            null -> null
+            else -> di.decryptor.decrypt(alias)
+        }
+    }
+
+    private fun saveDataToEncryptedSharedPreferences(
+        decryptedData: Set<String>,
+        callback: (error: String?, success: Boolean) -> Unit
+    ) {
+        di.authRepo.saveEncryptedTokens(
+            decryptedData.elementAt(0), decryptedData.elementAt(1)
+        ) { error, successful ->
+            callback(error, successful)
+        }
+    }
+
+    private suspend fun deleteOldDataFromEncryptUtilityTable() {
+        di.securityDao.deleteAllEncryptedData()
+    }
+
 
     internal suspend fun processAndPutDeviceInfo(context: Context) {
         try {
@@ -102,12 +178,13 @@ object Sahha {
     }
 
     fun authenticate(
-        profileToken: String,
-        refreshToken: String,
-        callback: ((error: String?, success: Boolean) -> Unit)? = null
+        appId: String,
+        appSecret: String,
+        externalId: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         di.mainScope.launch {
-            di.saveTokensUseCase(profileToken, refreshToken, callback)
+            di.saveTokensUseCase(appId, appSecret, externalId, callback)
         }
     }
 

@@ -18,6 +18,7 @@ import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
@@ -28,6 +29,7 @@ import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.RemoteRepo
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaConverterUtility
@@ -35,65 +37,14 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaSensor
 
 class RemoteRepoImpl(
+    private val authRepo: AuthRepo,
     private val sleepDao: SleepDao,
     private val deviceDao: DeviceUsageDao,
     private val movementDao: MovementDao,
-    private val encryptor: Encryptor,
-    private val decryptor: Decryptor,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val mainScope: CoroutineScope
 ) : RemoteRepo {
-
-    override suspend fun postRefreshToken(retryLogic: (suspend () -> Unit)) {
-        val tokenData = TokenData(
-            decryptor.decrypt(UET),
-            decryptor.decrypt(UERT)
-        )
-
-        try {
-            val call = getRefreshTokenCall(tokenData)
-            call.enqueue(
-                object : Callback<ResponseBody> {
-                    override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
-                    ) {
-                        mainScope.launch {
-                            if (ResponseCode.isSuccessful(response.code())) {
-                                storeNewTokens(response.body())
-                                retryLogic()
-                                return@launch
-                            }
-
-                            sahhaErrorLogger.api(
-                                call,
-                                SahhaErrors.typeAuthentication,
-                                response.code(),
-                                response.message()
-                            )
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeAuthentication,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
-                        )
-                    }
-
-                }
-            )
-        } catch (e: Exception) {
-            sahhaErrorLogger.application(
-                e.message ?: "Error refreshing token",
-                "postRefreshToken",
-                null
-            )
-        }
-    }
 
     private fun getFilteredStepData(stepData: List<StepData>): List<StepData> {
         return if (stepData.count() > 1000) {
@@ -112,7 +63,7 @@ class RemoteRepoImpl(
             }
 
             val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(stepData))
-            val response = getStepResponse(stepDtoData)
+            val response = getStepResponse(stepDtoData) ?: return
             handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
                 if (stepData.count() > MAX_STEP_POST_VALUE)
                     movementDao.clearFirstStepData(MAX_STEP_POST_VALUE)
@@ -446,7 +397,7 @@ class RemoteRepoImpl(
         retryLogic: suspend () -> Unit
     ) {
         if (ResponseCode.isUnauthorized(code)) {
-            postRefreshToken(retryLogic)
+            authRepo.postRefreshToken(retryLogic)
         }
     }
 
@@ -488,14 +439,6 @@ class RemoteRepoImpl(
         callback(null, true)
     }
 
-    private suspend fun storeNewTokens(responseBody: ResponseBody?) {
-        val json = SahhaConverterUtility.responseBodyToJson(responseBody)
-        json?.also {
-            encryptor.encryptText(UET, it["profileToken"].toString())
-            encryptor.encryptText(UERT, it["refreshToken"].toString())
-        }
-    }
-
     private suspend fun clearLocalStepData() {
         movementDao.clearAllStepData()
     }
@@ -509,29 +452,26 @@ class RemoteRepoImpl(
         deviceDao.clearUsages()
     }
 
-    private fun getRefreshTokenCall(
-        td: TokenData
-    ): Call<ResponseBody> {
-        return api.postRefreshToken(td)
-    }
-
-    private suspend fun getStepResponse(stepData: List<StepDto>): Call<ResponseBody> {
+    private fun getStepResponse(stepData: List<StepDto>): Call<ResponseBody> {
+        val token = authRepo.getToken()!!
         return api.postStepData(
-            TokenBearer(decryptor.decrypt(UET)),
+            TokenBearer(token),
             stepData
         )
     }
 
     private suspend fun getSleepResponse(): Call<ResponseBody> {
+        val token = authRepo.getToken()!!
         return api.postSleepDataRange(
-            TokenBearer(decryptor.decrypt(UET)),
+            TokenBearer(token),
             SahhaConverterUtility.sleepDtoToSleepSendDto(sleepDao.getSleepDto())
         )
     }
 
     private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
+        val token = authRepo.getToken()!!
         return api.postDeviceActivityRange(
-            TokenBearer(decryptor.decrypt(UET)),
+            TokenBearer(token),
             SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(deviceDao.getUsages())
         )
     }
@@ -544,8 +484,9 @@ class RemoteRepoImpl(
             null,
             includeSourceData
         )
+        val token = authRepo.getToken()!!
 
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
+        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
     }
 
     private suspend fun getAnalysisResponse(
@@ -558,17 +499,19 @@ class RemoteRepoImpl(
             endDate,
             includeSourceData
         )
+        val token = authRepo.getToken()!!
 
-
-        return api.analyzeProfile(TokenBearer(decryptor.decrypt(UET)), analyzeRequest)
+        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
-        return api.getDemographic(TokenBearer(decryptor.decrypt(UET)))
+        val token = authRepo.getToken()!!
+        return api.getDemographic(TokenBearer(token))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
-        return api.putDemographic(TokenBearer(decryptor.decrypt(UET)), sahhaDemographic)
+        val token = authRepo.getToken()!!
+        return api.putDemographic(token, sahhaDemographic)
     }
 
     private suspend fun getDetectedAnalysisCall(
@@ -603,8 +546,9 @@ class RemoteRepoImpl(
     }
 
     private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Call<ResponseBody> {
+        val token = authRepo.getToken()!!
         return api.putDeviceInformation(
-            TokenBearer(decryptor.decrypt(UET)),
+            token,
             SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)
         )
     }

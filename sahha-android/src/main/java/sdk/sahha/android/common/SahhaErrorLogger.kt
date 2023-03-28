@@ -15,20 +15,33 @@ import sdk.sahha.android.data.Constants.APPLICATION_ERROR
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 
-class SahhaErrorLogger (
+class SahhaErrorLogger(
     private val context: Context,
     private val configurationDao: ConfigurationDao,
-    private val decryptor: Decryptor,
     private val sahhaErrorApi: SahhaErrorApi,
-    private val mainScope: CoroutineScope
+    private val mainScope: CoroutineScope,
+    private val authRepo: AuthRepo
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
+
+    private fun postErrorLog(
+        sahhaErrorLog: SahhaErrorLog
+    ) {
+        val token = authRepo.getToken()!!
+
+        sahhaErrorApi.postErrorLog(
+            token,
+            sahhaErrorLog
+        )
+    }
 
     fun api(
         call: Call<ResponseBody>,
@@ -40,10 +53,7 @@ class SahhaErrorLogger (
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
-            sahhaErrorApi.postErrorLog(
-                decryptor.decrypt(UET),
-                sahhaErrorLog
-            )
+            postErrorLog(sahhaErrorLog)
         }
     }
 
@@ -58,10 +68,7 @@ class SahhaErrorLogger (
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
-            sahhaErrorApi.postErrorLog(
-                decryptor.decrypt(UET),
-                sahhaErrorLog
-            )
+            postErrorLog(sahhaErrorLog)
         }
     }
 
@@ -76,10 +83,7 @@ class SahhaErrorLogger (
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, type, code, message)
-            sahhaErrorApi.postErrorLog(
-                decryptor.decrypt(UET),
-                sahhaErrorLog
-            )
+            postErrorLog(sahhaErrorLog)
         }
     }
 
@@ -91,10 +95,19 @@ class SahhaErrorLogger (
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApiLogProperties(call, response)
-            sahhaErrorApi.postErrorLog(
-                decryptor.decrypt(UET),
-                sahhaErrorLog
-            )
+            postErrorLog(sahhaErrorLog)
+        }
+    }
+
+    fun api(
+        response: Response<*>,
+        type: String
+    ) {
+        mainScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(response, type)
+            postErrorLog(sahhaErrorLog)
         }
     }
 
@@ -133,6 +146,22 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorType = type
         code?.also { sahhaErrorLog.errorCode = it }
         sahhaErrorLog.errorMessage = message
+    }
+
+    private fun setApiLogProperties(
+        response: Response<*>,
+        type: String
+    ) {
+        sahhaErrorLog.errorSource = API_ERROR
+        response.raw().request.also { req ->
+            sahhaErrorLog.apiBody =
+                SahhaConverterUtility.requestBodyToString(req.body) ?: SahhaErrors.noData
+            sahhaErrorLog.apiMethod = req.method
+            sahhaErrorLog.apiURL = req.url.encodedPath
+        }
+        sahhaErrorLog.errorType = type
+        sahhaErrorLog.errorCode = response.code()
+        sahhaErrorLog.errorMessage = response.message()
     }
 
 
@@ -182,7 +211,8 @@ class SahhaErrorLogger (
         sahhaErrorLog.errorSource = API_ERROR
 
         response?.also { r ->
-            sahhaResponseError = SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
+            sahhaResponseError =
+                SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
             sahhaErrorLog.apiBody =
                 r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
         }

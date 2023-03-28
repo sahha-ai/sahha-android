@@ -1,4 +1,4 @@
 /build
-secrets.properties/
+secrets.properties
 /src/androidTest/java/sdk/sahha/android/
 /src/test/java/sdk/sahha/android/
