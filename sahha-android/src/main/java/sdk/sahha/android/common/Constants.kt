@@ -18,6 +18,7 @@ internal object Constants {
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
     const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
+    const val WORKER_REPEAT_INTERVAL_MINUTES = 360L
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"

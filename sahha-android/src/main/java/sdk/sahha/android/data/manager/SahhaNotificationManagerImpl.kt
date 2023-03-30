@@ -1,22 +1,54 @@
-package sdk.sahha.android.common
+package sdk.sahha.android.data.manager
 
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
+import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.domain.repository.BackgroundRepo
+import sdk.sahha.android.data.service.DataCollectionService
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.source.Sahha
 
-class SahhaNotificationManager (
-    private val context: Context,
-    private val repository: BackgroundRepo
-) {
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun setNewPersistent(
+class SahhaNotificationManagerImpl(
+    private val context: Context
+) : SahhaNotificationManager {
+    override lateinit var notification: Notification
+
+    override fun setSahhaNotification(_notification: Notification) {
+        notification = _notification
+    }
+
+    override fun startDataCollectionService(
+        _icon: Int?,
+        _title: String?,
+        _shortDescription: String?,
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
+        val notificationConfig = runBlocking {
+            Sahha.di.configurationDao.getNotificationConfig()
+        }
+
+        setNewPersistent(
+            notificationConfig.icon,
+            notificationConfig.title,
+            notificationConfig.shortDescription
+        )
+
+        try {
+            context.startForegroundService(
+                Intent(context, DataCollectionService::class.java)
+                    .setAction(Constants.ACTION_RESTART_SERVICE)
+            )
+        } catch (e: Exception) {
+            callback?.also { it(e.message, false) }
+        }
+    }
+
+    override fun setNewPersistent(
         icon: Int?, title: String?, shortDescription: String?,
     ) {
         val notification = getNewNotification(
@@ -30,11 +62,10 @@ class SahhaNotificationManager (
             icon ?: R.drawable.ic_sahha_no_bg
         )
 
-        repository.setSahhaNotification(notification)
+        setSahhaNotification(notification)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
+    override fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
         createNotificationWithIntent(
             context,
             "permissions",
@@ -48,7 +79,6 @@ class SahhaNotificationManager (
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotification(
         _service: Service,
         _channelId: String,
@@ -83,7 +113,6 @@ class SahhaNotificationManager (
         _service.startForeground(_notificationId, notification)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationForWorker(
         _context: Context,
         _channelId: String,
@@ -119,7 +148,6 @@ class SahhaNotificationManager (
         manager.notify(_notificationId, notification)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun getNewNotification(
         _context: Context,
         _channelId: String,
@@ -156,7 +184,6 @@ class SahhaNotificationManager (
         return notification
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationWithIntent(
         _context: Context,
         _channelId: String,

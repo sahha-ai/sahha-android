@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.worker
+package sdk.sahha.android.data.worker
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -17,7 +17,7 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
-import sdk.sahha.android.domain.receiver.SleepReceiver
+import sdk.sahha.android.data.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class SleepCollectionWorker (private val context: Context, workerParameters: WorkerParameters) :

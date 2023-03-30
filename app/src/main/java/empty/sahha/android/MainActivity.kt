@@ -36,8 +36,7 @@ class MainActivity : ComponentActivity() {
                 icon = R.drawable.ic_test,
                 title = "Test",
                 shortDescription = "This is a test."
-            ),
-            postSensorDataManually = true,
+            )
         )
 
         Sahha.configure(

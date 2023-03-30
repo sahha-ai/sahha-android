@@ -7,7 +7,7 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.Session
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.di.ManualDependencies
@@ -24,7 +24,7 @@ private val tag = "Sahha"
 object Sahha {
     private lateinit var config: SahhaConfiguration
     internal lateinit var di: ManualDependencies
-    internal val notifications by lazy { di.notifications }
+    internal val notificationManager by lazy { di.notificationManager }
     internal val motion by lazy {
         Motion(
             di.openAppSettingsUseCase,
@@ -49,7 +49,7 @@ object Sahha {
         if (!diInitialized())
             di = ManualDependencies(sahhaSettings.environment)
 
-        di.mainScope.launch {
+        runBlocking {
             di.setDatabase(application)
             saveConfiguration(sahhaSettings)
             di.setDependencies(application)
@@ -72,7 +72,6 @@ object Sahha {
                 }
             }
         }
-
     }
 
     internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {
@@ -87,12 +86,17 @@ object Sahha {
         val oldRefreshToken: String? = decryptOldData(UERT)
 
         val bothTokensAreNull = setOf(oldToken, oldRefreshToken).all { it == null }
-        if(bothTokensAreNull) {
+        if (bothTokensAreNull) {
             callback(null, true)
             return
         }
 
-        saveDataToEncryptedSharedPreferences(setOf(oldToken!!, oldRefreshToken!!)) { error, success ->
+        saveDataToEncryptedSharedPreferences(
+            setOf(
+                oldToken!!,
+                oldRefreshToken!!
+            )
+        ) { error, success ->
             if (success) {
                 di.ioScope.launch {
                     deleteOldDataFromEncryptUtilityTable()
@@ -155,7 +159,7 @@ object Sahha {
             appId = packageName
         )
         di.configurationDao.saveDeviceInformation(currentDeviceInfo)
-        di.remotePostRepo.putDeviceInformation(currentDeviceInfo)
+        di.deviceInfoRepo.putDeviceInformation(currentDeviceInfo)
     }
 
     private suspend fun deviceInfoIsEqual(
@@ -190,8 +194,8 @@ object Sahha {
 
     internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
-            di.mainScope.launch {
-                di.backgroundRepo.stopAllWorkers()
+            runBlocking {
+                di.sensorRepo.stopAllWorkers()
                 config = di.configurationDao.getConfig()
                 listOf(
                     async { startDataCollection(callback) },
@@ -321,7 +325,7 @@ object Sahha {
                 settings.environment.ordinal,
                 settings.framework.name,
                 sensorEnums,
-                settings.postSensorDataManually
+                false
             )
         )
     }

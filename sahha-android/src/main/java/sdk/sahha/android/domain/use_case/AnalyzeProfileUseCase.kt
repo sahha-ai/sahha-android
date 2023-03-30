@@ -4,12 +4,13 @@ import android.os.Build
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.domain.repository.UserDataRepo
 import java.time.LocalDateTime
 import java.util.*
 
 class AnalyzeProfileUseCase (
-    private val repository: RemoteRepo,
+    private val repository: UserDataRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {

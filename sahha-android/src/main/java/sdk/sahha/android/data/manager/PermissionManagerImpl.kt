@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.repository
+package sdk.sahha.android.data.manager
 
 import android.content.Context
 import android.content.Intent
@@ -10,11 +10,11 @@ import sdk.sahha.android.SahhaPermissionActivity
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
-import sdk.sahha.android.domain.repository.PermissionsRepo
+import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
-class PermissionsRepoImpl : PermissionsRepo {
+class PermissionManagerImpl : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
 
     override fun setPermissionLogic(activity: ComponentActivity) {

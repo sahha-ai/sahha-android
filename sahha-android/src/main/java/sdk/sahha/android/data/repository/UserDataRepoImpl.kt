@@ -1,0 +1,255 @@
+package sdk.sahha.android.data.repository
+
+import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import sdk.sahha.android.common.*
+import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaResponseHandler.returnFormattedResponse
+import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.data.remote.dto.toSahhaDemographic
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
+import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.source.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaDemographic
+
+class UserDataRepoImpl(
+    private val mainScope: CoroutineScope,
+    private val authRepo: AuthRepo,
+    private val api: SahhaApi,
+    private val sahhaErrorLogger: SahhaErrorLogger,
+): UserDataRepo {
+    override suspend fun getAnalysis(
+        dates: Pair<String, String>?,
+        includeSourceData: Boolean,
+        callback: ((error: String?, successful: String?) -> Unit)?,
+    ) {
+        try {
+            val call = getDetectedAnalysisCall(dates, includeSourceData)
+            call.enqueue(
+                object : Callback<ResponseBody> {
+                    override fun onResponse(
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
+                    ) {
+                        mainScope.launch {
+                            if (ResponseCode.isUnauthorized(response.code())) {
+                                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                                    getAnalysis(dates, includeSourceData, callback)
+                                }
+                                return@launch
+                            }
+
+                            if (ResponseCode.isSuccessful(response.code())) {
+                                returnFormattedResponse(response, callback)
+                                return@launch
+                            }
+
+                            callback?.also {
+                                it(
+                                    "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
+
+                            sahhaErrorLogger.api(call, response)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        callback?.also { it(t.message, null) }
+                        sahhaErrorLogger.api(
+                            call,
+                            SahhaErrors.typeAuthentication,
+                            null,
+                            t.message ?: SahhaErrors.responseFailure
+                        )
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            sahhaErrorLogger.application(
+                e.message,
+                "getAnalysis",
+                dates?.toString()
+            )
+            callback?.also { it(e.message, null) }
+        }
+    }
+
+    override suspend fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
+        try {
+            val call = getDemographicCall()
+            call.enqueue(
+                object : Callback<DemographicDto> {
+                    override fun onResponse(
+                        call: Call<DemographicDto>,
+                        response: Response<DemographicDto>
+                    ) {
+                        mainScope.launch {
+                            if (ResponseCode.isUnauthorized(response.code())) {
+                                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                                    getDemographic(callback)
+                                }
+
+                                return@launch
+                            }
+
+                            if (ResponseCode.isSuccessful(response.code())) {
+                                val sahhaDemographic = response.body()?.toSahhaDemographic()
+
+                                when(sahhaDemographic) {
+                                    null -> callback?.invoke(SahhaErrors.noDemographics, null)
+                                    else -> callback?.invoke(null, sahhaDemographic)
+                                }
+
+                                return@launch
+                            }
+
+                            callback?.also {
+                                it(
+                                    "${response.code()}: ${response.message()}",
+                                    null
+                                )
+                            }
+
+                            sahhaErrorLogger.api(call, response)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<DemographicDto>, t: Throwable) {
+                        callback?.also { it(t.message, null) }
+                        sahhaErrorLogger.api(
+                            call,
+                            SahhaErrors.typeResponse,
+                            null,
+                            t.message ?: SahhaErrors.responseFailure
+                        )
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            callback?.also { it(e.message, null) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "getDemographic",
+                null
+            )
+        }
+    }
+
+    override suspend fun postDemographic(
+        sahhaDemographic: SahhaDemographic,
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        try {
+            val call = postDemographicResponse(sahhaDemographic)
+            call.enqueue(
+                object : Callback<ResponseBody> {
+                    override fun onResponse(
+                        call: Call<ResponseBody>,
+                        response: Response<ResponseBody>
+                    ) {
+                        mainScope.launch {
+                            if (ResponseCode.isUnauthorized(response.code())) {
+                                callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
+                                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                                    postDemographic(sahhaDemographic, callback)
+                                }
+                                return@launch
+                            }
+
+                            if (ResponseCode.isSuccessful(response.code())) {
+                                callback?.also { it(null, true) }
+                                return@launch
+                            }
+
+                            callback?.also {
+                                it(
+                                    "${response.code()}: ${response.message()}",
+                                    false
+                                )
+                            }
+
+                            sahhaErrorLogger.api(call, response)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        callback?.also { it(t.message, false) }
+                        sahhaErrorLogger.api(
+                            call,
+                            SahhaErrors.typeResponse,
+                            null,
+                            t.message ?: SahhaErrors.responseFailure
+                        )
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "postDemographic",
+                sahhaDemographic.toString()
+            )
+        }
+    }
+
+    private suspend fun getDemographicCall(): Call<DemographicDto> {
+        val token = authRepo.getToken()!!
+        return api.getDemographic(TokenBearer(token))
+    }
+
+    private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
+        val token = authRepo.getToken()!!
+        return api.putDemographic(TokenBearer(token), sahhaDemographic)
+    }
+
+    private suspend fun getDetectedAnalysisCall(
+        datesISO: Pair<String, String>?,
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
+        return datesISO?.let { it ->
+            getAnalysisResponse(it.first, it.second, includeSourceData)
+        } ?: getAnalysisResponse(includeSourceData)
+    }
+
+    private suspend fun getAnalysisResponse(
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
+        val analyzeRequest = AnalyzeRequest(
+            null,
+            null,
+            includeSourceData
+        )
+        val token = authRepo.getToken()!!
+
+        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
+    }
+
+    private suspend fun getAnalysisResponse(
+        startDate: String,
+        endDate: String,
+        includeSourceData: Boolean
+    ): Call<ResponseBody> {
+        val analyzeRequest = AnalyzeRequest(
+            startDate,
+            endDate,
+            includeSourceData
+        )
+        val token = authRepo.getToken()!!
+
+        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
+    }
+}

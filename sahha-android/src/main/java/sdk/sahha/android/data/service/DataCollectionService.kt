@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.service
+package sdk.sahha.android.data.service
 
 import android.app.Service
 import android.content.Intent
@@ -6,10 +6,8 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
@@ -29,10 +27,7 @@ class DataCollectionService : Service() {
     }
 
     override fun onDestroy() {
-        Sahha.di.mainScope.launch {
-            unregisterExistingReceiversAndListeners()
-        }
-
+        unregisterExistingReceiversAndListeners()
         startForegroundService(
             Intent(this@DataCollectionService, DataCollectionService::class.java)
         )
@@ -47,14 +42,13 @@ class DataCollectionService : Service() {
         ))
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        CoroutineScope(Main).launch {
-            try {
+        try {
+            Sahha.di.defaultScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-                Sahha.di.notifications.setNewPersistent(
+                Sahha.di.notificationManager.setNewPersistent(
                     notificationConfig.icon,
                     notificationConfig.title,
                     notificationConfig.shortDescription
@@ -72,11 +66,12 @@ class DataCollectionService : Service() {
                         return@also
                     }
                 }
-            } catch (e: Exception) {
-                stopService()
-                Log.w(tag, e.message, e)
             }
+        } catch (e: Exception) {
+            stopService()
+            Log.w(tag, e.message, e)
         }
+
 
         return START_STICKY
     }
@@ -87,7 +82,7 @@ class DataCollectionService : Service() {
     }
 
     private fun startTimeZoneChangedReceiver() {
-        Sahha.di.backgroundRepo.startTimeZoneChangedReceiver(this)
+        Sahha.di.receiverManager.startTimeZoneChangedReceiver(this)
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
@@ -124,9 +119,7 @@ class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun startForegroundService() {
-        withContext(Main) {
-            startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.backgroundRepo.notification)
-        }
+    private fun startForegroundService() {
+        startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.notificationManager.notification)
     }
 }

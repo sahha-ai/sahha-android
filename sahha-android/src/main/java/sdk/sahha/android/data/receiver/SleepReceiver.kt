@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.receiver
+package sdk.sahha.android.data.receiver
 
 import android.app.NotificationManager
 import android.app.Service
@@ -50,7 +50,7 @@ class SleepReceiver : BroadcastReceiver() {
             (context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
         notificationManager.cancel(Constants.NOTIFICATION_PERMISSION_SETTINGS)
 
-        Sahha.notifications.notifyWithSettingsIntent(
+        Sahha.notificationManager.notifyWithSettingsIntent(
             "Sleep Settings",
             "Please tap here to re-enable activity recognition permissions."
         )

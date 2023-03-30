@@ -1,17 +1,22 @@
 package sdk.sahha.android.data.repository
 
 import android.content.SharedPreferences
+import android.util.Log
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler.storeNewTokens
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.send.ExternalIdSendDto
+import sdk.sahha.android.data.remote.dto.send.RefreshTokenSendDto
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 
+private const val tag = "AuthRepoImpl"
 class AuthRepoImpl(
     private val api: SahhaApi,
     private val encryptedSharedPreferences: SharedPreferences,
@@ -30,8 +35,8 @@ class AuthRepoImpl(
     ) {
         val tokenData = getTokenData(callback) ?: return
         val response = api.postRefreshTokenResponse(
-            tokenData.profileToken,
-            tokenData.refreshToken
+            TokenBearer(tokenData.profileToken),
+            RefreshTokenSendDto(tokenData.refreshToken)
         )
 
         if (ResponseCode.isSuccessful(response.code())) {

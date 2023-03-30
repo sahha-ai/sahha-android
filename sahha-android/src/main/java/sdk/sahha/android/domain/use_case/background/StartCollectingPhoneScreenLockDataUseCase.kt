@@ -1,14 +1,15 @@
 package sdk.sahha.android.domain.use_case.background
 
 import android.content.Context
-import sdk.sahha.android.domain.repository.BackgroundRepo
+import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.repository.SensorRepo
 
 class StartCollectingPhoneScreenLockDataUseCase (
-    private val repository: BackgroundRepo
+    private val manager: ReceiverManager
 ) {
     operator fun invoke(
         serviceContext: Context,
     ) {
-        repository.startPhoneScreenReceivers(serviceContext)
+        manager.startPhoneScreenReceivers(serviceContext)
     }
 }

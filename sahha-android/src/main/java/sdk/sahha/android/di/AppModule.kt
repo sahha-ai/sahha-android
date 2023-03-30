@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.sync.Mutex
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
@@ -23,16 +24,59 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
-import sdk.sahha.android.data.repository.BackgroundRepoImpl
-import sdk.sahha.android.data.repository.PermissionsRepoImpl
-import sdk.sahha.android.data.repository.RemoteRepoImpl
+import sdk.sahha.android.data.repository.SensorRepoImpl
+import sdk.sahha.android.data.manager.PermissionManagerImpl
+import sdk.sahha.android.data.manager.ReceiverManagerImpl
+import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.repository.BackgroundRepo
-import sdk.sahha.android.domain.repository.PermissionsRepo
-import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.source.SahhaEnvironment
 
 internal object AppModule {
+    fun provideUserDataRepo(
+        mainScope: CoroutineScope,
+        authRepo: AuthRepo,
+        api: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger
+    ): UserDataRepo {
+        return UserDataRepoImpl(
+            mainScope,
+            authRepo,
+            api,
+            sahhaErrorLogger
+        )
+    }
+    fun provideReceiverManager(
+        context: Context,
+        mainScope: CoroutineScope
+    ): ReceiverManager {
+        return ReceiverManagerImpl(
+            context,
+            mainScope
+        )
+    }
+    fun provideDeviceInfoRepo(
+        authRepo: AuthRepo,
+        api: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger
+    ): DeviceInfoRepo {
+        return DeviceInfoRepoImpl(
+            authRepo,
+            api,
+            sahhaErrorLogger
+        )
+    }
+    fun provideSahhaNotificationManager(context: Context): SahhaNotificationManager {
+        return SahhaNotificationManagerImpl(context)
+    }
+
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
         val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
@@ -114,49 +158,36 @@ internal object AppModule {
     }
 
 
-    fun provideBackgroundRepository(
+    fun provideSensorRepository(
         context: Context,
         mainScope: CoroutineScope,
         configurationDao: ConfigurationDao,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
-        movementDao: MovementDao
-    ): BackgroundRepo {
-        return BackgroundRepoImpl(
+        movementDao: MovementDao,
+        authRepo: AuthRepo,
+        sahhaErrorLogger: SahhaErrorLogger,
+        mutex: Mutex,
+        api: SahhaApi
+    ): SensorRepo {
+        return SensorRepoImpl(
             context,
             mainScope,
             configurationDao,
             deviceDao,
             sleepDao,
-            movementDao
+            movementDao,
+            authRepo,
+            sahhaErrorLogger,
+            mutex,
+            api
         )
     }
 
 
     fun providePermissionsRepository(
-    ): PermissionsRepo {
-        return PermissionsRepoImpl()
-    }
-
-
-    fun provideRemotePostRepository(
-        authRepo: AuthRepo,
-        sleepDao: SleepDao,
-        deviceUsageDao: DeviceUsageDao,
-        movementDao: MovementDao,
-        api: SahhaApi,
-        sahhaErrorLogger: SahhaErrorLogger,
-        ioScope: CoroutineScope
-    ): RemoteRepo {
-        return RemoteRepoImpl(
-            authRepo,
-            sleepDao,
-            deviceUsageDao,
-            movementDao,
-            api,
-            sahhaErrorLogger,
-            ioScope
-        )
+    ): PermissionManager {
+        return PermissionManagerImpl()
     }
 
 

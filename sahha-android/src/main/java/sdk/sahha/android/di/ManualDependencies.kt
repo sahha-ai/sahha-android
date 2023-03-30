@@ -7,15 +7,16 @@ import android.hardware.SensorManager
 import android.os.PowerManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.common.SahhaNotificationManager
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
-import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.repository.BackgroundRepo
+import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
@@ -31,12 +32,13 @@ class ManualDependencies(
     internal val environment: Enum<SahhaEnvironment>
 ) {
     internal lateinit var database: SahhaDatabase
-    internal lateinit var backgroundRepo: BackgroundRepo
-    internal lateinit var notifications: SahhaNotificationManager
+    internal lateinit var sensorRepo: SensorRepo
     internal lateinit var sahhaErrorLogger: SahhaErrorLogger
     internal lateinit var powerManager: PowerManager
     internal lateinit var keyguardManager: KeyguardManager
     internal lateinit var sensorManager: SensorManager
+    internal lateinit var notificationManager: SahhaNotificationManager
+    internal lateinit var receiverManager: ReceiverManager
     internal lateinit var encryptedSharedPreferences: SharedPreferences
 
     internal val gson by lazy { AppModule.provideGsonConverter() }
@@ -54,15 +56,21 @@ class ManualDependencies(
             encryptedSharedPreferences,
         )
     }
-    internal val remotePostRepo by lazy {
-        AppModule.provideRemotePostRepository(
+
+    internal val deviceInfoRepo by lazy {
+        AppModule.provideDeviceInfoRepo(
             authRepo,
-            sleepDao,
-            deviceUsageDao,
-            movementDao,
             api,
-            sahhaErrorLogger,
-            ioScope
+            sahhaErrorLogger
+        )
+    }
+
+    internal val userDataRepo by lazy {
+        AppModule.provideUserDataRepo(
+            mainScope,
+            authRepo,
+            api,
+            sahhaErrorLogger
         )
     }
 
@@ -73,35 +81,36 @@ class ManualDependencies(
     val timeManager by lazy { getSahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
+    val mutex by lazy { Mutex() }
 
     val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {
         StartDataCollectionServiceUseCase(
-            backgroundRepo
+            notificationManager
         )
     }
-    val postStepDataUseCase by lazy { PostStepDataUseCase(remotePostRepo) }
-    val postSleepDataUseCase by lazy { PostSleepDataUseCase(remotePostRepo) }
-    val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(remotePostRepo) }
-    val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(backgroundRepo) }
-    val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(backgroundRepo) }
+    val postStepDataUseCase by lazy { PostStepDataUseCase(sensorRepo) }
+    val postSleepDataUseCase by lazy { PostSleepDataUseCase(sensorRepo) }
+    val postDeviceDataUseCase by lazy { PostDeviceDataUseCase(sensorRepo) }
+    val startCollectingSleepDataUseCase by lazy { StartCollectingSleepDataUseCase(sensorRepo) }
+    val startPostWorkersUseCase by lazy { StartPostWorkersUseCase(sensorRepo) }
     val startCollectingPhoneScreenLockDataUseCase by lazy {
         StartCollectingPhoneScreenLockDataUseCase(
-            backgroundRepo
+            receiverManager
         )
     }
-    val startCollectingStepCounterData by lazy { StartCollectingStepCounterData(backgroundRepo) }
-    val startCollectingStepDetectorData by lazy { StartCollectingStepDetectorData(backgroundRepo) }
+    val startCollectingStepCounterData by lazy { StartCollectingStepCounterData(sensorRepo) }
+    val startCollectingStepDetectorData by lazy { StartCollectingStepDetectorData(sensorRepo) }
     val analyzeProfileUseCase by lazy {
         AnalyzeProfileUseCase(
-            remotePostRepo,
+            userDataRepo,
             timeManager,
             sahhaErrorLogger
         )
     }
-    val getDemographicUseCase by lazy { GetDemographicUseCase(remotePostRepo) }
-    val postDemographicUseCase by lazy { PostDemographicUseCase(remotePostRepo) }
-    val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(remotePostRepo) }
+    val getDemographicUseCase by lazy { GetDemographicUseCase(userDataRepo) }
+    val postDemographicUseCase by lazy { PostDemographicUseCase(userDataRepo) }
+    val postAllSensorDataUseCase by lazy { PostAllSensorDataUseCase(sensorRepo) }
 
     val permissionRepo by lazy {
         AppModule.providePermissionsRepository()
@@ -113,17 +122,18 @@ class ManualDependencies(
     }
     val openAppSettingsUseCase by lazy { OpenAppSettingsUseCase(permissionRepo) }
     val setPermissionLogicUseCase by lazy { SetPermissionLogicUseCase(permissionRepo) }
-    val getSensorDataUseCase by lazy { GetSensorDataUseCase(backgroundRepo) }
+    val getSensorDataUseCase by lazy { GetSensorDataUseCase(sensorRepo) }
 
     fun setDependencies(context: Context) {
         setDatabase(context)
-        setBackgroundRepo(context)
-        setNotifications(context)
         setEncryptedSharedPreferences(context)
+        setSahhaErrorLogger(context)
 
-        mainScope.launch {
+        runBlocking {
             listOf(
-                async { setSahhaErrorLogger(context) },
+                async { setSensorRepository(context) },
+                async { setReceiverManager(context) },
+                async { setNotificationManager(context) },
                 async { setPowerManager(context) },
                 async { setKeyguardManager(context) },
                 async { setSensorManager(context) },
@@ -151,25 +161,34 @@ class ManualDependencies(
             database = AppModule.provideDatabase(context)
     }
 
-    private fun setBackgroundRepo(context: Context) {
-        if (!::backgroundRepo.isInitialized)
-            backgroundRepo = AppModule.provideBackgroundRepository(
+    private fun setSensorRepository(context: Context) {
+        if (!::sensorRepo.isInitialized)
+            sensorRepo = AppModule.provideSensorRepository(
                 context,
                 mainScope,
                 configurationDao,
                 deviceUsageDao,
                 sleepDao,
-                movementDao
+                movementDao,
+                authRepo,
+                sahhaErrorLogger,
+                mutex,
+                api
             )
     }
 
-    private fun setNotifications(context: Context) {
-        if (!::notifications.isInitialized)
-            notifications = SahhaNotificationManager(context, backgroundRepo)
+    private fun setReceiverManager(context: Context) {
+        if (!::receiverManager.isInitialized)
+            receiverManager = AppModule.provideReceiverManager(context, mainScope)
+    }
+
+    private fun setNotificationManager(context: Context) {
+        if (!::notificationManager.isInitialized)
+            notificationManager = AppModule.provideSahhaNotificationManager(context)
     }
 
     private fun setEncryptedSharedPreferences(context: Context) {
-        if(!::encryptedSharedPreferences.isInitialized)
+        if (!::encryptedSharedPreferences.isInitialized)
             encryptedSharedPreferences = AppModule.provideEncryptedSharedPreferences(context)
     }
 

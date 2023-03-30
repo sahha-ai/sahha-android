@@ -1,15 +1,12 @@
 package sdk.sahha.android.common
 
 import android.content.Context
-import android.os.Build
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.ManualDependencies
 import sdk.sahha.android.domain.model.config.toSahhaSettings
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 object SahhaReconfigure {
     suspend operator fun invoke(context: Context) {
@@ -21,7 +18,7 @@ object SahhaReconfigure {
             Sahha.di.setDependencies(context)
 
             val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-            Sahha.notifications.setNewPersistent(
+            Sahha.notificationManager.setNewPersistent(
                 notificationConfig.icon,
                 notificationConfig.title,
                 notificationConfig.shortDescription,

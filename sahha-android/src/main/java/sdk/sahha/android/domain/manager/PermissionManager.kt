@@ -1,12 +1,10 @@
-package sdk.sahha.android.domain.repository
+package sdk.sahha.android.domain.manager
 
 import android.content.Context
 import androidx.activity.ComponentActivity
-import kotlinx.coroutines.Job
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
-interface PermissionsRepo {
+interface PermissionManager {
     fun setPermissionLogic(activity: ComponentActivity)
     fun openAppSettings(context: Context)
     fun activate(
