@@ -27,6 +27,7 @@ import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaSensor
 
 class ManualDependencies(
     internal val environment: Enum<SahhaEnvironment>
@@ -67,7 +68,7 @@ class ManualDependencies(
 
     internal val userDataRepo by lazy {
         AppModule.provideUserDataRepo(
-            mainScope,
+            ioScope,
             authRepo,
             api,
             sahhaErrorLogger
@@ -81,7 +82,7 @@ class ManualDependencies(
     val timeManager by lazy { getSahhaTimeManager() }
     val encryptor by lazy { Encryptor(securityDao) }
     val decryptor by lazy { Decryptor(securityDao) }
-    val mutex by lazy { Mutex() }
+    val sensorMutexMap by lazy { SahhaSensor.values().associateWith { Mutex() } }
 
     val saveTokensUseCase by lazy { SaveTokensUseCase(authRepo) }
     val startDataCollectionServiceUseCase by lazy {
@@ -165,14 +166,15 @@ class ManualDependencies(
         if (!::sensorRepo.isInitialized)
             sensorRepo = AppModule.provideSensorRepository(
                 context,
-                mainScope,
+                defaultScope,
+                ioScope,
                 configurationDao,
                 deviceUsageDao,
                 sleepDao,
                 movementDao,
                 authRepo,
                 sahhaErrorLogger,
-                mutex,
+                sensorMutexMap,
                 api
             )
     }

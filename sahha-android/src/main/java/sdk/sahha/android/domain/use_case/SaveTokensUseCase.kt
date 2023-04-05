@@ -40,12 +40,11 @@ class SaveTokensUseCase(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         val tokens = response.body()
-        Log.d(tag, "Tokens: $tokens")
         when (tokens) {
             null -> callback(SahhaErrors.noToken, false)
             else -> repository.saveEncryptedTokens(
                 tokens.profileToken,
-                tokens.refreshToken // TODO: Change back to refresh token once API is updated
+                tokens.refreshToken
             ) { error, success ->
                 callback(error, success)
             }

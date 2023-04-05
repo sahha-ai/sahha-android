@@ -7,31 +7,26 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.SleepSegmentRequest
 import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.data.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SleepCollectionWorker (private val context: Context, workerParameters: WorkerParameters) :
-    Worker(context, workerParameters) {
+class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
+    CoroutineWorker(context, workerParameters) {
 
     private val tag by lazy { "SleepCollectionWorker" }
 
-    override fun doWork(): Result {
-        CoroutineScope(Default).launch {
-            val sleepIntent = Intent(context, SleepReceiver::class.java)
-            val sleepPendingIntent = getSleepPendingIntent(sleepIntent)
-            val task = getSleepSegmentTask(sleepPendingIntent)
-            addLogListeners(task)
-        }
+    override suspend fun doWork(): Result {
+        val sleepIntent = Intent(context, SleepReceiver::class.java)
+        val sleepPendingIntent = getSleepPendingIntent(sleepIntent)
+        val task = getSleepSegmentTask(sleepPendingIntent)
+        addLogListeners(task)
+
         return Result.success()
     }
 

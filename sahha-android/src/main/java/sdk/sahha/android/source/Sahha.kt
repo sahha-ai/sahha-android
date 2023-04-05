@@ -187,7 +187,7 @@ object Sahha {
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.saveTokensUseCase(appId, appSecret, externalId, callback)
         }
     }
@@ -242,7 +242,7 @@ object Sahha {
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.getDemographicUseCase(callback)
         }
     }
@@ -251,7 +251,7 @@ object Sahha {
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.postDemographicUseCase(sahhaDemographic, callback)
         }
     }
@@ -259,7 +259,7 @@ object Sahha {
     fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.postAllSensorDataUseCase(callback)
         }
     }
@@ -268,7 +268,7 @@ object Sahha {
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)
     ) {
-        di.mainScope.launch {
+        di.ioScope.launch {
             di.getSensorDataUseCase(sensor, callback)
         }
     }

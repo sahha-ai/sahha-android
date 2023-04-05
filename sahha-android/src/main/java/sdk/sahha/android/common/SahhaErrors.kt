@@ -23,6 +23,7 @@ object SahhaErrors {
     const val noProfileId = "Error: Could not retrieve profile ID"
     const val noToken = "Error: No token found"
     const val noDemographics = "Error: Demographic data was null"
+    const val postingInProgress = "Error: There is already a post in progress, please try again shortly"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

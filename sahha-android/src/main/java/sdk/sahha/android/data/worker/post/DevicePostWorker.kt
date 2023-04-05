@@ -1,21 +1,33 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import androidx.work.Worker
+import android.util.Log
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 
-class DevicePostWorker (private val context: Context, workerParameters: WorkerParameters) :
-    Worker(context, workerParameters) {
-    override fun doWork(): Result {
-        CoroutineScope(Default).launch {
-            SahhaReconfigure(context)
-            Sahha.di.postDeviceDataUseCase(null)
+private const val tag = "DevicePostWorker"
+
+class DevicePostWorker(private val context: Context, workerParameters: WorkerParameters) :
+    CoroutineWorker(context, workerParameters) {
+    override suspend fun doWork(): Result {
+        SahhaReconfigure(context)
+        return postDeviceData()
+    }
+
+    internal suspend fun postDeviceData(lockTester: (() -> Unit)? = null): Result {
+        val mutex = Sahha.di.sensorMutexMap[SahhaSensor.device] ?: return Result.success()
+        if (mutex.tryLock()) {
+            lockTester?.invoke()
+            try {
+                Sahha.di.postDeviceDataUseCase()
+            } finally {
+                mutex.unlock()
+            }
         }
+
         return Result.success()
     }
 }

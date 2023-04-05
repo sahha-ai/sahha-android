@@ -67,6 +67,12 @@ interface SahhaApi {
         @Body analyzeRequest: AnalyzeRequest
     ): Call<ResponseBody>
 
+    @POST("profile/analyze")
+    suspend fun analyzeProfileResponse(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body analyzeRequest: AnalyzeRequest
+    ): Response<ResponseBody>
+
     @GET("profile/demographic")
     fun getDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String

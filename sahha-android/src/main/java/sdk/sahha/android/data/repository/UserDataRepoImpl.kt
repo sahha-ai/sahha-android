@@ -1,6 +1,5 @@
 package sdk.sahha.android.data.repository
 
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -8,7 +7,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.*
-import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaResponseHandler.returnFormattedResponse
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.dto.DemographicDto
@@ -16,71 +14,48 @@ import sdk.sahha.android.data.remote.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 
 class UserDataRepoImpl(
-    private val mainScope: CoroutineScope,
+    private val ioScope: CoroutineScope,
     private val authRepo: AuthRepo,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
-): UserDataRepo {
+) : UserDataRepo {
     override suspend fun getAnalysis(
         dates: Pair<String, String>?,
         includeSourceData: Boolean,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val call = getDetectedAnalysisCall(dates, includeSourceData)
-            call.enqueue(
-                object : Callback<ResponseBody> {
-                    override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
-                    ) {
-                        mainScope.launch {
-                            if (ResponseCode.isUnauthorized(response.code())) {
-                                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
-                                SahhaResponseHandler.checkTokenExpired(response.code()) {
-                                    getAnalysis(dates, includeSourceData, callback)
-                                }
-                                return@launch
-                            }
+            val response = getDetectedAnalysisCall(dates, includeSourceData)
 
-                            if (ResponseCode.isSuccessful(response.code())) {
-                                returnFormattedResponse(response, callback)
-                                return@launch
-                            }
-
-                            callback?.also {
-                                it(
-                                    "${response.code()}: ${response.message()}",
-                                    null
-                                )
-                            }
-
-                            sahhaErrorLogger.api(call, response)
-                        }
-                    }
-
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        callback?.also { it(t.message, null) }
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeAuthentication,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
-                        )
-                    }
+            if (ResponseCode.isUnauthorized(response.code())) {
+                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
+                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                    getAnalysis(dates, includeSourceData, callback)
                 }
+                return
+            }
+
+            if (ResponseCode.isSuccessful(response.code())) {
+                returnFormattedResponse(response, callback)
+                return
+            }
+
+            callback?.invoke(
+                "${response.code()}: ${response.message()}",
+                null
             )
+
+            sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message,
                 "getAnalysis",
                 dates?.toString()
             )
-            callback?.also { it(e.message, null) }
+            callback?.invoke(e.message, null)
         }
     }
 
@@ -93,7 +68,7 @@ class UserDataRepoImpl(
                         call: Call<DemographicDto>,
                         response: Response<DemographicDto>
                     ) {
-                        mainScope.launch {
+                        ioScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
@@ -106,7 +81,7 @@ class UserDataRepoImpl(
                             if (ResponseCode.isSuccessful(response.code())) {
                                 val sahhaDemographic = response.body()?.toSahhaDemographic()
 
-                                when(sahhaDemographic) {
+                                when (sahhaDemographic) {
                                     null -> callback?.invoke(SahhaErrors.noDemographics, null)
                                     else -> callback?.invoke(null, sahhaDemographic)
                                 }
@@ -159,7 +134,7 @@ class UserDataRepoImpl(
                         call: Call<ResponseBody>,
                         response: Response<ResponseBody>
                     ) {
-                        mainScope.launch {
+                        ioScope.launch {
                             if (ResponseCode.isUnauthorized(response.code())) {
                                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
@@ -219,7 +194,7 @@ class UserDataRepoImpl(
     private suspend fun getDetectedAnalysisCall(
         datesISO: Pair<String, String>?,
         includeSourceData: Boolean
-    ): Call<ResponseBody> {
+    ): Response<ResponseBody> {
         return datesISO?.let { it ->
             getAnalysisResponse(it.first, it.second, includeSourceData)
         } ?: getAnalysisResponse(includeSourceData)
@@ -227,7 +202,7 @@ class UserDataRepoImpl(
 
     private suspend fun getAnalysisResponse(
         includeSourceData: Boolean
-    ): Call<ResponseBody> {
+    ): Response<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
             null,
             null,
@@ -235,14 +210,14 @@ class UserDataRepoImpl(
         )
         val token = authRepo.getToken()!!
 
-        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
+        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }
 
     private suspend fun getAnalysisResponse(
         startDate: String,
         endDate: String,
         includeSourceData: Boolean
-    ): Call<ResponseBody> {
+    ): Response<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
             startDate,
             endDate,
@@ -250,6 +225,6 @@ class UserDataRepoImpl(
         )
         val token = authRepo.getToken()!!
 
-        return api.analyzeProfile(TokenBearer(token), analyzeRequest)
+        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }
 }

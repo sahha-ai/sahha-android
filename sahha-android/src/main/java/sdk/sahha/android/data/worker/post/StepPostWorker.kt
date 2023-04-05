@@ -1,33 +1,46 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
-class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
-    Worker(context, workerParameters) {
+private const val tag = "StepPostWorker"
 
-    override fun doWork(): Result {
-        CoroutineScope(IO).launch {
-            SahhaReconfigure(context)
-            Sahha.getSensorStatus(
-                context,
-            ) { _, status ->
-                if (status == SahhaSensorStatus.enabled) {
-                    launch {
-                        Sahha.di.postStepDataUseCase(Sahha.di.movementDao.getAllStepData(), null)
+class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
+    CoroutineWorker(context, workerParameters) {
+
+    override suspend fun doWork(): Result {
+        SahhaReconfigure(context)
+        return postStepData()
+    }
+
+    internal suspend fun postStepData(lockTester: (() -> Unit)? = null): Result {
+        val mutex = Sahha.di.sensorMutexMap[SahhaSensor.pedometer] ?: return Result.success()
+
+        if (mutex.tryLock()) {
+            lockTester?.invoke()
+            try {
+                Sahha.getSensorStatus(
+                    context,
+                ) { _, status ->
+                    Sahha.di.ioScope.launch {
+                        if (status == SahhaSensorStatus.enabled) {
+                            Sahha.di.postStepDataUseCase(
+                                Sahha.di.movementDao.getAllStepData(),
+                                null
+                            )
+                        }
                     }
                 }
+            } finally {
+                mutex.unlock()
             }
         }
-
         return Result.success()
     }
 }

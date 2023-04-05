@@ -38,16 +38,17 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaSensor
 
 internal object AppModule {
     fun provideUserDataRepo(
-        mainScope: CoroutineScope,
+        ioScope: CoroutineScope,
         authRepo: AuthRepo,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger
     ): UserDataRepo {
         return UserDataRepoImpl(
-            mainScope,
+            ioScope,
             authRepo,
             api,
             sahhaErrorLogger
@@ -160,26 +161,28 @@ internal object AppModule {
 
     fun provideSensorRepository(
         context: Context,
-        mainScope: CoroutineScope,
+        defaultScope: CoroutineScope,
+        ioScope: CoroutineScope,
         configurationDao: ConfigurationDao,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
         movementDao: MovementDao,
         authRepo: AuthRepo,
         sahhaErrorLogger: SahhaErrorLogger,
-        mutex: Mutex,
+        sensorMutexMap: Map<SahhaSensor, Mutex>,
         api: SahhaApi
     ): SensorRepo {
         return SensorRepoImpl(
             context,
-            mainScope,
+            defaultScope,
+            ioScope,
             configurationDao,
             deviceDao,
             sleepDao,
             movementDao,
             authRepo,
             sahhaErrorLogger,
-            mutex,
+            sensorMutexMap,
             api
         )
     }

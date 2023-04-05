@@ -5,7 +5,7 @@ import sdk.sahha.android.domain.repository.SensorRepo
 class PostDeviceDataUseCase (
     private val repository: SensorRepo
 ) {
-    suspend operator fun invoke(callback: ((error: String?, success: Boolean) -> Unit)?) {
+    suspend operator fun invoke(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         repository.postPhoneScreenLockData(callback)
     }
 }
