@@ -30,7 +30,7 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
                 ) { _, status ->
                     Sahha.di.ioScope.launch {
                         if (status == SahhaSensorStatus.enabled) {
-                            Sahha.di.postStepDataUseCase(
+                            Sahha.sim.sensor.postStepDataUseCase(
                                 Sahha.di.movementDao.getAllStepData(),
                                 null
                             )

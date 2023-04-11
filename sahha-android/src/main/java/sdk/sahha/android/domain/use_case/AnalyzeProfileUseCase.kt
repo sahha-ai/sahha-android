@@ -8,8 +8,9 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import java.time.LocalDateTime
 import java.util.*
+import javax.inject.Inject
 
-class AnalyzeProfileUseCase (
+class AnalyzeProfileUseCase @Inject constructor (
     private val repository: UserDataRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
     private val sahhaErrorLogger: SahhaErrorLogger? = null

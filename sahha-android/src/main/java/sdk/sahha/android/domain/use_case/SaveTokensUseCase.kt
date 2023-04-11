@@ -8,10 +8,11 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.data.remote.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.AuthRepo
+import javax.inject.Inject
 
 private const val tag = "SaveTokensUseCase"
 
-class SaveTokensUseCase(
+class SaveTokensUseCase @Inject constructor (
     private val repository: AuthRepo
 ) {
     suspend operator fun invoke(

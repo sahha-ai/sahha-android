@@ -9,6 +9,8 @@ import android.os.PowerManager
 import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import dagger.Module
+import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
@@ -18,31 +20,68 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.security.Decryptor
+import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
-import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.data.remote.SahhaErrorApi
-import sdk.sahha.android.data.repository.AuthRepoImpl
-import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.data.remote.SahhaErrorApi
+import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
-import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
+import sdk.sahha.android.domain.use_case.GetDemographicUseCase
+import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
+import sdk.sahha.android.domain.use_case.SaveTokensUseCase
+import sdk.sahha.android.domain.use_case.background.*
+import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
+import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
+import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
+import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaSensor
+import javax.inject.Qualifier
+import javax.inject.Singleton
 
-internal object AppModule {
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MainScope
+
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class IoScope
+
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class DefaultScope
+
+
+@Module
+internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
+    @Singleton
+    @Provides
+    fun provideSahhaEnvironment(): Enum<SahhaEnvironment> {
+        return sahhaEnvironment
+    }
+
+    @Singleton
+    @Provides
     fun provideUserDataRepo(
-        ioScope: CoroutineScope,
+        @IoScope ioScope: CoroutineScope,
         authRepo: AuthRepo,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger
@@ -54,15 +93,21 @@ internal object AppModule {
             sahhaErrorLogger
         )
     }
+
+    @Singleton
+    @Provides
     fun provideReceiverManager(
         context: Context,
-        mainScope: CoroutineScope
+        @MainScope mainScope: CoroutineScope
     ): ReceiverManager {
         return ReceiverManagerImpl(
             context,
             mainScope
         )
     }
+
+    @Singleton
+    @Provides
     fun provideDeviceInfoRepo(
         authRepo: AuthRepo,
         api: SahhaApi,
@@ -74,10 +119,15 @@ internal object AppModule {
             sahhaErrorLogger
         )
     }
+
+    @Singleton
+    @Provides
     fun provideSahhaNotificationManager(context: Context): SahhaNotificationManager {
         return SahhaNotificationManagerImpl(context)
     }
 
+    @Singleton
+    @Provides
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
         val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
@@ -90,24 +140,30 @@ internal object AppModule {
         )
     }
 
+    @Singleton
+    @Provides
     fun providePowerManager(
         context: Context
     ): PowerManager {
         return context.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
 
+    @Singleton
+    @Provides
     fun provideKeyguardManager(
         context: Context
     ): KeyguardManager {
         return context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     }
 
-
+    @Singleton
+    @Provides
     fun provideGsonConverter(): GsonConverterFactory {
         return GsonConverterFactory.create()
     }
 
-
+    @Singleton
+    @Provides
     fun provideSahhaApi(
         environment: Enum<SahhaEnvironment>,
         gson: GsonConverterFactory
@@ -127,7 +183,8 @@ internal object AppModule {
         }
     }
 
-
+    @Singleton
+    @Provides
     fun provideSahhaErrorApi(
         environment: Enum<SahhaEnvironment>,
         gson: GsonConverterFactory
@@ -147,7 +204,8 @@ internal object AppModule {
         }
     }
 
-
+    @Singleton
+    @Provides
     fun provideAuthRepository(
         api: SahhaApi,
         encryptedSharedPreferences: SharedPreferences,
@@ -158,18 +216,19 @@ internal object AppModule {
         )
     }
 
-
+    @Singleton
+    @Provides
     fun provideSensorRepository(
         context: Context,
-        defaultScope: CoroutineScope,
-        ioScope: CoroutineScope,
+        @DefaultScope defaultScope: CoroutineScope,
+        @IoScope ioScope: CoroutineScope,
         configurationDao: ConfigurationDao,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
         movementDao: MovementDao,
         authRepo: AuthRepo,
         sahhaErrorLogger: SahhaErrorLogger,
-        sensorMutexMap: Map<SahhaSensor, Mutex>,
+        sensorMutexMap: Map<SahhaSensor, @JvmSuppressWildcards Mutex>,
         api: SahhaApi
     ): SensorRepo {
         return SensorRepoImpl(
@@ -187,13 +246,22 @@ internal object AppModule {
         )
     }
 
-
-    fun providePermissionsRepository(
-    ): PermissionManager {
-        return PermissionManagerImpl()
+    @Singleton
+    @Provides
+    fun providePermissionHandler(): PermissionHandler {
+        return PermissionHandler()
     }
 
+    @Singleton
+    @Provides
+    fun providePermissionManager(
+        permissionHandler: PermissionHandler
+    ): PermissionManager {
+        return PermissionManagerImpl(permissionHandler)
+    }
 
+    @Singleton
+    @Provides
     fun provideDatabase(context: Context): SahhaDatabase {
         return Room.databaseBuilder(
             context,
@@ -211,52 +279,64 @@ internal object AppModule {
             .build()
     }
 
-
+    @Singleton
+    @Provides
     fun provideMovementDao(db: SahhaDatabase): MovementDao {
         return db.movementDao()
     }
 
-
+    @Singleton
+    @Provides
     fun provideSecurityDao(db: SahhaDatabase): SecurityDao {
         return db.securityDao()
     }
 
-
+    @Singleton
+    @Provides
     fun provideSleepDao(db: SahhaDatabase): SleepDao {
         return db.sleepDao()
     }
 
-
+    @Singleton
+    @Provides
     fun provideDeviceUsageDao(db: SahhaDatabase): DeviceUsageDao {
         return db.deviceUsageDao()
     }
 
-
+    @Singleton
+    @Provides
     fun provideConfigDao(db: SahhaDatabase): ConfigurationDao {
         return db.configurationDao()
     }
 
-
+    @DefaultScope
+    @Singleton
+    @Provides
     fun provideDefaultScope(): CoroutineScope {
         return CoroutineScope(Default)
     }
 
-
+    @IoScope
+    @Singleton
+    @Provides
     fun provideIoScope(): CoroutineScope {
         return CoroutineScope(IO)
     }
 
-
+    @MainScope
+    @Singleton
+    @Provides
     fun provideMainScope(): CoroutineScope {
         return CoroutineScope(Main)
     }
 
-
+    @Singleton
+    @Provides
     fun provideSahhaErrorLogger(
         context: Context,
         configurationDao: ConfigurationDao,
         sahhaErrorApi: SahhaErrorApi,
-        defaultScope: CoroutineScope,
+        @DefaultScope defaultScope: CoroutineScope,
         authRepo: AuthRepo
     ): SahhaErrorLogger {
         return SahhaErrorLogger(
@@ -268,10 +348,151 @@ internal object AppModule {
         )
     }
 
-
+    @Singleton
+    @Provides
     fun provideSensorManager(
         context: Context,
     ): SensorManager {
         return context.getSystemService(Service.SENSOR_SERVICE) as SensorManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideTimeManager(): SahhaTimeManager {
+        return SahhaTimeManager()
+    }
+
+    @Singleton
+    @Provides
+    fun provideEncryptor(
+        securityDao: SecurityDao
+    ): Encryptor {
+        return Encryptor(securityDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideDecryptor(
+        securityDao: SecurityDao
+    ): Decryptor {
+        return Decryptor(securityDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSensorMutexMap(): Map<SahhaSensor, @JvmSuppressWildcards Mutex> {
+        return SahhaSensor.values().associateWith { Mutex() }
+    }
+
+    @Singleton
+    @Provides
+    fun saveTokensUseCase(authRepo: AuthRepo): SaveTokensUseCase {
+        return SaveTokensUseCase(authRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun startDataCollectionServiceUseCase(notificationManager: SahhaNotificationManager): StartDataCollectionServiceUseCase {
+        return StartDataCollectionServiceUseCase(notificationManager)
+    }
+
+    @Singleton
+    @Provides
+    fun postStepDataUseCase(sensorRepo: SensorRepo): PostStepDataUseCase {
+        return PostStepDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun postSleepDataUseCase(sensorRepo: SensorRepo): PostSleepDataUseCase {
+        return PostSleepDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun postDeviceDataUseCase(sensorRepo: SensorRepo): PostDeviceDataUseCase {
+        return PostDeviceDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun startCollectingSleepDataUseCase(sensorRepo: SensorRepo): StartCollectingSleepDataUseCase {
+        return StartCollectingSleepDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun startPostWorkersUseCase(sensorRepo: SensorRepo): StartPostWorkersUseCase {
+        return StartPostWorkersUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun startCollectingPhoneScreenLockDataUseCase(receiverManager: ReceiverManager): StartCollectingPhoneScreenLockDataUseCase {
+        return StartCollectingPhoneScreenLockDataUseCase(receiverManager)
+    }
+
+    @Singleton
+    @Provides
+    fun startCollectingStepCounterData(sensorRepo: SensorRepo): StartCollectingStepCounterData {
+        return StartCollectingStepCounterData(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun startCollectingStepDetectorData(sensorRepo: SensorRepo): StartCollectingStepDetectorData {
+        return StartCollectingStepDetectorData(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun analyzeProfileUseCase(
+        userDataRepo: UserDataRepo,
+        sahhaTimeManager: SahhaTimeManager,
+        sahhaErrorLogger: SahhaErrorLogger
+    ): AnalyzeProfileUseCase {
+        return AnalyzeProfileUseCase(userDataRepo, sahhaTimeManager, sahhaErrorLogger)
+    }
+
+    @Singleton
+    @Provides
+    fun getDemographicUseCase(userDataRepo: UserDataRepo): GetDemographicUseCase {
+        return GetDemographicUseCase(userDataRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun postDemographicUseCase(userDataRepo: UserDataRepo): PostDemographicUseCase {
+        return PostDemographicUseCase(userDataRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun postAllSensorDataUseCase(sensorRepo: SensorRepo): PostAllSensorDataUseCase {
+        return PostAllSensorDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun activateUseCase(permissionManager: PermissionManager): ActivateUseCase {
+        return ActivateUseCase(permissionManager)
+    }
+
+    @Singleton
+    @Provides
+    fun openAppSettingsUseCase(permissionManager: PermissionManager): OpenAppSettingsUseCase {
+        return OpenAppSettingsUseCase(permissionManager)
+    }
+
+    @Singleton
+    @Provides
+    fun setPermissionLogicUseCase(permissionManager: PermissionManager): SetPermissionLogicUseCase {
+        return SetPermissionLogicUseCase(permissionManager)
+    }
+
+    @Singleton
+    @Provides
+    fun getSensorDataUseCase(sensorRepo: SensorRepo): GetSensorDataUseCase {
+        return GetSensorDataUseCase(sensorRepo)
     }
 }

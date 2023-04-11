@@ -16,7 +16,7 @@ class TimeZoneChangedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         CoroutineScope(Dispatchers.Default).launch {
             SahhaReconfigure(context)
-            Sahha.processAndPutDeviceInfo(context)
+            Sahha.sim.userData.processAndPutDeviceInfo(context)
             Log.d(tag, "Timezone changed: ${Sahha.timeManager.getTimezone()}")
         }
     }
