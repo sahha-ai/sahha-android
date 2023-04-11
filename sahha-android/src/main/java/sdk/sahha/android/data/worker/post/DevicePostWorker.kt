@@ -22,7 +22,7 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
         if (mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.di.postDeviceDataUseCase()
+                Sahha.sim.sensor.postDeviceDataUseCase()
             } finally {
                 mutex.unlock()
             }

@@ -38,19 +38,19 @@ interface SahhaApi {
         @Body refreshToken: RefreshTokenSendDto
     ): Response<TokenData>
 
-    @POST("profile/movement/log")
+    @POST("movement/log")
     fun postStepData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<StepDto>
     ): Call<ResponseBody>
 
-    @POST("profile/sleep/log")
+    @POST("sleep/log")
     fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepSendDto>
     ): Call<ResponseBody>
 
-    @POST("profile/deviceActivity/lock")
+    @POST("deviceActivity/lock")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>

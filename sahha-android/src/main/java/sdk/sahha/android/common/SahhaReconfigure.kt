@@ -1,21 +1,30 @@
 package sdk.sahha.android.common
 
 import android.content.Context
+import androidx.room.Room
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.data.local.SahhaDatabase
+import sdk.sahha.android.data.local.SahhaDbMigrations
+import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
-import sdk.sahha.android.di.ManualDependencies
+import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.model.config.toSahhaSettings
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSettings
 
 object SahhaReconfigure {
-    suspend operator fun invoke(context: Context) {
+    suspend operator fun invoke(
+        context: Context,
+    ) {
         withContext(Main) {
-            val settings =
-                AppModule.provideDatabase(context).configurationDao().getConfig().toSahhaSettings()
+            val settings = getSahhaSettings(context)
+
             if (!Sahha.diInitialized())
-                Sahha.di = ManualDependencies(settings.environment)
-            Sahha.di.setDependencies(context)
+                Sahha.di = getDaggerAppComponent(context, settings)
+
+            if (!Sahha.simInitialized())
+                Sahha.sim = Sahha.di.sahhaInteractionManager
 
             val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
             Sahha.notificationManager.setNewPersistent(
@@ -24,5 +33,31 @@ object SahhaReconfigure {
                 notificationConfig.shortDescription,
             )
         }
+    }
+
+    private fun getDaggerAppComponent(context: Context, settings: SahhaSettings): AppComponent {
+        return DaggerAppComponent.builder()
+            .appModule(AppModule(settings.environment))
+            .context(context)
+            .build()
+    }
+
+    private suspend fun getSahhaSettings(context: Context): SahhaSettings {
+        val db = Room.databaseBuilder(
+            context,
+            SahhaDatabase::class.java,
+            "sahha-database"
+        )
+            .fallbackToDestructiveMigration()
+            .addMigrations(
+                SahhaDbMigrations.MIGRATION_1_2,
+                SahhaDbMigrations.MIGRATION_2_3,
+                SahhaDbMigrations.MIGRATION_3_4,
+                SahhaDbMigrations.MIGRATION_4_5,
+                SahhaDbMigrations.MIGRATION_5_6,
+            )
+            .build()
+
+        return db.configurationDao().getConfig().toSahhaSettings()
     }
 }

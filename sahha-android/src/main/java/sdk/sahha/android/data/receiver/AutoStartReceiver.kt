@@ -17,7 +17,7 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             CoroutineScope(Default).launch {
                 SahhaReconfigure(context)
-                Sahha.start()
+                Sahha.sim.start()
             }
         }
     }

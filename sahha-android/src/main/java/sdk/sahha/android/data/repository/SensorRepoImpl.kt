@@ -458,7 +458,7 @@ class SensorRepoImpl(
         val jobs = sensors.map { sensor ->
             ioScope.async {
                 val deferredResult = CompletableDeferred<Unit>()
-                val mutex = Sahha.di.sensorMutexMap[sensor]
+                val mutex = sensorMutexMap[sensor]
                 if (mutex != null) {
                     if (mutex.tryLock()) {
                         try {

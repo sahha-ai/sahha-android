@@ -71,7 +71,7 @@ class WindowCallback(
         if (hasFocus) {
             activityCallback.setSettingOnResume?.let {
                 val activityStatus = checkActivityRecognitionPermission()
-                Sahha.motion.sensorStatus = activityStatus
+                Sahha.di.permissionHandler.sensorStatus = activityStatus
                 it(activityStatus)
             }
         }

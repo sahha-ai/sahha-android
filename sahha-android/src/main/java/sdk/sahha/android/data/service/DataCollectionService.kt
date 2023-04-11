@@ -87,7 +87,7 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-            Sahha.di.startCollectingStepCounterData(
+            Sahha.sim.sensor.startCollectingStepCounterData(
                 this,
                 Sahha.di.movementDao,
             )
@@ -106,7 +106,7 @@ class DataCollectionService : Service() {
 
     private fun checkAndStartCollectingScreenLockData() {
         if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-            Sahha.di.startCollectingPhoneScreenLockDataUseCase(
+            Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )
             return

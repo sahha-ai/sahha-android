@@ -11,17 +11,21 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
+import javax.inject.Inject
 
-class PermissionManagerImpl : PermissionManager {
+class PermissionManagerImpl @Inject constructor(
+    private val permissionHandler: PermissionHandler
+) : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
 
     override fun setPermissionLogic(activity: ComponentActivity) {
         permission =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
                 val status = convertToActivityStatus(enabled)
-                Sahha.motion.activityCallback.requestPermission?.let { it(null, status) }
+                permissionHandler.activityCallback.requestPermission?.let { it(null, status) }
             }
     }
 
@@ -39,12 +43,12 @@ class PermissionManagerImpl : PermissionManager {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             val status = SahhaSensorStatus.unavailable
             callback(SahhaErrors.androidVersionTooLow(9), status)
-            Sahha.motion.sensorStatus = status
+            permissionHandler.sensorStatus = status
             return
         }
 
         try {
-            Sahha.motion.activityCallback.requestPermission = callback
+            permissionHandler.activityCallback.requestPermission = callback
             val intent = Intent(context, SahhaPermissionActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
@@ -64,7 +68,7 @@ class PermissionManagerImpl : PermissionManager {
     ) {
         SahhaPermissions.enableSensor(context) {
             callback(null, it)
-            Sahha.start()
+            Sahha.sim.start()
         }
     }
 

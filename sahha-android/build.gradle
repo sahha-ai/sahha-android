@@ -19,7 +19,7 @@ android {
         targetSdk 31
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArguments clearPackageData: 'true'
+//        testInstrumentationRunnerArguments clearPackageData: 'true'
 
         consumerProguardFiles "consumer-rules.pro"
 
@@ -100,6 +100,10 @@ dependencies {
 
     // Security
     implementation "androidx.security:security-crypto:1.0.0"
+
+    // Dagger
+    implementation 'com.google.dagger:dagger:2.45'
+    kapt 'com.google.dagger:dagger-compiler:2.45'
 
     // Retrofit for API calls
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
