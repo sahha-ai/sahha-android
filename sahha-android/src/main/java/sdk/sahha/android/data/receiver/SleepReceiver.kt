@@ -12,8 +12,11 @@ import com.google.android.gms.location.SleepSegmentEvent
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
@@ -28,11 +31,12 @@ class SleepReceiver : BroadcastReceiver() {
     private var start: Long = 0L
     private var end: Long = 0L
 
+    private val ioScope by lazy { CoroutineScope(IO) }
+
     override fun onReceive(context: Context, intent: Intent) {
         Log.w(tag, "onReceive")
-        CoroutineScope(Default).launch {
+        ioScope.launch {
             SahhaReconfigure(context)
-
             // First check activity permissions
             if (SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled) {
                 notifyPermissionsIssue(context)
@@ -93,9 +97,9 @@ class SleepReceiver : BroadcastReceiver() {
         Sahha.di.sleepDao.saveSleepDto(
             SleepDto(
                 minutesSlept.toInt(),
-                Sahha.timeManager!!.epochMillisToISO(start),
-                Sahha.timeManager!!.epochMillisToISO(end),
-                Sahha.timeManager!!.nowInISO()
+                Sahha.di.timeManager.epochMillisToISO(start),
+                Sahha.di.timeManager.epochMillisToISO(end),
+                Sahha.di.timeManager.nowInISO()
             )
         )
     }
@@ -105,7 +109,7 @@ class SleepReceiver : BroadcastReceiver() {
             SleepQueue(
                 start,
                 end,
-                Sahha.timeManager!!.nowInISO()
+                Sahha.di.timeManager.nowInISO()
             )
         )
     }
@@ -118,7 +122,7 @@ class SleepReceiver : BroadcastReceiver() {
                     Sahha.di.sleepDao.getSleepQueue().last().id,
                     start,
                     end,
-                    Sahha.timeManager!!.nowInISO()
+                    Sahha.di.timeManager.nowInISO()
                 )
             )
         } catch (e: Exception) {

@@ -21,8 +21,6 @@ object Sahha {
     internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.notificationManager }
 
-    val timeManager by lazy { di.timeManager }
-
     fun diInitialized(): Boolean {
         return ::di.isInitialized
     }

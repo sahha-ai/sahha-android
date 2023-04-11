@@ -10,7 +10,9 @@ import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.DetectedActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.activities.PreviousActivity
@@ -27,9 +29,11 @@ class ActivityRecognitionReceiver : BroadcastReceiver() {
     private var mostProbableActivity: Int = 0
     private var mostProbableConfidence: Int = 0
 
+    private val ioScope by lazy { CoroutineScope(IO) }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
-        CoroutineScope(Default).launch {
+        ioScope.launch {
             SahhaReconfigure(context)
             checkActivities(intent)
         }
@@ -134,7 +138,7 @@ class ActivityRecognitionReceiver : BroadcastReceiver() {
         mostProbableActivity: Int,
         mostProbableConfidence: Int,
     ) {
-        val nowInISO = Sahha.timeManager!!.nowInISO()
+        val nowInISO = Sahha.di.timeManager.nowInISO()
         Log.e(tag, "saveDetectedActivity nowInISO: $nowInISO")
         Sahha.di.movementDao.saveDetectedActivity(
             RecognisedActivity(

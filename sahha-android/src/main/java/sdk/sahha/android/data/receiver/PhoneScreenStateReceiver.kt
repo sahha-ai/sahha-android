@@ -7,22 +7,26 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.Sahha
 
 @RequiresApi(Build.VERSION_CODES.O)
 class PhoneScreenStateReceiver : BroadcastReceiver() {
+    private val ioScope by lazy { CoroutineScope(IO) }
+
     override fun onReceive(context: Context, intent: Intent) {
-        CoroutineScope(Default).launch {
+        ioScope.launch {
             SahhaReconfigure(context)
             saveScreenStateAsync()
         }
     }
 
     private suspend fun saveScreenStateAsync() {
-        Sahha.timeManager.also { sahhaTime ->
+        Sahha.di.timeManager.also { sahhaTime ->
             Sahha.di.deviceUsageDao.saveUsage(
                 PhoneUsage(
                     isLocked = Sahha.di.keyguardManager.isKeyguardLocked,
