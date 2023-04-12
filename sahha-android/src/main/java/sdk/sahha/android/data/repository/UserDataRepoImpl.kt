@@ -9,8 +9,8 @@ import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.common.SahhaResponseHandler.returnFormattedResponse
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.data.remote.dto.DemographicDto
-import sdk.sahha.android.data.remote.dto.toSahhaDemographic
+import sdk.sahha.android.domain.model.dto.DemographicDto
+import sdk.sahha.android.domain.model.dto.toSahhaDemographic
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo

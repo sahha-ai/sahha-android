@@ -1,9 +1,9 @@
-package sdk.sahha.android.data.remote.dto
+package sdk.sahha.android.domain.model.dto
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.remote.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 
 @Entity
 data class SleepDto(

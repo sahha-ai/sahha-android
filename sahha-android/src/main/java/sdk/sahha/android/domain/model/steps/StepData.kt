@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.steps
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.domain.model.dto.StepDto
 
 @Entity
 data class StepData(

@@ -21,11 +21,11 @@ object Sahha {
     internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.notificationManager }
 
-    fun diInitialized(): Boolean {
+    internal fun diInitialized(): Boolean {
         return ::di.isInitialized
     }
 
-    fun simInitialized(): Boolean {
+    internal fun simInitialized(): Boolean {
         return ::sim.isInitialized
     }
 

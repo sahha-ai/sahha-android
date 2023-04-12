@@ -1,7 +1,7 @@
 package sdk.sahha.android.domain.repository
 
 import retrofit2.Response
-import sdk.sahha.android.data.remote.dto.send.ExternalIdSendDto
+import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.model.auth.TokenData
 
 interface AuthRepo {

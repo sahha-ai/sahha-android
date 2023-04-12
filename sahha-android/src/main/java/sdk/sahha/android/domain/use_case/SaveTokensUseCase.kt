@@ -1,11 +1,9 @@
 package sdk.sahha.android.domain.use_case
 
-import android.util.Log
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.Session
-import sdk.sahha.android.data.remote.dto.send.ExternalIdSendDto
+import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.AuthRepo
 import javax.inject.Inject
@@ -21,10 +19,6 @@ class SaveTokensUseCase @Inject constructor (
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        Session.appId = appId
-        Session.appSecret = appSecret
-        Session.externalId = externalId
-
         val response = repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
 
         if (ResponseCode.isSuccessful(response.code())) {

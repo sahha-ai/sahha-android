@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.remote.dto.send
+package sdk.sahha.android.domain.model.dto.send
 
 import androidx.annotation.Keep
 

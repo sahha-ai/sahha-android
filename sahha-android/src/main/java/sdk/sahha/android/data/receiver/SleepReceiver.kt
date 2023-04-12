@@ -12,15 +12,12 @@ import com.google.android.gms.location.SleepSegmentEvent
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 

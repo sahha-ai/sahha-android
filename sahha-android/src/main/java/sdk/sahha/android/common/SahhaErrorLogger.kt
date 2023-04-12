@@ -9,15 +9,12 @@ import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
-import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.APPLICATION_ERROR
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
-import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
-import sdk.sahha.android.data.remote.dto.DemographicDto
+import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.repository.AuthRepo

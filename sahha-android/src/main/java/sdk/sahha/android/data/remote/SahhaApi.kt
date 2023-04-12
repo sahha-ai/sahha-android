@@ -7,11 +7,11 @@ import retrofit2.http.*
 import sdk.sahha.android.data.Constants.APP_ID_HEADER
 import sdk.sahha.android.data.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
-import sdk.sahha.android.data.remote.dto.DemographicDto
-import sdk.sahha.android.data.remote.dto.StepDto
-import sdk.sahha.android.data.remote.dto.send.*
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.dto.DemographicDto
+import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
