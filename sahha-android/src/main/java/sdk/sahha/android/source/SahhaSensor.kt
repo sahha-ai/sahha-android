@@ -7,5 +7,7 @@ import com.google.android.gms.common.annotation.KeepName
 enum class SahhaSensor {
     device,
     sleep,
-    pedometer
+    pedometer,
+    heart,
+    blood
 }

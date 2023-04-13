@@ -20,7 +20,7 @@ interface SahhaApi {
         @Body profileId: String
     ): Response<TokenData>
 
-    @POST("profile/app/token")
+    @POST("oauth/profile/register/appId")
     suspend fun postExternalIdForToken(
         @Header(APP_ID_HEADER) appId: String,
         @Header(APP_SECRET_HEADER) appSecret: String,
