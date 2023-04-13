@@ -6,5 +6,5 @@ import androidx.annotation.Keep
 data class PhoneUsageSendDto(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
-    val createdAt: String
+    val eventTimeStamp: String
 )

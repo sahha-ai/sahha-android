@@ -38,6 +38,5 @@ fun SleepDto.toSleepSendDto(): SleepSendDto {
         sleepStage,
         startDateTime,
         endDateTime,
-        createdAt,
     )
 }
