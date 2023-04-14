@@ -50,7 +50,7 @@ interface SahhaApi {
         @Body sleepData: List<SleepSendDto>
     ): Call<ResponseBody>
 
-    @POST("profile/deviceActivity/lock")
+    @POST("profile/deviceLockActivity/log")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>
