@@ -27,6 +27,7 @@ import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
+import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
@@ -36,6 +37,7 @@ import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
@@ -494,5 +496,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun getSensorDataUseCase(sensorRepo: SensorRepo): GetSensorDataUseCase {
         return GetSensorDataUseCase(sensorRepo)
+    }
+
+    @Singleton
+    @Provides
+    fun providePostChunkManager(): PostChunkManager {
+        return PostChunkManagerImpl()
     }
 }

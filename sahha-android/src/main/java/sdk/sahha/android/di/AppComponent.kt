@@ -19,6 +19,7 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
@@ -55,6 +56,7 @@ internal interface AppComponent {
     val receiverManager: ReceiverManager
     val permissionHandler: PermissionHandler
     val permissionManager: PermissionManager
+    val postChunkManager: PostChunkManager
     val encryptedSharedPreferences: SharedPreferences
     val sahhaErrorLogger: SahhaErrorLogger
 

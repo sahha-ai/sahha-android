@@ -20,7 +20,7 @@ interface SahhaApi {
         @Body profileId: String
     ): Response<TokenData>
 
-    @POST("profile/app/token")
+    @POST("oauth/profile/register/appId")
     suspend fun postExternalIdForToken(
         @Header(APP_ID_HEADER) appId: String,
         @Header(APP_SECRET_HEADER) appSecret: String,
@@ -38,19 +38,19 @@ interface SahhaApi {
         @Body refreshToken: RefreshTokenSendDto
     ): Response<TokenData>
 
-    @POST("movement/log")
+    @POST("profile/movement/log")
     fun postStepData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<StepDto>
     ): Call<ResponseBody>
 
-    @POST("sleep/log")
+    @POST("profile/sleep/log")
     fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepSendDto>
     ): Call<ResponseBody>
 
-    @POST("deviceActivity/lock")
+    @POST("profile/deviceLockActivity/log")
     fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>
