@@ -9,5 +9,4 @@ data class SleepSendDto(
     val sleepStage: String,
     val startDateTime: String,
     val endDateTime: String,
-    val createdAt: String,
 )

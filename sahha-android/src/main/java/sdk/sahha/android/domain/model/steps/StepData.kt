@@ -24,7 +24,7 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(createdAt: String): StepDto {
+fun StepData.toStepDto(): StepDto {
     return StepDto(
         getDataType(source),
         count,
@@ -32,7 +32,6 @@ fun StepData.toStepDto(createdAt: String): StepDto {
         false,
         detectedAt,
         detectedAt,
-        createdAt
     )
 }
 
