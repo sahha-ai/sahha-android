@@ -487,6 +487,14 @@ class SensorRepoImpl(
                                         deferredResult.complete(Unit)
                                     }
                                 }
+                                SahhaSensor.heart -> {
+                                    //TODO: Not yet implemented
+                                    deferredResult.complete(Unit)
+                                }
+                                SahhaSensor.blood -> {
+                                    //TODO: Not yet implemented
+                                    deferredResult.complete(Unit)
+                                }
                             }
                         } finally {
                             mutex.unlock()
