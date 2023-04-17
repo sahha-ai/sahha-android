@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
-import sdk.sahha.android.data.remote.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.SleepDto
 
 @Dao
 interface SleepDao {

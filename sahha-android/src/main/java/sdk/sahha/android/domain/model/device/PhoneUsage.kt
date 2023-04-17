@@ -2,7 +2,7 @@ package sdk.sahha.android.domain.model.device
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
+import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
 
 
 @Entity

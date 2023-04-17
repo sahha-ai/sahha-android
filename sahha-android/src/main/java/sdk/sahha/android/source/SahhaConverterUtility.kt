@@ -9,12 +9,12 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
-import sdk.sahha.android.data.remote.dto.SleepDto
-import sdk.sahha.android.data.remote.dto.StepDto
-import sdk.sahha.android.data.remote.dto.send.DeviceInformationSendDto
-import sdk.sahha.android.data.remote.dto.send.PhoneUsageSendDto
-import sdk.sahha.android.data.remote.dto.send.SleepSendDto
-import sdk.sahha.android.data.remote.dto.toSleepSendDto
+import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.DeviceInformationSendDto
+import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.toSleepSendDto
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
@@ -125,8 +125,7 @@ object SahhaConverterUtility {
     }
 
     internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        val createdAt = Sahha.di.timeManager.nowInISO()
-        return stepData.map { it.toStepDto(createdAt) }
+        return stepData.map { it.toStepDto() }
     }
 
     internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {

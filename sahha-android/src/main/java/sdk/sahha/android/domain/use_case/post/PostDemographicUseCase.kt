@@ -1,10 +1,11 @@
 package sdk.sahha.android.domain.use_case.post
 
-import sdk.sahha.android.domain.repository.RemoteRepo
+import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.source.SahhaDemographic
+import javax.inject.Inject
 
-class PostDemographicUseCase (
-    private val repository: RemoteRepo
+class PostDemographicUseCase @Inject constructor (
+    private val repository: UserDataRepo
 ) {
     suspend operator fun invoke(
         sahhaDemographic: SahhaDemographic,

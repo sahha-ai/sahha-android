@@ -9,16 +9,17 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.13.3"
+def gVersionName = "0.14.0"
 
 android {
     compileSdk 31
 
     defaultConfig {
-        minSdk 21
+        minSdk 26
         targetSdk 31
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+//        testInstrumentationRunnerArguments clearPackageData: 'true'
 
         consumerProguardFiles "consumer-rules.pro"
 
@@ -81,8 +82,8 @@ dependencies {
     implementation 'androidx.work:work-testing:2.7.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    debugImplementation "androidx.test:monitor:1.6.1"
 
     // Room
     api("androidx.room:room-runtime:2.4.2")
@@ -94,6 +95,15 @@ dependencies {
     implementation("androidx.room:room-ktx:2.4.2")
     // optional - Test helpers
     testImplementation("androidx.room:room-testing:2.4.2")
+    androidTestImplementation 'androidx.room:room-testing:2.3.0'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+
+    // Security
+    implementation "androidx.security:security-crypto:1.0.0"
+
+    // Dagger
+    implementation 'com.google.dagger:dagger:2.45'
+    kapt 'com.google.dagger:dagger-compiler:2.45'
 
     // Retrofit for API calls
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
@@ -122,6 +132,7 @@ dependencies {
     androidTestImplementation "com.linkedin.dexmaker:dexmaker:2.28.1"
     androidTestImplementation "io.mockk:mockk-android:1.10.5"
     androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test:core:1.4.0'
 }
 
 afterEvaluate {

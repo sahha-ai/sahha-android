@@ -11,9 +11,9 @@ import sdk.sahha.android.source.Sahha
 class StepCounterListener : SensorEventListener2 {
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         sensorEvent?.also { event ->
-            Sahha.di.mainScope.launch {
+            Sahha.di.ioScope.launch {
                 val totalSteps = event.values[0].toInt()
-                val detectedDateTime = Sahha.timeManager.nowInISO()
+                val detectedDateTime = Sahha.di.timeManager.nowInISO()
 
                 val stepData = checkStepCountDuplicate(
                     totalSteps,

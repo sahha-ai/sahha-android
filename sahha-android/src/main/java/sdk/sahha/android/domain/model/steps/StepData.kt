@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.steps
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.remote.dto.StepDto
+import sdk.sahha.android.domain.model.dto.StepDto
 
 @Entity
 data class StepData(
@@ -24,7 +24,7 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(createdAt: String): StepDto {
+fun StepData.toStepDto(): StepDto {
     return StepDto(
         getDataType(source),
         count,
@@ -32,7 +32,6 @@ fun StepData.toStepDto(createdAt: String): StepDto {
         false,
         detectedAt,
         detectedAt,
-        createdAt
     )
 }
 
