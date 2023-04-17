@@ -9,7 +9,7 @@ class PostStepDataUseCase @Inject constructor  (
 ) {
     suspend operator fun invoke(
         stepData: List<StepData>,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         repository.postStepData(
             stepData,

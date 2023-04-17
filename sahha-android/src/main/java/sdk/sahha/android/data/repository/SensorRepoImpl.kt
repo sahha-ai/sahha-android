@@ -297,6 +297,7 @@ class SensorRepoImpl(
 
             val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(stepData))
             val response = getStepResponse(stepDtoData) ?: return
+            Log.d(tag, "Content length: " + response.request().body?.contentLength().toString())
             handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
                 if (stepData.count() > Constants.MAX_STEP_POST_VALUE)
                     movementDao.clearFirstStepData(Constants.MAX_STEP_POST_VALUE)

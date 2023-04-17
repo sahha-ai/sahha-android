@@ -1,7 +1,6 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.launch
@@ -14,6 +13,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "StepPostWorker"
+private const val STEP_CHUNK_LIMIT = 37
 
 class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
@@ -22,35 +22,6 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
         SahhaReconfigure(context)
         return postStepData()
     }
-
-    internal suspend fun performChunking(data: List<StepData>): Boolean =
-        suspendCoroutine<Boolean> { outerCont ->
-            Log.d(tag, "perform chunking")
-            Sahha.di.defaultScope.launch {
-                val chunkResult = Sahha.di.postChunkManager.sendDataInChunks(
-                    data
-                ) { chunk ->
-                    suspendCoroutine<Boolean> { cont ->
-                        launch {
-                            Log.d(tag, "postStepData count: ${Sahha.di.movementDao.getAllStepData()}")
-                            Sahha.sim.sensor.postStepDataUseCase(chunk) { _, success ->
-                                Log.d(tag, "postStepData success: $success")
-                                if (success) {
-                                    launch {
-                                        Sahha.di.movementDao.clearStepData(chunk)
-                                        Log.d(tag, "postStepData count: ${Sahha.di.movementDao.getAllStepData()}")
-                                        cont.resume(true)
-                                    }
-                                } else {
-                                    cont.resume(false)
-                                }
-                            }
-                        }
-                    }
-                }
-                outerCont.resume(chunkResult)
-            }
-        }
 
     internal suspend fun postStepData(lockTester: (() -> Unit)? = null): Result {
         val mutex = Sahha.di.sensorMutexMap[SahhaSensor.pedometer] ?: return Result.success()
@@ -62,7 +33,17 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
                     Sahha.di.ioScope.launch {
                         if (status == SahhaSensorStatus.enabled) {
                             val data = Sahha.di.movementDao.getAllStepData()
-                            performChunking(data)
+                            Sahha.di.postChunkManager.postAllChunks(
+                                data, STEP_CHUNK_LIMIT
+                            ) { chunkedData ->
+                                suspendCoroutine { cont ->
+                                    launch {
+                                        Sahha.sim.sensor.postStepDataUseCase(chunkedData) { error, success ->
+                                            cont.resume(success)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
