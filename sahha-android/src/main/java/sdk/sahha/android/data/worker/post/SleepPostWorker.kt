@@ -25,7 +25,7 @@ class SleepPostWorker(private val context: Context, workerParameters: WorkerPara
         if (mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.sim.sensor.postSleepDataUseCase()
+                Sahha.sim.sensor.postSleepDataUseCase(Sahha.di.sleepDao.getSleepDto())
             } finally {
                 mutex.unlock()
             }

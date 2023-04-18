@@ -13,8 +13,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.ResponseBody
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.data.Constants
@@ -26,12 +24,14 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
 import sdk.sahha.android.domain.model.config.toSetOfSensors
+import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -287,24 +287,23 @@ class SensorRepoImpl(
 
     override suspend fun postStepData(
         stepData: List<StepData>,
-        callback: ((error: String?, successful: Boolean) -> Unit)?
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
             if (stepData.isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.pedometer), false) }
+                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.pedometer), false)
                 return
             }
 
             val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(stepData))
             val response = getStepResponse(stepDtoData) ?: return
-            Log.d(tag, "Content length: " + response.request().body?.contentLength().toString())
-            handleResponse(response, { getStepResponse(stepDtoData) }, callback) {
-                if (stepData.count() > Constants.MAX_STEP_POST_VALUE)
-                    movementDao.clearFirstStepData(Constants.MAX_STEP_POST_VALUE)
-                else clearLocalStepData()
-            }
+            Log.d(
+                tag,
+                "Content length step: " + response.raw().request.body?.contentLength().toString()
+            )
+            handleResponse(response, { getStepResponse(stepDtoData) }, callback)
         } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
+            callback?.invoke(e.message, false)
 
             sahhaErrorLogger.application(
                 e.message,
@@ -314,19 +313,24 @@ class SensorRepoImpl(
         }
     }
 
-    override suspend fun postSleepData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
+    override suspend fun postSleepData(
+        sleepData: List<SleepDto>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
         try {
-            if (sleepDao.getSleepDto().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), false) }
+            if (sleepData.isEmpty()) {
+                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), false)
                 return
             }
 
-            val response = getSleepResponse()
-            handleResponse(response, { getSleepResponse() }, callback) {
-                clearLocalSleepData()
-            }
+            val response = getSleepResponse(sleepData)
+            Log.d(
+                tag,
+                "Content length sleep: " + response.raw().request.body?.contentLength().toString()
+            )
+            handleResponse(response, { getSleepResponse(sleepData) }, callback)
         } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
+            callback?.invoke(e.message, false)
 
             sahhaErrorLogger.application(
                 e.message,
@@ -336,19 +340,25 @@ class SensorRepoImpl(
         }
     }
 
-    override suspend fun postPhoneScreenLockData(callback: ((error: String?, successful: Boolean) -> Unit)?) {
+    override suspend fun postPhoneScreenLockData(
+        phoneLockData: List<PhoneUsage>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
         try {
-            if (deviceDao.getUsages().isEmpty()) {
-                callback?.also { it(SahhaErrors.localDataIsEmpty(SahhaSensor.device), false) }
+            if (phoneLockData.isEmpty()) {
+                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.device), false)
                 return
             }
 
-            val call = getPhoneScreenLockResponse()
-            handleResponse(call, { getPhoneScreenLockResponse() }, callback) {
-                clearLocalPhoneScreenLockData()
-            }
+            val response = getPhoneScreenLockResponse(phoneLockData)
+            Log.d(
+                tag,
+                "Content length phone lock: " + response.raw().request.body?.contentLength()
+                    .toString()
+            )
+            handleResponse(response, { getPhoneScreenLockResponse(phoneLockData) }, callback)
         } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
+            callback?.invoke(e.message, false)
 
             sahhaErrorLogger.application(
                 e.message,
@@ -378,7 +388,7 @@ class SensorRepoImpl(
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         if (response.code() == 204) {
-            callback?.also { it(null, "{}") }
+            callback?.invoke(null, "{}")
             return
         }
 
@@ -386,67 +396,57 @@ class SensorRepoImpl(
         val bodyString = reader?.readText()
         val json = JSONObject(bodyString ?: "")
         val jsonString = json.toString(6)
-        callback?.also { it(null, jsonString) }
+        callback?.invoke(null, jsonString)
     }
 
     private suspend fun handleResponse(
-        call: Call<ResponseBody>,
-        retryLogic: suspend (() -> Call<ResponseBody>),
-        callback: ((error: String?, successful: Boolean) -> Unit)?,
-        successfulLogic: (suspend () -> Unit)
+        response: Response<ResponseBody>,
+        retryLogic: suspend (() -> Response<ResponseBody>),
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?,
+        successfulLogic: (suspend () -> Unit)? = null
     ) {
-        call.enqueue(
-            object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: Response<ResponseBody>
-                ) {
-                    ioScope.launch {
-                        if (ResponseCode.isUnauthorized(response.code())) {
-                            callback?.also { it(SahhaErrors.attemptingTokenRefresh, false) }
-                            SahhaResponseHandler.checkTokenExpired(response.code()) {
-                                val retryResponse = retryLogic()
-                                handleResponse(
-                                    retryResponse,
-                                    retryLogic,
-                                    callback,
-                                    successfulLogic
-                                )
-                            }
-                            return@launch
-                        }
-
-                        if (ResponseCode.isSuccessful(response.code())) {
-                            successfulLogic()
-                            callback?.also {
-                                it(null, true)
-                            }
-                            return@launch
-                        }
-
-                        callback?.also {
-                            it(
-                                "${response.code()}: ${response.message()}",
-                                false
-                            )
-                        }
-
-                        sahhaErrorLogger.api(call, response)
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    callback?.also { it(t.message, false) }
-
-                    sahhaErrorLogger.api(
-                        call,
-                        SahhaErrors.typeResponse,
-                        null,
-                        t.message ?: SahhaErrors.responseFailure
+        try {
+            if (ResponseCode.isUnauthorized(response.code())) {
+                callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
+                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                    val retryResponse = retryLogic()
+                    handleResponse(
+                        retryResponse,
+                        retryLogic,
+                        callback,
+                        successfulLogic
                     )
                 }
+                return
             }
-        )
+
+            if (ResponseCode.isSuccessful(response.code())) {
+                successfulLogic?.invoke()
+                callback?.also {
+                    it(null, true)
+                }
+                return
+            }
+
+            callback?.also {
+                it(
+                    "${response.code()}: ${response.message()}",
+                    false
+                )
+            }
+
+            sahhaErrorLogger.api(response, SahhaErrors.typeResponse)
+        } catch (e: Exception) {
+            callback?.also {
+                it(e.message, false)
+            }
+
+            sahhaErrorLogger.application(
+                e.message,
+                "handleResponse",
+                response.message(),
+            )
+        }
     }
 
     private suspend fun postSensorData(
@@ -466,7 +466,7 @@ class SensorRepoImpl(
                         try {
                             when (sensor) {
                                 SahhaSensor.sleep -> {
-                                    postSleepData { error, successful ->
+                                    postSleepData(sleepDao.getSleepDto()) { error, successful ->
                                         error?.also { errorSummary += "$it\n" }
                                         reschedulWorker(SahhaSensor.sleep)
                                         successfulResults.add(successful)
@@ -474,7 +474,7 @@ class SensorRepoImpl(
                                     }
                                 }
                                 SahhaSensor.device -> {
-                                    postPhoneScreenLockData { error, successful ->
+                                    postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
                                         error?.also { errorSummary += "$it\n" }
                                         reschedulWorker(SahhaSensor.device)
                                         successfulResults.add(successful)
@@ -535,7 +535,7 @@ class SensorRepoImpl(
         deviceDao.clearUsages()
     }
 
-    private fun getStepResponse(stepData: List<StepDto>): Call<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
         val token = authRepo.getToken()!!
         return api.postStepData(
             TokenBearer(token),
@@ -543,19 +543,19 @@ class SensorRepoImpl(
         )
     }
 
-    private suspend fun getSleepResponse(): Call<ResponseBody> {
+    private suspend fun getSleepResponse(sleepData: List<SleepDto>): Response<ResponseBody> {
         val token = authRepo.getToken()!!
         return api.postSleepDataRange(
             TokenBearer(token),
-            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepDao.getSleepDto())
+            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
         )
     }
 
-    private suspend fun getPhoneScreenLockResponse(): Call<ResponseBody> {
+    private suspend fun getPhoneScreenLockResponse(phoneLockData: List<PhoneUsage>): Response<ResponseBody> {
         val token = authRepo.getToken()!!
         return api.postDeviceActivityRange(
             TokenBearer(token),
-            SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(deviceDao.getUsages())
+            SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
         )
     }
 

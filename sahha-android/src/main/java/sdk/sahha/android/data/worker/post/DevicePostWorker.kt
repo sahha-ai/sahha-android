@@ -1,7 +1,6 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import sdk.sahha.android.common.SahhaReconfigure
@@ -22,7 +21,7 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
         if (mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.sim.sensor.postDeviceDataUseCase()
+                Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.deviceUsageDao.getUsages())
             } finally {
                 mutex.unlock()
             }

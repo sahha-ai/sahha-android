@@ -24,6 +24,7 @@ object SahhaErrors {
     const val noToken = "Error: No token found"
     const val noDemographics = "Error: Demographic data was null"
     const val postingInProgress = "Error: There is already a post in progress, please try again shortly"
+    const val failedToPostAllData = "Error: Failed to post all data, please try again"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

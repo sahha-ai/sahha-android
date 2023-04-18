@@ -39,22 +39,22 @@ interface SahhaApi {
     ): Response<TokenData>
 
     @POST("profile/movement/log")
-    fun postStepData(
+    suspend fun postStepData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<StepDto>
-    ): Call<ResponseBody>
+    ): Response<ResponseBody>
 
     @POST("profile/sleep/log")
-    fun postSleepDataRange(
+    suspend fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepSendDto>
-    ): Call<ResponseBody>
+    ): Response<ResponseBody>
 
     @POST("profile/deviceLockActivity/log")
-    fun postDeviceActivityRange(
+    suspend fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>
-    ): Call<ResponseBody>
+    ): Response<ResponseBody>
 
     @POST("profile/analyze")
     fun analyzeProfile(
