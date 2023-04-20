@@ -5,10 +5,7 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.util.Log
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.ResponseBody
@@ -28,6 +25,7 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -37,11 +35,14 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SensorRepoImpl"
 
 @SuppressLint("NewApi")
-class SensorRepoImpl(
+class SensorRepoImpl @Inject constructor(
     private val context: Context,
     private val defaultScope: CoroutineScope,
     private val ioScope: CoroutineScope,
@@ -51,9 +52,9 @@ class SensorRepoImpl(
     private val movementDao: MovementDao,
     private val authRepo: AuthRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val sensorMutexMap: Map<SahhaSensor, Mutex>,
-    private val api: SahhaApi
-
+    private val mutex: Mutex,
+    private val api: SahhaApi,
+    private val chunkManager: PostChunkManager
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val sensorToWorkerAction = mapOf(
@@ -228,6 +229,7 @@ class SensorRepoImpl(
             TimeUnit.MINUTES
         )
             .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
             .build()
     }
 
@@ -240,6 +242,7 @@ class SensorRepoImpl(
             TimeUnit.MINUTES
         )
             .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
             .build()
     }
 
@@ -252,6 +255,7 @@ class SensorRepoImpl(
             TimeUnit.MINUTES
         )
             .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
             .build()
     }
 
@@ -264,6 +268,7 @@ class SensorRepoImpl(
             TimeUnit.MINUTES
         )
             .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
             .build()
     }
 
@@ -289,84 +294,110 @@ class SensorRepoImpl(
         stepData: List<StepData>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        try {
-            if (stepData.isEmpty()) {
-                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.pedometer), false)
-                return
-            }
-
-            val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(stepData))
-            val response = getStepResponse(stepDtoData) ?: return
-            Log.d(
-                tag,
-                "Content length step: " + response.raw().request.body?.contentLength().toString()
-            )
-            handleResponse(response, { getStepResponse(stepDtoData) }, callback)
-        } catch (e: Exception) {
-            callback?.invoke(e.message, false)
-
-            sahhaErrorLogger.application(
-                e.message,
-                "postStepData",
-                stepData.toString()
-            )
+        val getResponse: suspend (List<StepData>) -> Response<ResponseBody> = { chunk ->
+            val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(chunk))
+            getStepResponse(stepDtoData)
         }
+        postData(
+            stepData,
+            SahhaSensor.pedometer,
+            Constants.STEP_POST_LIMIT,
+            getResponse,
+            movementDao::clearStepData,
+            callback
+        )
     }
 
     override suspend fun postSleepData(
         sleepData: List<SleepDto>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        try {
-            if (sleepData.isEmpty()) {
-                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.sleep), false)
-                return
-            }
-
-            val response = getSleepResponse(sleepData)
-            Log.d(
-                tag,
-                "Content length sleep: " + response.raw().request.body?.contentLength().toString()
-            )
-            handleResponse(response, { getSleepResponse(sleepData) }, callback)
-        } catch (e: Exception) {
-            callback?.invoke(e.message, false)
-
-            sahhaErrorLogger.application(
-                e.message,
-                "postSleepData",
-                sleepDao.getSleepDto().toString()
-            )
-        }
+        postData(
+            sleepData,
+            SahhaSensor.sleep,
+            Constants.SLEEP_POST_LIMIT,
+            this::getSleepResponse,
+            sleepDao::clearSleepDto,
+            callback
+        )
     }
 
     override suspend fun postPhoneScreenLockData(
         phoneLockData: List<PhoneUsage>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
+        postData(
+            phoneLockData,
+            SahhaSensor.device,
+            Constants.DEVICE_LOCK_POST_LIMIT,
+            this::getPhoneScreenLockResponse,
+            deviceDao::clearUsages,
+            callback
+        )
+    }
+
+
+    private suspend fun <T> postData(
+        data: List<T>,
+        sensor: SahhaSensor,
+        chunkLimit: Int,
+        getResponse: suspend (List<T>) -> Response<ResponseBody>,
+        clearData: suspend (List<T>) -> Unit,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
         try {
-            if (phoneLockData.isEmpty()) {
-                callback?.invoke(SahhaErrors.localDataIsEmpty(SahhaSensor.device), false)
+            if (data.isEmpty()) {
+                callback?.invoke(SahhaErrors.localDataIsEmpty(sensor), false)
                 return
             }
 
-            val response = getPhoneScreenLockResponse(phoneLockData)
-            Log.d(
-                tag,
-                "Content length phone lock: " + response.raw().request.body?.contentLength()
-                    .toString()
-            )
-            handleResponse(response, { getPhoneScreenLockResponse(phoneLockData) }, callback)
+            chunkManager.postAllChunks(
+                data,
+                chunkLimit,
+                { chunk ->
+                    sendChunk(chunk, getResponse, clearData)
+                }
+            ) { error, successful ->
+                callback?.invoke(error, successful)
+            }
         } catch (e: Exception) {
-            callback?.invoke(e.message, false)
-
-            sahhaErrorLogger.application(
-                e.message,
-                "postPhoneScreenLockData",
-                deviceDao.getUsages().toString()
-            )
+            handleException(e, "postData", data.toString(), callback)
         }
     }
+
+    private suspend fun <T> sendChunk(
+        chunk: List<T>,
+        getResponse: suspend (List<T>) -> Response<ResponseBody>,
+        clearData: suspend (List<T>) -> Unit,
+    ): Boolean {
+        return suspendCoroutine { cont ->
+            ioScope.launch {
+                val response = getResponse(chunk)
+                Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+
+                handleResponse(response, { getResponse(chunk) }, null) {
+                    clearData(chunk)
+                    cont.resume(true)
+                }
+            }
+        }
+    }
+
+    private suspend fun handleException(
+        e: Exception,
+        functionName: String,
+        data: String,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        callback?.invoke(e.message, false)
+
+        sahhaErrorLogger.application(
+            e.message,
+            functionName,
+            data
+        )
+    }
+
 
     override suspend fun postAllSensorData(
         callback: ((error: String?, successful: Boolean) -> Unit)
@@ -453,67 +484,83 @@ class SensorRepoImpl(
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
         var errorSummary = ""
-        val successfulResults = mutableListOf<Boolean>()
+        var successfulResults = mutableListOf<Boolean>()
 
         val sensors = Sahha.di.configurationDao.getConfig().toSetOfSensors()
             .ifEmpty { SahhaSensor.values().toSet() }
-        val jobs = sensors.map { sensor ->
-            ioScope.async {
+        if (mutex.tryLock()) {
+            sensors.map { sensor ->
                 val deferredResult = CompletableDeferred<Unit>()
-                val mutex = sensorMutexMap[sensor]
-                if (mutex != null) {
-                    if (mutex.tryLock()) {
-                        try {
-                            when (sensor) {
-                                SahhaSensor.sleep -> {
-                                    postSleepData(sleepDao.getSleepDto()) { error, successful ->
-                                        error?.also { errorSummary += "$it\n" }
-                                        reschedulWorker(SahhaSensor.sleep)
-                                        successfulResults.add(successful)
-                                        deferredResult.complete(Unit)
-                                    }
-                                }
-                                SahhaSensor.device -> {
-                                    postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
-                                        error?.also { errorSummary += "$it\n" }
-                                        reschedulWorker(SahhaSensor.device)
-                                        successfulResults.add(successful)
-                                        deferredResult.complete(Unit)
-                                    }
-                                }
-                                SahhaSensor.pedometer -> {
-                                    postStepData(movementDao.getAllStepData()) { error, successful ->
-                                        error?.also { errorSummary += "$it\n" }
-                                        reschedulWorker(SahhaSensor.pedometer)
-                                        successfulResults.add(successful)
-                                        deferredResult.complete(Unit)
-                                    }
-                                }
-                            }
-                        } finally {
-                            mutex.unlock()
-                        }
-                    } else {
-                        // Mutex is locked, so a posting is already in progress
-                        errorSummary += "${SahhaErrors.postingInProgress}\n"
-                        successfulResults.add(false)
-                        deferredResult.complete(Unit)
-                    }
+                postSensorDataForType(sensor) { error, successful ->
+                    val (updatedErrorSummary, updatedSuccessfulResults) = updateErrorSummaryAndSuccessfulResults(
+                        error,
+                        successful,
+                        errorSummary,
+                        successfulResults
+                    )
+                    errorSummary = updatedErrorSummary
+                    successfulResults = updatedSuccessfulResults
+                    deferredResult.complete(Unit)
                 }
-                deferredResult.await()
             }
-        }
+            mutex.unlock()
 
-        jobs.awaitAll()
-
-
-        if (successfulResults.contains(false)) {
-            callback(errorSummary, false)
-            return
+            if (successfulResults.contains(false)) {
+                callback(errorSummary, false)
+                return
+            }
+        } else {
+            // Mutex is locked, so a posting is already in progress
+            callback(SahhaErrors.postingInProgress, false)
         }
 
         callback(null, true)
     }
+
+    private suspend fun postSensorDataForType(
+        sensor: SahhaSensor,
+        callback: ((error: String?, successful: Boolean) -> Unit)
+    ) {
+        val deferredResult = CompletableDeferred<Unit>()
+        try {
+            when (sensor) {
+                SahhaSensor.sleep -> {
+                    postSleepData(sleepDao.getSleepDto()) { error, successful ->
+                        callback(error, successful)
+                        deferredResult.complete(Unit)
+                    }
+                }
+                SahhaSensor.device -> {
+                    postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
+                        callback(error, successful)
+                        deferredResult.complete(Unit)
+                    }
+                }
+                SahhaSensor.pedometer -> {
+                    postStepData(movementDao.getAllStepData()) { error, successful ->
+                        callback(error, successful)
+                        deferredResult.complete(Unit)
+                    }
+                }
+            }
+        } finally {
+            deferredResult.await()
+        }
+    }
+
+    private fun updateErrorSummaryAndSuccessfulResults(
+        error: String?,
+        successful: Boolean,
+        errorSummary: String,
+        successfulResults: MutableList<Boolean>
+    ): Pair<String, MutableList<Boolean>> {
+        var updatedErrorSummary = errorSummary
+        error?.also { updatedErrorSummary += "$it\n" }
+        reschedulWorker(SahhaSensor.sleep)
+        successfulResults.add(successful)
+        return Pair(updatedErrorSummary, successfulResults)
+    }
+
 
     private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
         sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
@@ -558,6 +605,4 @@ class SensorRepoImpl(
             SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
         )
     }
-
-
 }

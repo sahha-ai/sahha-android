@@ -47,7 +47,7 @@ internal interface AppComponent {
     val sahhaEnvironment: Enum<SahhaEnvironment>
     val database: SahhaDatabase
     val sahhaInteractionManager: SahhaInteractionManager
-    val sensorMutexMap: Map<SahhaSensor, @JvmSuppressWildcards Mutex>
+    val mutex: Mutex
     val sensorRepo: SensorRepo
     val powerManager: PowerManager
     val keyguardManager: KeyguardManager

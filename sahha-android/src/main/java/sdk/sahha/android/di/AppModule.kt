@@ -230,8 +230,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         movementDao: MovementDao,
         authRepo: AuthRepo,
         sahhaErrorLogger: SahhaErrorLogger,
-        sensorMutexMap: Map<SahhaSensor, @JvmSuppressWildcards Mutex>,
-        api: SahhaApi
+        mutex: Mutex,
+        api: SahhaApi,
+        chunkManager: PostChunkManager
     ): SensorRepo {
         return SensorRepoImpl(
             context,
@@ -243,8 +244,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             movementDao,
             authRepo,
             sahhaErrorLogger,
-            sensorMutexMap,
-            api
+            mutex,
+            api,
+            chunkManager
         )
     }
 
@@ -382,8 +384,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideSensorMutexMap(): Map<SahhaSensor, @JvmSuppressWildcards Mutex> {
-        return SahhaSensor.values().associateWith { Mutex() }
+    fun provideMutex(): Mutex {
+        return Mutex()
     }
 
     @Singleton

@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaSensorStatus
+import kotlin.coroutines.resume
 
 private const val tag = "StepPostWorker"
 
@@ -20,23 +20,24 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
     }
 
     internal suspend fun postStepData(lockTester: (() -> Unit)? = null): Result {
-        val mutex = Sahha.di.sensorMutexMap[SahhaSensor.pedometer] ?: return Result.success()
-
-        if (mutex.tryLock()) {
+        return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.getSensorStatus(context) { _, status ->
+                suspendCancellableCoroutine<Result> { cont ->
                     Sahha.di.ioScope.launch {
-                        if (status == SahhaSensorStatus.enabled) {
-                            Sahha.sim.sensor.postStepDataUseCase(Sahha.di.movementDao.getAllStepData())
+                        Sahha.sim.sensor.postStepDataUseCase(Sahha.di.movementDao.getAllStepData()) { _, success ->
+                            if (cont.isActive) {
+                                cont.resume(Result.success())
+                            }
                         }
                     }
                 }
             } finally {
-                mutex.unlock()
+                Sahha.di.mutex.unlock()
             }
+        } else {
+            Result.retry()
         }
-        return Result.success()
     }
 }
 

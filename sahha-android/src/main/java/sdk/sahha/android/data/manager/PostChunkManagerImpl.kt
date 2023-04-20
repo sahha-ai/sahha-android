@@ -11,7 +11,7 @@ class PostChunkManagerImpl : PostChunkManager {
         allData: List<T>,
         limit: Int,
         postData: (suspend (chunkedData: List<T>) -> Boolean),
-        callback: ((error: String?, successful: Boolean) -> Unit)?
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         resetCount()
         val chunkedData = allData.chunked(limit)

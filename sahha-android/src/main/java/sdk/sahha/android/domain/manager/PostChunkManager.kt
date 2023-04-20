@@ -6,6 +6,6 @@ interface PostChunkManager {
         allData: List<T>,
         limit: Int,
         postData: (suspend (chunkedData: List<T>) -> Boolean),
-        callback: ((error: String?, successful: Boolean) -> Unit)? = null
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
     )
 }
