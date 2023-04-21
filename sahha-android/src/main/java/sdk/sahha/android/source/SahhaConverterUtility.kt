@@ -125,8 +125,7 @@ object SahhaConverterUtility {
     }
 
     internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        val createdAt = Sahha.di.timeManager.nowInISO()
-        return stepData.map { it.toStepDto(createdAt) }
+        return stepData.map { it.toStepDto() }
     }
 
     internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {

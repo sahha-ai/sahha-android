@@ -10,5 +10,4 @@ data class StepDto(
     val manuallyEntered: Boolean,
     val startDateTime: String,
     val endDateTime: String,
-    val createdAt: String
 )
