@@ -1,6 +1,7 @@
 package sdk.sahha.android.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -19,6 +20,9 @@ interface SleepDao {
 
     @Query("DELETE FROM SleepDto")
     suspend fun clearSleepDto()
+
+    @Delete
+    suspend fun clearSleepDto(sleep: List<SleepDto>)
 
     // Sleep queue
     @Insert(onConflict = OnConflictStrategy.ABORT)

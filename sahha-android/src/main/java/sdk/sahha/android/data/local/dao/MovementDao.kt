@@ -1,6 +1,7 @@
 package sdk.sahha.android.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -28,6 +29,9 @@ interface MovementDao {
 
     @Query("DELETE FROM StepData WHERE id IN (SELECT id FROM StepData ORDER BY id DESC LIMIT :amount)")
     suspend fun clearFirstStepData(amount: Int)
+
+    @Delete
+    suspend fun clearStepData(stepData: List<StepData>)
 
     // Activity Recognition
     @Insert(onConflict = OnConflictStrategy.REPLACE)

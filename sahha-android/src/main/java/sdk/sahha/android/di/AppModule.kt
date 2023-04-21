@@ -27,6 +27,7 @@ import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbMigrations
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
+import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
@@ -36,6 +37,7 @@ import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
@@ -228,8 +230,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         movementDao: MovementDao,
         authRepo: AuthRepo,
         sahhaErrorLogger: SahhaErrorLogger,
-        sensorMutexMap: Map<SahhaSensor, @JvmSuppressWildcards Mutex>,
-        api: SahhaApi
+        mutex: Mutex,
+        api: SahhaApi,
+        chunkManager: PostChunkManager
     ): SensorRepo {
         return SensorRepoImpl(
             context,
@@ -241,8 +244,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             movementDao,
             authRepo,
             sahhaErrorLogger,
-            sensorMutexMap,
-            api
+            mutex,
+            api,
+            chunkManager
         )
     }
 
@@ -380,119 +384,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideSensorMutexMap(): Map<SahhaSensor, @JvmSuppressWildcards Mutex> {
-        return SahhaSensor.values().associateWith { Mutex() }
+    fun provideMutex(): Mutex {
+        return Mutex()
     }
 
     @Singleton
     @Provides
-    fun saveTokensUseCase(authRepo: AuthRepo): SaveTokensUseCase {
-        return SaveTokensUseCase(authRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun startDataCollectionServiceUseCase(notificationManager: SahhaNotificationManager): StartDataCollectionServiceUseCase {
-        return StartDataCollectionServiceUseCase(notificationManager)
-    }
-
-    @Singleton
-    @Provides
-    fun postStepDataUseCase(sensorRepo: SensorRepo): PostStepDataUseCase {
-        return PostStepDataUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun postSleepDataUseCase(sensorRepo: SensorRepo): PostSleepDataUseCase {
-        return PostSleepDataUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun postDeviceDataUseCase(sensorRepo: SensorRepo): PostDeviceDataUseCase {
-        return PostDeviceDataUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun startCollectingSleepDataUseCase(sensorRepo: SensorRepo): StartCollectingSleepDataUseCase {
-        return StartCollectingSleepDataUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun startPostWorkersUseCase(sensorRepo: SensorRepo): StartPostWorkersUseCase {
-        return StartPostWorkersUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun startCollectingPhoneScreenLockDataUseCase(receiverManager: ReceiverManager): StartCollectingPhoneScreenLockDataUseCase {
-        return StartCollectingPhoneScreenLockDataUseCase(receiverManager)
-    }
-
-    @Singleton
-    @Provides
-    fun startCollectingStepCounterData(sensorRepo: SensorRepo): StartCollectingStepCounterData {
-        return StartCollectingStepCounterData(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun startCollectingStepDetectorData(sensorRepo: SensorRepo): StartCollectingStepDetectorData {
-        return StartCollectingStepDetectorData(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun analyzeProfileUseCase(
-        userDataRepo: UserDataRepo,
-        sahhaTimeManager: SahhaTimeManager,
-        sahhaErrorLogger: SahhaErrorLogger
-    ): AnalyzeProfileUseCase {
-        return AnalyzeProfileUseCase(userDataRepo, sahhaTimeManager, sahhaErrorLogger)
-    }
-
-    @Singleton
-    @Provides
-    fun getDemographicUseCase(userDataRepo: UserDataRepo): GetDemographicUseCase {
-        return GetDemographicUseCase(userDataRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun postDemographicUseCase(userDataRepo: UserDataRepo): PostDemographicUseCase {
-        return PostDemographicUseCase(userDataRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun postAllSensorDataUseCase(sensorRepo: SensorRepo): PostAllSensorDataUseCase {
-        return PostAllSensorDataUseCase(sensorRepo)
-    }
-
-    @Singleton
-    @Provides
-    fun activateUseCase(permissionManager: PermissionManager): ActivateUseCase {
-        return ActivateUseCase(permissionManager)
-    }
-
-    @Singleton
-    @Provides
-    fun openAppSettingsUseCase(permissionManager: PermissionManager): OpenAppSettingsUseCase {
-        return OpenAppSettingsUseCase(permissionManager)
-    }
-
-    @Singleton
-    @Provides
-    fun setPermissionLogicUseCase(permissionManager: PermissionManager): SetPermissionLogicUseCase {
-        return SetPermissionLogicUseCase(permissionManager)
-    }
-
-    @Singleton
-    @Provides
-    fun getSensorDataUseCase(sensorRepo: SensorRepo): GetSensorDataUseCase {
-        return GetSensorDataUseCase(sensorRepo)
+    fun providePostChunkManager(): PostChunkManager {
+        return PostChunkManagerImpl()
     }
 }

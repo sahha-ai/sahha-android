@@ -19,6 +19,9 @@ internal object Constants {
     const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 360L
+    const val SLEEP_POST_LIMIT = 37
+    const val STEP_POST_LIMIT = 34
+    const val DEVICE_LOCK_POST_LIMIT = 98
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"

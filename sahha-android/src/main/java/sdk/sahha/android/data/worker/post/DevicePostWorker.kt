@@ -1,12 +1,13 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensor
+import kotlin.coroutines.resume
 
 private const val tag = "DevicePostWorker"
 
@@ -18,16 +19,21 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
     }
 
     internal suspend fun postDeviceData(lockTester: (() -> Unit)? = null): Result {
-        val mutex = Sahha.di.sensorMutexMap[SahhaSensor.device] ?: return Result.success()
-        if (mutex.tryLock()) {
+        return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.sim.sensor.postDeviceDataUseCase()
+                suspendCancellableCoroutine<Result> { cont ->
+                    Sahha.di.ioScope.launch {
+                        Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.deviceUsageDao.getUsages()) { error, success ->
+                            if (cont.isActive) {
+                                cont.resume(Result.success())
+                            }
+                        }
+                    }
+                }
             } finally {
-                mutex.unlock()
+                Sahha.di.mutex.unlock()
             }
-        }
-
-        return Result.success()
+        } else Result.retry()
     }
 }

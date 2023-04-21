@@ -1,14 +1,15 @@
 package sdk.sahha.android.data.worker.post
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.internal.resumeCancellableWith
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensor
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SleepPostWorker"
 
@@ -20,16 +21,24 @@ class SleepPostWorker(private val context: Context, workerParameters: WorkerPara
     }
 
     internal suspend fun postSleepData(lockTester: (() -> Unit)? = null): Result {
-        val mutex = Sahha.di.sensorMutexMap[SahhaSensor.sleep] ?: return Result.success()
-
-        if (mutex.tryLock()) {
+        return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
             try {
-                Sahha.sim.sensor.postSleepDataUseCase()
+                suspendCancellableCoroutine<Result> { cont ->
+                    Sahha.di.ioScope.launch {
+                        Sahha.sim.sensor.postSleepDataUseCase(Sahha.di.sleepDao.getSleepDto()) { _, success ->
+                            if (cont.isActive) {
+                                cont.resume(Result.success())
+                            }
+                        }
+                    }
+                }
             } finally {
-                mutex.unlock()
+                Sahha.di.mutex.unlock()
             }
+        } else {
+            Result.retry()
         }
-        return Result.success()
     }
+
 }

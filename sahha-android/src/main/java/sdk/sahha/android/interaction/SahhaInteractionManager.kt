@@ -7,9 +7,6 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
-import sdk.sahha.android.domain.use_case.background.StartCollectingStepCounterData
-import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.*
 import java.util.*
 import javax.inject.Inject
