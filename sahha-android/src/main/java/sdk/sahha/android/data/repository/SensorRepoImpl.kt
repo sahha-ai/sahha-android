@@ -163,6 +163,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+                else -> return
             }
             callback("No data found", null)
         } catch (e: Exception) {
@@ -542,14 +543,7 @@ class SensorRepoImpl @Inject constructor(
                         deferredResult.complete(Unit)
                     }
                 }
-                SahhaSensor.heart -> {
-                    // TODO: Not yet implemented
-                    deferredResult.complete(Unit)
-                }
-                SahhaSensor.blood -> {
-                    // TODO: Not yet implemented
-                    deferredResult.complete(Unit)
-                }
+                else -> deferredResult.complete(Unit)
             }
         } finally {
             deferredResult.await()
