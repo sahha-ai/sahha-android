@@ -5,6 +5,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -32,7 +33,7 @@ class DeviceInfoRepoImpl(
     }
 
     override fun getSdkVersion(): String {
-        TODO("Not yet implemented")
+        return BuildConfig.SDK_VERSION_NAME
     }
 
     override suspend fun putDeviceInformation(deviceInformation: DeviceInformation) {

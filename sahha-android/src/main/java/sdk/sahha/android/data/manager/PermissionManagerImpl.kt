@@ -6,6 +6,10 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
+import sdk.sahha.android.BuildConfig
+import sdk.sahha.android.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.SahhaPermissionActivity
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
@@ -17,7 +21,8 @@ import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
 class PermissionManagerImpl @Inject constructor(
-    private val permissionHandler: PermissionHandler
+    private val permissionHandler: PermissionHandler,
+    private val healthConnectClient: HealthConnectClient?,
 ) : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
 
@@ -79,5 +84,22 @@ class PermissionManagerImpl @Inject constructor(
         SahhaPermissions.getSensorStatus(context) {
             callback(null, it)
         }
+    }
+
+    override fun enableHealthConnect(
+        context: Context,
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    ) {
+        if(Build.VERSION.SDK_INT < 34) {
+            println(Build.VERSION.SDK_INT)
+            callback(SahhaErrors.androidVersionTooLow(14), SahhaSensorStatus.unavailable)
+            return
+        }
+
+        healthConnectClient?.also {
+            permissionHandler.activityCallback.requestPermission = callback
+            val intent = Intent(context, SahhaHealthConnectPermissionActivity::class.java)
+            context.startActivity(intent)
+        } ?: callback(SahhaErrors.somethingWentWrong, SahhaSensorStatus.unavailable)
     }
 }

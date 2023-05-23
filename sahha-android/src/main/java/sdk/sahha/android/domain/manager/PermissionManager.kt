@@ -21,4 +21,9 @@ interface PermissionManager {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
+
+    fun enableHealthConnect(
+        context: Context,
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    )
 }

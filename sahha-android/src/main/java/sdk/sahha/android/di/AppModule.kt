@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
@@ -45,17 +46,9 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
-import sdk.sahha.android.domain.use_case.GetDemographicUseCase
-import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
-import sdk.sahha.android.domain.use_case.SaveTokensUseCase
 import sdk.sahha.android.domain.use_case.background.*
-import sdk.sahha.android.domain.use_case.permissions.ActivateUseCase
-import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
-import sdk.sahha.android.domain.use_case.permissions.SetPermissionLogicUseCase
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -259,9 +252,10 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun providePermissionManager(
-        permissionHandler: PermissionHandler
+        permissionHandler: PermissionHandler,
+        healthConnectClient: HealthConnectClient?
     ): PermissionManager {
-        return PermissionManagerImpl(permissionHandler)
+        return PermissionManagerImpl(permissionHandler, healthConnectClient)
     }
 
     @Singleton
@@ -392,5 +386,15 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun providePostChunkManager(): PostChunkManager {
         return PostChunkManagerImpl()
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectClient(context: Context): HealthConnectClient? {
+        return try {
+            HealthConnectClient.getOrCreate(context)
+        } catch (e: Exception) {
+            null
+        }
     }
 }

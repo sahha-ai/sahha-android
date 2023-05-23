@@ -12,6 +12,14 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Health Connect -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE"/>
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
+
     <application>
         <activity
             android:name=".common.SahhaSensorPermissionActivity"
@@ -24,6 +32,18 @@
             android:exported="false"
             android:label="@string/title_activity_sahha_permission"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <!-- Activity to show rationale of Health Connect permissions -->
+        <activity
+            android:name=".SahhaHealthConnectPermissionActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
+            <!-- Handle intent -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
 
         <service android:name=".data.service.DataCollectionService" />
 
@@ -46,4 +66,8 @@
         </receiver>
     </application>
 
+    <!-- Check whether Health Connect is installed or not -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
 </manifest>

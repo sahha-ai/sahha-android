@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import dagger.BindsInstance
 import dagger.Component
 import kotlinx.coroutines.CoroutineScope
@@ -87,4 +88,5 @@ internal interface AppComponent {
     val timeManager: SahhaTimeManager
     val encryptor: Encryptor
     val decryptor: Decryptor
+    val healthConnectClient: HealthConnectClient?
 }

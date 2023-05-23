@@ -12,7 +12,7 @@ secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 def gVersionName = "0.14.1"
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         minSdk 26
@@ -69,7 +69,7 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
@@ -110,6 +110,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
+
+    // Health Connect
+    implementation "androidx.health.connect:connect-client:1.0.0-alpha11"
 
     // Mocking
     testImplementation 'org.mockito:mockito-core:3.12.4'
