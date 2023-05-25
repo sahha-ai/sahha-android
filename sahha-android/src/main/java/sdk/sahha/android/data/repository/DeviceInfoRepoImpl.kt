@@ -2,9 +2,8 @@ package sdk.sahha.android.data.repository
 
 import android.os.Build
 import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
+import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -32,32 +31,41 @@ class DeviceInfoRepoImpl(
     }
 
     override fun getSdkVersion(): String {
-        TODO("Not yet implemented")
+        return BuildConfig.SDK_VERSION_NAME
     }
 
-    override suspend fun putDeviceInformation(deviceInformation: DeviceInformation) {
-        val call = putDeviceInformationResponse(deviceInformation)
-        call.enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (ResponseCode.isSuccessful(response.code())) {
-                    return
+    override suspend fun putDeviceInformation(
+        deviceInformation: DeviceInformation,
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
+        val response = putDeviceInformationResponse(deviceInformation)
+        try {
+            if (ResponseCode.isSuccessful(response.code())) {
+                callback?.invoke(null, true)
+                return
+            }
+
+            when (response.code()) {
+                400 -> {
+                    callback?.invoke("${response.code()}: ${response.message()}", false)
+                    sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
                 }
-
-                sahhaErrorLogger.api(call, response)
+                401 -> {
+                    callback?.invoke("${response.code()}: ${response.message()}", false)
+                    sahhaErrorLogger.api(response, SahhaErrors.typeAuthentication)
+                }
             }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                sahhaErrorLogger.api(
-                    call,
-                    SahhaErrors.typeResponse,
-                    null,
-                    t.message ?: SahhaErrors.responseFailure
-                )
-            }
-        })
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
+            sahhaErrorLogger.application(
+                e.message,
+                "putDeviceInformation",
+                response.message(),
+            )
+        }
     }
 
-    private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Call<ResponseBody> {
+    private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Response<ResponseBody> {
         val token = authRepo.getToken()!!
         return api.putDeviceInformation(
             token,

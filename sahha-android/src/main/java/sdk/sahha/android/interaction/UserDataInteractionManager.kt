@@ -75,19 +75,35 @@ class UserDataInteractionManager @Inject constructor(
         }
     }
 
-    internal suspend fun processAndPutDeviceInfo(context: Context) {
+    internal suspend fun processAndPutDeviceInfo(
+        context: Context,
+        isAuthenticating: Boolean = false,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
         try {
             val lastDeviceInfo = configurationDao.getDeviceInformation()
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
-                    saveAndPutDeviceInfo(context)
-            } ?: saveAndPutDeviceInfo(context)
+                    saveAndPutDeviceInfo(context, callback)
+            } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
+            callback?.invoke(e.message, false)
         }
     }
 
-    private suspend fun saveAndPutDeviceInfo(context: Context) {
+    private suspend fun handleSavingDeviceInfo(
+        context: Context,
+        isAuthenticating: Boolean,
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
+        if (isAuthenticating) saveAndPutDeviceInfo(context, callback)
+    }
+
+    private suspend fun saveAndPutDeviceInfo(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
         val framework = configurationDao.getConfig().framework
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
         val currentDeviceInfo = DeviceInformation(
@@ -95,7 +111,7 @@ class UserDataInteractionManager @Inject constructor(
             appId = packageName
         )
         configurationDao.saveDeviceInformation(currentDeviceInfo)
-        deviceInfoRepo.putDeviceInformation(currentDeviceInfo)
+        deviceInfoRepo.putDeviceInformation(currentDeviceInfo, callback)
     }
 
     private suspend fun deviceInfoIsEqual(

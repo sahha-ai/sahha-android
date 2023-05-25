@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.dto.send
 import androidx.annotation.Keep
 
 @Keep
-data class DeviceInformationSendDto(
+data class DeviceInformationDto(
     val sdkId: String,
     val sdkVersion: String,
     val appId: String,
