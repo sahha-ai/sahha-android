@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
-import sdk.sahha.android.domain.model.dto.send.DeviceInformationSendDto
+import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.source.Sahha
 
 @Entity
@@ -21,8 +21,8 @@ data class DeviceInformation(
     val timeZone: String = Sahha.di.timeManager.getTimezone()
 )
 
-fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationSendDto {
-    return DeviceInformationSendDto(
+fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDto {
+    return DeviceInformationDto(
         sdkId,
         sdkVersion,
         appId,

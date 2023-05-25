@@ -163,6 +163,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+                else -> return
             }
             callback("No data found", null)
         } catch (e: Exception) {

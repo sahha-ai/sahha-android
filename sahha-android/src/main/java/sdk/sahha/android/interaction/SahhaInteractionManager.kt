@@ -1,14 +1,20 @@
 package sdk.sahha.android.interaction
 
 import android.app.Application
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.*
-import java.util.*
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSettings
 import javax.inject.Inject
 
 private const val tag = "SahhaInteractionManager"
@@ -41,10 +47,11 @@ class SahhaInteractionManager @Inject constructor(
 
                 listOf(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                    async { userData.processAndPutDeviceInfo(application) }
                 ).joinAll()
 
-                start(callback)
+                userData.processAndPutDeviceInfo(application) { _, _ ->
+                    start(callback)
+                }
             }
         }
     }

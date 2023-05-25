@@ -85,8 +85,8 @@ interface SahhaApi {
     ): Call<ResponseBody>
 
     @PUT("profile/deviceInformation")
-    fun putDeviceInformation(
+    suspend fun putDeviceInformation(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body deviceInformation: DeviceInformationSendDto
-    ): Call<ResponseBody>
+        @Body deviceInformation: DeviceInformationDto
+    ): Response<ResponseBody>
 }
