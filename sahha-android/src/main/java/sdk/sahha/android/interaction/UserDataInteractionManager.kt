@@ -85,6 +85,7 @@ class UserDataInteractionManager @Inject constructor(
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
                     saveAndPutDeviceInfo(context, callback)
+                callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
@@ -97,7 +98,12 @@ class UserDataInteractionManager @Inject constructor(
         isAuthenticating: Boolean,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        if (isAuthenticating) saveAndPutDeviceInfo(context, callback)
+        if (isAuthenticating) {
+            saveAndPutDeviceInfo(context, callback)
+            return
+        }
+
+        callback?.invoke(null, true)
     }
 
     private suspend fun saveAndPutDeviceInfo(
