@@ -16,15 +16,13 @@ class AnalyzeProfileUseCase @Inject constructor (
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
-        includeSourceData: Boolean,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        repository.getAnalysis(includeSourceData = includeSourceData, callback = callback)
+        repository.getAnalysis(callback = callback)
     }
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
-        includeSourceData: Boolean,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
@@ -45,7 +43,7 @@ class AnalyzeProfileUseCase @Inject constructor (
                     return
                 }
 
-                repository.getAnalysis(datesISO, includeSourceData, callback)
+                repository.getAnalysis(datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(7), null)
 
@@ -69,7 +67,6 @@ class AnalyzeProfileUseCase @Inject constructor (
 
     @JvmName("invokeLocalDateTime")
     suspend operator fun invoke(
-        includeSourceData: Boolean,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
@@ -90,7 +87,7 @@ class AnalyzeProfileUseCase @Inject constructor (
                     return
                 }
 
-                repository.getAnalysis(datesISO, includeSourceData, callback)
+                repository.getAnalysis(datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(

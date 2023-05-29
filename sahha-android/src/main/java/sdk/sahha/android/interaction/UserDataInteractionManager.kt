@@ -29,34 +29,31 @@ class UserDataInteractionManager @Inject constructor(
     private val postDemographicUseCase: PostDemographicUseCase,
 ) {
     fun analyze(
-        includeSourceData: Boolean = false,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(includeSourceData, callback)
+            analyzeProfileUseCase(callback)
         }
     }
 
 
     @JvmName("analyzeDate")
     fun analyze(
-        includeSourceData: Boolean = false,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(includeSourceData, dates, callback)
+            analyzeProfileUseCase(dates, callback)
         }
     }
 
     @JvmName("analyzeLocalDateTime")
     fun analyze(
-        includeSourceData: Boolean = false,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(includeSourceData, dates, callback)
+            analyzeProfileUseCase(dates, callback)
         }
     }
 

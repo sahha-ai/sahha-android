@@ -24,7 +24,6 @@ class UserDataRepoImpl(
 ) : UserDataRepo {
     override suspend fun getAnalysis(
         dates: Pair<String, String>?,
-        includeSourceData: Boolean,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
@@ -33,7 +32,7 @@ class UserDataRepoImpl(
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
-                    getAnalysis(dates, includeSourceData, callback)
+                    getAnalysis(dates, callback)
                 }
                 return
             }
