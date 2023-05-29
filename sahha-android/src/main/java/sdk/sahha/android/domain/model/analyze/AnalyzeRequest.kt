@@ -6,5 +6,4 @@ import androidx.annotation.Keep
 data class AnalyzeRequest(
     val startDateTime: String?,
     val endDateTime: String?,
-    val includeSourceData: Boolean
 )

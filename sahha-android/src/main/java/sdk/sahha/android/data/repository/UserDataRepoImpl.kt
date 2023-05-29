@@ -28,7 +28,7 @@ class UserDataRepoImpl(
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val response = getDetectedAnalysisCall(dates, includeSourceData)
+            val response = getDetectedAnalysisCall(dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
@@ -193,20 +193,16 @@ class UserDataRepoImpl(
 
     private suspend fun getDetectedAnalysisCall(
         datesISO: Pair<String, String>?,
-        includeSourceData: Boolean
     ): Response<ResponseBody> {
         return datesISO?.let { it ->
-            getAnalysisResponse(it.first, it.second, includeSourceData)
-        } ?: getAnalysisResponse(includeSourceData)
+            getAnalysisResponse(it.first, it.second)
+        } ?: getAnalysisResponse()
     }
 
-    private suspend fun getAnalysisResponse(
-        includeSourceData: Boolean
-    ): Response<ResponseBody> {
+    private suspend fun getAnalysisResponse(): Response<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
             null,
             null,
-            includeSourceData
         )
         val token = authRepo.getToken()!!
 
@@ -216,12 +212,10 @@ class UserDataRepoImpl(
     private suspend fun getAnalysisResponse(
         startDate: String,
         endDate: String,
-        includeSourceData: Boolean
     ): Response<ResponseBody> {
         val analyzeRequest = AnalyzeRequest(
             startDate,
             endDate,
-            includeSourceData
         )
         val token = authRepo.getToken()!!
 
