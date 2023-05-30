@@ -30,4 +30,7 @@ interface ConfigurationDao {
 
     @Query("SELECT * FROM DeviceInformation WHERE id=1")
     suspend fun getDeviceInformation(): DeviceInformation?
+
+    @Query("DELETE FROM DeviceInformation")
+    suspend fun clearDeviceInformation()
 }

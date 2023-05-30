@@ -11,7 +11,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
-import sdk.sahha.android.domain.model.dto.send.DeviceInformationSendDto
+import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.dto.toSleepSendDto
@@ -140,7 +140,7 @@ object SahhaConverterUtility {
         }
     }
 
-    internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationSendDto {
+    internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationDto {
         return deviceInfo.toDeviceInformationSendDto()
     }
 

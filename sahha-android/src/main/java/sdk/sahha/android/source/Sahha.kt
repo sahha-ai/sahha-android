@@ -58,29 +58,26 @@ object Sahha {
 
 
     fun analyze(
-        includeSourceData: Boolean = false,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        sim.userData.analyze(includeSourceData, callback)
+        sim.userData.analyze(callback)
     }
 
 
     @JvmName("analyzeDate")
     fun analyze(
-        includeSourceData: Boolean = false,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        sim.userData.analyze(includeSourceData, dates, callback)
+        sim.userData.analyze(dates, callback)
     }
 
     @JvmName("analyzeLocalDateTime")
     fun analyze(
-        includeSourceData: Boolean = false,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        sim.userData.analyze(includeSourceData, dates, callback)
+        sim.userData.analyze(dates, callback)
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
