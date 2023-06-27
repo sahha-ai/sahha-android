@@ -23,7 +23,7 @@ internal const val PERMISSION_ENABLED = "SahhaPermissionActivity.permission_enab
 internal const val PERMISSION_PENDING = "SahhaPermissionActivity.permission_pending"
 internal const val PERMISSION_DISABLED = "SahhaPermissionActivity.permission_disabled"
 
-class SahhaSensorPermissionActivity : AppCompatActivity() {
+internal class SahhaSensorPermissionActivity : AppCompatActivity() {
 
     private val permissionRequestCode = 0
 
@@ -72,7 +72,7 @@ class SahhaSensorPermissionActivity : AppCompatActivity() {
     }
 }
 
-class SahhaSensorStatusActivity : AppCompatActivity() {
+internal class SahhaSensorStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -96,7 +96,7 @@ class SahhaSensorStatusActivity : AppCompatActivity() {
     }
 }
 
-object SahhaPermissions : BroadcastReceiver() {
+internal object SahhaPermissions : BroadcastReceiver() {
 
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 

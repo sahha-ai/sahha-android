@@ -7,7 +7,7 @@ import sdk.sahha.android.data.listeners.StepDetectorListener
 import sdk.sahha.android.data.receiver.PhoneScreenStateReceiver
 import sdk.sahha.android.data.receiver.TimeZoneChangedReceiver
 
-object SahhaReceiversAndListeners {
+internal object SahhaReceiversAndListeners {
     //Receivers
     @RequiresApi(Build.VERSION_CODES.O)
     val screenLocks = PhoneScreenStateReceiver()

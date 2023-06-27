@@ -3,7 +3,7 @@ package sdk.sahha.android.common
 import android.util.Log
 import sdk.sahha.android.source.SahhaSensor
 
-object SahhaErrors {
+internal object SahhaErrors {
     const val typeAuthentication = "authentication"
     const val typeRequest = "request"
     const val typeEncode = "encoding"

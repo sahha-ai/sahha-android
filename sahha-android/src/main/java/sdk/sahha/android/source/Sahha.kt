@@ -3,7 +3,7 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -42,7 +42,7 @@ object Sahha {
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
-        runBlocking {
+        di.defaultScope.launch {
             sim.configure(application, sahhaSettings, callback)
         }
     }
@@ -122,5 +122,17 @@ object Sahha {
         sim.permission.getSensorStatus(context, callback)
     }
 
-
+    //TODO Test, delete after
+    fun ableToReadSteps(): List<String> {
+        val steps = di.healthConnectRepo.getStepData()
+        val stepsString = mutableListOf<String>()
+        steps?.map {
+            stepsString.add(
+                "count: ${it.count}\n" +
+                        "start: ${it.startTime}\n" +
+                        "end: ${it.endTime}"
+            )
+        }
+        return stepsString
+    }
 }

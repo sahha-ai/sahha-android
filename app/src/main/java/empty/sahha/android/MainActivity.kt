@@ -1,27 +1,61 @@
 package empty.sahha.android
 
+import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
-import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.source.*
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSettings
+import java.time.Instant
 import java.time.LocalDateTime
-import java.util.*
+import java.time.temporal.ChronoUnit
+import java.util.Date
 
 const val SEVEN_DAYS_MILLIS = 604800000L
 
@@ -43,7 +77,10 @@ class MainActivity : ComponentActivity() {
             application,
             config,
         ) { error, success ->
-            Toast.makeText(this, error ?: "Successful $success", Toast.LENGTH_LONG).show()
+            lifecycleScope.launch {
+                Toast.makeText(this@MainActivity, error ?: "Successful $success", Toast.LENGTH_LONG)
+                    .show()
+            }
         }
 
         setContent {
@@ -83,6 +120,8 @@ class MainActivity : ComponentActivity() {
                             item {
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                HealthConnectPermission(context = this@MainActivity)
+                                ForegroundQuery(context = this@MainActivity)
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -213,8 +252,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                     } else {
-                                        analyzeResponseLocalDateTime =
-                                            SahhaErrors.androidVersionTooLow(8)
+                                        analyzeResponseLocalDateTime = "Version too low"
                                     }
                                 }) {
                                     Text("Analyze")
@@ -284,5 +322,97 @@ fun Greeting(name: String) {
 fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
+    }
+}
+
+private lateinit var notification: Notification
+
+@Composable
+fun ForegroundQuery(context: Context) {
+    // For HealthConnect
+    val name = "My Service Channel"
+    val descriptionText = "Channel for foreground service"
+    val importance = NotificationManager.IMPORTANCE_MIN
+    val channel = NotificationChannel("tester_channel", name, importance).apply {
+        description = descriptionText
+    }
+    val notificationManager: NotificationManager =
+        context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+    notificationManager.createNotificationChannel(channel)
+
+    Text("Query via ForegroundService")
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        val timeInMillis = Instant.now().plus(10, ChronoUnit.SECONDS).toEpochMilli()
+
+        val alarmIntent = Intent(context, MyAlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
+        Toast.makeText(context, "Alarm set at ${Instant.ofEpochMilli(timeInMillis)}", Toast.LENGTH_LONG).show()
+
+        // Run foreground directly
+//        val serviceIntent = Intent(context, TesterService::class.java)
+//        context.startForegroundService(serviceIntent)
+    }) {
+        Text("Query Test")
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
+}
+
+@Composable
+fun HealthConnectPermission(context: Context) {
+    // TODO Fix invis barrier
+    Text("HealthConnect Permission")
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        val intent = Intent(context, SahhaHealthConnectPermissionActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }) {
+        Text("Grant")
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
+}
+
+class TesterService : Service() {
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        println("Creating notification")
+        val notification: Notification = NotificationCompat.Builder(this, "tester_channel")
+            .setContentTitle("Analytics")
+            .setContentText("Data is being sent...")
+            .setSmallIcon(R.drawable.ic_test)
+            .build()
+
+        println("Notification created")
+        startForeground(12341234, notification)
+        println("Starting foreground")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            SahhaReconfigure(this@TesterService)
+            println("Sahha reconfigured")
+            val result = Sahha.ableToReadSteps()
+            println("Result complete")
+
+            println("Able to read steps: $result")
+
+            delay(5000)
+            stopSelf()
+        }
+
+        return START_NOT_STICKY
+    }
+}
+
+class MyAlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val serviceIntent = Intent(context, TesterService::class.java)
+        context.startForegroundService(serviceIntent)
     }
 }

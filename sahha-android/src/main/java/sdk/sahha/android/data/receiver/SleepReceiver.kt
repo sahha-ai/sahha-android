@@ -96,7 +96,6 @@ class SleepReceiver : BroadcastReceiver() {
                 minutesSlept.toInt(),
                 Sahha.di.timeManager.epochMillisToISO(start),
                 Sahha.di.timeManager.epochMillisToISO(end),
-                Sahha.di.timeManager.nowInISO()
             )
         )
     }

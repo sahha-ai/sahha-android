@@ -25,7 +25,9 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
+import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -54,7 +56,8 @@ class SensorRepoImpl @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val mutex: Mutex,
     private val api: SahhaApi,
-    private val chunkManager: PostChunkManager
+    private val chunkManager: PostChunkManager,
+    private val permissionManager: PermissionManager
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val sensorToWorkerAction = mapOf(
@@ -106,24 +109,46 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
+    private fun checkAndStartWorker(
+        config: SahhaConfiguration,
+        sensorId: Int,
+        startWorker: () -> Unit
+    ) {
+        if (config.sensorArray.contains(sensorId)) startWorker()
+    }
+
     override fun startPostWorkersAsync() {
         defaultScope.launch {
             val config = configDao.getConfig()
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+                checkAndStartWorker(config, SahhaSensor.device.ordinal) {
                     startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
                 }
 
                 if (status == SahhaSensorStatus.enabled) {
-                    if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+                    checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
                         startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
                     }
-                    if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
+                    checkAndStartWorker(config, SahhaSensor.pedometer.ordinal) {
                         startStepPostWorker(15, STEP_POST_WORKER_TAG)
                     }
                 }
+            }
+        }
+    }
+
+    override suspend fun startPostWorkersHealthConnect() {
+        val config = configDao.getConfig()
+        permissionManager.getHealthConnectStatus(context) {
+            _, status ->
+            checkAndStartWorker(config, SahhaSensor.device.ordinal) {
+                startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
+            }
+
+            if (status == SahhaSensorStatus.enabled) {
+
             }
         }
     }
@@ -338,7 +363,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
 
-    private suspend fun <T> postData(
+    override suspend fun <T> postData(
         data: List<T>,
         sensor: SahhaSensor,
         chunkLimit: Int,
@@ -366,7 +391,7 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun <T> sendChunk(
+    override suspend fun <T> sendChunk(
         chunk: List<T>,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
         clearData: suspend (List<T>) -> Unit,
@@ -384,7 +409,7 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun handleException(
+    override suspend fun handleException(
         e: Exception,
         functionName: String,
         data: String,
@@ -543,7 +568,10 @@ class SensorRepoImpl @Inject constructor(
                         deferredResult.complete(Unit)
                     }
                 }
-                else -> deferredResult.complete(Unit)
+                else -> {
+                    callback(null, true)
+                    deferredResult.complete(Unit)
+                }
             }
         } finally {
             deferredResult.await()

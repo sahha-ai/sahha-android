@@ -35,7 +35,7 @@
 
         <!-- Activity to show rationale of Health Connect permissions -->
         <activity
-            android:name=".SahhaHealthConnectPermissionActivity"
+            android:name=".activity.health_connect.SahhaHealthConnectPermissionActivity"
             android:exported="true"
             android:enabled="true"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
@@ -66,8 +66,11 @@
         </receiver>
     </application>
 
-    <!-- Check whether Health Connect is installed or not -->
+    <!-- Check whether these apps are installed or not -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <package android:name="com.sec.android.app.shealth" />
+        <package android:name="com.ouraring.oura" />
+        <package android:name="com.fitbit.FitbitMobile" />
     </queries>
 </manifest>

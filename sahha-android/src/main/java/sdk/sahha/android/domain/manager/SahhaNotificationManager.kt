@@ -11,8 +11,10 @@ interface SahhaNotificationManager {
         _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     )
+
     fun setNewPersistent(
-        icon: Int?, title: String?, shortDescription: String?,
+        icon: Int? = null, title: String? = null, shortDescription: String? = null,
     )
+
     fun notifyWithSettingsIntent(title: String?, shortDescription: String?)
 }

@@ -13,13 +13,11 @@ data class SleepDto(
     val sleepStage: String,
     val startDateTime: String,
     val endDateTime: String,
-    val createdAt: String,
 ) {
     constructor(
         durationInMinutes: Int,
         startDateTime: String,
         endDateTime: String,
-        createdAt: String
     ) : this(
         0,
         Constants.SLEEP_DATA_SOURCE,
@@ -27,7 +25,6 @@ data class SleepDto(
         "asleep",
         startDateTime,
         endDateTime,
-        createdAt
     )
 }
 

@@ -5,7 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 
-object SahhaIntents {
+internal object SahhaIntents {
     fun settings(context: Context): Intent {
         val openSettingsIntent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

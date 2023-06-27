@@ -2,6 +2,10 @@ package sdk.sahha.android.source
 
 import android.content.Context
 import androidx.annotation.Keep
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.StepsRecord
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -9,6 +13,7 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
@@ -23,9 +28,12 @@ import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.toStepDto
+import java.time.ZoneOffset
 
 @Keep
-object SahhaConverterUtility {
+internal object SahhaConverterUtility {
+    private val timeManager by lazy { Sahha.di.timeManager }
+
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
         val jsonObject = JSONObject()
 
@@ -143,6 +151,83 @@ object SahhaConverterUtility {
     internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationDto {
         return deviceInfo.toDeviceInformationSendDto()
     }
+
+    // Health Connect conversions
+    internal fun sleepSessionToSleepDto(
+        sleepSessionData: List<SleepSessionRecord>,
+    ): List<SleepDto> {
+        return sleepSessionData.map {
+            SleepDto(
+                id = -1,
+                source = "Constants.HEALTH_CONNECT_SLEEP_SESSION_DATA_SOURCE",
+                sleepStage = "asleep",
+                durationInMinutes = timeManager.calculateDurationFromInstant(it.startTime, it.endTime) ,
+                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
+                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
+            )
+        }
+    }
+
+    internal fun sleepStageToSleepDto(
+        sleepStageData: List<SleepStageRecord>,
+    ): List<SleepDto> {
+        return sleepStageData.map {
+            SleepDto(
+                durationInMinutes = timeManager.calculateDurationFromInstant(it.startTime, it.endTime),
+                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
+                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
+            )
+        }
+    }
+
+    internal fun healthConnectStepToStepDto(
+        stepData: List<StepsRecord>,
+    ): List<StepDto> {
+        return stepData.map {
+            StepDto(
+                dataType = "Constants.HEALTH_CONNECT_STEP_DATA_TYPE",
+                count = it.count.toInt(),
+                source = "Constants.HEALTH_CONNECT_STEP_DATA_SOURCE",
+                manuallyEntered = false,
+                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
+                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
+            )
+        }
+    }
+
+//    internal fun heartRateToHeartRateSendDto(
+//        heartRateData: List<HeartRateRecord>,
+//        createdAt: String
+//    ): List<HeartRateSendDto> {
+//        return heartRateData.map { record ->
+//            HeartRateSendDto(
+//                startDateTime = timeManager.instantToIsoTime(
+//                    record.startTime,
+//                    record.startZoneOffset
+//                ),
+//                endDateTime = timeManager.instantToIsoTime(record.endTime, record.endZoneOffset),
+//                samples = heartRateSampleToHeartRateSampleSendDto(
+//                    record.samples,
+//                    record.startZoneOffset,
+//                    createdAt
+//                )
+//            )
+//        }
+//    }
+//
+//    private fun heartRateSampleToHeartRateSampleSendDto(
+//        heartRateSamples: List<HeartRateRecord.Sample>,
+//        timeOffset: ZoneOffset?,
+//        createdAt: String
+//    ): List<HeartRateSampleSendDto> {
+//        return heartRateSamples.map { sample ->
+//            HeartRateSampleSendDto(
+//                beatsPerMinute = sample.beatsPerMinute,
+//                timestamp = timeManager.instantToIsoTime(sample.time, timeOffset),
+//                createdAt = createdAt
+//            )
+//        }
+//    }
 
     fun stringToDrawableResource(context: Context, iconString: String?): Int? {
         return try {

@@ -20,11 +20,12 @@ class SensorInteractionManager @Inject constructor(
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
     private val getSensorDataUseCase: GetSensorDataUseCase,
+    private val startHealthConnectPostWorkerUseCase: StartHealthConnectPostWorkerUseCase,
     internal val postSleepDataUseCase: PostSleepDataUseCase,
     internal val postDeviceDataUseCase: PostDeviceDataUseCase,
     internal val postStepDataUseCase: PostStepDataUseCase,
     internal val startCollectingStepCounterData: StartCollectingStepCounterData,
-    internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase
+    internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
 ) {
 
     fun postSensorData(
@@ -46,6 +47,10 @@ class SensorInteractionManager @Inject constructor(
 
     internal fun checkAndStartPostWorkers() {
         if (!Sahha.config.postSensorDataManually) startPostWorkersUseCase()
+    }
+
+    internal fun startHealthConnectPostWorker() {
+        startHealthConnectPostWorkerUseCase()
     }
 
     internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)?) {

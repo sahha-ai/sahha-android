@@ -40,5 +40,4 @@ class SleepPostWorker(private val context: Context, workerParameters: WorkerPara
             Result.retry()
         }
     }
-
 }

@@ -1,4 +1,4 @@
-package sdk.sahha.android
+package sdk.sahha.android.activity.health_connect
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,15 +19,14 @@ import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
-import javax.inject.Inject
 
-class SahhaHealthConnectPermissionActivity @Inject constructor(
-    private val permissionHandler: PermissionHandler,
-    private val healthConnectClient: HealthConnectClient?
-): ComponentActivity() {
+class SahhaHealthConnectPermissionActivity : ComponentActivity() {
+    private val permissionHandler by lazy { Sahha.di.permissionHandler }
+    private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
+
     private val permissions =
         setOf(
             HealthPermission.getReadPermission(HeartRateRecord::class),
@@ -40,18 +39,19 @@ class SahhaHealthConnectPermissionActivity @Inject constructor(
         )
 
     // Create the permissions launcher.
-    private val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+    private val requestPermissionActivityContract =
+        PermissionController.createRequestPermissionResultContract()
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
             if (granted.containsAll(permissions)) {
                 // Permissions successfully granted
                 // PERMISSIONS: Set<string> as of Alpha11
-                permissionHandler.activityCallback.requestPermission
+                permissionHandler.activityCallback.statusCallback
                     ?.invoke(null, SahhaSensorStatus.enabled)
             } else {
                 // Lack of required permissions
-                permissionHandler.activityCallback.requestPermission
+                permissionHandler.activityCallback.statusCallback
                     ?.invoke(null, SahhaSensorStatus.disabled)
             }
         }
@@ -80,13 +80,13 @@ class SahhaHealthConnectPermissionActivity @Inject constructor(
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(permissions)) {
             // Permissions already granted; proceed with inserting or reading data.
-            permissionHandler.activityCallback.requestPermission
+            permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.enabled)
-            finish()
         } else {
-            permissionHandler.activityCallback.requestPermission
+            permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.disabled)
             requestPermissions.launch(permissions)
         }
+        finish()
     }
 }

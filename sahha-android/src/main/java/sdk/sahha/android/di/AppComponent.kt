@@ -26,8 +26,10 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.interaction.SahhaInteractionManager
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaSensor
@@ -49,7 +51,7 @@ internal interface AppComponent {
     val database: SahhaDatabase
     val sahhaInteractionManager: SahhaInteractionManager
     val mutex: Mutex
-    val sensorRepo: SensorRepo
+//    val sensorRepo: SensorRepo
     val powerManager: PowerManager
     val keyguardManager: KeyguardManager
     val sensorManager: SensorManager
@@ -89,4 +91,7 @@ internal interface AppComponent {
     val encryptor: Encryptor
     val decryptor: Decryptor
     val healthConnectClient: HealthConnectClient?
+    val healthConnectRepo: HealthConnectRepo
+
+    val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
 }

@@ -6,8 +6,9 @@ import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensorStatus
 
 class AutoStartReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -17,7 +18,7 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             CoroutineScope(Default).launch {
                 SahhaReconfigure(context)
-                Sahha.sim.start()
+
             }
         }
     }

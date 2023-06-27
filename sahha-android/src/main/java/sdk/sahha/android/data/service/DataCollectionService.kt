@@ -7,7 +7,6 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure

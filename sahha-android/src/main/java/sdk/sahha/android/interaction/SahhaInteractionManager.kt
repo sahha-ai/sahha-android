@@ -5,10 +5,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.Sahha
@@ -19,8 +18,8 @@ import javax.inject.Inject
 
 private const val tag = "SahhaInteractionManager"
 
-class SahhaInteractionManager @Inject constructor(
-    @MainScope private val mainScope: CoroutineScope,
+internal class SahhaInteractionManager @Inject constructor(
+    @DefaultScope private val defaultScope: CoroutineScope,
     internal val auth: AuthInteractionManager,
     internal val permission: PermissionInteractionManager,
     internal val userData: UserDataInteractionManager,
@@ -42,7 +41,7 @@ class SahhaInteractionManager @Inject constructor(
                 return@migrateDataIfNeeded
             }
 
-            mainScope.launch {
+            defaultScope.launch {
                 Sahha.config = configurationDao.getConfig()
 
                 listOf(
@@ -50,15 +49,15 @@ class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 userData.processAndPutDeviceInfo(application) { _, _ ->
-                    start(callback)
+                    startNative(callback)
                 }
             }
         }
     }
 
-    internal fun start(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+    internal fun startNative(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
-            runBlocking {
+            defaultScope.launch {
                 sensorRepo.stopAllWorkers()
                 Sahha.config = configurationDao.getConfig()
                 listOf(
@@ -68,8 +67,22 @@ class SahhaInteractionManager @Inject constructor(
                 callback?.invoke(null, true)
             }
         } catch (e: Exception) {
+            sahhaErrorLogger.application(e.message, "startNative", null)
             callback?.invoke("Error: ${e.message}", false)
-            sahhaErrorLogger.application(e.message, "start", null)
+        }
+    }
+
+    internal fun startHealthConnect(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+        try {
+            defaultScope.launch { 
+                sensorRepo.stopAllWorkers()
+                Sahha.config = configurationDao.getConfig()
+                sensor.startHealthConnectPostWorker()
+                callback?.invoke(null, true)
+            }
+        } catch (e: Exception) {
+            sahhaErrorLogger.application(e.message, "startHealthConnect", null)
+            callback?.invoke("Error: ${e.message}", false)
         }
     }
 
