@@ -91,7 +91,7 @@ class HealthConnectRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun getGrantedPermissions(): Set<String> {
+    override suspend fun getGrantedPermissions(): Set<String> {
         return client?.permissionController?.getGrantedPermissions() ?: setOf()
     }
 
@@ -120,7 +120,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun <T> postData(
+    override suspend fun <T> postData(
         data: List<T>,
         chunkLimit: Int,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
@@ -221,7 +221,7 @@ class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
-    override fun getStepData(): List<StepsRecord>? {
+    override fun getSteps(): List<StepsRecord>? {
         val lastWeek = Instant.now().minus(7, ChronoUnit.DAYS)
         val now = Instant.now()
         return client?.let {
