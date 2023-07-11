@@ -86,7 +86,7 @@ class SensorRepoImpl @Inject constructor(
 
         sensor?.also {
             sensorManager.registerListener(
-                SahhaReceiversAndListeners.stepCounter,
+                SahhaReceiversAndListeners.stepDetector,
                 it,
                 SensorManager.SENSOR_DELAY_NORMAL
             )
@@ -613,5 +613,9 @@ class SensorRepoImpl @Inject constructor(
             TokenBearer(token),
             SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
         )
+    }
+
+    override suspend fun storeStepDto(stepDto: StepDto) {
+        TODO("Not yet implemented")
     }
 }

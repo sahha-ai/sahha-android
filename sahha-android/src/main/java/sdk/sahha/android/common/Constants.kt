@@ -22,6 +22,7 @@ internal object Constants {
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
     const val DEVICE_LOCK_POST_LIMIT = 91
+    const val STEP_SESSION_COOLDOWN_MILLIS = 30000
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
@@ -31,6 +32,7 @@ internal object Constants {
     // Data Type
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
     const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
+    const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
