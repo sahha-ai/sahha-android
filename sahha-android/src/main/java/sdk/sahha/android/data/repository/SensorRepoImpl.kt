@@ -31,6 +31,7 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
@@ -149,6 +150,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 SahhaSensor.sleep -> {
                     val sleepSummary = getSleepDataSummary()
                     if (sleepSummary.isNotEmpty()) {
@@ -156,6 +158,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 SahhaSensor.pedometer -> {
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
@@ -163,6 +166,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 else -> return
             }
             callback("No data found", null)
@@ -531,22 +535,26 @@ class SensorRepoImpl @Inject constructor(
                         deferredResult.complete(Unit)
                     }
                 }
+
                 SahhaSensor.device -> {
                     postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
                 }
+
                 SahhaSensor.pedometer -> {
                     postStepData(movementDao.getAllStepData()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
                 }
+
                 SahhaSensor.heart -> {
                     // TODO: Not yet implemented
                     deferredResult.complete(Unit)
                 }
+
                 SahhaSensor.blood -> {
                     // TODO: Not yet implemented
                     deferredResult.complete(Unit)
@@ -615,7 +623,15 @@ class SensorRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun storeStepDto(stepDto: StepDto) {
-        TODO("Not yet implemented")
+    override suspend fun storeStepSession(stepSession: StepSession) {
+        movementDao.saveStepSession(stepSession)
+    }
+
+    override suspend fun clearStepSessions(stepSessions: List<StepSession>) {
+        movementDao.clearStepSessions(stepSessions)
+    }
+
+    override suspend fun clearAllStepSessions() {
+        movementDao.clearAllStepSessions()
     }
 }

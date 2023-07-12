@@ -8,6 +8,7 @@ import androidx.room.Query
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepSession
 
 @Dao
 interface MovementDao {
@@ -52,4 +53,13 @@ interface MovementDao {
 
     @Query("SELECT * FROM PreviousActivity WHERE id = 1")
     suspend fun getPreviousActivity(): PreviousActivity
+
+    // Step Session
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveStepSession(stepSession: StepSession)
+    @Delete
+    suspend fun clearStepSessions(stepSessions: List<StepSession>)
+    @Query("DELETE FROM StepSession")
+    suspend fun clearAllStepSessions()
 }

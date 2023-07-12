@@ -6,14 +6,14 @@ import android.hardware.SensorEventListener2
 import kotlinx.coroutines.launch
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
 
 class StepDetectorListener : SensorEventListener2 {
     private val steps = hashMapOf<Long, Int>()
     private var sessionSteps = 0
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
-        sensorEvent?.also { event ->
-            val step = event.values[0].toInt()
+        sensorEvent?.also {
             val timestampEpoch = Sahha.di.timeManager.nowInEpoch()
 
             val inSession = checkInSession(timestampEpoch)
@@ -39,12 +39,9 @@ class StepDetectorListener : SensorEventListener2 {
     }
 
     private suspend fun storeSessionSteps() {
-        Sahha.di.sensorRepo.storeStepDto(
-            StepDto(
-                dataType = Constants.CUSTOM_STEP_SESSION_DATA_TYPE,
-                source = Constants.STEP_DETECTOR_DATA_SOURCE,
+        Sahha.di.sensorRepo.storeStepSession(
+            StepSession(
                 count = steps.count(),
-                manuallyEntered = false,
                 startDateTime = Sahha.di.timeManager.epochMillisToISO(steps.keys.first()),
                 endDateTime = Sahha.di.timeManager.epochMillisToISO(steps.keys.last())
             )
