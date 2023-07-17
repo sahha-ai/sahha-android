@@ -11,9 +11,9 @@ import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
 
 class StepDetectorListener : SensorEventListener2 {
-    private val steps = mutableListOf<Long>()
+    internal val steps = mutableListOf<Long>()
+    internal var sessionJob: Job? = null
     private var timestampEpoch = 0L
-    private var sessionJob: Job? = null
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         timestampEpoch = Sahha.di.timeManager.nowInEpoch()
         incrementSessionSteps()
@@ -33,9 +33,9 @@ class StepDetectorListener : SensorEventListener2 {
         }
     }
 
-    private suspend fun storeSessionSteps() {
+    internal suspend fun storeSessionSteps() {
         if (steps.isNotEmpty()) {
-            Sahha.di.sensorRepo.storeStepSession(
+            Sahha.di.sensorRepo.saveStepSession(
                 StepSession(
                     count = steps.count(),
                     startDateTime = Sahha.di.timeManager.epochMillisToISO(steps.first()),
@@ -45,7 +45,7 @@ class StepDetectorListener : SensorEventListener2 {
         }
     }
 
-    private fun resetSessionSteps() {
+    internal fun resetSessionSteps() {
         steps.clear()
     }
 

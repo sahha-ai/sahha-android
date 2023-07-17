@@ -53,6 +53,7 @@
                   <entry key="Pixel_6_API_32" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -101,6 +102,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1472075751">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="Tests" value="458" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1431085345">
           <value>
             <AndroidTestResultsTableState>
@@ -123,6 +137,21 @@
                   <entry key="Duration" value="90" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1360900792">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -448,6 +477,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="382136765">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="428313031">
           <value>
             <AndroidTestResultsTableState>
@@ -485,6 +527,20 @@
                   <entry key="Duration" value="90" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="697137137">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -624,6 +680,8 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -639,7 +697,21 @@
                   <entry key="Pixel_6_API_UpsideDownCake" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1886036507">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>

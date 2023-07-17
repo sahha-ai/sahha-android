@@ -4,7 +4,6 @@ import android.content.Context
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
@@ -55,7 +54,7 @@ interface SensorRepo {
         callback: ((error: String?, successful: Boolean) -> Unit)
     )
 
-    suspend fun storeStepSession(
+    suspend fun saveStepSession(
         stepSession: StepSession
     )
 

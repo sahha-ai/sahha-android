@@ -325,7 +325,7 @@ class SensorRepoImpl @Inject constructor(
         postData(
             stepSessions,
             SahhaSensor.pedometer,
-            Constants.STEP_POST_LIMIT,
+            Constants.STEP_SESSION_POST_LIMIT,
             getResponse,
             this::clearStepSessions,
             callback
@@ -642,7 +642,7 @@ class SensorRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun storeStepSession(stepSession: StepSession) {
+    override suspend fun saveStepSession(stepSession: StepSession) {
         movementDao.saveStepSession(stepSession)
     }
 
