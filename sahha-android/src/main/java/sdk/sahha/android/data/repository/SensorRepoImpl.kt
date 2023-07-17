@@ -563,7 +563,7 @@ class SensorRepoImpl @Inject constructor(
                 }
 
                 SahhaSensor.pedometer -> {
-                    postStepData(movementDao.getAllStepData()) { error, successful ->
+                    postStepSessions(getAllStepSessions()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }

@@ -32,7 +32,7 @@ class SahhaErrorLogger(
     private fun postErrorLog(
         sahhaErrorLog: SahhaErrorLog
     ) {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
 
         sahhaErrorApi.postErrorLog(
             token,
