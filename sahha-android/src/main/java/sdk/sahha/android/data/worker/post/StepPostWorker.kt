@@ -25,7 +25,7 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
             try {
                 suspendCancellableCoroutine<Result> { cont ->
                     Sahha.di.ioScope.launch {
-                        Sahha.sim.sensor.postStepDataUseCase(Sahha.di.movementDao.getAllStepData()) { _, success ->
+                        Sahha.sim.sensor.postStepSessions { _, success ->
                             if (cont.isActive) {
                                 cont.resume(Result.success())
                             }

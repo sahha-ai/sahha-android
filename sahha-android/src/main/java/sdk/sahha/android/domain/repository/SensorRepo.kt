@@ -46,6 +46,11 @@ interface SensorRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
+    suspend fun postStepSessions(
+        stepSessions: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
     suspend fun postAllSensorData(
         callback: ((error: String?, successful: Boolean) -> Unit)
     )
@@ -53,6 +58,8 @@ interface SensorRepo {
     suspend fun storeStepSession(
         stepSession: StepSession
     )
+
+    suspend fun getAllStepSessions(): List<StepSession>
 
     suspend fun clearStepSessions(
         stepSessions: List<StepSession>

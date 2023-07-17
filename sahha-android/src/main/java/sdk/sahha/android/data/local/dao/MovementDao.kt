@@ -58,6 +58,8 @@ interface MovementDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveStepSession(stepSession: StepSession)
+    @Query("SELECT * FROM StepSession")
+    suspend fun getAllStepSessions(): List<StepSession>
     @Delete
     suspend fun clearStepSessions(stepSessions: List<StepSession>)
     @Query("DELETE FROM StepSession")

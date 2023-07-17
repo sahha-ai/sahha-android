@@ -32,6 +32,7 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
+import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
@@ -87,7 +88,7 @@ class SensorRepoImpl @Inject constructor(
 
         sensor?.also {
             sensorManager.registerListener(
-                SahhaReceiversAndListeners.stepDetector,
+                SahhaReceiversAndListeners.stepCounter,
                 it,
                 SensorManager.SENSOR_DELAY_NORMAL
             )
@@ -309,6 +310,24 @@ class SensorRepoImpl @Inject constructor(
             Constants.STEP_POST_LIMIT,
             getResponse,
             movementDao::clearStepData,
+            callback
+        )
+    }
+
+    override suspend fun postStepSessions(
+        stepSessions: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<StepSession>) -> Response<ResponseBody> = { chunk ->
+            val stepDtoData = chunk.map { it.toStepDto() }
+            getStepResponse(stepDtoData)
+        }
+        postData(
+            stepSessions,
+            SahhaSensor.pedometer,
+            Constants.STEP_POST_LIMIT,
+            getResponse,
+            this::clearStepSessions,
             callback
         )
     }
@@ -600,7 +619,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postStepData(
             TokenBearer(token),
             stepData
@@ -608,7 +627,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getSleepResponse(sleepData: List<SleepDto>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
             SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
@@ -616,7 +635,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getPhoneScreenLockResponse(phoneLockData: List<PhoneUsage>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postDeviceActivityRange(
             TokenBearer(token),
             SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
@@ -625,6 +644,10 @@ class SensorRepoImpl @Inject constructor(
 
     override suspend fun storeStepSession(stepSession: StepSession) {
         movementDao.saveStepSession(stepSession)
+    }
+
+    override suspend fun getAllStepSessions(): List<StepSession> {
+        return movementDao.getAllStepSessions()
     }
 
     override suspend fun clearStepSessions(stepSessions: List<StepSession>) {
