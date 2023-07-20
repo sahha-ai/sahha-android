@@ -11,6 +11,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application>
         <activity
@@ -25,7 +26,10 @@
             android:label="@string/title_activity_sahha_permission"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
-        <service android:name=".data.service.DataCollectionService" />
+        <service
+            android:name=".data.service.DataCollectionService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <receiver
             android:name=".data.receiver.SleepReceiver"

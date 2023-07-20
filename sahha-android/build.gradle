@@ -12,11 +12,11 @@ secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 def gVersionName = "0.14.6"
 
 android {
-    compileSdk 31
+    compileSdk 34
 
     defaultConfig {
         minSdk 26
-        targetSdk 31
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 //        testInstrumentationRunnerArguments clearPackageData: 'true'
