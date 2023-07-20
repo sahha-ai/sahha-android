@@ -20,6 +20,13 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
     }
 
     internal suspend fun postStepSessions(lockTester: (() -> Unit)? = null): Result {
+        // Guard: Return and do nothing if there is no auth data
+        if (Sahha.sim.auth.authIsInvalid(
+                Sahha.di.authRepo.getToken(),
+                Sahha.di.authRepo.getRefreshToken()
+            )
+        ) return Result.success()
+
         return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
             try {

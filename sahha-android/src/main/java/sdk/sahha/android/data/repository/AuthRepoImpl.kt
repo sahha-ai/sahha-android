@@ -9,12 +9,13 @@ import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.Constants.UERT
 import sdk.sahha.android.data.Constants.UET
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.model.dto.send.RefreshTokenSendDto
-import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.repository.AuthRepo
 
 private const val tag = "AuthRepoImpl"
+
 class AuthRepoImpl(
     private val api: SahhaApi,
     private val encryptedSharedPreferences: SharedPreferences,
@@ -25,6 +26,19 @@ class AuthRepoImpl(
 
     override fun getRefreshToken(): String? {
         return encryptedSharedPreferences.getString(UERT, null)
+    }
+
+    override suspend fun clearTokenData(callback: suspend (error: String?, success: Boolean) -> Unit) {
+        try {
+            val successful = encryptedSharedPreferences.edit().let {
+                it.remove(UET)
+                it.remove(UERT)
+                it.commit()
+            }
+            callback(null, successful)
+        } catch (e: Exception) {
+            callback(e.message ?: SahhaErrors.somethingWentWrong, false)
+        }
     }
 
     override suspend fun postRefreshToken(
