@@ -5,10 +5,22 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,9 +31,13 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.source.*
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
 
 const val SEVEN_DAYS_MILLIS = 604800000L
 
@@ -117,6 +133,7 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Reconfigure")
                                 }
+                                DeauthenticateView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 OutlinedTextField(
                                     value = appId,
@@ -284,5 +301,27 @@ fun Greeting(name: String) {
 fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
+    }
+}
+
+@Composable
+fun DeauthenticateView() {
+    var status by remember { mutableStateOf("Pending...") }
+
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(status)
+    Button(onClick = {
+        status = "Loading..."
+
+        Sahha.deauthenticate { err, success ->
+            err?.also {
+                status = it
+                return@deauthenticate
+            }
+
+            status = "De-auth successful: $success"
+        }
+    }) {
+        Text("De-authenticate")
     }
 }
