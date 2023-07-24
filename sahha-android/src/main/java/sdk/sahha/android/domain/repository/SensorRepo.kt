@@ -65,4 +65,21 @@ interface SensorRepo {
     )
 
     suspend fun clearAllStepSessions()
+
+    suspend fun saveStepData(
+        stepData: StepData
+    )
+
+    suspend fun getAllStepData(): List<StepData>
+    suspend fun clearStepData(
+        stepData: List<StepData>
+    )
+
+    suspend fun clearAllStepData()
+    suspend fun getExistingStepCount(totalSteps: Int): Int?
+    suspend fun getAllSingleSteps(): List<StepData>
+    suspend fun postStepsHourly(
+        stepsHourly: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
 }

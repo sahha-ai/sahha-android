@@ -24,9 +24,11 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(): StepDto {
+fun StepData.toStepDto(
+    dataType: String = getDataType(source)
+): StepDto {
     return StepDto(
-        getDataType(source),
+        dataType,
         count,
         source,
         false,

@@ -34,6 +34,7 @@ internal object Constants {
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
     const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
     const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
+    const val HOURLY_SINGLE_STEP_DATA_TYPE = "SingleStepHourly"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

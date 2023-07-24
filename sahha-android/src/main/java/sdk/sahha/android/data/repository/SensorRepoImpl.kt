@@ -333,6 +333,28 @@ class SensorRepoImpl @Inject constructor(
         )
     }
 
+    override suspend fun postStepsHourly(
+        stepsHourly: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<StepSession>) -> Response<ResponseBody> = { chunk ->
+            val stepDtoData = chunk.map {
+                it.toStepDto(
+                    dataType = Constants.HOURLY_SINGLE_STEP_DATA_TYPE
+                )
+            }
+            getStepResponse(stepDtoData)
+        }
+        postData(
+            stepsHourly,
+            SahhaSensor.pedometer,
+            Constants.STEP_SESSION_POST_LIMIT,
+            getResponse,
+            this::clearStepSessions,
+            callback
+        )
+    }
+
     override suspend fun postSleepData(
         sleepData: List<SleepDto>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
@@ -657,5 +679,29 @@ class SensorRepoImpl @Inject constructor(
 
     override suspend fun clearAllStepSessions() {
         movementDao.clearAllStepSessions()
+    }
+
+    override suspend fun saveStepData(stepData: StepData) {
+        movementDao.saveStepData(stepData)
+    }
+
+    override suspend fun getAllStepData(): List<StepData> {
+        return movementDao.getAllStepData()
+    }
+
+    override suspend fun clearStepData(stepData: List<StepData>) {
+        movementDao.clearStepData(stepData)
+    }
+
+    override suspend fun clearAllStepData() {
+        movementDao.clearAllStepData()
+    }
+
+    override suspend fun getExistingStepCount(totalSteps: Int): Int? {
+        return movementDao.getExistingStepCount(totalSteps)
+    }
+
+    override suspend fun getAllSingleSteps(): List<StepData> {
+        return movementDao.getSourceStepData(Constants.STEP_DETECTOR_DATA_SOURCE)
     }
 }

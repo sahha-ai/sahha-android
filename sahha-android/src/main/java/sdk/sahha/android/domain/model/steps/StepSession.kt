@@ -13,13 +13,16 @@ data class StepSession(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 )
 
-fun StepSession.toStepDto(): StepDto {
+fun StepSession.toStepDto(
+    dataType: String = Constants.CUSTOM_STEP_SESSION_DATA_TYPE,
+    source: String = Constants.STEP_DETECTOR_DATA_SOURCE
+): StepDto {
     return StepDto(
         count = count,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        dataType = Constants.CUSTOM_STEP_SESSION_DATA_TYPE,
-        source = Constants.STEP_DETECTOR_DATA_SOURCE,
+        dataType = dataType,
+        source = source,
         manuallyEntered = false
     )
 }

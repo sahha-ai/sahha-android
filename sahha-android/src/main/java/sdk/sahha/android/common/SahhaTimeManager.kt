@@ -32,6 +32,10 @@ class SahhaTimeManager {
         }
     }
 
+    fun zonedDateTimeToIso(zdt: ZonedDateTime): String {
+        return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+    }
+
     fun last24HoursInISO(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val last24Hours =

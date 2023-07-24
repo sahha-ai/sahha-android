@@ -29,7 +29,7 @@ class DataCollectionService : Service() {
     override fun onDestroy() {
         unregisterExistingReceiversAndListeners()
         startForegroundService(
-            Intent(this@DataCollectionService, DataCollectionService::class.java)
+            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
@@ -82,7 +82,7 @@ class DataCollectionService : Service() {
     }
 
     private fun startTimeZoneChangedReceiver() {
-        Sahha.di.receiverManager.startTimeZoneChangedReceiver(this)
+        Sahha.di.receiverManager.startTimeZoneChangedReceiver(this.applicationContext)
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
@@ -92,7 +92,7 @@ class DataCollectionService : Service() {
 //                Sahha.di.movementDao,
 //            )
             Sahha.sim.sensor.startCollectingStepDetectorData(
-                this,
+                this.applicationContext,
                 Sahha.di.movementDao,
             )
             return

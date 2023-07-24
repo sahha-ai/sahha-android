@@ -7,6 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sdk.sahha.android.data.Constants
+import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
 
@@ -18,6 +19,21 @@ class StepDetectorListener : SensorEventListener2 {
         timestampEpoch = Sahha.di.timeManager.nowInEpoch()
         incrementSessionSteps()
         processSession()
+
+        // For processing silver layer data
+        storeSingleStep()
+    }
+
+    private fun storeSingleStep() {
+        Sahha.di.ioScope.launch {
+            Sahha.di.sensorRepo.saveStepData(
+                StepData(
+                    Constants.STEP_DETECTOR_DATA_SOURCE,
+                    1,
+                    Sahha.di.timeManager.nowInISO()
+                )
+            )
+        }
     }
 
     private fun incrementSessionSteps() {

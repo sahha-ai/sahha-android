@@ -25,6 +25,9 @@ interface MovementDao {
     @Query("SELECT count FROM StepData WHERE source='AndroidStepCounter' AND count=:count")
     suspend fun getExistingStepCount(count: Int): Int?
 
+    @Query("SELECT * FROM StepData WHERE source=:source")
+    suspend fun getSourceStepData(source: String): List<StepData>
+
     @Query("DELETE FROM StepData")
     suspend fun clearAllStepData()
 
