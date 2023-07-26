@@ -62,18 +62,35 @@ class SensorRepoImpl @Inject constructor(
     private val chunkManager: PostChunkManager
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
-    private val sensorToWorkerAction_old = mapOf(
-        SahhaSensor.sleep to Pair(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker),
-        SahhaSensor.device to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
-        SahhaSensor.pedometer to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker),
-        SahhaSensor.pedometer to Pair(HOURLY_STEP_POST_WORKER_TAG, ::startSilverStepPostWorker)
-    )
     private val sensorToWorkerAction = mapOf(
-        SahhaSensor.sleep to SahhaWorkerAction(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
-        SahhaSensor.device to SahhaWorkerAction(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
-        SahhaSensor.pedometer to SahhaWorkerAction(STEP_POST_WORKER_TAG, ::startStepPostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
-        SahhaSensor.pedometer to SahhaWorkerAction(HOURLY_STEP_POST_WORKER_TAG, ::startSilverStepPostWorker, )
+        SahhaSensor.sleep to listOf(
+            SahhaWorkerAction(
+                SLEEP_POST_WORKER_TAG,
+                ::startSleepPostWorker,
+                Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES
+            )
+        ),
+        SahhaSensor.device to listOf(
+            SahhaWorkerAction(
+                DEVICE_POST_WORKER_TAG,
+                ::startDevicePostWorker,
+                Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES
+            )
+        ),
+        SahhaSensor.pedometer to listOf(
+            SahhaWorkerAction(
+                STEP_POST_WORKER_TAG,
+                ::startStepPostWorker,
+                Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES
+            ),
+            SahhaWorkerAction(
+                HOURLY_STEP_POST_WORKER_TAG,
+                ::startSilverStepPostWorker,
+                Constants.SILVER_DATA_WORKER_REPEAT_INTERVAL_MINUTES
+            )
+        )
     )
+
 
     override suspend fun startStepDetectorAsync(
         context: Context,
@@ -124,18 +141,23 @@ class SensorRepoImpl @Inject constructor(
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-                    startDevicePostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, DEVICE_POST_WORKER_TAG)
-                }
+                if (config.sensorArray.contains(SahhaSensor.device.ordinal))
+                    startWorkerWithSensor(SahhaSensor.device)
 
-                if (status == SahhaSensorStatus.enabled) {
-                    if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-                        startSleepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, SLEEP_POST_WORKER_TAG)
-                    }
-                    if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                        startStepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, STEP_POST_WORKER_TAG)
-                    }
-                }
+                if (status != SahhaSensorStatus.enabled) return@getSensorStatus
+                if (config.sensorArray.contains(SahhaSensor.sleep.ordinal))
+                    startWorkerWithSensor(SahhaSensor.sleep)
+                if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal))
+                    startWorkerWithSensor(SahhaSensor.pedometer)
+            }
+        }
+    }
+
+    private fun startWorkerWithSensor(sensor: Enum<SahhaSensor>) {
+        sensorToWorkerAction[sensor]?.let { workerAction ->
+            workerAction.forEach { (tag, starter, repeat) ->
+                stopWorkerByTag(tag)
+                starter(repeat, tag)
             }
         }
     }
@@ -643,17 +665,9 @@ class SensorRepoImpl @Inject constructor(
     ): Pair<String, MutableList<Boolean>> {
         var updatedErrorSummary = errorSummary
         error?.also { updatedErrorSummary += "$it\n" }
-        reschedulWorker(SahhaSensor.sleep)
+        startWorkerWithSensor(SahhaSensor.sleep)
         successfulResults.add(successful)
         return Pair(updatedErrorSummary, successfulResults)
-    }
-
-
-    private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
-        sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
-            stopWorkerByTag(workerTag)
-            startWorkerAction(Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
-        }
     }
 
     private suspend fun clearLocalStepData() {

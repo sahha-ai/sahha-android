@@ -51,6 +51,7 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="Pixel_6_API_34" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="400" />
                   <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
