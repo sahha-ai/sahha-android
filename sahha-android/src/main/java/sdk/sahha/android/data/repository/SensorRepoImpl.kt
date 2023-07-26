@@ -42,7 +42,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SensorRepoImpl"
-private const val workerRepeatIntervalMinutes = 15L
 
 @SuppressLint("NewApi")
 class SensorRepoImpl @Inject constructor(
@@ -116,15 +115,15 @@ class SensorRepoImpl @Inject constructor(
                 context,
             ) { _, status ->
                 if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-                    startDevicePostWorker(workerRepeatIntervalMinutes, DEVICE_POST_WORKER_TAG)
+                    startDevicePostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, DEVICE_POST_WORKER_TAG)
                 }
 
                 if (status == SahhaSensorStatus.enabled) {
                     if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-                        startSleepPostWorker(workerRepeatIntervalMinutes, SLEEP_POST_WORKER_TAG)
+                        startSleepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, SLEEP_POST_WORKER_TAG)
                     }
                     if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                        startStepPostWorker(workerRepeatIntervalMinutes, STEP_POST_WORKER_TAG)
+                        startStepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, STEP_POST_WORKER_TAG)
                     }
                 }
             }
