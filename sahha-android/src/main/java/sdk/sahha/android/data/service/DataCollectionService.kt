@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
@@ -36,11 +35,13 @@ class DataCollectionService : Service() {
     }
 
     private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
-            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-        ))
+        SahhaErrors.wrapMultipleFunctionTryCatch(
+            tag, "Could not unregister listener", listOf(
+                { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            )
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

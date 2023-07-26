@@ -36,6 +36,7 @@ class SahhaInteractionManager @Inject constructor(
     ) {
         saveConfiguration(sahhaSettings)
 
+        sensorRepo.clearStepCounterData()
         auth.migrateDataIfNeeded { error, success ->
             if (!success) {
                 callback?.invoke(error, false)

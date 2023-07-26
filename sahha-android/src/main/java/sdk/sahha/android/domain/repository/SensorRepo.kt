@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.repository
 
 import android.content.Context
+import androidx.work.WorkInfo
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -84,4 +85,6 @@ interface SensorRepo {
     )
 
     fun startSilverStepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
+    suspend fun clearStepCounterData()
+    suspend fun getWorkerInfoByTag(tag: String): WorkInfo?
 }

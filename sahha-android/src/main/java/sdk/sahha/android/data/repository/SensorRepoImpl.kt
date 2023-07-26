@@ -39,6 +39,7 @@ import sdk.sahha.android.domain.model.worker_action.SahhaWorkerAction
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -257,6 +258,22 @@ class SensorRepoImpl @Inject constructor(
         val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
         val workRequest = getSilverStepPostWorkRequest(checkedIntervalMinutes, workerTag)
         startWorkManager(workRequest, workerTag)
+    }
+
+    override suspend fun getWorkerInfoByTag(tag: String): WorkInfo? {
+        val workInfosByTag = workManager.getWorkInfosByTag(tag)
+        return suspendCoroutine { cont ->
+            workInfosByTag.addListener(
+                Runnable {
+                    try {
+                        val workInfoList = workInfosByTag.get()
+                        cont.resume(workInfoList.first())
+                    } catch (e: Exception) {
+                        cont.resume(null)
+                    }
+                }, Executors.newSingleThreadExecutor()
+            )
+        }
     }
 
     // Force default minimum value of 15 minutes
@@ -745,5 +762,9 @@ class SensorRepoImpl @Inject constructor(
 
     override suspend fun getAllSingleSteps(): List<StepData> {
         return movementDao.getSourceStepData(Constants.STEP_DETECTOR_DATA_SOURCE)
+    }
+
+    override suspend fun clearStepCounterData() {
+        movementDao.clearSourceStepData(Constants.STEP_COUNTER_DATA_SOURCE)
     }
 }

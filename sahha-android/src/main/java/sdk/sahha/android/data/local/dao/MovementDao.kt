@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.steps.StepData
@@ -27,6 +28,9 @@ interface MovementDao {
 
     @Query("SELECT * FROM StepData WHERE source=:source")
     suspend fun getSourceStepData(source: String): List<StepData>
+
+    @Query("DELETE FROM StepData WHERE source=:source")
+    suspend fun clearSourceStepData(source: String)
 
     @Query("DELETE FROM StepData")
     suspend fun clearAllStepData()
