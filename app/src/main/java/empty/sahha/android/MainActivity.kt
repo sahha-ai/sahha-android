@@ -270,11 +270,12 @@ class MainActivity : ComponentActivity() {
                                 Text(postDemo)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    getDemo = "Loading..."
                                     Sahha.getDemographic { error, demographic ->
                                         error?.also { getDemo = it }
                                         demographic?.also {
                                             getDemo =
-                                                "${it.age}, ${it.gender}, ${it.country}, ${it.birthCountry}, ${it.ethnicity}, ${it.occupation}, ${it.industry}, ${it.incomeRange}, ${it.education}, ${it.relationship}, ${it.locale}, ${it.livingArrangement}, ${it.birthDate}"
+                                                "${it.age}\n${it.gender}\n${it.country}\n${it.birthCountry}\n${it.ethnicity}\n${it.occupation}\n${it.industry}\n${it.incomeRange}\n${it.education}\n${it.relationship}\n${it.locale}\n${it.livingArrangement}\n${it.birthDate}"
                                         }
                                     }
                                 }) {

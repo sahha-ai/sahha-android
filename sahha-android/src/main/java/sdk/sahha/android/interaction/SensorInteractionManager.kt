@@ -3,6 +3,7 @@ package sdk.sahha.android.interaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
@@ -30,7 +31,6 @@ class SensorInteractionManager @Inject constructor(
     internal val postSleepDataUseCase: PostSleepDataUseCase,
     internal val postDeviceDataUseCase: PostDeviceDataUseCase,
     internal val postStepDataUseCase: PostStepDataUseCase,
-    internal val startCollectingStepCounterData: StartCollectingStepCounterData,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase
 ) {
@@ -69,6 +69,13 @@ class SensorInteractionManager @Inject constructor(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         repository.postStepSessions(repository.getAllStepSessions(), callback)
+    }
+
+    internal suspend fun postStepsHourly(
+        stepsHourly: List<StepSession>,
+        callback: (suspend (error: String?, success: Boolean) -> Unit)?
+    ) {
+        repository.postStepsHourly(stepsHourly, callback)
     }
 
     private fun startDataCollectionService(

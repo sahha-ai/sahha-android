@@ -50,7 +50,7 @@ class ReceiverManagerImpl(
     }
 
     override fun startTimeZoneChangedReceiver(context: Context) {
-        registerTimeZoneChangedReceiver(context)
+//        registerTimeZoneChangedReceiver(context)
     }
 
     private fun setActivityRecognitionClient() {
@@ -111,22 +111,14 @@ class ReceiverManagerImpl(
     }
 
     private fun registerScreenStateReceiver(serviceContext: Context) {
-        serviceContext.registerReceiver(
+        serviceContext.applicationContext.registerReceiver(
             SahhaReceiversAndListeners.screenLocks,
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_SCREEN_OFF)
-            }
-        )
-    }
-
-    private fun registerTimeZoneChangedReceiver(context: Context) {
-        context.registerReceiver(
-            SahhaReceiversAndListeners.timezoneDetector,
-            IntentFilter().apply {
-                addAction(Intent.ACTION_TIMEZONE_CHANGED)
-            }
+            },
+            Context.RECEIVER_NOT_EXPORTED
         )
     }
 }

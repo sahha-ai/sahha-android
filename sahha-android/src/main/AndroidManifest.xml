@@ -35,13 +35,13 @@
         <receiver
             android:name=".data.receiver.SleepReceiver"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:permission="android.permission.ACTIVITY_RECOGNITION" />
 
         <receiver
             android:name=".data.receiver.AutoStartReceiver"
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -49,6 +49,11 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".data.receiver.TimeZoneChangedReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

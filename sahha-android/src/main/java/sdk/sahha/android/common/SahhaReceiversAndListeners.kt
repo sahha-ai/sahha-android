@@ -9,9 +9,8 @@ import sdk.sahha.android.data.receiver.TimeZoneChangedReceiver
 
 object SahhaReceiversAndListeners {
     //Receivers
-    @RequiresApi(Build.VERSION_CODES.O)
     val screenLocks = PhoneScreenStateReceiver()
-    val timezoneDetector = TimeZoneChangedReceiver()
+//    val timezoneDetector = TimeZoneChangedReceiver()
 
     //Listeners
     val stepDetector = StepDetectorListener()

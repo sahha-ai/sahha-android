@@ -18,7 +18,8 @@ internal object Constants {
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
     const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
-    const val WORKER_REPEAT_INTERVAL_MINUTES = 360L
+    const val DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES = 360L
+    const val SILVER_DATA_WORKER_REPEAT_INTERVAL_MINUTES = 360L
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
     const val STEP_SESSION_POST_LIMIT = 40
@@ -45,6 +46,7 @@ internal object Constants {
     const val SLEEP_POST_WORKER_TAG = "sleepPost"
     const val DEVICE_POST_WORKER_TAG = "devicePost"
     const val STEP_POST_WORKER_TAG = "stepPost"
+    const val HOURLY_STEP_POST_WORKER_TAG = "stepPostHourly"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

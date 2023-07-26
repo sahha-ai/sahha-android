@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
@@ -28,7 +29,8 @@ class DataCollectionService : Service() {
 
     override fun onDestroy() {
         unregisterExistingReceiversAndListeners()
-        startForegroundService(
+        ContextCompat.startForegroundService(
+            this@DataCollectionService.applicationContext,
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
@@ -38,7 +40,6 @@ class DataCollectionService : Service() {
             { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
             { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
             { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
         ))
     }
 
@@ -58,7 +59,7 @@ class DataCollectionService : Service() {
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
                 checkAndStartCollectingScreenLockData()
                 checkAndStartCollectingPedometerData()
-                startTimeZoneChangedReceiver()
+//                startTimeZoneChangedReceiver()
 
                 intent?.also {
                     if (it.action == Constants.ACTION_RESTART_SERVICE) {

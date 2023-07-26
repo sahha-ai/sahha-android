@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
@@ -16,11 +15,12 @@ import kotlin.coroutines.resume
 
 class SilverStepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
+    internal var hourlySteps = listOf<StepSession>()
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
 
         val truncatedStepData = truncateStepDataDates()
-        val hourlySteps = converToHourly(truncatedStepData)
+        hourlySteps = converToHourly(truncatedStepData)
         return postSilverStepData(hourlySteps)
     }
 
@@ -67,7 +67,6 @@ class SilverStepPostWorker(private val context: Context, workerParameters: Worke
                 1,
                 truncatedHourlyIso,
             )
-
             truncatedHourlyData
         }
     }
@@ -84,7 +83,7 @@ class SilverStepPostWorker(private val context: Context, workerParameters: Worke
             try {
                 suspendCancellableCoroutine<Result> { cont ->
                     Sahha.di.ioScope.launch {
-                        Sahha.sim.sensor.postStepSessions { _, _ ->
+                        Sahha.sim.sensor.postStepsHourly(silverStepData) { _, _ ->
                             if (cont.isActive) {
                                 cont.resume(Result.success())
                             }
@@ -97,8 +96,5 @@ class SilverStepPostWorker(private val context: Context, workerParameters: Worke
         } else {
             Result.retry()
         }
-
-        //TODO: Use template above to post hourly data
-        Sahha.di.sensorRepo.postStepsHourly(silverStepData)
     }
 }

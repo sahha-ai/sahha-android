@@ -82,4 +82,6 @@ interface SensorRepo {
         stepsHourly: List<StepSession>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+
+    fun startSilverStepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
 }

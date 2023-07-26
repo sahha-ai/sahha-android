@@ -14,6 +14,7 @@ import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
+import sdk.sahha.android.data.Constants.HOURLY_STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.ConfigurationDao
@@ -25,6 +26,7 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.data.worker.post.silver_format.SilverStepPostWorker
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
@@ -33,6 +35,7 @@ import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.domain.model.worker_action.SahhaWorkerAction
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
@@ -60,10 +63,17 @@ class SensorRepoImpl @Inject constructor(
     private val chunkManager: PostChunkManager
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
-    private val sensorToWorkerAction = mapOf(
+    private val sensorToWorkerAction_old = mapOf(
         SahhaSensor.sleep to Pair(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker),
         SahhaSensor.device to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
-        SahhaSensor.pedometer to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
+        SahhaSensor.pedometer to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker),
+        SahhaSensor.pedometer to Pair(HOURLY_STEP_POST_WORKER_TAG, ::startSilverStepPostWorker)
+    )
+    private val sensorToWorkerAction = mapOf(
+        SahhaSensor.sleep to SahhaWorkerAction(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
+        SahhaSensor.device to SahhaWorkerAction(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
+        SahhaSensor.pedometer to SahhaWorkerAction(STEP_POST_WORKER_TAG, ::startStepPostWorker, Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES),
+        SahhaSensor.pedometer to SahhaWorkerAction(HOURLY_STEP_POST_WORKER_TAG, ::startSilverStepPostWorker, )
     )
 
     override suspend fun startStepDetectorAsync(
@@ -222,6 +232,12 @@ class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag)
     }
 
+    override fun startSilverStepPostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest = getSilverStepPostWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
+
     // Force default minimum value of 15 minutes
     private fun getCheckedIntervalMinutes(interval: Long): Long {
         return if (interval < 15) 15 else interval
@@ -245,6 +261,19 @@ class SensorRepoImpl @Inject constructor(
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<StepPostWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
+            .build()
+    }
+
+    private fun getSilverStepPostWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<SilverStepPostWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
         )
@@ -624,7 +653,7 @@ class SensorRepoImpl @Inject constructor(
     private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
         sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
             stopWorkerByTag(workerTag)
-            startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
+            startWorkerAction(Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
         }
     }
 
