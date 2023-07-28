@@ -10,6 +10,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.coroutines.resume
 
@@ -27,9 +28,14 @@ class SilverStepPostWorker(private val context: Context, workerParameters: Worke
     private fun converToHourly(truncatedStepData: List<StepData>): List<StepSession> {
         val timeSeries = mutableMapOf<String, Int>()
         val hourlyStepSession = mutableListOf<StepSession>()
-        truncatedStepData.forEach {
+
+        for (it in truncatedStepData) {
+            val stepDataIsInCurrentHour = it.detectedAt == getCurrentHourIso(ZonedDateTime.now())
+            if (stepDataIsInCurrentHour) continue // Skip until the hour of data is completed
+
             timeSeries[it.detectedAt] = timeSeries.getOrDefault(it.detectedAt, 0) + 1
         }
+
         timeSeries.forEach {
             hourlyStepSession.add(
                 StepSession(
@@ -40,6 +46,10 @@ class SilverStepPostWorker(private val context: Context, workerParameters: Worke
             )
         }
         return hourlyStepSession
+    }
+
+    private fun getCurrentHourIso(now: ZonedDateTime): String {
+        return Sahha.di.timeManager.zonedDateTimeToIso(now.truncatedTo(ChronoUnit.HOURS))
     }
 
     private fun getEndOfTimeSeries(startTimeIso: String): String {
