@@ -2,7 +2,6 @@ package sdk.sahha.android.data.manager
 
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -119,7 +118,7 @@ class ReceiverManagerImpl(
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_SCREEN_OFF)
             },
-            RECEIVER_NOT_EXPORTED
+            Context.RECEIVER_EXPORTED
         )
     }
 }
