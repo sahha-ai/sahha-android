@@ -31,7 +31,7 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
             try {
                 suspendCancellableCoroutine<Result> { cont ->
                     Sahha.di.ioScope.launch {
-                        Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.deviceUsageDao.getUsages()) { error, success ->
+                        Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.sensorRepo.getAllPhoneUsages()) { error, success ->
                             if (cont.isActive) {
                                 cont.resume(Result.success())
                             }

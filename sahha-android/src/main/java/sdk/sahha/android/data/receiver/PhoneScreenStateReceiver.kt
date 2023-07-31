@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.source.Sahha
 
 class PhoneScreenStateReceiver : BroadcastReceiver() {
@@ -16,19 +17,36 @@ class PhoneScreenStateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         ioScope.launch {
             SahhaReconfigure(context)
-            saveScreenStateAsync()
+            saveScreenStateData()
         }
     }
 
-    private suspend fun saveScreenStateAsync() {
-        Sahha.di.timeManager.also { sahhaTime ->
-            Sahha.di.deviceUsageDao.saveUsage(
-                PhoneUsage(
-                    isLocked = Sahha.di.keyguardManager.isKeyguardLocked,
-                    isScreenOn = Sahha.di.powerManager.isInteractive,
-                    sahhaTime.nowInISO()
-                )
-            )
-        }
+    private suspend fun saveScreenStateData() {
+        val isLocked = Sahha.di.keyguardManager.isKeyguardLocked
+        val isScreenOn = Sahha.di.powerManager.isInteractive
+        val nowInIso = Sahha.di.timeManager.nowInISO()
+
+        saveScreenState(isLocked, isScreenOn, nowInIso)
+        saveScreenStateForSilverLayer(isLocked, isScreenOn, nowInIso)
+    }
+
+    private suspend fun saveScreenState(
+        isLocked: Boolean,
+        isScreenOn: Boolean,
+        nowInIso: String
+    ) {
+        Sahha.di.sensorRepo.savePhoneUsage(
+            PhoneUsage(isLocked, isScreenOn, nowInIso)
+        )
+    }
+
+    private suspend fun saveScreenStateForSilverLayer(
+        isLocked: Boolean,
+        isScreenOn: Boolean,
+        nowInIso: String
+    ) {
+        Sahha.di.sensorRepo.savePhoneUsageSilver(
+            PhoneUsageSilver(isLocked, isScreenOn, nowInIso)
+        )
     }
 }

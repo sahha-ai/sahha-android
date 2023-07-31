@@ -30,6 +30,7 @@ import sdk.sahha.android.data.worker.post.silver_format.SilverStepPostWorker
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
@@ -211,7 +212,7 @@ class SensorRepoImpl @Inject constructor(
 
     private suspend fun getDeviceDataSummary(): String {
         var dataSummary = ""
-        deviceDao.getUsages().forEach {
+        getAllPhoneUsages().forEach {
             dataSummary += "Locked: ${it.isLocked}\nScreen on: ${it.isScreenOn}\nAt: ${it.createdAt}\n\n"
         }
         return dataSummary
@@ -445,7 +446,7 @@ class SensorRepoImpl @Inject constructor(
             SahhaSensor.device,
             Constants.DEVICE_LOCK_POST_LIMIT,
             this::getPhoneScreenLockResponse,
-            deviceDao::clearUsages,
+            this::clearPhoneUsages,
             callback
         )
     }
@@ -646,7 +647,7 @@ class SensorRepoImpl @Inject constructor(
                 }
 
                 SahhaSensor.device -> {
-                    postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
+                    postPhoneScreenLockData(getAllPhoneUsages()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
@@ -766,5 +767,48 @@ class SensorRepoImpl @Inject constructor(
 
     override suspend fun clearStepCounterData() {
         movementDao.clearSourceStepData(Constants.STEP_COUNTER_DATA_SOURCE)
+    }
+
+    override suspend fun savePhoneUsage(phoneUsage: PhoneUsage) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllPhoneUsages(): List<PhoneUsage> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearPhoneUsages(phoneUsages: List<PhoneUsage>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearAllPhoneUsages() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun savePhoneUsageSilver(phoneUsage: PhoneUsageSilver) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllPhoneUsagesSilver(): List<PhoneUsageSilver> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearPhoneUsagesSilver(phoneUsages: List<PhoneUsageSilver>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearAllPhoneUsagesSilver() {
+        TODO("Not yet implemented")
+    }
+
+    override fun startSilverPhoneUsagePostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun postPhoneUsagesHourly(
+        phoneUsagesHourly: List<PhoneUsageSilver>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        TODO("Not yet implemented")
     }
 }

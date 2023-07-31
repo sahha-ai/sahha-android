@@ -3,6 +3,7 @@ package sdk.sahha.android.interaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
@@ -76,6 +77,13 @@ class SensorInteractionManager @Inject constructor(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         repository.postStepsHourly(stepsHourly, callback)
+    }
+
+    internal suspend fun postPhoneUsagesHourly(
+        phoneUsagesHourly: List<PhoneUsageSilver>,
+        callback: (suspend (error: String?, success: Boolean) -> Unit)?
+    ) {
+        repository.postPhoneUsagesHourly(phoneUsagesHourly, callback)
     }
 
     private fun startDataCollectionService(

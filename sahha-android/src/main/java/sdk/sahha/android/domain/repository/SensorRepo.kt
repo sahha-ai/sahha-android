@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkInfo
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
@@ -38,7 +39,8 @@ interface SensorRepo {
     )
 
     suspend fun postPhoneScreenLockData(
-        phoneLockData: List<PhoneUsage>, callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+        phoneLockData: List<PhoneUsage>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
     suspend fun postStepData(
@@ -87,4 +89,21 @@ interface SensorRepo {
     fun startSilverStepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
     suspend fun clearStepCounterData()
     suspend fun getWorkerInfoByTag(tag: String): WorkInfo?
+
+    // Phone Usages
+    suspend fun savePhoneUsage(phoneUsage: PhoneUsage)
+    suspend fun getAllPhoneUsages(): List<PhoneUsage>
+    suspend fun clearPhoneUsages(phoneUsages: List<PhoneUsage>)
+    suspend fun clearAllPhoneUsages()
+
+    // Phone Usages Silver Layer
+    suspend fun savePhoneUsageSilver(phoneUsage: PhoneUsageSilver)
+    suspend fun getAllPhoneUsagesSilver(): List<PhoneUsageSilver>
+    suspend fun clearPhoneUsagesSilver(phoneUsages: List<PhoneUsageSilver>)
+    suspend fun clearAllPhoneUsagesSilver()
+    fun startSilverPhoneUsagePostWorker(repeatIntervalMinutes: Long, workerTag: String)
+    suspend fun postPhoneUsagesHourly(
+        phoneUsagesHourly: List<PhoneUsageSilver>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
 }
