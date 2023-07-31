@@ -77,7 +77,7 @@ class DataCollectionService : Service() {
     }
 
     private fun stopService() {
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
