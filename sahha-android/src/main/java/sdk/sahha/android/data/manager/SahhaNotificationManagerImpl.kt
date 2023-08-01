@@ -40,7 +40,7 @@ class SahhaNotificationManagerImpl(
 
         try {
             context.startForegroundService(
-                Intent(context, DataCollectionService::class.java)
+                Intent(context.applicationContext, DataCollectionService::class.java)
                     .setAction(Constants.ACTION_RESTART_SERVICE)
             )
         } catch (e: Exception) {

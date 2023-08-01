@@ -6,8 +6,10 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
@@ -22,14 +24,17 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
+    private val defaultScope by lazy { CoroutineScope(Dispatchers.Default) }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
+        defaultScope.cancel()
         unregisterExistingReceiversAndListeners()
         startForegroundService(
-            Intent(this@DataCollectionService, DataCollectionService::class.java)
+            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
@@ -44,7 +49,7 @@ class DataCollectionService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
-            Sahha.di.defaultScope.launch {
+            defaultScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
@@ -63,7 +68,7 @@ class DataCollectionService : Service() {
                 intent?.also {
                     if (it.action == Constants.ACTION_RESTART_SERVICE) {
                         stopService()
-                        return@also
+                        return@launch
                     }
                 }
             }
@@ -71,7 +76,6 @@ class DataCollectionService : Service() {
             stopService()
             Log.w(tag, e.message, e)
         }
-
 
         return START_STICKY
     }

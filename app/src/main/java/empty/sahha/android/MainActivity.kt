@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -23,12 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.launch
-import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
@@ -42,16 +45,15 @@ import java.util.Date
 const val SEVEN_DAYS_MILLIS = 604800000L
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
-                icon = R.drawable.ic_test,
-                title = "Test",
-                shortDescription = "This is a test."
+                icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
+                title = "Foreground Service",
+                shortDescription = "This mainly handles the steps and screen locks"
             )
         )
 
@@ -64,10 +66,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SahhasdkemptyTheme {
+                val lfm = LocalFocusManager.current
+
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    color = MaterialTheme.colors.background,
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
                     var permissionStatus by remember { mutableStateOf("") }
@@ -135,6 +140,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 DeauthenticateView()
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                Text(authStatus)
                                 OutlinedTextField(
                                     value = appId,
                                     singleLine = true,
@@ -142,7 +148,12 @@ class MainActivity : ComponentActivity() {
                                         appId = it
                                     }, label = {
                                         Text("App ID")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 OutlinedTextField(
                                     value = appSecret,
                                     singleLine = true,
@@ -150,7 +161,12 @@ class MainActivity : ComponentActivity() {
                                         appSecret = it
                                     }, label = {
                                         Text("App Secret")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 OutlinedTextField(
                                     value = externalId,
                                     singleLine = true,
@@ -158,9 +174,15 @@ class MainActivity : ComponentActivity() {
                                         externalId = it
                                     }, label = {
                                         Text("External ID")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 Button(onClick = {
                                     authStatus = "Loading..."
+
                                     Sahha.authenticate(
                                         appId,
                                         appSecret,
@@ -172,20 +194,12 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Authenticate")
                                 }
-                                Text(authStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.openAppSettings(this@MainActivity)
                                 }) {
                                     Text("Open Settings")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
-
-                                }) {
-                                    Text("Test start")
-                                }
-                                Text(start)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     manualPost = ""
