@@ -5,17 +5,19 @@ import android.content.Context
 import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
 
 class AutoStartReceiver : BroadcastReceiver() {
+    private val defaultScope = CoroutineScope(Default)
     override fun onReceive(context: Context, intent: Intent) {
         if (
             intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED
             || intent.action == Intent.ACTION_BOOT_COMPLETED
         ) {
-            CoroutineScope(Default).launch {
+            defaultScope.launch {
                 SahhaReconfigure(context)
                 Sahha.sim.start()
             }

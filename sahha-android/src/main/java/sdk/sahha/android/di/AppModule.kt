@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import dagger.Module
@@ -16,6 +15,7 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.sync.Mutex
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
@@ -23,6 +23,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.*
@@ -48,6 +49,7 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
+import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -160,21 +162,34 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideSahhaApi(
         environment: Enum<SahhaEnvironment>,
-        gson: GsonConverterFactory
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient
     ): SahhaApi {
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_PROD)
+                .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
         } else {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_DEV)
+                .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaApi::class.java)
         }
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .build()
     }
 
     @Singleton

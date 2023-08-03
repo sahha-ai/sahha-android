@@ -25,6 +25,8 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
@@ -46,8 +48,8 @@ private const val tag = "SensorRepoImpl"
 @SuppressLint("NewApi")
 class SensorRepoImpl @Inject constructor(
     private val context: Context,
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
+    @DefaultScope private val defaultScope: CoroutineScope,
+    @IoScope private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,
     private val deviceDao: DeviceUsageDao,
     private val sleepDao: SleepDao,
@@ -109,21 +111,30 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override fun startPostWorkersAsync() {
-        defaultScope.launch {
+        ioScope.launch {
             val config = configDao.getConfig()
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->
                 if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-                    startDevicePostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, DEVICE_POST_WORKER_TAG)
+                    startDevicePostWorker(
+                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        DEVICE_POST_WORKER_TAG
+                    )
                 }
 
                 if (status == SahhaSensorStatus.enabled) {
                     if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-                        startSleepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, SLEEP_POST_WORKER_TAG)
+                        startSleepPostWorker(
+                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            SLEEP_POST_WORKER_TAG
+                        )
                     }
                     if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-                        startStepPostWorker(Constants.WORKER_REPEAT_INTERVAL_MINUTES, STEP_POST_WORKER_TAG)
+                        startStepPostWorker(
+                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            STEP_POST_WORKER_TAG
+                        )
                     }
                 }
             }
@@ -396,12 +407,17 @@ class SensorRepoImpl @Inject constructor(
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
-                val response = getResponse(chunk)
-                Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+                try {
+                    val response = getResponse(chunk)
+                    Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
-                handleResponse(response, { getResponse(chunk) }, null) {
-                    clearData(chunk)
-                    cont.resume(true)
+                    handleResponse(response, { getResponse(chunk) }, null) {
+                        clearData(chunk)
+                        cont.resume(true)
+                    }
+                } catch (e: Exception) {
+                    cont.resume(false)
+                    Log.w(tag, e.message, e)
                 }
             }
         }

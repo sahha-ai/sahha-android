@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
@@ -24,14 +25,14 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
-    private val defaultScope by lazy { CoroutineScope(Dispatchers.Default) }
+    private val ioScope by lazy { CoroutineScope(Dispatchers.IO) }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
-        defaultScope.cancel()
+        if(ioScope.isActive) ioScope.cancel()
         unregisterExistingReceiversAndListeners()
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
@@ -49,7 +50,7 @@ class DataCollectionService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
-            defaultScope.launch {
+            ioScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()

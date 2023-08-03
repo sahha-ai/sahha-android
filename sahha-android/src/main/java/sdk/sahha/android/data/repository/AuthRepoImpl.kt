@@ -46,15 +46,19 @@ class AuthRepoImpl(
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         val tokenData = getTokenData(callback) ?: return
-        val response = api.postRefreshTokenResponse(
-            TokenBearer(tokenData.profileToken),
-            RefreshTokenSendDto(tokenData.refreshToken)
-        )
+        try {
+            val response = api.postRefreshTokenResponse(
+                TokenBearer(tokenData.profileToken),
+                RefreshTokenSendDto(tokenData.refreshToken)
+            )
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            handleSuccessfulResponse(response, retryLogic, callback)
-        } else {
-            handleFailedResponse(response, callback)
+            if (ResponseCode.isSuccessful(response.code())) {
+                handleSuccessfulResponse(response, retryLogic, callback)
+            } else {
+                handleFailedResponse(response, callback)
+            }
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
         }
     }
 

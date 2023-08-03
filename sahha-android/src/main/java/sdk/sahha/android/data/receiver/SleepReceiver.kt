@@ -31,7 +31,6 @@ class SleepReceiver : BroadcastReceiver() {
     private val ioScope by lazy { CoroutineScope(IO) }
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.w(tag, "onReceive")
         ioScope.launch {
             SahhaReconfigure(context)
             // First check activity permissions
@@ -40,7 +39,6 @@ class SleepReceiver : BroadcastReceiver() {
                 return@launch
             }
 
-            Log.w(tag, "defaultScope")
             // Sleep data is found
             checkSleepData(intent)
         }
@@ -58,13 +56,10 @@ class SleepReceiver : BroadcastReceiver() {
     }
 
     private fun checkSleepData(intent: Intent) {
-        Log.w(tag, "checkSleepData")
         if (SleepSegmentEvent.hasEvents(intent)) {
-            Log.w(tag, "hasEvents")
             val sleepSegmentEvents = SleepSegmentEvent.extractEvents(intent)
 
             Sahha.di.mainScope.launch {
-                Log.w(tag, "ioScope")
                 for (segment in sleepSegmentEvents) {
                     start = segment.startTimeMillis
                     end = segment.endTimeMillis

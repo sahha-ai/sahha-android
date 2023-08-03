@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
@@ -35,12 +37,14 @@
             android:name=".data.receiver.SleepReceiver"
             android:enabled="true"
             android:exported="true"
+            android:attributionTags="com.sahha.android:sleep_receiver"
             android:permission="android.permission.ACTIVITY_RECOGNITION" />
 
         <receiver
             android:name=".data.receiver.AutoStartReceiver"
             android:enabled="true"
             android:exported="true"
+            android:attributionTags="com.sahha.android:auto_start_receiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
