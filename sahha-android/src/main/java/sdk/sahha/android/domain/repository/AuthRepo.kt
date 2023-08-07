@@ -23,4 +23,6 @@ interface AuthRepo {
         appSecret: String,
         externalId: ExternalIdSendDto
     ): Response<TokenData>
+
+    suspend fun clearTokenData(callback: suspend (error: String?, success: Boolean) -> Unit)
 }

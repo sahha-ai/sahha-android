@@ -29,6 +29,12 @@ class AuthInteractionManager @Inject constructor(
         }
     }
 
+    suspend fun deauthenticate(
+        callback: (suspend (error: String?, success: Boolean) -> Unit)
+    ) {
+        authRepo.clearTokenData(callback)
+    }
+
     internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {
         val oldData = getOldDataFromEncryptUtilityTable()
 
@@ -91,5 +97,9 @@ class AuthInteractionManager @Inject constructor(
 
     private suspend fun deleteOldDataFromEncryptUtilityTable() {
         securityDao.deleteAllEncryptedData()
+    }
+
+    internal fun authIsInvalid(token: String?, refreshToken: String?): Boolean {
+        return token.isNullOrEmpty() && refreshToken.isNullOrEmpty()
     }
 }

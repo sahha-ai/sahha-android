@@ -66,7 +66,7 @@ class DeviceInfoRepoImpl(
     }
 
     private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.putDeviceInformation(
             token,
             SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)

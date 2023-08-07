@@ -181,12 +181,12 @@ class UserDataRepoImpl(
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.getDemographic(TokenBearer(token))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.putDemographic(TokenBearer(token), sahhaDemographic)
     }
 
@@ -203,7 +203,7 @@ class UserDataRepoImpl(
             null,
             null,
         )
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
 
         return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }
@@ -216,7 +216,7 @@ class UserDataRepoImpl(
             startDate,
             endDate,
         )
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
 
         return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }

@@ -18,10 +18,13 @@ internal object Constants {
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
     const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
-    const val WORKER_REPEAT_INTERVAL_MINUTES = 360L
+    const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
+    const val STEP_SESSION_POST_LIMIT = 40
     const val DEVICE_LOCK_POST_LIMIT = 91
+    const val STEP_SESSION_COOLDOWN_MILLIS = 30000L
+    const val OKHTTP_CLIENT_TIMEOUT = 30L
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
@@ -31,6 +34,7 @@ internal object Constants {
     // Data Type
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
     const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
+    const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

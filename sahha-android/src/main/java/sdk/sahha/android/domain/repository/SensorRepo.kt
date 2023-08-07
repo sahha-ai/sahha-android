@@ -5,6 +5,7 @@ import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
 
 interface SensorRepo {
@@ -44,7 +45,24 @@ interface SensorRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
+    suspend fun postStepSessions(
+        stepSessions: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
     suspend fun postAllSensorData(
         callback: ((error: String?, successful: Boolean) -> Unit)
     )
+
+    suspend fun saveStepSession(
+        stepSession: StepSession
+    )
+
+    suspend fun getAllStepSessions(): List<StepSession>
+
+    suspend fun clearStepSessions(
+        stepSessions: List<StepSession>
+    )
+
+    suspend fun clearAllStepSessions()
 }

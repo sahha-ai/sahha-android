@@ -1,11 +1,9 @@
 package sdk.sahha.android.common
 
 import android.content.Context
-import androidx.room.Room
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
-import sdk.sahha.android.data.local.SahhaDatabase
-import sdk.sahha.android.data.local.SahhaDbMigrations
+import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -43,21 +41,8 @@ object SahhaReconfigure {
     }
 
     private suspend fun getSahhaSettings(context: Context): SahhaSettings {
-        val db = Room.databaseBuilder(
-            context,
-            SahhaDatabase::class.java,
-            "sahha-database"
-        )
-            .fallbackToDestructiveMigration()
-            .addMigrations(
-                SahhaDbMigrations.MIGRATION_1_2,
-                SahhaDbMigrations.MIGRATION_2_3,
-                SahhaDbMigrations.MIGRATION_3_4,
-                SahhaDbMigrations.MIGRATION_4_5,
-                SahhaDbMigrations.MIGRATION_5_6,
-            )
-            .build()
-
-        return db.configurationDao().getConfig().toSahhaSettings()
+        val db = SahhaDbUtility.getDb(context)
+        val config = db.configurationDao().getConfig()
+        return config.toSahhaSettings()
     }
 }
