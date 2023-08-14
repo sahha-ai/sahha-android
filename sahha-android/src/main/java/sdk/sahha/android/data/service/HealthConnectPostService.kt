@@ -40,11 +40,11 @@ class HealthConnectPostService : Service() {
         granted.forEach {
             when (it) {
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
-                    repo.postData(
-                        repo.getSteps(),
-                        Constants.DEFAULT_POST_LIMIT,
-
-                    )
+//                    repo.postData(
+//                        repo.getSteps(),
+//                        Constants.DEFAULT_POST_LIMIT,
+//
+//                    )
                 }
                 HealthPermission.getReadPermission(SleepSessionRecord::class) -> {}
                 HealthPermission.getReadPermission(SleepStageRecord::class) -> {}

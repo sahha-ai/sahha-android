@@ -9,6 +9,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.health.connect.datatypes.StepsRecord
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -122,6 +123,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 HealthConnectPermission(context = this@MainActivity)
                                 ForegroundQuery(context = this@MainActivity)
+                                AggregateSteps()
+                                AggregateSleepSessions()
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -374,6 +377,50 @@ fun HealthConnectPermission(context: Context) {
     }) {
         Text("Grant")
     }
+    Spacer(modifier = Modifier.padding(16.dp))
+}
+
+@Composable
+fun AggregateSteps() {
+    var data by remember { mutableStateOf("Step data") }
+
+    Text("Aggregate Step Data")
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        data = "Loading..."
+        Sahha.getAggregateSteps { err, steps ->
+            data = ""
+            steps?.forEach {
+                data += "$it\n\n"
+            }
+        }
+    }) {
+        Text("Get Steps")
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(data)
+    Spacer(modifier = Modifier.padding(16.dp))
+}
+
+@Composable
+fun AggregateSleepSessions() {
+    var data by remember { mutableStateOf("Sleep Session data") }
+
+    Text("Aggregate Sleep Session Data")
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        data = "Loading..."
+        Sahha.getAggregateSleepSessions { err, sleepSessions ->
+            data = ""
+            sleepSessions?.forEach {
+                data += "$it\n\n"
+            }
+        }
+    }) {
+        Text("Get Sleep Sessions")
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(data)
     Spacer(modifier = Modifier.padding(16.dp))
 }
 

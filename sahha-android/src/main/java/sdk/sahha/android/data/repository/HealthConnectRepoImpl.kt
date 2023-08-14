@@ -3,6 +3,7 @@ package sdk.sahha.android.data.repository
 import android.content.Context
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -12,6 +13,7 @@ import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
@@ -41,6 +43,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaConverterUtility
+import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -99,7 +102,7 @@ class HealthConnectRepoImpl @Inject constructor(
         return CompatibleApps.values().toSet()
     }
 
-    override fun startPostWorker() {
+    fun startPostWorker() {
         defaultScope.launch {
             val config = configDao.getConfig()
 //            permissionManager.getHealthConnectStatus(context) { _, status ->
@@ -221,6 +224,32 @@ class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
+    override suspend fun getHourlySteps(
+        start: Instant,
+        end: Instant
+    ): List<AggregationResultGroupedByDuration>? {
+        return client?.aggregateGroupByDuration(
+            AggregateGroupByDurationRequest(
+                metrics = setOf(StepsRecord.COUNT_TOTAL),
+                timeRangeFilter = TimeRangeFilter.Companion.between(start, end),
+                timeRangeSlicer = Duration.ofHours(1)
+            )
+        )
+    }
+
+    override suspend fun getHourlySleepSessions(
+        start: Instant,
+        end: Instant
+    ): List<AggregationResultGroupedByDuration>? {
+        return client?.aggregateGroupByDuration(
+            AggregateGroupByDurationRequest(
+                metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
+                timeRangeFilter = TimeRangeFilter.Companion.between(start, end),
+                timeRangeSlicer = Duration.ofHours(1)
+            )
+        )
+    }
+
     override fun getSteps(): List<StepsRecord>? {
         val lastWeek = Instant.now().minus(7, ChronoUnit.DAYS)
         val now = Instant.now()
@@ -236,5 +265,29 @@ class HealthConnectRepoImpl @Inject constructor(
                 ).records
             }
         }
+    }
+
+    override fun getSleepSessions(): List<SleepSessionRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getSleepStages(): List<SleepStageRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getHeartRate(): List<HeartRateRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getRestingHeartRate(): List<RestingHeartRateRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getBloodGlucose(): List<BloodGlucoseRecord>? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getBloodPressure(): List<BloodPressureRecord>? {
+        TODO("Not yet implemented")
     }
 }

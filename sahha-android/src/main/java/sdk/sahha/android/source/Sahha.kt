@@ -3,13 +3,17 @@ package sdk.sahha.android.source
 import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.interaction.SahhaInteractionManager
+import java.time.Instant
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 private val tag = "Sahha"
@@ -124,7 +128,7 @@ object Sahha {
 
     //TODO Test, delete after
     fun ableToReadSteps(): List<String> {
-        val steps = di.healthConnectRepo.getStepData()
+        val steps = di.healthConnectRepo.getSteps()
         val stepsString = mutableListOf<String>()
         steps?.map {
             stepsString.add(
@@ -134,5 +138,45 @@ object Sahha {
             )
         }
         return stepsString
+    }
+
+    fun getAggregateSteps(
+        callback: ((error: String?, steps: List<String>?) -> Unit)
+    ) {
+        di.ioScope.launch {
+            val mostRecentHour = Instant.now().truncatedTo(ChronoUnit.HOURS)
+            val steps = di.healthConnectRepo.getHourlySteps(
+                start = mostRecentHour.minus(7, ChronoUnit.DAYS),
+                end = mostRecentHour
+            )?.map {
+                var string = ""
+                string += "${it.result[StepsRecord.COUNT_TOTAL]}\n"
+                string += "${di.timeManager.instantToIsoTime(it.startTime)}\n"
+                string += "${di.timeManager.instantToIsoTime(it.endTime)}\n\n"
+                return@map string
+            }
+
+            callback(null, steps)
+        }
+    }
+
+    fun getAggregateSleepSessions(
+        callback: ((error: String?, sleepSessions: List<String>?) -> Unit)
+    ) {
+        di.ioScope.launch {
+            val mostRecentHour = Instant.now().truncatedTo(ChronoUnit.HOURS)
+            val steps = di.healthConnectRepo.getHourlySleepSessions(
+                start = mostRecentHour.minus(7, ChronoUnit.DAYS),
+                end = mostRecentHour
+            )?.map {
+                var string = ""
+                string += "${it.result[SleepSessionRecord.SLEEP_DURATION_TOTAL]}\n"
+                string += "${di.timeManager.instantToIsoTime(it.startTime)}\n"
+                string += "${di.timeManager.instantToIsoTime(it.endTime)}\n\n"
+                return@map string
+            }
+
+            callback(null, steps)
+        }
     }
 }
