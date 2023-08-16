@@ -8,13 +8,12 @@ import javax.inject.Inject
 
 class PostAllSensorDataUseCase @Inject constructor(
     private val repository: SensorRepo,
-    private val authRepo: AuthRepo,
     private val authManager: AuthInteractionManager
 ) {
     suspend operator fun invoke(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        if (authManager.authIsInvalid(authRepo.getToken(), authRepo.getRefreshToken())) {
+        if (!authManager.checkIsAuthenticated()) {
             callback(SahhaErrors.noToken, false)
             return
         }
