@@ -20,9 +20,13 @@ class PostSilverDeviceDataUseCase @Inject constructor(
     internal var phoneUsagesSilver = listOf<PhoneUsageSilver>()
 
     suspend operator fun invoke(): ListenableWorker.Result {
+        val phoneUsagesHourly = getPreparedData()
+        return postSilverPhoneUsageData(phoneUsagesHourly)
+    }
+
+    internal suspend fun getPreparedData(): List<PhoneUsageHourly> {
         val truncatedUsages = truncatePhoneUsages()
-        val hourlyPhoneUsages = summariseTruncatedData(truncatedUsages)
-        return postSilverPhoneUsageData(hourlyPhoneUsages)
+        return summariseTruncatedData(truncatedUsages)
     }
 
     private suspend fun truncatePhoneUsages(): List<PhoneUsageSilver> {
