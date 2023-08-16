@@ -29,6 +29,8 @@ import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
 import sdk.sahha.android.data.worker.post.silver_format.SilverDevicePostWorker
 import sdk.sahha.android.data.worker.post.silver_format.SilverStepPostWorker
+import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
@@ -56,8 +58,8 @@ private const val tag = "SensorRepoImpl"
 @SuppressLint("NewApi")
 class SensorRepoImpl @Inject constructor(
     private val context: Context,
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
+    @DefaultScope private val defaultScope: CoroutineScope,
+    @IoScope private val ioScope: CoroutineScope,
     private val configDao: ConfigurationDao,
     private val deviceDao: DeviceUsageDao,
     private val sleepDao: SleepDao,
@@ -103,7 +105,6 @@ class SensorRepoImpl @Inject constructor(
         )
     )
 
-
     override suspend fun startStepDetectorAsync(
         context: Context,
         movementDao: MovementDao,
@@ -148,7 +149,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override fun startPostWorkersAsync() {
-        defaultScope.launch {
+        ioScope.launch {
             val config = configDao.getConfig()
             Sahha.getSensorStatus(
                 context,
@@ -516,12 +517,17 @@ class SensorRepoImpl @Inject constructor(
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
-                val response = getResponse(chunk)
-                Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+                try {
+                    val response = getResponse(chunk)
+                    Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
-                handleResponse(response, { getResponse(chunk) }, null) {
-                    clearData(chunk)
-                    cont.resume(true)
+                    handleResponse(response, { getResponse(chunk) }, null) {
+                        clearData(chunk)
+                        cont.resume(true)
+                    }
+                } catch (e: Exception) {
+                    cont.resume(false)
+                    Log.w(tag, e.message, e)
                 }
             }
         }
@@ -712,9 +718,17 @@ class SensorRepoImpl @Inject constructor(
     ): Pair<String, MutableList<Boolean>> {
         var updatedErrorSummary = errorSummary
         error?.also { updatedErrorSummary += "$it\n" }
-        startWorkerWithSensor(SahhaSensor.sleep)
+        reschedulWorker(SahhaSensor.sleep)
         successfulResults.add(successful)
         return Pair(updatedErrorSummary, successfulResults)
+    }
+
+
+    private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
+        sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
+            stopWorkerByTag(workerTag)
+            startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
+        }
     }
 
     private suspend fun clearLocalStepData() {

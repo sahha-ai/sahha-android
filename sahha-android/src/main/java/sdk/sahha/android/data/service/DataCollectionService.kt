@@ -6,7 +6,10 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
@@ -22,31 +25,32 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
+    private val ioScope by lazy { CoroutineScope(Dispatchers.IO) }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
+        if(ioScope.isActive) ioScope.cancel()
         unregisterExistingReceiversAndListeners()
-        ContextCompat.startForegroundService(
-            this@DataCollectionService.applicationContext,
+        startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
     private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapMultipleFunctionTryCatch(
-            tag, "Could not unregister listener", listOf(
-                { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
-                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            )
-        )
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
+        ))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
-            Sahha.di.defaultScope.launch {
+            ioScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
@@ -60,12 +64,12 @@ class DataCollectionService : Service() {
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
                 checkAndStartCollectingScreenLockData()
                 checkAndStartCollectingPedometerData()
-//                startTimeZoneChangedReceiver()
+                startTimeZoneChangedReceiver()
 
                 intent?.also {
                     if (it.action == Constants.ACTION_RESTART_SERVICE) {
                         stopService()
-                        return@also
+                        return@launch
                     }
                 }
             }
@@ -74,12 +78,11 @@ class DataCollectionService : Service() {
             Log.w(tag, e.message, e)
         }
 
-
         return START_STICKY
     }
 
     private fun stopService() {
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 

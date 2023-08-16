@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaIntents
@@ -40,8 +39,7 @@ class SahhaNotificationManagerImpl(
         )
 
         try {
-            ContextCompat.startForegroundService(
-                context.applicationContext,
+            context.startForegroundService(
                 Intent(context.applicationContext, DataCollectionService::class.java)
                     .setAction(Constants.ACTION_RESTART_SERVICE)
             )

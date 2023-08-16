@@ -25,6 +25,7 @@ internal object Constants {
     const val STEP_SESSION_POST_LIMIT = 40
     const val DEVICE_LOCK_POST_LIMIT = 91
     const val STEP_SESSION_COOLDOWN_MILLIS = 30000L
+    const val OKHTTP_CLIENT_TIMEOUT = 30L
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"

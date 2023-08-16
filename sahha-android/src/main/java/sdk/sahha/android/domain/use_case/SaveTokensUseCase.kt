@@ -27,15 +27,19 @@ class SaveTokensUseCase @Inject constructor(
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        val response =
-            repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
+        try {
+            val response =
+                repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            saveTokensIfAvailable(response, repository, callback)
-            return
+            if (ResponseCode.isSuccessful(response.code())) {
+                saveTokensIfAvailable(response, repository, callback)
+                return
+            }
+
+            callback("${response.code()}: ${response.message()}", false)
+        } catch (e: Exception) {
+            callback(e.message, false)
         }
-
-        callback("${response.code()}: ${response.message()}", false)
     }
 
     private fun saveTokensIfAvailable(

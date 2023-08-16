@@ -6,14 +6,14 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
-    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
 
     <application>
         <activity
@@ -30,18 +30,21 @@
 
         <service
             android:name=".data.service.DataCollectionService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <receiver
             android:name=".data.receiver.SleepReceiver"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
+            android:attributionTags="com.sahha.android:sleep_receiver"
             android:permission="android.permission.ACTIVITY_RECOGNITION" />
 
         <receiver
             android:name=".data.receiver.AutoStartReceiver"
             android:enabled="true"
-            android:exported="false"
+            android:exported="true"
+            android:attributionTags="com.sahha.android:auto_start_receiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -49,11 +52,6 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
-
-        <receiver
-            android:name=".data.receiver.TimeZoneChangedReceiver"
-            android:enabled="true"
-            android:exported="false" />
     </application>
 
 </manifest>

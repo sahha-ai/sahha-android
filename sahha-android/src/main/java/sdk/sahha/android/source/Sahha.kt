@@ -13,8 +13,6 @@ import sdk.sahha.android.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
 import java.util.*
 
-private val tag = "Sahha"
-
 @Keep
 object Sahha {
     internal lateinit var sim: SahhaInteractionManager
@@ -130,6 +128,4 @@ object Sahha {
     ) {
         sim.permission.getSensorStatus(context, callback)
     }
-
-
 }
