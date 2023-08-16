@@ -20,7 +20,11 @@ class DevicePostWorker(private val context: Context, workerParameters: WorkerPar
 
     internal suspend fun postDeviceData(lockTester: (() -> Unit)? = null): Result {
         // Guard: Return and do nothing if there is no auth data
-        if (!Sahha.isAuthenticated) return Result.success()
+        if (Sahha.sim.auth.authIsInvalid(
+                Sahha.di.authRepo.getToken(),
+                Sahha.di.authRepo.getRefreshToken()
+            )
+        ) return Result.success()
 
         return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
