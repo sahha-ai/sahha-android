@@ -20,6 +20,9 @@ object Sahha {
     internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.notificationManager }
 
+    val isAuthenticated: Boolean
+        get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false
+
     internal fun diInitialized(): Boolean {
         return ::di.isInitialized
     }
