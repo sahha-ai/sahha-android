@@ -27,9 +27,10 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.use_case.post.silver_format.PostSilverDeviceDataUseCase
+import sdk.sahha.android.domain.use_case.post.silver_format.PostSilverStepDataUseCase
 import sdk.sahha.android.interaction.SahhaInteractionManager
 import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Singleton
 
 @Singleton
@@ -87,4 +88,8 @@ internal interface AppComponent {
     val timeManager: SahhaTimeManager
     val encryptor: Encryptor
     val decryptor: Decryptor
+
+    // Use cases
+    val postSilverStepDataUseCase: PostSilverStepDataUseCase
+    val postSilverDeviceDataUseCase: PostSilverDeviceDataUseCase
 }

@@ -4,12 +4,14 @@ import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import sdk.sahha.android.data.Constants.ONE_DAY_IN_MILLIS
+import sdk.sahha.android.source.Sahha
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Keep
@@ -135,5 +137,14 @@ class SahhaTimeManager {
             val nowInISO = simpleDateFormat.format(now)
             correctFormatting(nowInISO).substring(23)
         }
+    }
+
+    fun isoTimePlusHours(iso: String, addHours: Long): String {
+        val zdtPlusHours = ISOToDate(iso).plusHours(addHours)
+        return zonedDateTimeToIso(zdtPlusHours)
+    }
+
+    fun getCurrentHourIso(now: ZonedDateTime): String {
+        return zonedDateTimeToIso(now.truncatedTo(ChronoUnit.HOURS))
     }
 }

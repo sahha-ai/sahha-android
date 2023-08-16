@@ -72,20 +72,6 @@ class SensorInteractionManager @Inject constructor(
         repository.postStepSessions(repository.getAllStepSessions(), callback)
     }
 
-    internal suspend fun postStepsHourly(
-        stepsHourly: List<StepSession>,
-        callback: (suspend (error: String?, success: Boolean) -> Unit)?
-    ) {
-        repository.postStepsHourly(stepsHourly, callback)
-    }
-
-    internal suspend fun postPhoneUsagesHourly(
-        phoneUsagesHourly: List<PhoneUsageSilver>,
-        callback: (suspend (error: String?, success: Boolean) -> Unit)?
-    ) {
-        repository.postPhoneUsagesHourly(phoneUsagesHourly, callback)
-    }
-
     private fun startDataCollectionService(
         icon: Int? = null,
         title: String? = null,

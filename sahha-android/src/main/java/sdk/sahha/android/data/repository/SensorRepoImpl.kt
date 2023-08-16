@@ -14,6 +14,7 @@ import retrofit2.Response
 import sdk.sahha.android.common.*
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
+import sdk.sahha.android.data.Constants.HOURLY_DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.HOURLY_STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
@@ -26,13 +27,17 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.data.worker.post.silver_format.SilverDevicePostWorker
 import sdk.sahha.android.data.worker.post.silver_format.SilverStepPostWorker
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.PhoneUsageHourly
 import sdk.sahha.android.domain.model.device.PhoneUsageSilver
+import sdk.sahha.android.domain.model.device.toPhoneUsageSilverSendDto
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.PhoneUsageSilverSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toStepDto
@@ -77,6 +82,11 @@ class SensorRepoImpl @Inject constructor(
                 DEVICE_POST_WORKER_TAG,
                 ::startDevicePostWorker,
                 Constants.DEFAULT_WORKER_REPEAT_INTERVAL_MINUTES
+            ),
+            SahhaWorkerAction(
+                HOURLY_DEVICE_POST_WORKER_TAG,
+                ::startSilverDevicePostWorker,
+                Constants.SILVER_DATA_WORKER_REPEAT_INTERVAL_MINUTES
             )
         ),
         SahhaSensor.pedometer to listOf(
@@ -261,6 +271,12 @@ class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag)
     }
 
+    override fun startSilverDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest = getSilverDevicePostWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag)
+    }
+
     override suspend fun getWorkerInfoByTag(tag: String): WorkInfo? {
         val workInfosByTag = workManager.getWorkInfosByTag(tag)
         return suspendCoroutine { cont ->
@@ -313,6 +329,19 @@ class SensorRepoImpl @Inject constructor(
         workerTag: String
     ): PeriodicWorkRequest {
         return PeriodicWorkRequestBuilder<SilverStepPostWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
+            .build()
+    }
+
+    private fun getSilverDevicePostWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<SilverDevicePostWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
         )
@@ -709,6 +738,11 @@ class SensorRepoImpl @Inject constructor(
         )
     }
 
+    private suspend fun getPhoneUsageSilverResponse(phoneUsagesHourly: List<PhoneUsageSilverSendDto>): Response<ResponseBody> {
+        val token = authRepo.getToken() ?: ""
+        return api.postSilverPhoneUsageData(token, phoneUsagesHourly)
+    }
+
     private suspend fun getSleepResponse(sleepData: List<SleepDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
@@ -770,35 +804,35 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override suspend fun savePhoneUsage(phoneUsage: PhoneUsage) {
-        TODO("Not yet implemented")
+        deviceDao.saveUsage(phoneUsage)
     }
 
     override suspend fun getAllPhoneUsages(): List<PhoneUsage> {
-        TODO("Not yet implemented")
+        return deviceDao.getUsages()
     }
 
     override suspend fun clearPhoneUsages(phoneUsages: List<PhoneUsage>) {
-        TODO("Not yet implemented")
+        deviceDao.clearUsages(phoneUsages)
     }
 
     override suspend fun clearAllPhoneUsages() {
-        TODO("Not yet implemented")
+        deviceDao.clearUsages()
     }
 
-    override suspend fun savePhoneUsageSilver(phoneUsage: PhoneUsageSilver) {
-        TODO("Not yet implemented")
+    override suspend fun savePhoneUsageSilver(phoneUsageSilver: PhoneUsageSilver) {
+        deviceDao.saveSilverUsage(phoneUsageSilver)
     }
 
     override suspend fun getAllPhoneUsagesSilver(): List<PhoneUsageSilver> {
-        TODO("Not yet implemented")
+        return deviceDao.getSilverUsages()
     }
 
-    override suspend fun clearPhoneUsagesSilver(phoneUsages: List<PhoneUsageSilver>) {
-        TODO("Not yet implemented")
+    override suspend fun clearPhoneUsagesSilver(phoneUsagesSilver: List<PhoneUsageSilver>) {
+        deviceDao.clearSilverUsages(phoneUsagesSilver)
     }
 
     override suspend fun clearAllPhoneUsagesSilver() {
-        TODO("Not yet implemented")
+        deviceDao.clearSilverUsages()
     }
 
     override fun startSilverPhoneUsagePostWorker(repeatIntervalMinutes: Long, workerTag: String) {
@@ -806,9 +840,22 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override suspend fun postPhoneUsagesHourly(
-        phoneUsagesHourly: List<PhoneUsageSilver>,
+        phoneUsagesHourly: List<PhoneUsageHourly>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        TODO("Not yet implemented")
+        val getResponse: suspend (List<PhoneUsageHourly>) -> Response<ResponseBody> = { chunk ->
+            val phoneUsageDto = chunk.map {
+                it.toPhoneUsageSilverSendDto()
+            }
+            getPhoneUsageSilverResponse(phoneUsageDto)
+        }
+        postData(
+            phoneUsagesHourly,
+            SahhaSensor.device,
+            Constants.DEVICE_LOCK_POST_LIMIT,
+            getResponse,
+            { /* Do nothing, data cleared in use case */ },
+            callback
+        )
     }
 }

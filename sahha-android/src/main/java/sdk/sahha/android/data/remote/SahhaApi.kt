@@ -56,6 +56,12 @@ interface SahhaApi {
         @Body lockData: List<PhoneUsageSendDto>
     ): Response<ResponseBody>
 
+    @POST("profile/deviceLockActivity/log")
+    suspend fun postSilverPhoneUsageData(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body lockData: List<PhoneUsageSilverSendDto>
+    ): Response<ResponseBody>
+
     @POST("profile/analyze")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,

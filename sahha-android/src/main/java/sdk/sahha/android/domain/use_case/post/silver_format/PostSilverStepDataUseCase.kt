@@ -1,8 +1,9 @@
-package sdk.sahha.android.domain.use_case.post
+package sdk.sahha.android.domain.use_case.post.silver_format
 
 import androidx.work.ListenableWorker
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
@@ -14,22 +15,23 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 
 class PostSilverStepDataUseCase @Inject constructor(
-    private val repository: SensorRepo
+    private val repository: SensorRepo,
+    private val timeManager: SahhaTimeManager
 ) {
     internal var hourlySteps = listOf<StepSession>()
 
     suspend operator fun invoke(): ListenableWorker.Result {
         val truncatedStepData = truncateStepDataDates()
-        hourlySteps = converToHourly(truncatedStepData)
+        hourlySteps = convertToHourly(truncatedStepData)
         return postSilverStepData(hourlySteps)
     }
 
-    private fun converToHourly(truncatedStepData: List<StepData>): List<StepSession> {
+    private fun convertToHourly(truncatedStepData: List<StepData>): List<StepSession> {
         val timeSeries = mutableMapOf<String, Int>()
         val hourlyStepSession = mutableListOf<StepSession>()
 
         for (it in truncatedStepData) {
-            val stepDataIsInCurrentHour = it.detectedAt == getCurrentHourIso(ZonedDateTime.now())
+            val stepDataIsInCurrentHour = it.detectedAt == timeManager.getCurrentHourIso(ZonedDateTime.now())
             if (stepDataIsInCurrentHour) continue // Skip until the hour of data is completed
 
             timeSeries[it.detectedAt] = timeSeries.getOrDefault(it.detectedAt, 0) + 1
@@ -47,14 +49,10 @@ class PostSilverStepDataUseCase @Inject constructor(
         return hourlyStepSession
     }
 
-    private fun getCurrentHourIso(now: ZonedDateTime): String {
-        return Sahha.di.timeManager.zonedDateTimeToIso(now.truncatedTo(ChronoUnit.HOURS))
-    }
-
     private fun getEndOfTimeSeries(startTimeIso: String): String {
-        val zdt = Sahha.di.timeManager.ISOToDate(startTimeIso)
+        val zdt = timeManager.ISOToDate(startTimeIso)
         val endTimeZdt = zdt.plusHours(1).minusNanos(1)
-        return Sahha.di.timeManager.zonedDateTimeToIso(endTimeZdt)
+        return timeManager.zonedDateTimeToIso(endTimeZdt)
     }
 
     private suspend fun truncateStepDataDates(): List<StepData> {
@@ -68,9 +66,9 @@ class PostSilverStepDataUseCase @Inject constructor(
 
     private fun truncateSingleSteps(singleSteps: List<StepData>): List<StepData> {
         return singleSteps.map {
-            val detectedIso = Sahha.di.timeManager.ISOToDate(it.detectedAt)
+            val detectedIso = timeManager.ISOToDate(it.detectedAt)
             val truncatedHourlyZdt = detectedIso.truncatedTo(ChronoUnit.HOURS)
-            val truncatedHourlyIso = Sahha.di.timeManager.zonedDateTimeToIso(truncatedHourlyZdt)
+            val truncatedHourlyIso = timeManager.zonedDateTimeToIso(truncatedHourlyZdt)
             val truncatedHourlyData = StepData(
                 Constants.STEP_DETECTOR_DATA_SOURCE,
                 1,

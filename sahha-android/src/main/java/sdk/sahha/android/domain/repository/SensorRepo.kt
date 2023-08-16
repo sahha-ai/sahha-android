@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkInfo
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.PhoneUsageHourly
 import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.steps.StepData
@@ -103,7 +104,9 @@ interface SensorRepo {
     suspend fun clearAllPhoneUsagesSilver()
     fun startSilverPhoneUsagePostWorker(repeatIntervalMinutes: Long, workerTag: String)
     suspend fun postPhoneUsagesHourly(
-        phoneUsagesHourly: List<PhoneUsageSilver>,
+        phoneUsagesHourly: List<PhoneUsageHourly>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+
+    fun startSilverDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String)
 }

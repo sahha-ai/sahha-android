@@ -47,6 +47,7 @@ internal object Constants {
     const val DEVICE_POST_WORKER_TAG = "devicePost"
     const val STEP_POST_WORKER_TAG = "stepPost"
     const val HOURLY_STEP_POST_WORKER_TAG = "stepPostHourly"
+    const val HOURLY_DEVICE_POST_WORKER_TAG = "devicePostHourly"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

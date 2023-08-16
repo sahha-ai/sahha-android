@@ -20,7 +20,8 @@ internal object SahhaDbUtility {
                 MIGRATION_3_4,
                 MIGRATION_4_5,
                 MIGRATION_5_6,
-                MIGRATION_6_7
+                MIGRATION_6_7,
+                MIGRATION_7_8
             )
             .build()
     }
@@ -72,6 +73,14 @@ internal object SahhaDbUtility {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("CREATE TABLE StepSession (id INTEGER NOT NULL, count INTEGER NOT NULL, startDateTime TEXT NOT NULL, endDateTime TEXT NOT NULL, PRIMARY KEY (id))")
+            }
+        }
+    }
+
+    internal val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("CREATE TABLE PhoneUsageSilver (id INTEGER NOT NULL, isLocked INTEGER NOT NULL DEFAULT(0), isScreenOn INTEGER NOT NULL DEFAULT(0), detectedAt TEXT NOT NULL, PRIMARY KEY (id))")
             }
         }
     }
