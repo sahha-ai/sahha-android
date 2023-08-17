@@ -8,6 +8,7 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.interaction.AuthInteractionManager
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -16,6 +17,7 @@ import kotlin.coroutines.resume
 
 class PostSilverStepDataUseCase @Inject constructor(
     private val repository: SensorRepo,
+    private val auth: AuthInteractionManager,
     private val timeManager: SahhaTimeManager
 ) {
     internal var hourlySteps = listOf<StepSession>()
@@ -80,11 +82,7 @@ class PostSilverStepDataUseCase @Inject constructor(
 
     private suspend fun postSilverStepData(silverStepData: List<StepSession>): ListenableWorker.Result {
         // Guard: Return and do nothing if there is no auth data
-        if (Sahha.sim.auth.authIsInvalid(
-                Sahha.di.authRepo.getToken(),
-                Sahha.di.authRepo.getRefreshToken()
-            )
-        ) return ListenableWorker.Result.success()
+        if (!auth.checkIsAuthenticated()) return ListenableWorker.Result.success()
 
         return if (Sahha.di.mutex.tryLock()) {
             try {

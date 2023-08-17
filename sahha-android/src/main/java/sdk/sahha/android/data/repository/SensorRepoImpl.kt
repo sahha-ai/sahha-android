@@ -446,7 +446,7 @@ class SensorRepoImpl @Inject constructor(
         postData(
             stepsHourly,
             SahhaSensor.pedometer,
-            Constants.STEP_SESSION_POST_LIMIT,
+            Constants.SILVER_DATA_POST_LIMIT,
             getResponse,
             this::clearStepSessions,
             callback
@@ -718,17 +718,9 @@ class SensorRepoImpl @Inject constructor(
     ): Pair<String, MutableList<Boolean>> {
         var updatedErrorSummary = errorSummary
         error?.also { updatedErrorSummary += "$it\n" }
-        reschedulWorker(SahhaSensor.sleep)
+        startWorkerWithSensor(SahhaSensor.sleep)
         successfulResults.add(successful)
         return Pair(updatedErrorSummary, successfulResults)
-    }
-
-
-    private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
-        sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
-            stopWorkerByTag(workerTag)
-            startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
-        }
     }
 
     private suspend fun clearLocalStepData() {
@@ -858,17 +850,17 @@ class SensorRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<PhoneUsageHourly>) -> Response<ResponseBody> = { chunk ->
-            val phoneUsageDto = chunk.map {
+            val silverPhoneUsageDto = chunk.map {
                 it.toPhoneUsageSilverSendDto()
             }
-            getPhoneUsageSilverResponse(phoneUsageDto)
+            getPhoneUsageSilverResponse(silverPhoneUsageDto)
         }
         postData(
             phoneUsagesHourly,
             SahhaSensor.device,
-            Constants.DEVICE_LOCK_POST_LIMIT,
+            Constants.SILVER_DATA_POST_LIMIT,
             getResponse,
-            { /* Do nothing, data cleared in use case */ },
+            { /* Do nothing, data is cleared in use case */ },
             callback
         )
     }

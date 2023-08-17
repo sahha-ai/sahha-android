@@ -6,7 +6,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.device.PhoneUsageHourly
 import sdk.sahha.android.domain.model.device.PhoneUsageSilver
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.interaction.AuthInteractionManager
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -15,6 +17,7 @@ import kotlin.coroutines.resume
 
 class PostSilverDeviceDataUseCase @Inject constructor(
     private val repository: SensorRepo,
+    private val auth: AuthInteractionManager,
     private val timeManager: SahhaTimeManager
 ) {
     internal var phoneUsagesSilver = listOf<PhoneUsageSilver>()
@@ -101,11 +104,7 @@ class PostSilverDeviceDataUseCase @Inject constructor(
 
     private suspend fun postSilverPhoneUsageData(hourlyPhoneUsages: List<PhoneUsageHourly>): ListenableWorker.Result {
         // Guard: Return and do nothing if there is no auth data
-        if (Sahha.sim.auth.authIsInvalid(
-                Sahha.di.authRepo.getToken(),
-                Sahha.di.authRepo.getRefreshToken()
-            )
-        ) return ListenableWorker.Result.success()
+        if (!auth.checkIsAuthenticated()) return ListenableWorker.Result.success()
 
         return if (Sahha.di.mutex.tryLock()) {
             try {
