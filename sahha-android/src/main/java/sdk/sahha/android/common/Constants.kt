@@ -30,8 +30,12 @@ internal object Constants {
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
+    const val SLEEP_DATA_SOURCE_HOURLY = "AndroidSleepHourly"
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
+
+    // Sleep Stage
+    const val SLEEP_STAGE_ASLEEP = "asleep"
 
     // Data Type
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"

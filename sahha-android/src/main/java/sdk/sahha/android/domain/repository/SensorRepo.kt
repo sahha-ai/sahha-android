@@ -7,6 +7,7 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.PhoneUsageHourly
 import sdk.sahha.android.domain.model.device.PhoneUsageSilver
 import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.sleep.SleepDataSilver
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
@@ -109,4 +110,16 @@ interface SensorRepo {
     )
 
     fun startSilverDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String)
+
+    // Sleep
+    suspend fun saveSleep(sleep: SleepDto)
+    suspend fun getAllSleep(): List<SleepDto>
+    suspend fun clearSleep(sleep: List<SleepDto>)
+    suspend fun clearAllSleep()
+
+    // Sleep Silver Layer
+    suspend fun saveSleepSilver(sleep: SleepDataSilver)
+    suspend fun getAllSleepSilver(): List<SleepDataSilver>
+    suspend fun clearSleepSilver(sleep: List<SleepDataSilver>)
+    suspend fun clearAllSleepSilver()
 }

@@ -14,6 +14,6 @@ class SilverDevicePostWorker(private val context: Context, workerParameters: Wor
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
         useCase = Sahha.di.postSilverDeviceDataUseCase
-        return Sahha.di.postSilverDeviceDataUseCase()
+        return useCase()
     }
 }

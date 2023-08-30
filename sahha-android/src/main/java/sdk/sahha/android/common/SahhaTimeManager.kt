@@ -147,4 +147,8 @@ class SahhaTimeManager {
     fun getCurrentHourIso(now: ZonedDateTime): String {
         return zonedDateTimeToIso(now.truncatedTo(ChronoUnit.HOURS))
     }
+
+    fun millisecondsToMinutes(millis: Long): Long {
+        return millis / 1000 / 60
+    }
 }

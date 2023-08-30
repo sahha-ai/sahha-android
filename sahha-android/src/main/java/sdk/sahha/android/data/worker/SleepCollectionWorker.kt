@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.ActivityRecognition
@@ -48,20 +49,11 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
     }
 
     private fun getSleepPendingIntent(sleepIntent: Intent): PendingIntent {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return PendingIntent.getBroadcast(
-                context,
-                SLEEP_DATA_REQUEST,
-                sleepIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
-        }
-
         return PendingIntent.getBroadcast(
             context,
             SLEEP_DATA_REQUEST,
             sleepIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE,
         )
     }
 }

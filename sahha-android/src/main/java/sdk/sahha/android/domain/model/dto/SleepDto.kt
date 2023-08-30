@@ -24,7 +24,7 @@ data class SleepDto(
         0,
         Constants.SLEEP_DATA_SOURCE,
         durationInMinutes,
-        "asleep",
+        Constants.SLEEP_STAGE_ASLEEP,
         startDateTime,
         endDateTime,
         createdAt

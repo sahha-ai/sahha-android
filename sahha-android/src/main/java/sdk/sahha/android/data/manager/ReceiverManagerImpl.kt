@@ -4,12 +4,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.ActivityRecognitionClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.receiver.ActivityRecognitionReceiver
@@ -36,7 +35,7 @@ class ReceiverManagerImpl(
 
         mainScope.launch {
             setActivityRecognitionClient()
-            setActivityRecognitionPendingIntent(callback = callback)
+            setActivityRecognitionPendingIntent()
             requestActivityRecognitionUpdates(callback)
         }
     }
@@ -44,31 +43,19 @@ class ReceiverManagerImpl(
     override fun startPhoneScreenReceivers(
         serviceContext: Context,
     ) {
-        if (Build.VERSION.SDK_INT < 26) return
-
         registerScreenStateReceiver(serviceContext)
     }
 
     override fun startTimeZoneChangedReceiver(context: Context) {
-//        registerTimeZoneChangedReceiver(context)
+        registerTimeZoneChangedReceiver(context)
     }
 
     private fun setActivityRecognitionClient() {
         activityRecognitionClient = ActivityRecognitionClient(context)
     }
 
-    private fun setActivityRecognitionPendingIntent(callback: ((error: String?, success: Boolean) -> Unit)?) {
-        val isAndroid12AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        val isBelowAndroid8 = Build.VERSION.SDK_INT < 26
-        activityRecognitionPendingIntent =
-            if (isBelowAndroid8) {
-                callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
-                return
-            } else if (isAndroid12AndAbove) {
-                getPendingIntentWithMutableFlag()
-            } else {
-                getPendingIntent()
-            }
+    private fun setActivityRecognitionPendingIntent() {
+        activityRecognitionPendingIntent = getPendingIntentWithMutableFlag()
     }
 
     private fun requestActivityRecognitionUpdates(callback: ((error: String?, success: Boolean) -> Unit)?) {
@@ -101,24 +88,27 @@ class ReceiverManagerImpl(
         )
     }
 
-    private fun getPendingIntent(): PendingIntent {
-        return PendingIntent.getBroadcast(
-            context,
-            Constants.ACTIVITY_RECOGNITION_RECEIVER,
-            activityRecognitionIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT
-        )
-    }
-
     private fun registerScreenStateReceiver(serviceContext: Context) {
-        serviceContext.applicationContext.registerReceiver(
+        ContextCompat.registerReceiver(
+            serviceContext.applicationContext,
             SahhaReceiversAndListeners.screenLocks,
             IntentFilter().apply {
                 addAction(Intent.ACTION_USER_PRESENT)
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_SCREEN_OFF)
             },
-            Context.RECEIVER_EXPORTED
+            ContextCompat.RECEIVER_EXPORTED
+        )
+    }
+
+    private fun registerTimeZoneChangedReceiver(context: Context) {
+        ContextCompat.registerReceiver(
+            context.applicationContext,
+            SahhaReceiversAndListeners.timezoneDetector,
+            IntentFilter().apply {
+                addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            },
+            ContextCompat.RECEIVER_EXPORTED
         )
     }
 }
