@@ -7,9 +7,9 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaNotificationConfiguration
@@ -25,7 +25,7 @@ class SahhaInteractionManager @Inject constructor(
     internal val permission: PermissionInteractionManager,
     internal val userData: UserDataInteractionManager,
     internal val sensor: SensorInteractionManager,
-    private val configurationDao: ConfigurationDao,
+    private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
@@ -43,7 +43,7 @@ class SahhaInteractionManager @Inject constructor(
             }
 
             mainScope.launch {
-                Sahha.config = configurationDao.getConfig()
+                Sahha.config = sahhaConfigRepo.getConfig()
 
                 listOf(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
@@ -60,7 +60,7 @@ class SahhaInteractionManager @Inject constructor(
         try {
             runBlocking {
                 sensorRepo.stopAllWorkers()
-                Sahha.config = configurationDao.getConfig()
+                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(callback) },
                     async { sensor.checkAndStartPostWorkers() },
@@ -80,7 +80,7 @@ class SahhaInteractionManager @Inject constructor(
             convertToEnums(it)
         } ?: convertToEnums(SahhaSensor.values().toSet())
 
-        configurationDao.saveConfig(
+        sahhaConfigRepo.saveConfig(
             SahhaConfiguration(
                 settings.environment.ordinal,
                 settings.framework.name,
@@ -91,7 +91,7 @@ class SahhaInteractionManager @Inject constructor(
     }
 
     private suspend fun saveNotificationConfig(config: SahhaNotificationConfiguration?) {
-        configurationDao.saveNotificationConfig(
+        sahhaConfigRepo.saveNotificationConfig(
             config ?: SahhaNotificationConfiguration()
         )
     }

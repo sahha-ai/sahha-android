@@ -12,20 +12,20 @@ import retrofit2.Response
 import sdk.sahha.android.data.Constants.API_ERROR
 import sdk.sahha.android.data.Constants.APPLICATION_ERROR
 import sdk.sahha.android.data.Constants.PLATFORM_NAME
-import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 
 class SahhaErrorLogger(
     private val context: Context,
-    private val configurationDao: ConfigurationDao,
     private val sahhaErrorApi: SahhaErrorApi,
     private val mainScope: CoroutineScope,
-    private val authRepo: AuthRepo
+    private val authRepo: AuthRepo,
+    private val sahhaConfigRepo: SahhaConfigRepo
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
 
@@ -231,7 +231,7 @@ class SahhaErrorLogger(
         val packageInfo: PackageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         val appId = packageInfo.packageName
         val versionName: String? = packageInfo.versionName
-        val config = configurationDao.getConfig()
+        val config = sahhaConfigRepo.getConfig()
 
         sahhaErrorLog.sdkId = config.framework
         sahhaErrorLog.sdkVersion = sdk.sahha.android.BuildConfig.SDK_VERSION_NAME

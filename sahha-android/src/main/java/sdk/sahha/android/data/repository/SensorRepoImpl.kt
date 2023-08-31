@@ -16,7 +16,6 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
-import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
@@ -36,6 +35,7 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
 import java.util.concurrent.TimeUnit
@@ -50,11 +50,11 @@ class SensorRepoImpl @Inject constructor(
     private val context: Context,
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
-    private val configDao: ConfigurationDao,
     private val deviceDao: DeviceUsageDao,
     private val sleepDao: SleepDao,
     private val movementDao: MovementDao,
     private val authRepo: AuthRepo,
+    private val sahhaConfigRepo: SahhaConfigRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val mutex: Mutex,
     private val api: SahhaApi,
@@ -112,7 +112,7 @@ class SensorRepoImpl @Inject constructor(
 
     override fun startPostWorkersAsync() {
         ioScope.launch {
-            val config = configDao.getConfig()
+            val config = sahhaConfigRepo.getConfig()
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->

@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -127,5 +128,9 @@ object Sahha {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         sim.permission.getSensorStatus(context, callback)
+    }
+
+    fun postError() {
+        // TODO("Potentially refactor SahhaErrorLogger into clean architecture format")
     }
 }

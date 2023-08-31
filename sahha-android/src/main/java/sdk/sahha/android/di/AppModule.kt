@@ -44,6 +44,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
@@ -231,7 +232,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context,
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
-        configurationDao: ConfigurationDao,
+        sahhaConfigRepo: SahhaConfigRepo,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
         movementDao: MovementDao,
@@ -245,11 +246,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             context,
             defaultScope,
             ioScope,
-            configurationDao,
             deviceDao,
             sleepDao,
             movementDao,
             authRepo,
+            sahhaConfigRepo,
             sahhaErrorLogger,
             mutex,
             api,
@@ -332,17 +333,17 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideSahhaErrorLogger(
         context: Context,
-        configurationDao: ConfigurationDao,
+        sahhaConfigRepo: SahhaConfigRepo,
         sahhaErrorApi: SahhaErrorApi,
         @DefaultScope defaultScope: CoroutineScope,
         authRepo: AuthRepo
     ): SahhaErrorLogger {
         return SahhaErrorLogger(
             context,
-            configurationDao,
             sahhaErrorApi,
             defaultScope,
-            authRepo
+            authRepo,
+            sahhaConfigRepo
         )
     }
 
