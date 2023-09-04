@@ -19,7 +19,7 @@ data class SahhaErrorLog(
     var errorSource: String?,
     var apiURL: String?,
     var apiMethod: String?,
-    var apiBody: String?,
-    var appMethod: String?,
-    var appBody: String?
+    var codePath: String?,
+    var codeMethod: String?,
+    var codeBody: String?,
 )

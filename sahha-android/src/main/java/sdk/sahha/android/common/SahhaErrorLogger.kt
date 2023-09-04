@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -20,6 +21,8 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 
+private const val tag = "SahhaErrorLogger"
+
 class SahhaErrorLogger(
     private val context: Context,
     private val sahhaErrorApi: SahhaErrorApi,
@@ -28,16 +31,20 @@ class SahhaErrorLogger(
     private val sahhaConfigRepo: SahhaConfigRepo
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
-
-    private fun postErrorLog(
+    private suspend fun postErrorLog(
         sahhaErrorLog: SahhaErrorLog
     ) {
         val token = authRepo.getToken() ?: ""
 
-        sahhaErrorApi.postErrorLog(
-            token,
-            sahhaErrorLog
-        )
+        try {
+            val response = sahhaErrorApi.postErrorLog(token, sahhaErrorLog)
+            Log.w(tag, "An error log post ended with a failure response:")
+            Log.w(tag, "Response code: ${response.code()}")
+            Log.w(tag, "Response message: ${response.message()}")
+        } catch (e: Exception) {
+            Log.w(tag, "Failed to post an error log:")
+            Log.w(tag, "Exception message: ${e.message}")
+        }
     }
 
     fun api(
@@ -111,20 +118,22 @@ class SahhaErrorLogger(
     fun application(
         error: String?,
         appMethod: String,
-        appBody: String?
+        appBody: String?,
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApplicationLogProperties(error, appMethod, appBody)
+            postErrorLog(sahhaErrorLog)
         }
     }
 
     private fun setApplicationLogProperties(error: String?, appMethod: String, appBody: String?) {
         sahhaErrorLog.errorSource = APPLICATION_ERROR
         error?.also { sahhaErrorLog.errorMessage = it }
-        sahhaErrorLog.appMethod = appMethod
-        appBody?.also { sahhaErrorLog.appBody = it }
+        sahhaErrorLog.codeMethod = appMethod
+        appBody?.also { sahhaErrorLog.codeBody = it }
     }
 
     private fun setApiLogProperties(
@@ -135,7 +144,7 @@ class SahhaErrorLogger(
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
-            sahhaErrorLog.apiBody =
+            sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
@@ -151,7 +160,7 @@ class SahhaErrorLogger(
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         response.raw().request.also { req ->
-            sahhaErrorLog.apiBody =
+            sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(req.body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = req.method
             sahhaErrorLog.apiURL = req.url.encodedPath
@@ -171,7 +180,7 @@ class SahhaErrorLogger(
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
-            sahhaErrorLog.apiBody =
+            sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
@@ -190,7 +199,7 @@ class SahhaErrorLogger(
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
-            sahhaErrorLog.apiBody =
+            sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
             sahhaErrorLog.apiMethod = it.request().method
             sahhaErrorLog.apiURL = it.request().url.encodedPath
@@ -210,7 +219,7 @@ class SahhaErrorLogger(
         response?.also { r ->
             sahhaResponseError =
                 SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
-            sahhaErrorLog.apiBody =
+            sahhaErrorLog.codeBody =
                 r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
         }
 
