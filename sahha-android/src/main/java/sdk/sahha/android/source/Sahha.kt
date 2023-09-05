@@ -130,11 +130,11 @@ object Sahha {
     }
 
     fun postError(
-        appMethod: String,
+        codeMethod: String,
         error: String? = null,
-        appBody: String? = null,
+        codeBody: String? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        sim.postAppError(appMethod, error, appBody, callback)
+        sim.postAppError(error, codeMethod, codeBody, callback)
     }
 }

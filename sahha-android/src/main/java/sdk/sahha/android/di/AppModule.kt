@@ -35,6 +35,7 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
@@ -88,6 +89,16 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             authRepo,
             api,
             sahhaErrorLogger
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideSahhaConfigRepo(
+        configDao: ConfigurationDao
+    ): SahhaConfigRepo {
+        return SahhaConfigRepoImpl(
+            configDao
         )
     }
 
@@ -201,13 +212,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): SahhaErrorApi {
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.ERROR_API_PROD)
+                .baseUrl(BuildConfig.API_PROD)
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaErrorApi::class.java)
         } else {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.ERROR_API_DEV)
+                .baseUrl(BuildConfig.API_DEV)
                 .addConverterFactory(gson)
                 .build()
                 .create(SahhaErrorApi::class.java)
@@ -222,7 +233,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): AuthRepo {
         return AuthRepoImpl(
             api,
-            encryptedSharedPreferences,
+            encryptedSharedPreferences
         )
     }
 

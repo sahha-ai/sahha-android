@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -138,6 +139,7 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Reconfigure")
                                 }
+                                ErrorLogView()
                                 DeauthenticateView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(authStatus)
@@ -338,4 +340,68 @@ fun DeauthenticateView() {
     }) {
         Text("De-authenticate")
     }
+}
+
+@Composable
+fun ErrorLogView() {
+    var status by remember { mutableStateOf("Pending...") }
+    var codeMethod by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
+    var codeBody by remember { mutableStateOf("") }
+
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(status)
+
+    MyOutlinedTextField(
+        textLabel = "Code Method",
+        textValue = codeMethod,
+        onValueChange = { newValue -> codeMethod = newValue })
+    MyOutlinedTextField(
+        textLabel = "Error?",
+        textValue = error,
+        onValueChange = { newValue -> error = newValue })
+    MyOutlinedTextField(
+        textLabel = "Code Body?",
+        textValue = codeBody,
+        onValueChange = { newValue -> codeBody = newValue })
+
+    Button(onClick = {
+        status = "Loading..."
+
+        Sahha.postError(codeMethod, error, codeBody) { err, success ->
+            err?.also {
+                status = it
+                return@postError
+            }
+
+            status = "Error post successful: $success"
+        }
+    }) {
+        Text("Post Error")
+    }
+}
+
+@Composable
+fun MyOutlinedTextField(
+    textLabel: String,
+    textValue: String,
+    singleLine: Boolean = true,
+    imeAction: ImeAction = ImeAction.Done,
+    lfm: FocusManager = LocalFocusManager.current,
+    onValueChange: (newValue: String) -> Unit
+) {
+
+    OutlinedTextField(
+        value = textValue,
+        singleLine = singleLine,
+        onValueChange = {
+            onValueChange(it)
+        }, label = {
+            Text(textLabel)
+        },
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = KeyboardActions(onDone = {
+            lfm.clearFocus()
+        })
+    )
 }

@@ -32,16 +32,23 @@ class SahhaErrorLogger(
 ) {
     private var sahhaErrorLog = getNewSahhaErrorLog()
     private suspend fun postErrorLog(
-        sahhaErrorLog: SahhaErrorLog
+        sahhaErrorLog: SahhaErrorLog,
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         val token = authRepo.getToken() ?: ""
 
         try {
             val response = sahhaErrorApi.postErrorLog(token, sahhaErrorLog)
-            Log.w(tag, "An error log post ended with a failure response:")
-            Log.w(tag, "Response code: ${response.code()}")
-            Log.w(tag, "Response message: ${response.message()}")
+
+            if (response.isSuccessful) callback?.invoke(null, true)
+            else {
+                callback?.invoke("${response.code()}: ${response.message()}", false)
+                Log.w(tag, "An error log post ended with a failure response:")
+                Log.w(tag, "Response code: ${response.code()}")
+                Log.w(tag, "Response message: ${response.message()}")
+            }
         } catch (e: Exception) {
+            callback?.invoke(e.message, false)
             Log.w(tag, "Failed to post an error log:")
             Log.w(tag, "Exception message: ${e.message}")
         }
@@ -125,7 +132,7 @@ class SahhaErrorLogger(
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApplicationLogProperties(error, appMethod, appBody)
-            postErrorLog(sahhaErrorLog)
+            postErrorLog(sahhaErrorLog, callback)
         }
     }
 

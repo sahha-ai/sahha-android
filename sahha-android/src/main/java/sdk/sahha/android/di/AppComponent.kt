@@ -25,6 +25,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.interaction.SahhaInteractionManager
@@ -70,10 +71,9 @@ internal interface AppComponent {
     val configurationDao: ConfigurationDao
 
     val authRepo: AuthRepo
-
     val deviceInfoRepo: DeviceInfoRepo
-
     val userDataRepo: UserDataRepo
+    val sahhaConfigRepo: SahhaConfigRepo
 
     @get:MainScope
     val mainScope: CoroutineScope

@@ -74,8 +74,8 @@ class SahhaInteractionManager @Inject constructor(
     }
 
     internal fun postAppError(
-        appMethod: String,
         error: String? = null,
+        appMethod: String,
         appBody: String? = null,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
@@ -86,14 +86,6 @@ class SahhaInteractionManager @Inject constructor(
         } catch (e: Exception) {
             callback.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(e.message, "postError", null)
-        }
-    }
-
-    internal fun postApiError() {
-        try {
-            TODO("Might not need this method")
-        } catch (e: Exception) {
-            TODO("Might not need this method")
         }
     }
 
