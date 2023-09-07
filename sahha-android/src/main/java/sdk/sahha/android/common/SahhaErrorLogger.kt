@@ -35,7 +35,7 @@ class SahhaErrorLogger(
         sahhaErrorLog: SahhaErrorLog,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        val token = authRepo.getToken() ?: ""
+        val token = authRepo.getToken()
 
         try {
             val response = sahhaErrorApi.postErrorLog(token, sahhaErrorLog)
@@ -153,8 +153,8 @@ class SahhaErrorLogger(
         call?.also {
             sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
-            sahhaErrorLog.apiMethod = it.request().method
-            sahhaErrorLog.apiURL = it.request().url.encodedPath
+            sahhaErrorLog.codeMethod = it.request().method
+            sahhaErrorLog.codePath = it.request().url.encodedPath
         }
         sahhaErrorLog.errorType = type
         code?.also { sahhaErrorLog.errorCode = it }
@@ -169,12 +169,13 @@ class SahhaErrorLogger(
         response.raw().request.also { req ->
             sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(req.body) ?: SahhaErrors.noData
-            sahhaErrorLog.apiMethod = req.method
-            sahhaErrorLog.apiURL = req.url.encodedPath
+            sahhaErrorLog.codeMethod= req.method
+            sahhaErrorLog.codePath = req.url.encodedPath
         }
         sahhaErrorLog.errorType = type
         sahhaErrorLog.errorCode = response.code()
         sahhaErrorLog.errorMessage = response.message()
+        println("abc123\n"+sahhaErrorLog)
     }
 
 
@@ -189,8 +190,8 @@ class SahhaErrorLogger(
         call?.also {
             sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
-            sahhaErrorLog.apiMethod = it.request().method
-            sahhaErrorLog.apiURL = it.request().url.encodedPath
+            sahhaErrorLog.codeMethod = it.request().method
+            sahhaErrorLog.codePath = it.request().url.encodedPath
         }
         sahhaErrorLog.errorType = type
         code?.also { sahhaErrorLog.errorCode = it }
@@ -208,8 +209,8 @@ class SahhaErrorLogger(
         call?.also {
             sahhaErrorLog.codeBody =
                 SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
-            sahhaErrorLog.apiMethod = it.request().method
-            sahhaErrorLog.apiURL = it.request().url.encodedPath
+            sahhaErrorLog.codeMethod = it.request().method
+            sahhaErrorLog.codePath = it.request().url.encodedPath
         }
         sahhaErrorLog.errorType = type
         code?.also { sahhaErrorLog.errorCode = it }
@@ -231,8 +232,8 @@ class SahhaErrorLogger(
         }
 
         call?.also { c ->
-            sahhaErrorLog.apiMethod = c.request().method
-            sahhaErrorLog.apiURL = c.request().url.encodedPath
+            sahhaErrorLog.codeMethod = c.request().method
+            sahhaErrorLog.codePath = c.request().url.encodedPath
         }
 
         sahhaResponseError?.also {
@@ -262,8 +263,6 @@ class SahhaErrorLogger(
 
     private fun getNewSahhaErrorLog(): SahhaErrorLog {
         return SahhaErrorLog(
-            null,
-            null,
             null,
             null,
             null,

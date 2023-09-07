@@ -488,6 +488,11 @@ class SensorRepoImpl @Inject constructor(
                         successfulLogic
                     )
                 }
+                sahhaErrorLogger.application(
+                    SahhaErrors.attemptingTokenRefresh,
+                    "handleResponse",
+                    null
+                )
                 return
             }
 

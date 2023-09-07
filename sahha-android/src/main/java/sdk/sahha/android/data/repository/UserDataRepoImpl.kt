@@ -6,12 +6,16 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import sdk.sahha.android.common.*
+import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaResponseHandler.returnFormattedResponse
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.toSahhaDemographic
-import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.source.SahhaDemographic
@@ -34,6 +38,11 @@ class UserDataRepoImpl(
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                     getAnalysis(dates, callback)
                 }
+                sahhaErrorLogger.application(
+                    SahhaErrors.attemptingTokenRefresh,
+                    "getAnalysis",
+                    null
+                )
                 return
             }
 
@@ -46,7 +55,6 @@ class UserDataRepoImpl(
                 "${response.code()}: ${response.message()}",
                 null
             )
-
             sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
         } catch (e: Exception) {
             sahhaErrorLogger.application(
@@ -73,7 +81,11 @@ class UserDataRepoImpl(
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     getDemographic(callback)
                                 }
-
+                                sahhaErrorLogger.application(
+                                    SahhaErrors.attemptingTokenRefresh,
+                                    "getDemographic",
+                                    null
+                                )
                                 return@launch
                             }
 
@@ -139,6 +151,11 @@ class UserDataRepoImpl(
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     postDemographic(sahhaDemographic, callback)
                                 }
+                                sahhaErrorLogger.application(
+                                    SahhaErrors.attemptingTokenRefresh,
+                                    "postDemographic",
+                                    null
+                                )
                                 return@launch
                             }
 
