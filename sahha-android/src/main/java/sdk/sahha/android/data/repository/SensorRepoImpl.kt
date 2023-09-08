@@ -432,7 +432,8 @@ class SensorRepoImpl @Inject constructor(
         callback?.invoke(e.message, false)
 
         sahhaErrorLogger.application(
-            e.message,
+            e.message ?: SahhaErrors.somethingWentWrong,
+            tag,
             functionName,
             data
         )
@@ -447,7 +448,8 @@ class SensorRepoImpl @Inject constructor(
         } catch (e: Exception) {
             callback(e.message, false)
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "postAllSensorData",
                 null
             )
@@ -490,8 +492,11 @@ class SensorRepoImpl @Inject constructor(
                 }
                 sahhaErrorLogger.application(
                     SahhaErrors.attemptingTokenRefresh,
+                    tag,
                     "handleResponse",
-                    null
+                    SahhaConverterUtility.requestBodyToString(
+                        response.raw().request.body
+                    )
                 )
                 return
             }
@@ -518,9 +523,9 @@ class SensorRepoImpl @Inject constructor(
             }
 
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "handleResponse",
-                response.message(),
             )
         }
     }

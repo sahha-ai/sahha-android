@@ -7,11 +7,13 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
@@ -69,23 +71,34 @@ class SahhaInteractionManager @Inject constructor(
             }
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)
-            sahhaErrorLogger.application(e.message, "start", null)
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                "SahhaInteractionManager",
+                "start"
+            )
         }
     }
 
     internal fun postAppError(
-        error: String? = null,
-        appMethod: String,
-        appBody: String? = null,
-        callback: ((error: String?, success: Boolean) -> Unit)
+        framework: SahhaFramework,
+        message: String,
+        path: String,
+        method: String,
+        body: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         try {
             sahhaErrorLogger.application(
-                error, appMethod, appBody, callback
+                message, path, method, body, framework, callback
             )
         } catch (e: Exception) {
-            callback.invoke("Error: ${e.message}", false)
-            sahhaErrorLogger.application(e.message, "postError", null)
+            callback?.invoke("Error: ${e.message}", false)
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                path,
+                "postAppError",
+                framework = framework
+            )
         }
     }
 
