@@ -21,6 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants
@@ -176,25 +177,35 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideSahhaApi(
+        context: Context,
         environment: Enum<SahhaEnvironment>,
         gson: GsonConverterFactory,
         okHttpClient: OkHttpClient
     ): SahhaApi {
-        return if (environment == SahhaEnvironment.production) {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_PROD)
-                .client(okHttpClient)
-                .addConverterFactory(gson)
-                .build()
-                .create(SahhaApi::class.java)
-        } else {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_DEV)
-                .client(okHttpClient)
-                .addConverterFactory(gson)
-                .build()
-                .create(SahhaApi::class.java)
-        }
+        return detectApiBaseUrl(
+            context,
+            environment,
+            gson,
+            okHttpClient,
+            SahhaApi::class.java
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideSahhaErrorApi(
+        context: Context,
+        environment: Enum<SahhaEnvironment>,
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient
+    ): SahhaErrorApi {
+        return detectApiBaseUrl(
+            context,
+            environment,
+            gson,
+            okHttpClient,
+            SahhaErrorApi::class.java
+        )
     }
 
     @Singleton
@@ -207,24 +218,42 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             .build()
     }
 
-    @Singleton
-    @Provides
-    fun provideSahhaErrorApi(
+    private fun <T> detectApiBaseUrl(
+        context: Context,
         environment: Enum<SahhaEnvironment>,
-        gson: GsonConverterFactory
-    ): SahhaErrorApi {
-        return if (environment == SahhaEnvironment.production) {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_PROD)
-                .addConverterFactory(gson)
-                .build()
-                .create(SahhaErrorApi::class.java)
-        } else {
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient,
+        apiClass: Class<T>
+    ): T {
+        val shouldBeDevEnv =
+            Session.shouldBeDevEnvironment(
+                context, environment
+            )
+
+        return if (shouldBeDevEnv) {
+            println("dev")
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_DEV)
+                .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
-                .create(SahhaErrorApi::class.java)
+                .create(apiClass)
+        } else if (environment == SahhaEnvironment.production) {
+            println("prod")
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.API_PROD)
+                .client(okHttpClient)
+                .addConverterFactory(gson)
+                .build()
+                .create(apiClass)
+        } else {
+            println("sandbox")
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.API_SANDBOX)
+                .client(okHttpClient)
+                .addConverterFactory(gson)
+                .build()
+                .create(apiClass)
         }
     }
 

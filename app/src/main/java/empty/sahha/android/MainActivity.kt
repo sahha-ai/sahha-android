@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.development,
+            environment = SahhaEnvironment.sandbox,
             notificationSettings = SahhaNotificationConfiguration(
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
                 title = "Foreground Service",
