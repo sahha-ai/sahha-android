@@ -35,6 +35,16 @@ class AuthInteractionManager @Inject constructor(
         }
     }
 
+    fun authenticate(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        ioScope.launch {
+            saveTokensUseCase(profileToken, refreshToken, callback)
+        }
+    }
+
     suspend fun deauthenticate(
         callback: (suspend (error: String?, success: Boolean) -> Unit)
     ) {

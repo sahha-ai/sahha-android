@@ -32,7 +32,7 @@ class SaveTokensUseCase @Inject constructor(
                 repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
 
             if (ResponseCode.isSuccessful(response.code())) {
-                saveTokensIfAvailable(response, repository, callback)
+                saveTokensIfAvailable(response, callback)
                 return
             }
 
@@ -42,9 +42,20 @@ class SaveTokensUseCase @Inject constructor(
         }
     }
 
+    operator fun invoke(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        repository.saveEncryptedTokens(
+            profileToken,
+            refreshToken,
+            callback
+        )
+    }
+
     private fun saveTokensIfAvailable(
         response: Response<TokenData>,
-        repository: AuthRepo,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         val tokens = response.body()

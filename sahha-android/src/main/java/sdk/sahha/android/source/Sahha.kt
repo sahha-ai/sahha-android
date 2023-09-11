@@ -58,6 +58,14 @@ object Sahha {
         sim.auth.authenticate(appId, appSecret, externalId, callback)
     }
 
+    fun authenticate(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        sim.auth.authenticate(profileToken, refreshToken, callback)
+    }
+
     fun deauthenticate(
         callback: (suspend (error: String?, success: Boolean) -> Unit)
     ) {
