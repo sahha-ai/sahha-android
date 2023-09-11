@@ -50,8 +50,18 @@ class SaveTokensUseCase @Inject constructor(
         repository.saveEncryptedTokens(
             profileToken,
             refreshToken,
-            callback
-        )
+        ) { error, success ->
+            if (success) {
+                ioScope.launch {
+                    userData.processAndPutDeviceInfo(
+                        context, true,
+                        callback
+                    )
+                }
+                return@saveEncryptedTokens
+            }
+            callback(error, false)
+        }
     }
 
     private fun saveTokensIfAvailable(
@@ -74,7 +84,7 @@ class SaveTokensUseCase @Inject constructor(
                     }
                     return@saveEncryptedTokens
                 }
-                callback(error, success)
+                callback(error, false)
             }
         }
     }
