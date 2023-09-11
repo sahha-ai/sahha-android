@@ -649,7 +649,9 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -724,6 +726,20 @@
           </value>
         </entry>
         <entry key="1176177732">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1218618145">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
