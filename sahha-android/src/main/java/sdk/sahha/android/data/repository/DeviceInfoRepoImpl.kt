@@ -14,6 +14,7 @@ import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 
 private const val tag = "DeviceInfoRepoImpl"
+
 class DeviceInfoRepoImpl(
     private val authRepo: AuthRepo,
     private val api: SahhaApi,
@@ -47,13 +48,14 @@ class DeviceInfoRepoImpl(
             }
 
             when (response.code()) {
-                400 -> {
-                    callback?.invoke("${response.code()}: ${response.message()}", false)
-                    sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
-                }
                 401 -> {
                     callback?.invoke("${response.code()}: ${response.message()}", false)
-                    sahhaErrorLogger.api(response, SahhaErrors.typeAuthentication)
+                    sahhaErrorLogger.api(response)
+                }
+
+                else -> {
+                    callback?.invoke("${response.code()}: ${response.message()}", false)
+                    sahhaErrorLogger.api(response)
                 }
             }
         } catch (e: Exception) {
@@ -62,7 +64,7 @@ class DeviceInfoRepoImpl(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
                 "putDeviceInformation",
-                response.message(),
+                deviceInformation.toString(),
             )
         }
     }

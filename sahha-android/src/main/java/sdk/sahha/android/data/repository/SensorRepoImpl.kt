@@ -516,7 +516,7 @@ class SensorRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response, SahhaErrors.typeResponse)
+            sahhaErrorLogger.api(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
@@ -526,6 +526,7 @@ class SensorRepoImpl @Inject constructor(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
                 "handleResponse",
+                e.stackTraceToString()
             )
         }
     }
@@ -595,13 +596,7 @@ class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.heart -> {
-                    // TODO: Not yet implemented
-                    deferredResult.complete(Unit)
-                }
-
-                SahhaSensor.blood -> {
-                    // TODO: Not yet implemented
+                else -> {
                     deferredResult.complete(Unit)
                 }
             }

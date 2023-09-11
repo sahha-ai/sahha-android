@@ -8,6 +8,7 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
+import okhttp3.internal.closeQuietly
 import retrofit2.Call
 import retrofit2.Response
 import sdk.sahha.android.data.Constants.API_ERROR
@@ -16,7 +17,6 @@ import sdk.sahha.android.data.Constants.PLATFORM_NAME
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
-import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaConverterUtility
@@ -60,7 +60,7 @@ class SahhaErrorLogger(
         type: String,
         code: Int?,
         message: String,
-        errorBody: String? = null
+        errorBody: ResponseBody?
     ) {
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
@@ -76,7 +76,7 @@ class SahhaErrorLogger(
         type: String,
         code: Int?,
         message: String,
-        errorBody: String? = null
+        errorBody: ResponseBody?
     ) {
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
@@ -88,12 +88,11 @@ class SahhaErrorLogger(
 
     fun api(
         response: Response<*>,
-        type: String
     ) {
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
-            setApiLogProperties(response, type)
+            setApiLogProperties(response)
             postErrorLog(sahhaErrorLog)
         }
     }
@@ -109,7 +108,7 @@ class SahhaErrorLogger(
         mainScope.launch {
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
-            setApplicationLogProperties(framework,message, path, method, body)
+            setApplicationLogProperties(framework, message, path, method, body)
             postErrorLog(sahhaErrorLog, callback)
         }
     }
@@ -126,113 +125,81 @@ class SahhaErrorLogger(
         sahhaErrorLog.codePath = path
         sahhaErrorLog.codeMethod = method
         sahhaErrorLog.codeBody = body
-        sahhaErrorLog.errorType = framework.name
+        sahhaErrorLog.errorLocation = framework.name
     }
 
     private fun setApiLogProperties(
         call: Call<ResponseBody>?,
-        type: String,
+        location: String,
         code: Int?,
         message: String,
-        errorBody: String?
+        errorBody: ResponseBody?
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.codeBody =
-                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+                SahhaConverterUtility.requestBodyToString(it.request().body)
+                    ?: SahhaErrors.noCodeBody
             sahhaErrorLog.codeMethod = it.request().method
             sahhaErrorLog.codePath = it.request().url.encodedPath
         }
-        sahhaErrorLog.errorType = type
+        sahhaErrorLog.errorLocation = location
         code?.also { sahhaErrorLog.errorCode = it }
         sahhaErrorLog.errorMessage = message
-        sahhaErrorLog.errorBody = errorBody
+        sahhaErrorLog.errorBody = readErrorBody(errorBody)
     }
 
     private fun setApiLogProperties(
         response: Response<*>,
-        type: String
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         response.raw().request.also { req ->
             sahhaErrorLog.codeBody =
-                SahhaConverterUtility.requestBodyToString(req.body) ?: SahhaErrors.noData
-            sahhaErrorLog.codeMethod= req.method
+                SahhaConverterUtility.requestBodyToString(req.body) ?: SahhaErrors.noCodeBody
+            sahhaErrorLog.codeMethod = req.method
             sahhaErrorLog.codePath = req.url.encodedPath
         }
-        sahhaErrorLog.errorType = type
+
+        sahhaErrorLog.errorLocation = getErrorLocation(response.errorBody())
         sahhaErrorLog.errorCode = response.code()
         sahhaErrorLog.errorMessage = response.message()
-        sahhaErrorLog.errorBody = response.errorBody()?.charStream()?.readText()
-    }
-
-
-    @JvmName("setApiLogPropertiesUnit")
-    private fun setApiLogProperties(
-        call: Call<Unit>?,
-        type: String,
-        code: Int?,
-        message: String,
-        errorBody: String?
-    ) {
-        sahhaErrorLog.errorSource = API_ERROR
-        call?.also {
-            sahhaErrorLog.codeBody =
-                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
-            sahhaErrorLog.codeMethod = it.request().method
-            sahhaErrorLog.codePath = it.request().url.encodedPath
-        }
-        sahhaErrorLog.errorType = type
-        code?.also { sahhaErrorLog.errorCode = it }
-        sahhaErrorLog.errorMessage = message
-        sahhaErrorLog.errorBody = errorBody
+        sahhaErrorLog.errorBody = readErrorBody(response.errorBody())
     }
 
     @JvmName("setApiLogPropertiesDemographicDto")
     private fun setApiLogProperties(
         call: Call<DemographicDto>?,
-        type: String,
+        location: String,
         code: Int?,
         message: String,
-        errorBody: String?
+        errorBody: ResponseBody?
     ) {
         sahhaErrorLog.errorSource = API_ERROR
         call?.also {
             sahhaErrorLog.codeBody =
-                SahhaConverterUtility.requestBodyToString(it.request().body) ?: SahhaErrors.noData
+                SahhaConverterUtility.requestBodyToString(it.request().body)
+                    ?: SahhaErrors.noCodeBody
             sahhaErrorLog.codeMethod = it.request().method
             sahhaErrorLog.codePath = it.request().url.encodedPath
         }
-        sahhaErrorLog.errorType = type
+        sahhaErrorLog.errorLocation = location
         code?.also { sahhaErrorLog.errorCode = it }
         sahhaErrorLog.errorMessage = message
-        sahhaErrorLog.errorBody = errorBody
+        sahhaErrorLog.errorBody = readErrorBody(errorBody)
     }
 
-    private fun setApiLogProperties(
-        call: Call<*>?,
-        response: Response<*>?
-    ) {
-        var sahhaResponseError: SahhaResponseError? = null
-        sahhaErrorLog.errorSource = API_ERROR
+    private fun getErrorLocation(errorBody: ResponseBody?): String? {
+        return SahhaConverterUtility.responseBodyToSahhaResponseError(
+            errorBody
+        )?.location
+    }
 
-        response?.also { r ->
-            sahhaResponseError =
-                SahhaConverterUtility.responseBodyToSahhaResponseError(r.errorBody())
-            sahhaErrorLog.codeBody =
-                r.errorBody()?.charStream()?.readText() ?: SahhaErrors.noData
-        }
+    private fun readErrorBody(errorBody: ResponseBody?): String? {
+        val stream = errorBody?.charStream()
+        val errorBodyString = stream?.readText()
+        stream?.closeQuietly()
 
-        call?.also { c ->
-            sahhaErrorLog.codeMethod = c.request().method
-            sahhaErrorLog.codePath = c.request().url.encodedPath
-        }
-
-        sahhaResponseError?.also {
-            sahhaErrorLog.errorCode = it.statusCode
-            sahhaErrorLog.errorType = it.location
-            sahhaErrorLog.errorMessage = it.title
-        }
+        return errorBodyString
     }
 
     @SuppressLint("HardwareIds")

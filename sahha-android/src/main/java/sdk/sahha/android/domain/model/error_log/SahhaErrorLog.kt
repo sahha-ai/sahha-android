@@ -14,7 +14,7 @@ data class SahhaErrorLog(
     var system: String?,
     var systemVersion: String?,
     var errorCode: Int?,
-    var errorType: String?,
+    var errorLocation: String?,
     var errorMessage: String?,
     var errorSource: String?,
     var errorBody: String?,

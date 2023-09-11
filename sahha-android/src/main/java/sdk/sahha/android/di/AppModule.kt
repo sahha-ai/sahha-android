@@ -130,8 +130,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideSahhaNotificationManager(context: Context): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context)
+    fun provideSahhaNotificationManager(
+        context: Context,
+        sahhaErrorLogger: SahhaErrorLogger
+    ): SahhaNotificationManager {
+        return SahhaNotificationManagerImpl(context, sahhaErrorLogger)
     }
 
     @Singleton
@@ -278,9 +281,10 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun providePermissionManager(
-        permissionHandler: PermissionHandler
+        permissionHandler: PermissionHandler,
+        sahhaErrorLogger: SahhaErrorLogger
     ): PermissionManager {
-        return PermissionManagerImpl(permissionHandler)
+        return PermissionManagerImpl(permissionHandler, sahhaErrorLogger)
     }
 
     @Singleton

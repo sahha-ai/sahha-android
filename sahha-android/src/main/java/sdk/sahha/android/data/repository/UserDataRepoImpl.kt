@@ -18,6 +18,7 @@ import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.toSahhaDemographic
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 
 private const val tag = "UserDataRepoImpl"
@@ -41,7 +42,7 @@ class UserDataRepoImpl(
                     getAnalysis(dates, callback)
                 }
                 sahhaErrorLogger.api(
-                    response, SahhaErrors.typeAuthentication
+                    response
                 )
                 return
             }
@@ -55,7 +56,7 @@ class UserDataRepoImpl(
                 "${response.code()}: ${response.message()}",
                 null
             )
-            sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
+            sahhaErrorLogger.api(response)
         } catch (e: Exception) {
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
@@ -86,7 +87,8 @@ class UserDataRepoImpl(
                                     call,
                                     SahhaErrors.typeAuthentication,
                                     response.code(),
-                                    response.message()
+                                    response.message(),
+                                    response.errorBody()
                                 )
                                 return@launch
                             }
@@ -113,18 +115,21 @@ class UserDataRepoImpl(
                                 call,
                                 SahhaErrors.typeRequest,
                                 response.code(),
-                                response.message()
+                                response.message(),
+                                response.errorBody()
                             )
                         }
                     }
 
                     override fun onFailure(call: Call<DemographicDto>, t: Throwable) {
                         callback?.also { it(t.message, null) }
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
+                        sahhaErrorLogger.application(
+                            t.message ?: SahhaErrors.somethingWentWrong,
+                            tag,
+                            "getDemographic",
+                            SahhaConverterUtility.requestBodyToString(
+                                call.request().body
+                            )
                         )
                     }
                 }
@@ -136,6 +141,7 @@ class UserDataRepoImpl(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
                 "getDemographic",
+                e.stackTraceToString()
             )
         }
     }
@@ -162,7 +168,8 @@ class UserDataRepoImpl(
                                     call,
                                     SahhaErrors.typeAuthentication,
                                     response.code(),
-                                    response.message()
+                                    response.message(),
+                                    response.errorBody()
                                 )
                                 return@launch
                             }
@@ -183,18 +190,21 @@ class UserDataRepoImpl(
                                 call,
                                 SahhaErrors.typeRequest,
                                 response.code(),
-                                response.message()
+                                response.message(),
+                                response.errorBody()
                             )
                         }
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         callback?.also { it(t.message, false) }
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
+                        sahhaErrorLogger.application(
+                            t.message ?: SahhaErrors.somethingWentWrong,
+                            tag,
+                            "postDemographic",
+                            SahhaConverterUtility.requestBodyToString(
+                                call.request().body
+                            )
                         )
                     }
                 }
