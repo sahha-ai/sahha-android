@@ -32,7 +32,7 @@ class SaveTokensUseCase @Inject constructor(
                 repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
 
             if (ResponseCode.isSuccessful(response.code())) {
-                saveTokensIfAvailable(response, repository, callback)
+                saveTokensIfAvailable(response, callback)
                 return
             }
 
@@ -42,9 +42,30 @@ class SaveTokensUseCase @Inject constructor(
         }
     }
 
+    operator fun invoke(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        repository.saveEncryptedTokens(
+            profileToken,
+            refreshToken,
+        ) { error, success ->
+            if (success) {
+                ioScope.launch {
+                    userData.processAndPutDeviceInfo(
+                        context, true,
+                        callback
+                    )
+                }
+                return@saveEncryptedTokens
+            }
+            callback(error, false)
+        }
+    }
+
     private fun saveTokensIfAvailable(
         response: Response<TokenData>,
-        repository: AuthRepo,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         val tokens = response.body()
@@ -63,7 +84,7 @@ class SaveTokensUseCase @Inject constructor(
                     }
                     return@saveEncryptedTokens
                 }
-                callback(error, success)
+                callback(error, false)
             }
         }
     }

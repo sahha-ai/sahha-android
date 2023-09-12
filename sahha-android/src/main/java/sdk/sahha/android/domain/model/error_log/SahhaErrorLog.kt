@@ -14,12 +14,11 @@ data class SahhaErrorLog(
     var system: String?,
     var systemVersion: String?,
     var errorCode: Int?,
-    var errorType: String?,
+    var errorLocation: String?,
     var errorMessage: String?,
     var errorSource: String?,
-    var apiURL: String?,
-    var apiMethod: String?,
-    var apiBody: String?,
-    var appMethod: String?,
-    var appBody: String?
+    var errorBody: String?,
+    var codePath: String?,
+    var codeMethod: String?,
+    var codeBody: String?
 )

@@ -1,20 +1,29 @@
 package sdk.sahha.android.data.manager
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.service.DataCollectionService
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.source.Sahha
 
+private val tag = "SahhaNotificationManagerImpl"
+
 class SahhaNotificationManagerImpl(
-    private val context: Context
+    private val context: Context,
+    private val sahhaErrorLogger: SahhaErrorLogger
 ) : SahhaNotificationManager {
     override lateinit var notification: Notification
 
@@ -45,6 +54,13 @@ class SahhaNotificationManagerImpl(
             )
         } catch (e: Exception) {
             callback?.also { it(e.message, false) }
+
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
+                "startDataCollectionService",
+                "icon: $_icon, title: $_title, shortDescription: $_shortDescription"
+            )
         }
     }
 

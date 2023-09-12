@@ -92,10 +92,6 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-//            Sahha.sim.sensor.startCollectingStepCounterData(
-//                this,
-//                Sahha.di.movementDao,
-//            )
             Sahha.sim.sensor.startCollectingStepDetectorData(
                 this,
                 Sahha.di.movementDao,

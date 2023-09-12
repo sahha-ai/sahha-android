@@ -20,6 +20,9 @@ object Sahha {
     internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.notificationManager }
 
+    val isAuthenticated: Boolean
+        get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false
+
     internal fun diInitialized(): Boolean {
         return ::di.isInitialized
     }
@@ -53,6 +56,14 @@ object Sahha {
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         sim.auth.authenticate(appId, appSecret, externalId, callback)
+    }
+
+    fun authenticate(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        sim.auth.authenticate(profileToken, refreshToken, callback)
     }
 
     fun deauthenticate(
@@ -127,5 +138,16 @@ object Sahha {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         sim.permission.getSensorStatus(context, callback)
+    }
+
+    fun postError(
+        framework: SahhaFramework,
+        message: String,
+        path: String,
+        method: String,
+        body: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
+        sim.postAppError(framework, message, path, method, body, callback)
     }
 }

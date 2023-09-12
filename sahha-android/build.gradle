@@ -9,7 +9,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.14.6"
+def gVersionName = "0.14.7"
 
 android {
     compileSdk 34
@@ -19,12 +19,13 @@ android {
         targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-//        testInstrumentationRunnerArguments clearPackageData: 'true'
+        testInstrumentationRunnerArguments clearPackageData: 'true'
 
         consumerProguardFiles "consumer-rules.pro"
 
         buildConfigField("String", "SAHHA_SDK_VERSION", "\"${versionName}\"")
         buildConfigField("String", "API_DEV", secretsProperties['API_DEV'])
+        buildConfigField("String", "API_SANDBOX", secretsProperties['API_SANDBOX'])
         buildConfigField("String", "API_PROD", secretsProperties['API_PROD'])
         buildConfigField("String", "ERROR_API_DEV", secretsProperties['ERROR_API_DEV'])
         buildConfigField("String", "ERROR_API_PROD", secretsProperties['ERROR_API_PROD'])
