@@ -204,14 +204,15 @@ class HealthConnectRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response, SahhaErrors.typeResponse)
+            sahhaErrorLogger.api(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
             }
 
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "handleResponse",
                 response.message(),
             )

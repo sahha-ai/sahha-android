@@ -9,7 +9,6 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.health.connect.datatypes.StepsRecord
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -34,16 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -56,11 +45,8 @@ import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaErrors
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.common.SahhaReconfigure
@@ -70,15 +56,9 @@ import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSettings
-import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaDemographic
-import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaNotificationConfiguration
-import sdk.sahha.android.source.SahhaSettings
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.Date
 import java.util.Date
 
 const val SEVEN_DAYS_MILLIS = 604800000L
@@ -484,10 +464,19 @@ fun ForegroundQuery(context: Context) {
         val timeInMillis = Instant.now().plus(10, ChronoUnit.SECONDS).toEpochMilli()
 
         val alarmIntent = Intent(context, MyAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
-        Toast.makeText(context, "Alarm set at ${Instant.ofEpochMilli(timeInMillis)}", Toast.LENGTH_LONG).show()
+        Toast.makeText(
+            context,
+            "Alarm set at ${Instant.ofEpochMilli(timeInMillis)}",
+            Toast.LENGTH_LONG
+        ).show()
 
         // Run foreground directly
 //        val serviceIntent = Intent(context, TesterService::class.java)
@@ -577,10 +566,14 @@ class TesterService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             SahhaReconfigure(this@TesterService)
             println("Sahha reconfigured")
-            val result = Sahha.ableToReadSteps()
-            println("Result complete")
+            try {
+                val result = Sahha.ableToReadSteps()
+                println("Result complete")
+                println("Able to read steps: $result")
+            } catch (e: Exception) {
+                println(e.stackTraceToString())
+            }
 
-            println("Able to read steps: $result")
 
             delay(5000)
             stopSelf()
@@ -592,7 +585,11 @@ class TesterService : Service() {
 
 class MyAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val serviceIntent = Intent(context, TesterService::class.java)
-        context.startForegroundService(serviceIntent)
+        try {
+            val serviceIntent = Intent(context, TesterService::class.java)
+            context.startForegroundService(serviceIntent)
+        } catch (e: Exception) {
+            println(e.stackTraceToString())
+        }
     }
 }

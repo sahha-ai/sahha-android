@@ -14,6 +14,7 @@ import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
+import sdk.sahha.android.domain.use_case.post.StartHealthConnectPostWorkerUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor

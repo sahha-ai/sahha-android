@@ -34,6 +34,8 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepSession
+import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -152,8 +154,7 @@ class SensorRepoImpl @Inject constructor(
 
     override suspend fun startPostWorkersHealthConnect() {
         val config = sahhaConfigRepo.getConfig()
-        permissionManager.getHealthConnectStatus(context) {
-            _, status ->
+        permissionManager.getHealthConnectStatus(context) { _, status ->
             checkAndStartWorker(config, SahhaSensor.device.ordinal) {
                 startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
             }
@@ -619,6 +620,7 @@ class SensorRepoImpl @Inject constructor(
                         deferredResult.complete(Unit)
                     }
                 }
+
                 else -> {
                     callback(null, true)
                     deferredResult.complete(Unit)
