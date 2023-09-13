@@ -22,6 +22,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
@@ -34,6 +46,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
@@ -44,10 +59,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.SahhaErrors
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaEnvironment
+import sdk.sahha.android.source.SahhaFramework
+import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSettings
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
@@ -57,20 +79,20 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Date
+import java.util.Date
 
 const val SEVEN_DAYS_MILLIS = 604800000L
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.development,
+            environment = SahhaEnvironment.sandbox,
             notificationSettings = SahhaNotificationConfiguration(
-                icon = R.drawable.ic_test,
-                title = "Test",
-                shortDescription = "This is a test."
+                icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
+                title = "Foreground Service",
+                shortDescription = "This mainly handles the steps and screen locks"
             )
         )
 
@@ -86,10 +108,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SahhasdkemptyTheme {
+                val lfm = LocalFocusManager.current
+
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    color = MaterialTheme.colors.background,
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
                     var permissionStatus by remember { mutableStateOf("") }
@@ -159,7 +184,10 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Reconfigure")
                                 }
+                                ErrorLogView()
+                                DeauthenticateView()
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                Text(authStatus)
                                 OutlinedTextField(
                                     value = appId,
                                     singleLine = true,
@@ -167,7 +195,12 @@ class MainActivity : ComponentActivity() {
                                         appId = it
                                     }, label = {
                                         Text("App ID")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 OutlinedTextField(
                                     value = appSecret,
                                     singleLine = true,
@@ -175,7 +208,12 @@ class MainActivity : ComponentActivity() {
                                         appSecret = it
                                     }, label = {
                                         Text("App Secret")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 OutlinedTextField(
                                     value = externalId,
                                     singleLine = true,
@@ -183,9 +221,15 @@ class MainActivity : ComponentActivity() {
                                         externalId = it
                                     }, label = {
                                         Text("External ID")
+                                    },
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                    keyboardActions = KeyboardActions(onDone = {
+                                        lfm.clearFocus()
                                     })
+                                )
                                 Button(onClick = {
                                     authStatus = "Loading..."
+
                                     Sahha.authenticate(
                                         appId,
                                         appSecret,
@@ -197,20 +241,12 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text("Authenticate")
                                 }
-                                Text(authStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.openAppSettings(this@MainActivity)
                                 }) {
                                     Text("Open Settings")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
-
-                                }) {
-                                    Text("Test start")
-                                }
-                                Text(start)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     manualPost = ""
@@ -326,6 +362,103 @@ fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
     }
+}
+
+@Composable
+fun DeauthenticateView() {
+    var status by remember { mutableStateOf("Pending...") }
+
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(status)
+    Button(onClick = {
+        status = "Loading..."
+
+        Sahha.deauthenticate { err, success ->
+            err?.also {
+                status = it
+                return@deauthenticate
+            }
+
+            status = "De-auth successful: $success"
+        }
+    }) {
+        Text("De-authenticate")
+    }
+}
+
+@Composable
+fun ErrorLogView() {
+    var status by remember { mutableStateOf("Pending...") }
+    var codeMethod by remember { mutableStateOf("") }
+    var codePath by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
+    var codeBody by remember { mutableStateOf("") }
+
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(status)
+
+    MyOutlinedTextField(
+        textLabel = "Message",
+        textValue = message,
+        onValueChange = { newValue -> message = newValue })
+    MyOutlinedTextField(
+        textLabel = "Path",
+        textValue = codePath,
+        onValueChange = { newValue -> codePath = newValue })
+    MyOutlinedTextField(
+        textLabel = "Method",
+        textValue = codeMethod,
+        onValueChange = { newValue -> codeMethod = newValue })
+    MyOutlinedTextField(
+        textLabel = "Body?",
+        textValue = codeBody,
+        onValueChange = { newValue -> codeBody = newValue })
+
+    Button(onClick = {
+        status = "Loading..."
+
+        Sahha.postError(
+            SahhaFramework.android_kotlin,
+            message,
+            codePath,
+            codeMethod,
+            codeBody
+        ) { err, success ->
+            err?.also {
+                status = it
+                return@postError
+            }
+
+            status = "Error post successful: $success"
+        }
+    }) {
+        Text("Post Error")
+    }
+}
+
+@Composable
+fun MyOutlinedTextField(
+    textLabel: String,
+    textValue: String,
+    singleLine: Boolean = true,
+    imeAction: ImeAction = ImeAction.Done,
+    lfm: FocusManager = LocalFocusManager.current,
+    onValueChange: (newValue: String) -> Unit
+) {
+
+    OutlinedTextField(
+        value = textValue,
+        singleLine = singleLine,
+        onValueChange = {
+            onValueChange(it)
+        }, label = {
+            Text(textLabel)
+        },
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = KeyboardActions(onDone = {
+            lfm.clearFocus()
+        })
+    )
 }
 
 private lateinit var notification: Notification

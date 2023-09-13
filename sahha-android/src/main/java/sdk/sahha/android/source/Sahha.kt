@@ -6,6 +6,8 @@ import androidx.annotation.Keep
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -16,14 +18,15 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-private val tag = "Sahha"
-
 @Keep
 object Sahha {
     internal lateinit var sim: SahhaInteractionManager
     internal lateinit var di: AppComponent
     internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.notificationManager }
+
+    val isAuthenticated: Boolean
+        get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false
 
     internal fun diInitialized(): Boolean {
         return ::di.isInitialized
@@ -58,6 +61,22 @@ object Sahha {
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         sim.auth.authenticate(appId, appSecret, externalId, callback)
+    }
+
+    fun authenticate(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        sim.auth.authenticate(profileToken, refreshToken, callback)
+    }
+
+    fun deauthenticate(
+        callback: (suspend (error: String?, success: Boolean) -> Unit)
+    ) {
+        di.ioScope.launch {
+            sim.auth.deauthenticate(callback)
+        }
     }
 
 
@@ -124,6 +143,17 @@ object Sahha {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         sim.permission.getSensorStatus(context, callback)
+    }
+
+    fun postError(
+        framework: SahhaFramework,
+        message: String,
+        path: String,
+        method: String,
+        body: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
+        sim.postAppError(framework, message, path, method, body, callback)
     }
 
     //TODO Test, delete after

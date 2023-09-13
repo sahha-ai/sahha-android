@@ -13,6 +13,10 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
+import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
+import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
@@ -20,15 +24,13 @@ import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.dto.toSleepSendDto
-import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
-import sdk.sahha.android.domain.model.device_info.DeviceInformation
-import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.toStepDto
 import java.time.ZoneOffset
+
+private const val tag = "SahhaConverterUtility"
 
 @Keep
 internal object SahhaConverterUtility {
@@ -52,6 +54,10 @@ internal object SahhaConverterUtility {
             return JSONObject(jsonString)
         }
         return null
+    }
+
+    fun responseBodyToJsonString(response: ResponseBody?): String? {
+        return response?.string()
     }
 
     private fun convertErrorItemErrorsToList(errorsJsonArray: JSONArray): List<String> {
@@ -114,22 +120,13 @@ internal object SahhaConverterUtility {
     }
 
     fun requestBodyToString(request: RequestBody?): String? {
-        try {
-            request?.also {
-                val json = requestBodyToJson(it)
-                val filteredJson = hideSensitiveData(json, arrayOf("profileToken", "refreshToken"))
-                return filteredJson.toString()
-            }
+        return try {
+            val json = requestBodyToJson(request)
+            val filteredJson = hideSensitiveData(json, arrayOf("profileToken", "refreshToken"))
+            filteredJson.toString()
         } catch (e: Exception) {
-            e.message?.also {
-                Sahha.di.sahhaErrorLogger.application(
-                    it,
-                    "requestBodyToString",
-                    request?.toString()
-                )
-            }
+            null
         }
-        return null
     }
 
     internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {

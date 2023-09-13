@@ -9,6 +9,8 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import sdk.sahha.android.SahhaPermissionActivity
+import sdk.sahha.android.common.SahhaErrorLogger
 import androidx.health.connect.client.HealthConnectClient
 import sdk.sahha.android.activity.SahhaPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
@@ -24,6 +26,7 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
+private val tag = "PermissionManagerImpl"
 class PermissionManagerImpl @Inject constructor(
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
@@ -65,6 +68,13 @@ class PermissionManagerImpl @Inject constructor(
             context.startActivity(intent)
         } catch (e: Exception) {
             callback(e.message, SahhaSensorStatus.pending)
+
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
+                "activate",
+                e.stackTraceToString()
+            )
         }
     }
 

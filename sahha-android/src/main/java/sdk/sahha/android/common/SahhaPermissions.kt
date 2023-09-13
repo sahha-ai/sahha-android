@@ -11,9 +11,6 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
@@ -106,14 +103,17 @@ internal object SahhaPermissions : BroadcastReceiver() {
                 context.unregisterReceiver(this)
                 onPermissionEnabled()
             }
+
             intent.action == PERMISSION_PENDING -> {
                 context.unregisterReceiver(this)
                 onPermissionPending()
             }
+
             intent.action == PERMISSION_DISABLED -> {
                 context.unregisterReceiver(this)
                 onPermissionDisabled()
             }
+
             else -> {
                 context.unregisterReceiver(this)
                 onPermissionUnavailable()
@@ -145,7 +145,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return
@@ -155,10 +154,12 @@ internal object SahhaPermissions : BroadcastReceiver() {
             PackageManager.PERMISSION_GRANTED -> {
                 callback?.invoke(SahhaSensorStatus.enabled)
             }
+
             PackageManager.PERMISSION_DENIED -> {
                 permissionCallback = callback
                 startPermissionActivity(context, SahhaSensorStatusActivity::class.java)
             }
+
             else -> {
                 callback?.invoke(SahhaSensorStatus.unavailable)
             }
@@ -188,9 +189,11 @@ internal object SahhaPermissions : BroadcastReceiver() {
             PackageManager.PERMISSION_GRANTED -> {
                 SahhaSensorStatus.enabled
             }
+
             PackageManager.PERMISSION_DENIED -> {
                 SahhaSensorStatus.disabled
             }
+
             else -> {
                 SahhaSensorStatus.unavailable
             }

@@ -27,6 +27,7 @@ import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
@@ -51,7 +52,7 @@ internal interface AppComponent {
     val database: SahhaDatabase
     val sahhaInteractionManager: SahhaInteractionManager
     val mutex: Mutex
-//    val sensorRepo: SensorRepo
+    val sensorRepo: SensorRepo
     val powerManager: PowerManager
     val keyguardManager: KeyguardManager
     val sensorManager: SensorManager
@@ -73,10 +74,9 @@ internal interface AppComponent {
     val configurationDao: ConfigurationDao
 
     val authRepo: AuthRepo
-
     val deviceInfoRepo: DeviceInfoRepo
-
     val userDataRepo: UserDataRepo
+    val sahhaConfigRepo: SahhaConfigRepo
 
     @get:MainScope
     val mainScope: CoroutineScope

@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
+private const val tag = "AnalyzeProfileUseCase"
 class AnalyzeProfileUseCase @Inject constructor (
     private val repository: UserDataRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
@@ -58,7 +59,8 @@ class AnalyzeProfileUseCase @Inject constructor (
             callback?.also { it("Error: ${e.message}", null) }
 
             sahhaErrorLogger?.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "AnalyzeProfileUseCase",
                 dates.toString()
             )
@@ -99,7 +101,8 @@ class AnalyzeProfileUseCase @Inject constructor (
         } catch (e: Exception) {
             callback?.also { it("Error: ${e.message}", null) }
             sahhaErrorLogger?.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "AnalyzeProfileUseCase",
                 dates.toString()
             )

@@ -4,11 +4,11 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
@@ -23,7 +23,7 @@ class UserDataInteractionManager @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
     private val deviceInfoRepo: DeviceInfoRepo,
-    private val configurationDao: ConfigurationDao,
+    private val sahhaConfigRepo: SahhaConfigRepo,
     private val analyzeProfileUseCase: AnalyzeProfileUseCase,
     private val getDemographicUseCase: GetDemographicUseCase,
     private val postDemographicUseCase: PostDemographicUseCase,
@@ -78,7 +78,7 @@ class UserDataInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         try {
-            val lastDeviceInfo = configurationDao.getDeviceInformation()
+            val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
                     saveAndPutDeviceInfo(context, callback)
@@ -107,13 +107,13 @@ class UserDataInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        val framework = configurationDao.getConfig().framework
+        val framework = sahhaConfigRepo.getConfig().framework
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
         val currentDeviceInfo = DeviceInformation(
             sdkId = framework,
             appId = packageName
         )
-        configurationDao.saveDeviceInformation(currentDeviceInfo)
+        sahhaConfigRepo.saveDeviceInformation(currentDeviceInfo)
         deviceInfoRepo.putDeviceInformation(currentDeviceInfo, callback)
     }
 
@@ -121,7 +121,7 @@ class UserDataInteractionManager @Inject constructor(
         context: Context,
         lastDeviceInfo: DeviceInformation
     ): Boolean {
-        val framework = configurationDao.getConfig().framework
+        val framework = sahhaConfigRepo.getConfig().framework
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
         val currentDeviceInfo = DeviceInformation(sdkId = framework, appId = packageName)
 

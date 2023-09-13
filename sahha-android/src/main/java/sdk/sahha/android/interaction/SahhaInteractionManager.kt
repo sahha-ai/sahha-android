@@ -8,9 +8,13 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
@@ -24,7 +28,7 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val permission: PermissionInteractionManager,
     internal val userData: UserDataInteractionManager,
     internal val sensor: SensorInteractionManager,
-    private val configurationDao: ConfigurationDao,
+    private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
@@ -42,7 +46,7 @@ internal class SahhaInteractionManager @Inject constructor(
             }
 
             defaultScope.launch {
-                Sahha.config = configurationDao.getConfig()
+                Sahha.config = sahhaConfigRepo.getConfig()
 
                 listOf(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
@@ -59,7 +63,7 @@ internal class SahhaInteractionManager @Inject constructor(
         try {
             defaultScope.launch {
                 sensorRepo.stopAllWorkers()
-                Sahha.config = configurationDao.getConfig()
+                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(callback) },
                     async { sensor.checkAndStartPostWorkers() },
@@ -67,22 +71,53 @@ internal class SahhaInteractionManager @Inject constructor(
                 callback?.invoke(null, true)
             }
         } catch (e: Exception) {
-            sahhaErrorLogger.application(e.message, "startNative", null)
             callback?.invoke("Error: ${e.message}", false)
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
+                "startNative"
+            )
         }
     }
 
     internal fun startHealthConnect(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
-            defaultScope.launch { 
+            defaultScope.launch {
                 sensorRepo.stopAllWorkers()
-                Sahha.config = configurationDao.getConfig()
+                Sahha.config = sahhaConfigRepo.getConfig()
                 sensor.startHealthConnectPostWorker()
                 callback?.invoke(null, true)
             }
         } catch (e: Exception) {
-            sahhaErrorLogger.application(e.message, "startHealthConnect", null)
             callback?.invoke("Error: ${e.message}", false)
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
+                "startHealthConnect"
+            )
+        }
+    }
+
+    internal fun postAppError(
+        framework: SahhaFramework,
+        message: String,
+        path: String,
+        method: String,
+        body: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
+        try {
+            sahhaErrorLogger.application(
+                message, path, method, body, framework, callback
+            )
+        } catch (e: Exception) {
+            callback?.invoke("Error: ${e.message}", false)
+            sahhaErrorLogger.application(
+                e.message ?: SahhaErrors.somethingWentWrong,
+                path,
+                "postAppError",
+                framework = framework
+            )
         }
     }
 
@@ -93,7 +128,7 @@ internal class SahhaInteractionManager @Inject constructor(
             convertToEnums(it)
         } ?: convertToEnums(SahhaSensor.values().toSet())
 
-        configurationDao.saveConfig(
+        sahhaConfigRepo.saveConfig(
             SahhaConfiguration(
                 settings.environment.ordinal,
                 settings.framework.name,
@@ -104,7 +139,7 @@ internal class SahhaInteractionManager @Inject constructor(
     }
 
     private suspend fun saveNotificationConfig(config: SahhaNotificationConfiguration?) {
-        configurationDao.saveNotificationConfig(
+        sahhaConfigRepo.saveNotificationConfig(
             config ?: SahhaNotificationConfiguration()
         )
     }

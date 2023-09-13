@@ -16,7 +16,6 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
 import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
-import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
@@ -25,6 +24,8 @@ import sdk.sahha.android.data.worker.SleepCollectionWorker
 import sdk.sahha.android.data.worker.post.DevicePostWorker
 import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -34,6 +35,7 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.*
 import java.util.concurrent.TimeUnit
@@ -46,13 +48,13 @@ private const val tag = "SensorRepoImpl"
 @SuppressLint("NewApi")
 class SensorRepoImpl @Inject constructor(
     private val context: Context,
-    private val defaultScope: CoroutineScope,
-    private val ioScope: CoroutineScope,
-    private val configDao: ConfigurationDao,
+    @DefaultScope private val defaultScope: CoroutineScope,
+    @IoScope private val ioScope: CoroutineScope,
     private val deviceDao: DeviceUsageDao,
     private val sleepDao: SleepDao,
     private val movementDao: MovementDao,
     private val authRepo: AuthRepo,
+    private val sahhaConfigRepo: SahhaConfigRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val mutex: Mutex,
     private val api: SahhaApi,
@@ -118,21 +120,30 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override fun startPostWorkersAsync() {
-        defaultScope.launch {
-            val config = configDao.getConfig()
+        ioScope.launch {
+            val config = sahhaConfigRepo.getConfig()
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->
                 checkAndStartWorker(config, SahhaSensor.device.ordinal) {
-                    startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
+                    startDevicePostWorker(
+                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        DEVICE_POST_WORKER_TAG
+                    )
                 }
 
                 if (status == SahhaSensorStatus.enabled) {
                     checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
-                        startSleepPostWorker(360, SLEEP_POST_WORKER_TAG)
+                        startSleepPostWorker(
+                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            SLEEP_POST_WORKER_TAG
+                        )
                     }
                     checkAndStartWorker(config, SahhaSensor.pedometer.ordinal) {
-                        startStepPostWorker(15, STEP_POST_WORKER_TAG)
+                        startStepPostWorker(
+                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            STEP_POST_WORKER_TAG
+                        )
                     }
                 }
             }
@@ -140,7 +151,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override suspend fun startPostWorkersHealthConnect() {
-        val config = configDao.getConfig()
+        val config = sahhaConfigRepo.getConfig()
         permissionManager.getHealthConnectStatus(context) {
             _, status ->
             checkAndStartWorker(config, SahhaSensor.device.ordinal) {
@@ -174,6 +185,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 SahhaSensor.sleep -> {
                     val sleepSummary = getSleepDataSummary()
                     if (sleepSummary.isNotEmpty()) {
@@ -181,6 +193,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 SahhaSensor.pedometer -> {
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
@@ -188,6 +201,7 @@ class SensorRepoImpl @Inject constructor(
                         return
                     }
                 }
+
                 else -> return
             }
             callback("No data found", null)
@@ -334,6 +348,24 @@ class SensorRepoImpl @Inject constructor(
         )
     }
 
+    override suspend fun postStepSessions(
+        stepSessions: List<StepSession>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<StepSession>) -> Response<ResponseBody> = { chunk ->
+            val stepDtoData = chunk.map { it.toStepDto() }
+            getStepResponse(stepDtoData)
+        }
+        postData(
+            stepSessions,
+            SahhaSensor.pedometer,
+            Constants.STEP_SESSION_POST_LIMIT,
+            getResponse,
+            this::clearStepSessions,
+            callback
+        )
+    }
+
     override suspend fun postSleepData(
         sleepData: List<SleepDto>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
@@ -398,12 +430,17 @@ class SensorRepoImpl @Inject constructor(
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
-                val response = getResponse(chunk)
-                Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+                try {
+                    val response = getResponse(chunk)
+                    Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
-                handleResponse(response, { getResponse(chunk) }, null) {
-                    clearData(chunk)
-                    cont.resume(true)
+                    handleResponse(response, { getResponse(chunk) }, null) {
+                        clearData(chunk)
+                        cont.resume(true)
+                    }
+                } catch (e: Exception) {
+                    cont.resume(false)
+                    Log.w(tag, e.message, e)
                 }
             }
         }
@@ -418,7 +455,8 @@ class SensorRepoImpl @Inject constructor(
         callback?.invoke(e.message, false)
 
         sahhaErrorLogger.application(
-            e.message,
+            e.message ?: SahhaErrors.somethingWentWrong,
+            tag,
             functionName,
             data
         )
@@ -433,7 +471,8 @@ class SensorRepoImpl @Inject constructor(
         } catch (e: Exception) {
             callback(e.message, false)
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "postAllSensorData",
                 null
             )
@@ -474,6 +513,15 @@ class SensorRepoImpl @Inject constructor(
                         successfulLogic
                     )
                 }
+
+                sahhaErrorLogger.application(
+                    SahhaErrors.attemptingTokenRefresh,
+                    tag,
+                    "handleResponse",
+                    SahhaConverterUtility.requestBodyToString(
+                        response.raw().request.body
+                    )
+                )
                 return
             }
 
@@ -492,16 +540,17 @@ class SensorRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response, SahhaErrors.typeResponse)
+            sahhaErrorLogger.api(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
             }
 
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "handleResponse",
-                response.message(),
+                e.stackTraceToString()
             )
         }
     }
@@ -556,14 +605,16 @@ class SensorRepoImpl @Inject constructor(
                         deferredResult.complete(Unit)
                     }
                 }
+
                 SahhaSensor.device -> {
                     postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
                 }
+
                 SahhaSensor.pedometer -> {
-                    postStepData(movementDao.getAllStepData()) { error, successful ->
+                    postStepSessions(getAllStepSessions()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
@@ -613,7 +664,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postStepData(
             TokenBearer(token),
             stepData
@@ -621,7 +672,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getSleepResponse(sleepData: List<SleepDto>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
             SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
@@ -629,10 +680,26 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun getPhoneScreenLockResponse(phoneLockData: List<PhoneUsage>): Response<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.postDeviceActivityRange(
             TokenBearer(token),
             SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
         )
+    }
+
+    override suspend fun saveStepSession(stepSession: StepSession) {
+        movementDao.saveStepSession(stepSession)
+    }
+
+    override suspend fun getAllStepSessions(): List<StepSession> {
+        return movementDao.getAllStepSessions()
+    }
+
+    override suspend fun clearStepSessions(stepSessions: List<StepSession>) {
+        movementDao.clearStepSessions(stepSessions)
+    }
+
+    override suspend fun clearAllStepSessions() {
+        movementDao.clearAllStepSessions()
     }
 }

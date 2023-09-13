@@ -17,7 +17,7 @@ internal object SahhaErrors {
     const val emptyRefreshToken = "Error: The refresh token was null or empty"
     const val somethingWentWrong = "Error: Something went wrong, please try again"
     const val responseFailure = "Error: Failed to receive response"
-    const val noData = "Error: No data found"
+    const val noCodeBody = "Error: No code body found"
     const val noSettings = "Error: No Sahha settings found"
     const val noProfileOrExternalId = "Error: A profile or external ID must be provided"
     const val noProfileId = "Error: Could not retrieve profile ID"

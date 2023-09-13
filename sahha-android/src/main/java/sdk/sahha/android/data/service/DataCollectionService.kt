@@ -6,6 +6,10 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
@@ -21,14 +25,17 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
+    private val ioScope by lazy { CoroutineScope(Dispatchers.IO) }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
+        if(ioScope.isActive) ioScope.cancel()
         unregisterExistingReceiversAndListeners()
         startForegroundService(
-            Intent(this@DataCollectionService, DataCollectionService::class.java)
+            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
@@ -43,7 +50,7 @@ class DataCollectionService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         try {
-            Sahha.di.defaultScope.launch {
+            ioScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
@@ -62,7 +69,7 @@ class DataCollectionService : Service() {
                 intent?.also {
                     if (it.action == Constants.ACTION_RESTART_SERVICE) {
                         stopService()
-                        return@also
+                        return@launch
                     }
                 }
             }
@@ -71,12 +78,11 @@ class DataCollectionService : Service() {
             Log.w(tag, e.message, e)
         }
 
-
         return START_STICKY
     }
 
     private fun stopService() {
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
@@ -86,14 +92,10 @@ class DataCollectionService : Service() {
 
     private suspend fun checkAndStartCollectingPedometerData() {
         if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
-            Sahha.sim.sensor.startCollectingStepCounterData(
+            Sahha.sim.sensor.startCollectingStepDetectorData(
                 this,
                 Sahha.di.movementDao,
             )
-//            Sahha.di.startCollectingStepDetectorData(
-//                this,
-//                Sahha.di.movementDao,
-//            )
             return
         }
 

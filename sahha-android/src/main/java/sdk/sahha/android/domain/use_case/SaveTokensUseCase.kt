@@ -27,20 +27,45 @@ class SaveTokensUseCase @Inject constructor(
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        val response =
-            repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
+        try {
+            val response =
+                repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
 
-        if (ResponseCode.isSuccessful(response.code())) {
-            saveTokensIfAvailable(response, repository, callback)
-            return
+            if (ResponseCode.isSuccessful(response.code())) {
+                saveTokensIfAvailable(response, callback)
+                return
+            }
+
+            callback("${response.code()}: ${response.message()}", false)
+        } catch (e: Exception) {
+            callback(e.message, false)
         }
+    }
 
-        callback("${response.code()}: ${response.message()}", false)
+    operator fun invoke(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        repository.saveEncryptedTokens(
+            profileToken,
+            refreshToken,
+        ) { error, success ->
+            if (success) {
+                ioScope.launch {
+                    userData.processAndPutDeviceInfo(
+                        context, true,
+                        callback
+                    )
+                }
+                return@saveEncryptedTokens
+            }
+            callback(error, false)
+        }
     }
 
     private fun saveTokensIfAvailable(
         response: Response<TokenData>,
-        repository: AuthRepo,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         val tokens = response.body()
@@ -59,7 +84,7 @@ class SaveTokensUseCase @Inject constructor(
                     }
                     return@saveEncryptedTokens
                 }
-                callback(error, success)
+                callback(error, false)
             }
         }
     }

@@ -16,16 +16,19 @@ class StepPostWorker(private val context: Context, workerParameters: WorkerParam
 
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
-        return postStepData()
+        return postStepSessions()
     }
 
-    internal suspend fun postStepData(lockTester: (() -> Unit)? = null): Result {
+    internal suspend fun postStepSessions(lockTester: (() -> Unit)? = null): Result {
+        // Guard: Return and do nothing if there is no auth data
+        if (!Sahha.isAuthenticated) return Result.success()
+
         return if (Sahha.di.mutex.tryLock()) {
             lockTester?.invoke()
             try {
                 suspendCancellableCoroutine<Result> { cont ->
                     Sahha.di.ioScope.launch {
-                        Sahha.sim.sensor.postStepDataUseCase(Sahha.di.movementDao.getAllStepData()) { _, success ->
+                        Sahha.sim.sensor.postStepSessions { _, _ ->
                             if (cont.isActive) {
                                 cont.resume(Result.success())
                             }

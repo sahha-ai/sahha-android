@@ -18,15 +18,18 @@ import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.sync.Mutex
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.local.SahhaDatabase
-import sdk.sahha.android.data.local.SahhaDbMigrations
+import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
@@ -36,6 +39,7 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
@@ -46,12 +50,14 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.source.SahhaEnvironment
+import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -94,6 +100,16 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
+    fun provideSahhaConfigRepo(
+        configDao: ConfigurationDao
+    ): SahhaConfigRepo {
+        return SahhaConfigRepoImpl(
+            configDao
+        )
+    }
+
+    @Singleton
+    @Provides
     fun provideReceiverManager(
         context: Context,
         @MainScope mainScope: CoroutineScope
@@ -120,8 +136,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideSahhaNotificationManager(context: Context): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context)
+    fun provideSahhaNotificationManager(
+        context: Context,
+        sahhaErrorLogger: SahhaErrorLogger
+    ): SahhaNotificationManager {
+        return SahhaNotificationManagerImpl(context, sahhaErrorLogger)
     }
 
     @Singleton
@@ -163,42 +182,80 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideSahhaApi(
+        context: Context,
         environment: Enum<SahhaEnvironment>,
-        gson: GsonConverterFactory
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient
     ): SahhaApi {
-        return if (environment == SahhaEnvironment.production) {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_PROD)
-                .addConverterFactory(gson)
-                .build()
-                .create(SahhaApi::class.java)
-        } else {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_DEV)
-                .addConverterFactory(gson)
-                .build()
-                .create(SahhaApi::class.java)
-        }
+        return detectApiBaseUrl(
+            context,
+            environment,
+            gson,
+            okHttpClient,
+            SahhaApi::class.java
+        )
     }
 
     @Singleton
     @Provides
     fun provideSahhaErrorApi(
+        context: Context,
         environment: Enum<SahhaEnvironment>,
-        gson: GsonConverterFactory
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient
     ): SahhaErrorApi {
-        return if (environment == SahhaEnvironment.production) {
+        return detectApiBaseUrl(
+            context,
+            environment,
+            gson,
+            okHttpClient,
+            SahhaErrorApi::class.java
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(Constants.OKHTTP_CLIENT_TIMEOUT, TimeUnit.SECONDS)
+            .build()
+    }
+
+    private fun <T> detectApiBaseUrl(
+        context: Context,
+        environment: Enum<SahhaEnvironment>,
+        gson: GsonConverterFactory,
+        okHttpClient: OkHttpClient,
+        apiClass: Class<T>
+    ): T {
+        val shouldBeDevEnv =
+            Session.shouldBeDevEnvironment(
+                context, environment
+            )
+
+        return if (shouldBeDevEnv) {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.ERROR_API_PROD)
+                .baseUrl(BuildConfig.API_DEV)
+                .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
-                .create(SahhaErrorApi::class.java)
+                .create(apiClass)
+        } else if (environment == SahhaEnvironment.production) {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.API_PROD)
+                .client(okHttpClient)
+                .addConverterFactory(gson)
+                .build()
+                .create(apiClass)
         } else {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.ERROR_API_DEV)
+                .baseUrl(BuildConfig.API_SANDBOX)
+                .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
-                .create(SahhaErrorApi::class.java)
+                .create(apiClass)
         }
     }
 
@@ -210,7 +267,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): AuthRepo {
         return AuthRepoImpl(
             api,
-            encryptedSharedPreferences,
+            encryptedSharedPreferences
         )
     }
 
@@ -220,7 +277,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context,
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
-        configurationDao: ConfigurationDao,
+        sahhaConfigRepo: SahhaConfigRepo,
         deviceDao: DeviceUsageDao,
         sleepDao: SleepDao,
         movementDao: MovementDao,
@@ -235,11 +292,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             context,
             defaultScope,
             ioScope,
-            configurationDao,
             deviceDao,
             sleepDao,
             movementDao,
             authRepo,
+            sahhaConfigRepo,
             sahhaErrorLogger,
             mutex,
             api,
@@ -271,20 +328,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideDatabase(context: Context): SahhaDatabase {
-        return Room.databaseBuilder(
-            context,
-            SahhaDatabase::class.java,
-            "sahha-database"
-        )
-            .fallbackToDestructiveMigration()
-            .addMigrations(
-                SahhaDbMigrations.MIGRATION_1_2,
-                SahhaDbMigrations.MIGRATION_2_3,
-                SahhaDbMigrations.MIGRATION_3_4,
-                SahhaDbMigrations.MIGRATION_4_5,
-                SahhaDbMigrations.MIGRATION_5_6,
-            )
-            .build()
+        return SahhaDbUtility.getDb(context)
     }
 
     @Singleton
@@ -342,17 +386,17 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideSahhaErrorLogger(
         context: Context,
-        configurationDao: ConfigurationDao,
+        sahhaConfigRepo: SahhaConfigRepo,
         sahhaErrorApi: SahhaErrorApi,
         @DefaultScope defaultScope: CoroutineScope,
         authRepo: AuthRepo
     ): SahhaErrorLogger {
         return SahhaErrorLogger(
             context,
-            configurationDao,
             sahhaErrorApi,
             defaultScope,
-            authRepo
+            authRepo,
+            sahhaConfigRepo
         )
     }
 

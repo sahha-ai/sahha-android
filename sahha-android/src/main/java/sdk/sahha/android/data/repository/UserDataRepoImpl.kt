@@ -6,15 +6,22 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import sdk.sahha.android.common.*
+import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaResponseHandler.returnFormattedResponse
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.toSahhaDemographic
-import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
+
+private const val tag = "UserDataRepoImpl"
 
 class UserDataRepoImpl(
     private val ioScope: CoroutineScope,
@@ -34,6 +41,9 @@ class UserDataRepoImpl(
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                     getAnalysis(dates, callback)
                 }
+                sahhaErrorLogger.api(
+                    response
+                )
                 return
             }
 
@@ -46,11 +56,11 @@ class UserDataRepoImpl(
                 "${response.code()}: ${response.message()}",
                 null
             )
-
-            sahhaErrorLogger.api(response, SahhaErrors.typeRequest)
+            sahhaErrorLogger.api(response)
         } catch (e: Exception) {
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "getAnalysis",
                 dates?.toString()
             )
@@ -73,7 +83,13 @@ class UserDataRepoImpl(
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     getDemographic(callback)
                                 }
-
+                                sahhaErrorLogger.api(
+                                    call,
+                                    SahhaErrors.typeAuthentication,
+                                    response.code(),
+                                    response.message(),
+                                    response.errorBody()
+                                )
                                 return@launch
                             }
 
@@ -95,17 +111,25 @@ class UserDataRepoImpl(
                                 )
                             }
 
-                            sahhaErrorLogger.api(call, response)
+                            sahhaErrorLogger.api(
+                                call,
+                                SahhaErrors.typeRequest,
+                                response.code(),
+                                response.message(),
+                                response.errorBody()
+                            )
                         }
                     }
 
                     override fun onFailure(call: Call<DemographicDto>, t: Throwable) {
                         callback?.also { it(t.message, null) }
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
+                        sahhaErrorLogger.application(
+                            t.message ?: SahhaErrors.somethingWentWrong,
+                            tag,
+                            "getDemographic",
+                            SahhaConverterUtility.requestBodyToString(
+                                call.request().body
+                            )
                         )
                     }
                 }
@@ -114,9 +138,10 @@ class UserDataRepoImpl(
             callback?.also { it(e.message, null) }
 
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "getDemographic",
-                null
+                e.stackTraceToString()
             )
         }
     }
@@ -139,6 +164,13 @@ class UserDataRepoImpl(
                                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                                     postDemographic(sahhaDemographic, callback)
                                 }
+                                sahhaErrorLogger.api(
+                                    call,
+                                    SahhaErrors.typeAuthentication,
+                                    response.code(),
+                                    response.message(),
+                                    response.errorBody()
+                                )
                                 return@launch
                             }
 
@@ -154,17 +186,25 @@ class UserDataRepoImpl(
                                 )
                             }
 
-                            sahhaErrorLogger.api(call, response)
+                            sahhaErrorLogger.api(
+                                call,
+                                SahhaErrors.typeRequest,
+                                response.code(),
+                                response.message(),
+                                response.errorBody()
+                            )
                         }
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
                         callback?.also { it(t.message, false) }
-                        sahhaErrorLogger.api(
-                            call,
-                            SahhaErrors.typeResponse,
-                            null,
-                            t.message ?: SahhaErrors.responseFailure
+                        sahhaErrorLogger.application(
+                            t.message ?: SahhaErrors.somethingWentWrong,
+                            tag,
+                            "postDemographic",
+                            SahhaConverterUtility.requestBodyToString(
+                                call.request().body
+                            )
                         )
                     }
                 }
@@ -173,7 +213,8 @@ class UserDataRepoImpl(
             callback?.also { it(e.message, false) }
 
             sahhaErrorLogger.application(
-                e.message,
+                e.message ?: SahhaErrors.somethingWentWrong,
+                tag,
                 "postDemographic",
                 sahhaDemographic.toString()
             )
@@ -181,12 +222,12 @@ class UserDataRepoImpl(
     }
 
     private suspend fun getDemographicCall(): Call<DemographicDto> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.getDemographic(TokenBearer(token))
     }
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
         return api.putDemographic(TokenBearer(token), sahhaDemographic)
     }
 
@@ -203,7 +244,7 @@ class UserDataRepoImpl(
             null,
             null,
         )
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
 
         return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }
@@ -216,7 +257,7 @@ class UserDataRepoImpl(
             startDate,
             endDate,
         )
-        val token = authRepo.getToken()!!
+        val token = authRepo.getToken() ?: ""
 
         return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
     }

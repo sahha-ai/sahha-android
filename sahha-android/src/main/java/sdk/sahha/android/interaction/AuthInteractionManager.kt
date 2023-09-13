@@ -18,6 +18,12 @@ class AuthInteractionManager @Inject constructor(
     private val decryptor: Decryptor,
     private val saveTokensUseCase: SaveTokensUseCase
 ) {
+    fun checkIsAuthenticated(): Boolean {
+        val tokenIsNotNullOrEmpty = !authRepo.getToken().isNullOrEmpty()
+        val refreshTokenIsNotNullOrEmpty = !authRepo.getRefreshToken().isNullOrEmpty()
+        return tokenIsNotNullOrEmpty && refreshTokenIsNotNullOrEmpty
+    }
+
     fun authenticate(
         appId: String,
         appSecret: String,
@@ -27,6 +33,22 @@ class AuthInteractionManager @Inject constructor(
         ioScope.launch {
             saveTokensUseCase(appId, appSecret, externalId, callback)
         }
+    }
+
+    fun authenticate(
+        profileToken: String,
+        refreshToken: String,
+        callback: ((error: String?, success: Boolean) -> Unit)
+    ) {
+        ioScope.launch {
+            saveTokensUseCase(profileToken, refreshToken, callback)
+        }
+    }
+
+    suspend fun deauthenticate(
+        callback: (suspend (error: String?, success: Boolean) -> Unit)
+    ) {
+        authRepo.clearTokenData(callback)
     }
 
     internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {
