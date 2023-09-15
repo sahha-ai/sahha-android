@@ -6,6 +6,7 @@ import android.health.connect.datatypes.AggregationType
 import android.icu.text.DateFormat
 import androidx.annotation.Keep
 import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.platform.client.proto.RequestProto.AggregateMetricSpec

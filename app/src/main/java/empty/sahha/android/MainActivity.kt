@@ -511,10 +511,7 @@ fun AggregateSteps() {
     Button(onClick = {
         data = "Loading..."
         Sahha.getAggregateSteps { err, steps ->
-            data = ""
-            steps?.forEach {
-                data += "$it\n\n"
-            }
+            data = steps ?: "No data found"
         }
     }) {
         Text("Get Steps")
@@ -533,10 +530,7 @@ fun AggregateSleepSessions() {
     Button(onClick = {
         data = "Loading..."
         Sahha.getAggregateSleepSessions { err, sleepSessions ->
-            data = ""
-            sleepSessions?.forEach {
-                data += "$it\n\n"
-            }
+            data = sleepSessions ?: "No data found"
         }
     }) {
         Text("Get Sleep Sessions")
