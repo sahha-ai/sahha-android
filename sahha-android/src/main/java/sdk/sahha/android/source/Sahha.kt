@@ -5,9 +5,9 @@ import android.content.Context
 import androidx.annotation.Keep
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import com.google.gson.Gson
+import com.google.gson.TypeAdapter
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -156,18 +156,25 @@ object Sahha {
         sim.postAppError(framework, message, path, method, body, callback)
     }
 
-    //TODO Test, delete after
-    fun ableToReadSteps(): List<String> {
-        val steps = di.healthConnectRepo.getSteps()
-        val stepsString = mutableListOf<String>()
-        steps?.map {
-            stepsString.add(
-                "count: ${it.count}\n" +
-                        "start: ${it.startTime}\n" +
-                        "end: ${it.endTime}"
+    // TODO ****************************
+    // TODO Test methods, delete after
+    // TODO ****************************
+    private fun <T> convertToJsonString(records: List<T>): String {
+        Gson().newBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(
+                Instant::class.java,
+                
             )
-        }
-        return stepsString
+    }
+
+    suspend fun ableToReadSteps(): List<String> {
+        val steps = di.healthConnectRepo.getRecords(
+            start = Instant.now().minus(1, ChronoUnit.DAYS),
+            end = Instant.now(),
+            recordType = StepsRecord::class
+        )
+        return convertToJsonString(steps)
     }
 
     fun getAggregateSteps(

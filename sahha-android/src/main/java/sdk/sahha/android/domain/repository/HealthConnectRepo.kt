@@ -1,18 +1,13 @@
 package sdk.sahha.android.domain.repository
 
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
-import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.RestingHeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import java.time.Instant
+import kotlin.reflect.KClass
 
 interface HealthConnectRepo {
     val permissions: Set<String>
@@ -25,17 +20,16 @@ interface HealthConnectRepo {
         clearData: suspend (List<T>) -> Unit,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+    suspend fun getHourlyRecords(
+        metrics: Set<AggregateMetric<*>>,
+        start: Instant,
+        end: Instant,
+        intervalHours: Long = 1
+    ): List<AggregationResultGroupedByDuration>?
 
-    suspend fun getHourlySteps(start: Instant, end: Instant): List<AggregationResultGroupedByDuration>?
-    fun getSteps(): List<StepsRecord>?
-    fun getSleepSessions(): List<SleepSessionRecord>?
-    fun getSleepStages(): List<SleepStageRecord>?
-    fun getHeartRate(): List<HeartRateRecord>?
-    fun getRestingHeartRate(): List<RestingHeartRateRecord>?
-    fun getBloodGlucose(): List<BloodGlucoseRecord>?
-    fun getBloodPressure(): List<BloodPressureRecord>?
-    suspend fun getHourlySleepSessions(
+    suspend fun <T : Record> getRecords(
+        recordType: KClass<T>,
         start: Instant,
         end: Instant
-    ): List<AggregationResultGroupedByDuration>?
+    ): List<T>?
 }

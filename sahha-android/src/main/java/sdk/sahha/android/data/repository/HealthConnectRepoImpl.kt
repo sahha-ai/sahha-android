@@ -3,6 +3,7 @@ package sdk.sahha.android.data.repository
 import android.content.Context
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -225,70 +226,33 @@ class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
-    override suspend fun getHourlySteps(
+    override suspend fun getHourlyRecords(
+        metrics: Set<AggregateMetric<*>>,
         start: Instant,
-        end: Instant
+        end: Instant,
+        intervalHours: Long
     ): List<AggregationResultGroupedByDuration>? {
         return client?.aggregateGroupByDuration(
             AggregateGroupByDurationRequest(
-                metrics = setOf(StepsRecord.COUNT_TOTAL),
-                timeRangeFilter = TimeRangeFilter.Companion.between(start, end),
-                timeRangeSlicer = Duration.ofHours(1)
+                metrics = metrics,
+                timeRangeFilter = TimeRangeFilter.between(start, end),
+                timeRangeSlicer = Duration.ofHours(intervalHours)
             )
         )
     }
 
-    override suspend fun getHourlySleepSessions(
+    override suspend fun <T: Record> getRecords(
+        recordType: KClass<T>,
         start: Instant,
-        end: Instant
-    ): List<AggregationResultGroupedByDuration>? {
-        return client?.aggregateGroupByDuration(
-            AggregateGroupByDurationRequest(
-                metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
-                timeRangeFilter = TimeRangeFilter.Companion.between(start, end),
-                timeRangeSlicer = Duration.ofHours(1)
+        end: Instant,
+    ): List<T>? {
+        return client?.readRecords(
+            ReadRecordsRequest(
+                recordType = recordType,
+                timeRangeFilter = TimeRangeFilter.between(
+                    start, end
+                )
             )
-        )
-    }
-
-    override fun getSteps(): List<StepsRecord>? {
-        val lastWeek = Instant.now().minus(7, ChronoUnit.DAYS)
-        val now = Instant.now()
-        return client?.let {
-            runBlocking {
-                it.readRecords(
-                    ReadRecordsRequest(
-                        StepsRecord::class,
-                        TimeRangeFilter.Companion.between(
-                            lastWeek, now
-                        )
-                    )
-                ).records
-            }
-        }
-    }
-
-    override fun getSleepSessions(): List<SleepSessionRecord>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getSleepStages(): List<SleepStageRecord>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getHeartRate(): List<HeartRateRecord>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getRestingHeartRate(): List<RestingHeartRateRecord>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getBloodGlucose(): List<BloodGlucoseRecord>? {
-        TODO("Not yet implemented")
-    }
-
-    override fun getBloodPressure(): List<BloodPressureRecord>? {
-        TODO("Not yet implemented")
+        )?.records
     }
 }
