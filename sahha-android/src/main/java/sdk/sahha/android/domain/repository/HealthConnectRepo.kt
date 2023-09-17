@@ -6,6 +6,7 @@ import androidx.health.connect.client.records.Record
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import java.time.Duration
 import java.time.Instant
 import kotlin.reflect.KClass
 
@@ -20,16 +21,17 @@ interface HealthConnectRepo {
         clearData: suspend (List<T>) -> Unit,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
-    suspend fun getHourlyRecords(
-        metrics: Set<AggregateMetric<*>>,
-        start: Instant,
-        end: Instant,
-        intervalHours: Long = 1
-    ): List<AggregationResultGroupedByDuration>?
 
     suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
         start: Instant,
         end: Instant
     ): List<T>?
+
+    suspend fun getAggregateRecords(
+        metrics: Set<AggregateMetric<*>>,
+        start: Instant,
+        end: Instant,
+        interval: Duration = Duration.ofHours(1)
+    ): List<AggregationResultGroupedByDuration>?
 }

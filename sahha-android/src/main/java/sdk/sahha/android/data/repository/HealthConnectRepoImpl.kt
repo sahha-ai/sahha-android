@@ -24,7 +24,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
@@ -46,7 +45,6 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -226,17 +224,17 @@ class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
-    override suspend fun getHourlyRecords(
+    override suspend fun getAggregateRecords(
         metrics: Set<AggregateMetric<*>>,
         start: Instant,
         end: Instant,
-        intervalHours: Long
+        interval: Duration
     ): List<AggregationResultGroupedByDuration>? {
         return client?.aggregateGroupByDuration(
             AggregateGroupByDurationRequest(
                 metrics = metrics,
                 timeRangeFilter = TimeRangeFilter.between(start, end),
-                timeRangeSlicer = Duration.ofHours(intervalHours)
+                timeRangeSlicer = interval
             )
         )
     }

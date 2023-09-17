@@ -130,6 +130,7 @@ class MainActivity : ComponentActivity() {
                                 ForegroundQuery(context = this@MainActivity)
                                 AggregateSteps()
                                 AggregateSleepSessions()
+                                AggregateHeartRate()
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -534,6 +535,26 @@ fun AggregateSleepSessions() {
         }
     }) {
         Text("Get Sleep Sessions")
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(data)
+    Spacer(modifier = Modifier.padding(16.dp))
+}
+
+@Composable
+fun AggregateHeartRate() {
+    var data by remember { mutableStateOf("Pending...") }
+
+    Text("Aggregate Heart Rate")
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        data = "Loading..."
+        Sahha.heart { err, heart ->
+            println(heart)
+            data = heart ?: "No data found"
+        }
+    }) {
+        Text("Get Heart")
     }
     Spacer(modifier = Modifier.padding(16.dp))
     Text(data)

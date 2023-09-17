@@ -6,6 +6,7 @@ import android.health.connect.datatypes.AggregationType
 import android.icu.text.DateFormat
 import androidx.annotation.Keep
 import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -21,6 +22,7 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.interaction.SahhaInteractionManager
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -202,7 +204,7 @@ object Sahha {
     ) {
         di.ioScope.launch {
             val mostRecentHour = Instant.now().truncatedTo(ChronoUnit.HOURS)
-            val steps = di.healthConnectRepo.getHourlyRecords(
+            val steps = di.healthConnectRepo.getAggregateRecords(
                 start = mostRecentHour.minus(1, ChronoUnit.DAYS),
                 end = mostRecentHour,
                 metrics = setOf(StepsRecord.COUNT_TOTAL)
@@ -217,10 +219,30 @@ object Sahha {
     ) {
         di.ioScope.launch {
             val mostRecentHour = Instant.now().truncatedTo(ChronoUnit.HOURS)
-            val steps = di.healthConnectRepo.getHourlyRecords(
+            val steps = di.healthConnectRepo.getAggregateRecords(
                 start = mostRecentHour.minus(7, ChronoUnit.DAYS),
                 end = mostRecentHour,
                 metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL)
+            )
+
+            callback(null, convertToJsonString(steps))
+        }
+    }
+
+    fun heart(
+        callback: ((error: String?, data: String?) -> Unit)
+    ) {
+        di.ioScope.launch {
+            val mostRecentHour = Instant.now()
+            val steps = di.healthConnectRepo.getAggregateRecords(
+                start = mostRecentHour.minus(1, ChronoUnit.HOURS),
+                end = mostRecentHour,
+                metrics = setOf(
+                    HeartRateRecord.BPM_MIN,
+                    HeartRateRecord.BPM_AVG,
+                    HeartRateRecord.BPM_MAX
+                ),
+                interval = Duration.ofMinutes(30)
             )
 
             callback(null, convertToJsonString(steps))
