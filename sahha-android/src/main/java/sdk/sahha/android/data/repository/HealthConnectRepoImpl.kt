@@ -31,6 +31,7 @@ import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
@@ -39,6 +40,7 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
+import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -67,7 +69,8 @@ class HealthConnectRepoImpl @Inject constructor(
     private val workManager: WorkManager,
     private val api: SahhaApi,
     private val client: HealthConnectClient?,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val sahhaTimeManager: SahhaTimeManager
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -278,5 +281,16 @@ class HealthConnectRepoImpl @Inject constructor(
                 )
             )
         )?.records
+    }
+
+    override fun toStepDto(record: StepsRecord): StepDto {
+        return StepDto(
+            dataType = Constants.HEALTH_CONNECT_STEP_DATA_TYPE,
+            count = record.count.toInt(),
+            source = record.metadata.dataOrigin.packageName,
+            manuallyEntered = record.metadata.recordingMethod == 3,
+            startDateTime = sahhaTimeManager.instantToIsoTime(record.startTime),
+            endDateTime = sahhaTimeManager.instantToIsoTime(record.endTime)
+        )
     }
 }

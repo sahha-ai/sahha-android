@@ -128,9 +128,6 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 HealthConnectPermission(context = this@MainActivity)
                                 ForegroundQuery(context = this@MainActivity)
-                                AggregateSteps()
-                                AggregateSleepSessions()
-                                AggregateHeartRate()
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -503,64 +500,6 @@ fun HealthConnectPermission(context: Context) {
     Spacer(modifier = Modifier.padding(16.dp))
 }
 
-@Composable
-fun AggregateSteps() {
-    var data by remember { mutableStateOf("Step data") }
-
-    Text("Aggregate Step Data")
-    Spacer(modifier = Modifier.padding(16.dp))
-    Button(onClick = {
-        data = "Loading..."
-        Sahha.getAggregateSteps { err, steps ->
-            data = steps ?: "No data found"
-        }
-    }) {
-        Text("Get Steps")
-    }
-    Spacer(modifier = Modifier.padding(16.dp))
-    Text(data)
-    Spacer(modifier = Modifier.padding(16.dp))
-}
-
-@Composable
-fun AggregateSleepSessions() {
-    var data by remember { mutableStateOf("Sleep Session data") }
-
-    Text("Aggregate Sleep Session Data")
-    Spacer(modifier = Modifier.padding(16.dp))
-    Button(onClick = {
-        data = "Loading..."
-        Sahha.getAggregateSleepSessions { err, sleepSessions ->
-            data = sleepSessions ?: "No data found"
-        }
-    }) {
-        Text("Get Sleep Sessions")
-    }
-    Spacer(modifier = Modifier.padding(16.dp))
-    Text(data)
-    Spacer(modifier = Modifier.padding(16.dp))
-}
-
-@Composable
-fun AggregateHeartRate() {
-    var data by remember { mutableStateOf("Pending...") }
-
-    Text("Aggregate Heart Rate")
-    Spacer(modifier = Modifier.padding(16.dp))
-    Button(onClick = {
-        data = "Loading..."
-        Sahha.heart { err, heart ->
-            println(heart)
-            data = heart ?: "No data found"
-        }
-    }) {
-        Text("Get Heart")
-    }
-    Spacer(modifier = Modifier.padding(16.dp))
-    Text(data)
-    Spacer(modifier = Modifier.padding(16.dp))
-}
-
 class TesterService : Service() {
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -582,9 +521,9 @@ class TesterService : Service() {
             SahhaReconfigure(this@TesterService)
             println("Sahha reconfigured")
             try {
-                val result = Sahha.ableToReadSteps()
-                println("Result complete")
-                println("Able to read steps: $result")
+//                val result = Sahha.ableToReadSteps()
+//                println("Result complete")
+//                println("Able to read steps: $result")
             } catch (e: Exception) {
                 println(e.stackTraceToString())
             }

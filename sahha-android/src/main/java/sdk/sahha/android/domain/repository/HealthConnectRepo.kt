@@ -3,9 +3,11 @@ package sdk.sahha.android.domain.repository
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.StepsRecord
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import sdk.sahha.android.domain.model.dto.StepDto
 import java.time.Duration
 import java.time.Instant
 import kotlin.reflect.KClass
@@ -35,4 +37,6 @@ interface HealthConnectRepo {
         start: Instant,
         end: Instant
     ): List<T>?
+
+    fun toStepDto(record: StepsRecord): StepDto
 }
