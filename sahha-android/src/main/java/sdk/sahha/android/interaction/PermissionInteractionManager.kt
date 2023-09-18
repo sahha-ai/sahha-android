@@ -27,4 +27,11 @@ class PermissionInteractionManager @Inject constructor(
     ) {
         permissionManager.getSensorStatus(context, callback)
     }
+
+    fun checkPermissionsAndStart(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
+        permissionManager.checkAndStart(context, callback)
+    }
 }

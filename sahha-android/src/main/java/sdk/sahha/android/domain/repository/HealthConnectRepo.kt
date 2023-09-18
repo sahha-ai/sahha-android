@@ -22,16 +22,17 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun <T : Record> getRecords(
-        recordType: KClass<T>,
-        start: Instant,
-        end: Instant
-    ): List<T>?
-
     suspend fun getAggregateRecords(
         metrics: Set<AggregateMetric<*>>,
         start: Instant,
         end: Instant,
         interval: Duration = Duration.ofHours(1)
     ): List<AggregationResultGroupedByDuration>?
+
+    fun startPostWorker()
+    suspend fun <T : Record> getRecords(
+        recordType: KClass<T>,
+        start: Instant,
+        end: Instant
+    ): List<T>?
 }

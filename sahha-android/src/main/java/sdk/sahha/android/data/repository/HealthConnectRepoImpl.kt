@@ -18,9 +18,10 @@ import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
-import androidx.work.CoroutineWorker
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ListenableWorker
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -30,19 +31,20 @@ import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
-import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
-import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -58,8 +60,8 @@ class HealthConnectRepoImpl @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
     private val chunkManager: PostChunkManager,
-    private val configDao: ConfigurationDao,
-    private val sleepDao: SleepDao,
+    private val permissionManager: PermissionManager,
+    private val configRepo: SahhaConfigRepo,
     private val authRepo: AuthRepo,
     private val sensorRepo: SensorRepo,
     private val workManager: WorkManager,
@@ -101,25 +103,55 @@ class HealthConnectRepoImpl @Inject constructor(
         return CompatibleApps.values().toSet()
     }
 
-    fun startPostWorker() {
+    override fun startPostWorker() {
         defaultScope.launch {
-            val config = configDao.getConfig()
-//            permissionManager.getHealthConnectStatus(context) { _, status ->
-//                if (config.sensorArray.contains(SahhaSensor.device.ordinal))
-//                    sensorRepo.startDevicePostWorker(360, Constants.DEVICE_POST_WORKER_TAG)
-//
-//                if (status == SahhaSensorStatus.enabled)
-//                    startHealthConnectWorker(360, Constants.HEALTH_CONNECT_POST_WORKER_TAG)
-//            }
+            val config = configRepo.getConfig()
+            permissionManager.getHealthConnectStatus(context) { _, status ->
+                if (config.sensorArray.contains(SahhaSensor.device.ordinal))
+                    sensorRepo.startDevicePostWorker(
+                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        Constants.DEVICE_POST_WORKER_TAG
+                    )
+
+                if (status == SahhaSensorStatus.enabled)
+                    startHealthConnectWorker(
+                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        Constants.HEALTH_CONNECT_POST_WORKER_TAG
+                    )
+            }
         }
     }
 
-    private suspend fun getPostSleepResponse(sleepData: List<SleepDto>): Response<ResponseBody> {
-        val token = TokenBearer(authRepo.getToken()!!)
-        return api.postSleepDataRange(
-            token,
-            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
+    private fun startHealthConnectWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val workRequest =
+            getWorkRequest<HealthConnectPostWorker>(repeatIntervalMinutes, workerTag, 60)
+        startWorkManager(workRequest, workerTag)
+    }
+
+    private fun startWorkManager(
+        workRequest: PeriodicWorkRequest,
+        workerTag: String,
+        policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
+    ) {
+        workManager.enqueueUniquePeriodicWork(
+            workerTag,
+            policy,
+            workRequest
         )
+    }
+
+    private inline fun <reified T : ListenableWorker> getWorkRequest(
+        repeatIntervalMinutes: Long,
+        workerTag: String,
+        backOffDelaySeconds: Long = 30
+    ): PeriodicWorkRequest {
+        return PeriodicWorkRequestBuilder<T>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, backOffDelaySeconds, TimeUnit.SECONDS)
+            .build()
     }
 
     override suspend fun <T> postData(
@@ -213,15 +245,9 @@ class HealthConnectRepoImpl @Inject constructor(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
                 "handleResponse",
-                response.message(),
+                e.stackTraceToString(),
             )
         }
-    }
-
-    private inline fun <reified T : CoroutineWorker> buildOneTimeWorkRequest(): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<T>()
-            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
-            .build()
     }
 
     override suspend fun getAggregateRecords(
@@ -239,7 +265,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun <T: Record> getRecords(
+    override suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
         start: Instant,
         end: Instant,

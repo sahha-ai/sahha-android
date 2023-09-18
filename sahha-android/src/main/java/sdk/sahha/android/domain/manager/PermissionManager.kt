@@ -27,5 +27,8 @@ interface PermissionManager {
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     )
 
-    fun checkAndStart(context: Context)
+    fun checkAndStart(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    )
 }

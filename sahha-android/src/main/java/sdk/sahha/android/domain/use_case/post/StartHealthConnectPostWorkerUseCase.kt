@@ -7,6 +7,6 @@ class StartHealthConnectPostWorkerUseCase @Inject constructor(
     private val repository: HealthConnectRepo
 ) {
     operator fun invoke() {
-
+        repository.startPostWorker()
     }
 }

@@ -53,7 +53,9 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 userData.processAndPutDeviceInfo(application) { _, _ ->
-                    startNative(callback)
+                    permission.checkPermissionsAndStart(
+                        application, callback
+                    )
                 }
             }
         }

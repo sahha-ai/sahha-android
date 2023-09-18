@@ -128,29 +128,28 @@ class PermissionManagerImpl @Inject constructor(
     }
 
     override fun checkAndStart(
-        context: Context
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         Sahha.di.permissionManager.getHealthConnectStatus(
             context = context,
         ) { err, status ->
+            when (status) {
+                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect()
+                else -> Sahha.sim.startNative()
+            }
+
             err?.also { e ->
+                callback?.invoke(e, false)
                 sahhaErrorLogger.application(
                     e,
                     tag,
                     "checkAndStart",
                     status.name
                 )
+                return@getHealthConnectStatus
             }
-
-            when (status) {
-                SahhaSensorStatus.enabled -> {
-                    Sahha.sim.startHealthConnect()
-                }
-
-                else -> {
-                    Sahha.sim.startNative()
-                }
-            }
+            callback?.invoke(null, true)
         }
     }
 
