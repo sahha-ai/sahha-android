@@ -131,14 +131,11 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        Sahha.di.permissionManager.getHealthConnectStatus(
+        getHealthConnectStatus(
             context = context,
         ) { err, status ->
-            when (status) {
-                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect()
-                else -> Sahha.sim.startNative()
-            }
-
+            println(err)
+            println(status.name)
             err?.also { e ->
                 callback?.invoke(e, false)
                 sahhaErrorLogger.application(
@@ -148,6 +145,11 @@ class PermissionManagerImpl @Inject constructor(
                     status.name
                 )
                 return@getHealthConnectStatus
+            }
+
+            when (status) {
+                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect()
+                else -> Sahha.sim.startNative()
             }
             callback?.invoke(null, true)
         }

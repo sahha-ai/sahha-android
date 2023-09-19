@@ -12,6 +12,6 @@ class HealthConnectPostWorker(private val context: Context, workerParameters: Wo
 
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
-
+        return Result.failure()
     }
 }

@@ -460,28 +460,30 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
         chunkManager: PostChunkManager,
-        configDao: ConfigurationDao,
-        sleepDao: SleepDao,
+        permissionManager: PermissionManager,
+        configRepo: SahhaConfigRepo,
         authRepo: AuthRepo,
         sensorRepo: SensorRepo,
         workManager: WorkManager,
         api: SahhaApi,
         client: HealthConnectClient?,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        sahhaTimeManager: SahhaTimeManager
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
             context,
             defaultScope,
             ioScope,
             chunkManager,
-            configDao,
-            sleepDao,
+            permissionManager,
+            configRepo,
             authRepo,
             sensorRepo,
             workManager,
             api,
             client,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            sahhaTimeManager
         )
     }
 

@@ -32,6 +32,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
@@ -284,7 +285,7 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     override fun toStepDto(record: StepsRecord): StepDto {
-        return StepDto(
+        val stepDto = StepDto(
             dataType = Constants.HEALTH_CONNECT_STEP_DATA_TYPE,
             count = record.count.toInt(),
             source = record.metadata.dataOrigin.packageName,
@@ -292,5 +293,7 @@ class HealthConnectRepoImpl @Inject constructor(
             startDateTime = sahhaTimeManager.instantToIsoTime(record.startTime),
             endDateTime = sahhaTimeManager.instantToIsoTime(record.endTime)
         )
+        Session.logJsonString("Step DTO", stepDto)
+        return stepDto
     }
 }
