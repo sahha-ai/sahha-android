@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -15,6 +16,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
@@ -50,6 +52,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.Duration
 import java.time.Instant
+import java.time.Period
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -254,16 +257,29 @@ class HealthConnectRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAggregateRecords(
+    override suspend fun getAggregateRecordsByDuration(
         metrics: Set<AggregateMetric<*>>,
-        start: Instant,
-        end: Instant,
+        timeRangeFilter: TimeRangeFilter,
         interval: Duration
     ): List<AggregationResultGroupedByDuration>? {
         return client?.aggregateGroupByDuration(
             AggregateGroupByDurationRequest(
                 metrics = metrics,
-                timeRangeFilter = TimeRangeFilter.between(start, end),
+                timeRangeFilter = timeRangeFilter,
+                timeRangeSlicer = interval
+            )
+        )
+    }
+
+    override suspend fun getAggregateRecordsByPeriod(
+        metrics: Set<AggregateMetric<*>>,
+        timeRangeFilter: TimeRangeFilter,
+        interval: Period
+    ): List<AggregationResultGroupedByPeriod>? {
+        return client?.aggregateGroupByPeriod(
+            AggregateGroupByPeriodRequest(
+                metrics = metrics,
+                timeRangeFilter = timeRangeFilter,
                 timeRangeSlicer = interval
             )
         )
@@ -271,15 +287,12 @@ class HealthConnectRepoImpl @Inject constructor(
 
     override suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
-        start: Instant,
-        end: Instant,
+        timeRangeFilter: TimeRangeFilter
     ): List<T>? {
         return client?.readRecords(
             ReadRecordsRequest(
                 recordType = recordType,
-                timeRangeFilter = TimeRangeFilter.between(
-                    start, end
-                )
+                timeRangeFilter = timeRangeFilter
             )
         )?.records
     }

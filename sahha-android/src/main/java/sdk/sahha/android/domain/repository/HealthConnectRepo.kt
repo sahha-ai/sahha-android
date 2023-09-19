@@ -2,14 +2,17 @@ package sdk.sahha.android.domain.repository
 
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.model.dto.StepDto
 import java.time.Duration
 import java.time.Instant
+import java.time.Period
 import kotlin.reflect.KClass
 
 interface HealthConnectRepo {
@@ -24,19 +27,22 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun getAggregateRecords(
-        metrics: Set<AggregateMetric<*>>,
-        start: Instant,
-        end: Instant,
-        interval: Duration = Duration.ofHours(1)
-    ): List<AggregationResultGroupedByDuration>?
-
     fun startPostWorker()
     suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
-        start: Instant,
-        end: Instant
+        timeRangeFilter: TimeRangeFilter
     ): List<T>?
 
     fun toStepDto(record: StepsRecord): StepDto
+    suspend fun getAggregateRecordsByDuration(
+        metrics: Set<AggregateMetric<*>>,
+        timeRangeFilter: TimeRangeFilter,
+        interval: Duration
+    ): List<AggregationResultGroupedByDuration>?
+
+    suspend fun getAggregateRecordsByPeriod(
+        metrics: Set<AggregateMetric<*>>,
+        timeRangeFilter: TimeRangeFilter,
+        interval: Period
+    ): List<AggregationResultGroupedByPeriod>?
 }
