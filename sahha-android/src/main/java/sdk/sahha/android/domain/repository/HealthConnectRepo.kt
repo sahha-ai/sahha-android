@@ -10,8 +10,9 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import java.time.Duration
-import java.time.Instant
+import java.time.LocalDateTime
 import java.time.Period
 import kotlin.reflect.KClass
 
@@ -45,4 +46,17 @@ interface HealthConnectRepo {
         timeRangeFilter: TimeRangeFilter,
         interval: Period
     ): List<AggregationResultGroupedByPeriod>?
+
+    suspend fun <T : Record> getLastSuccessfulQuery(
+        recordType: KClass<T>
+    ): LocalDateTime?
+
+    suspend fun <T : Record> saveLastSuccessfulQuery(
+        recordType: KClass<T>,
+        timeStamp: LocalDateTime
+    )
+
+    suspend fun clearQueries(queries: List<HealthConnectQuery>)
+
+    suspend fun clearAllQueries()
 }

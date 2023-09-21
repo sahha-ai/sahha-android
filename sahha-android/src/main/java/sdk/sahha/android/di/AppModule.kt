@@ -1,13 +1,14 @@
 package sdk.sahha.android.di
 
+import android.app.AlarmManager
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
 import androidx.health.connect.client.HealthConnectClient
-import androidx.room.Room
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import androidx.work.WorkManager
@@ -34,24 +35,26 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
+import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
-import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
+import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
-import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
@@ -138,9 +141,10 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideSahhaNotificationManager(
         context: Context,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        notificationManager: NotificationManager
     ): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context, sahhaErrorLogger)
+        return SahhaNotificationManagerImpl(context, sahhaErrorLogger, notificationManager)
     }
 
     @Singleton
@@ -361,6 +365,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return db.configurationDao()
     }
 
+    @Singleton
+    @Provides
+    fun provideHealthConfigDao(db: SahhaDatabase): HealthConnectConfigDao {
+        return db.healthConnectConfigDao()
+    }
+
     @DefaultScope
     @Singleton
     @Provides
@@ -468,7 +478,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         api: SahhaApi,
         client: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
-        sahhaTimeManager: SahhaTimeManager
+        sahhaTimeManager: SahhaTimeManager,
+        healthConnectConfigDao: HealthConnectConfigDao,
+        sahhaAlarmManager: SahhaAlarmManager
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
             context,
@@ -483,7 +495,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             api,
             client,
             sahhaErrorLogger,
-            sahhaTimeManager
+            sahhaTimeManager,
+            healthConnectConfigDao,
+            sahhaAlarmManager
         )
     }
 
@@ -493,5 +507,31 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context
     ): WorkManager {
         return WorkManager.getInstance(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideNotificationManager(
+        context: Context
+    ): NotificationManager {
+        return context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideAlarmManager(
+        context: Context
+    ): AlarmManager {
+        return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideSahhaAlarmManager(
+        alarmManager: AlarmManager
+    ): SahhaAlarmManager {
+        return SahhaAlarmManagerImpl(
+            alarmManager
+        )
     }
 }

@@ -6,10 +6,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.data.local.dao.ConfigurationDao
-import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -53,10 +51,9 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 userData.processAndPutDeviceInfo(application) { _, _ ->
-                    startNative(callback)
-//                    permission.checkPermissionsAndStart(
-//                        application, callback
-//                    )
+                    permission.checkPermissionsAndStart(
+                        application, callback
+                    )
                 }
             }
         }

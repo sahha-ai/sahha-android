@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -16,6 +15,7 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.service.DataCollectionService
+import sdk.sahha.android.data.service.HealthConnectPostService
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.source.Sahha
 
@@ -23,7 +23,8 @@ private val tag = "SahhaNotificationManagerImpl"
 
 class SahhaNotificationManagerImpl(
     private val context: Context,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val notificationManager: NotificationManager
 ) : SahhaNotificationManager {
     override lateinit var notification: Notification
 
@@ -95,73 +96,26 @@ class SahhaNotificationManagerImpl(
         )
     }
 
-    private fun createNotification(
-        _service: Service,
-        _channelId: String,
-        _channelName: String,
-        _importanceLevel: Int,
-        _contentTitle: String,
-        _contentText: String,
-        _isOngoing: Boolean,
-        _notificationId: Int
-    ) {
-        val NOTIFICATION_CHANNEL_ID = "sahha.$_channelId"
-        val channelName = _channelName
-        val chan =
-            NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                channelName,
-                _importanceLevel
-            )
-        chan.lightColor = Color.parseColor("#FF333242")
-        chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_service.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationBuilder =
-            NotificationCompat.Builder(_service, NOTIFICATION_CHANNEL_ID)
-        val notification = notificationBuilder.setOngoing(_isOngoing)
-            .setContentTitle(_contentTitle)
-            .setContentText(_contentText)
-            .setPriority(_importanceLevel)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-        _service.startForeground(_notificationId, notification)
-    }
-
-    private fun createNotificationForWorker(
-        _context: Context,
-        _channelId: String,
-        _channelName: String,
-        _importanceLevel: Int,
-        _contentTitle: String,
-        _contentText: String,
-        _isOngoing: Boolean,
-        _notificationId: Int
-    ) {
-        val NOTIFICATION_CHANNEL_ID = "sahha.$_channelId"
-        val channelName = _channelName
-        val chan =
-            NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                channelName,
-                _importanceLevel
-            )
-        chan.lightColor = Color.parseColor("#FF333242")
-        chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationBuilder =
-            NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
-        val notification = notificationBuilder.setOngoing(_isOngoing)
-            .setContentTitle(_contentTitle)
-            .setContentText(_contentText)
-            .setPriority(_importanceLevel)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-
-        manager.notify(_notificationId, notification)
+    override fun <T> setNewNotification(
+        title: String,
+        channelId: String,
+        channelName: String,
+        serviceClass: Class<T>,
+        descriptionText: String,
+        importance: Int,
+        isOngoing: Boolean,
+        icon: Int
+    ): Notification {
+        return getNewNotification(
+            context,
+            channelId,
+            channelName,
+            importance,
+            title,
+            descriptionText,
+            isOngoing,
+            icon
+        )
     }
 
     private fun getNewNotification(
@@ -184,9 +138,7 @@ class SahhaNotificationManagerImpl(
             )
         chan.lightColor = Color.parseColor("#FF333242")
         chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
+        notificationManager.createNotificationChannel(chan)
         val notificationBuilder =
             NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
         val notification = notificationBuilder.setOngoing(_isOngoing)
@@ -233,9 +185,7 @@ class SahhaNotificationManagerImpl(
             )
         chan.lightColor = Color.parseColor("#FF333242")
         chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
+        notificationManager.createNotificationChannel(chan)
         val notificationBuilder =
             NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
         val notification = notificationBuilder.setOngoing(_isOngoing)
@@ -248,6 +198,6 @@ class SahhaNotificationManagerImpl(
             .setSmallIcon(_icon)
             .build()
 
-        manager.notify(_notificationId, notification)
+        notificationManager.notify(_notificationId, notification)
     }
 }

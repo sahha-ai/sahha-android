@@ -54,7 +54,7 @@ class DataCollectionService : Service() {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
 
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-                Sahha.di.notificationManager.setNewPersistent(
+                Sahha.di.sahhaNotificationManager.setNewPersistent(
                     notificationConfig.icon,
                     notificationConfig.title,
                     notificationConfig.shortDescription
@@ -121,6 +121,6 @@ class DataCollectionService : Service() {
     }
 
     private fun startForegroundService() {
-        startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.notificationManager.notification)
+        startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.sahhaNotificationManager.notification)
     }
 }

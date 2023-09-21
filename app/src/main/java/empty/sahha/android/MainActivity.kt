@@ -487,7 +487,6 @@ fun ForegroundQuery(context: Context) {
 
 @Composable
 fun HealthConnectPermission(context: Context) {
-    // TODO Fix invis barrier
     Text("HealthConnect Permission")
     Spacer(modifier = Modifier.padding(16.dp))
     Button(onClick = {

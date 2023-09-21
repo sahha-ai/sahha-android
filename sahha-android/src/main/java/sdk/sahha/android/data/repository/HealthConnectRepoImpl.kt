@@ -36,6 +36,7 @@ import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.data.Constants
+import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.di.DefaultScope
@@ -43,7 +44,9 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -52,7 +55,10 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.Period
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -74,7 +80,9 @@ class HealthConnectRepoImpl @Inject constructor(
     private val api: SahhaApi,
     private val client: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val sahhaTimeManager: SahhaTimeManager
+    private val sahhaTimeManager: SahhaTimeManager,
+    private val healthConnectConfigDao: HealthConnectConfigDao,
+    private val sahhaAlarmManager: SahhaAlarmManager
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -121,9 +129,9 @@ class HealthConnectRepoImpl @Inject constructor(
                     )
 
                 if (status == SahhaSensorStatus.enabled)
-                    startHealthConnectWorker(
-                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                        Constants.HEALTH_CONNECT_POST_WORKER_TAG
+                    sahhaAlarmManager.setAlarm(
+                        context,
+                        Instant.now().plus(15, ChronoUnit.SECONDS).toEpochMilli()
                     )
             }
         }
@@ -283,6 +291,41 @@ class HealthConnectRepoImpl @Inject constructor(
                 timeRangeSlicer = interval
             )
         )
+    }
+
+    override suspend fun <T : Record> getLastSuccessfulQuery(recordType: KClass<T>): LocalDateTime? {
+        val permissionString = HealthPermission.getReadPermission(recordType)
+        val query = healthConnectConfigDao.getQueryOf(permissionString)
+        val instant = query?.let { q ->
+            Instant.ofEpochMilli(q.lastSuccessfulTimeStampEpochMillis)
+        } ?: return null
+        val zoneId = ZoneId.systemDefault().rules.getOffset(instant)
+
+        return LocalDateTime.ofInstant(instant, zoneId)
+    }
+
+    override suspend fun <T : Record> saveLastSuccessfulQuery(
+        recordType: KClass<T>,
+        timeStamp: LocalDateTime
+    ) {
+        val permissionString = HealthPermission.getReadPermission(recordType)
+        val zoneOffset = ZoneId.systemDefault().rules.getOffset(Instant.now())
+        val epochMillis = timeStamp.toInstant(zoneOffset).toEpochMilli()
+
+        healthConnectConfigDao.saveQuery(
+            HealthConnectQuery(
+                permissionString,
+                epochMillis
+            )
+        )
+    }
+
+    override suspend fun clearQueries(queries: List<HealthConnectQuery>) {
+        healthConnectConfigDao.clearQueries(queries)
+    }
+
+    override suspend fun clearAllQueries() {
+        healthConnectConfigDao.clearAllQueries()
     }
 
     override suspend fun <T : Record> getRecords(

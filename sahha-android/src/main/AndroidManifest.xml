@@ -16,13 +16,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Health Connect -->
-    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
-    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY"/>
-    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
-    <uses-permission android:name="android.permission.health.READ_STEPS"/>
-    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
-    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE"/>
-    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application>
@@ -41,13 +41,18 @@
         <service
             android:name=".data.service.DataCollectionService"
             android:exported="false"
+            android:foregroundServiceType="health" />
+
+        <service
+            android:name=".data.service.HealthConnectPostService"
+            android:exported="false"
             android:foregroundServiceType="dataSync" />
 
         <!-- Activity to show rationale of Health Connect permissions -->
         <activity
             android:name=".activity.health_connect.SahhaHealthConnectPermissionActivity"
-            android:exported="true"
             android:enabled="true"
+            android:exported="true"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
             <!-- Handle intent -->
             <intent-filter>
@@ -55,18 +60,31 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".data.receiver.SleepReceiver"
+        <activity
+            android:name=".activity.health_connect.SahhaHealthConnectStatusActivity"
             android:enabled="true"
             android:exported="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <receiver
+            android:name=".data.receiver.SahhaAlarmReceiver"
+            android:attributionTags="com.sahha.android:alarm_receiver"
+            android:enabled="true"
+            android:exported="false" />
+
+
+        <receiver
+            android:name=".data.receiver.SleepReceiver"
             android:attributionTags="com.sahha.android:sleep_receiver"
+            android:enabled="true"
+            android:exported="true"
             android:permission="android.permission.ACTIVITY_RECOGNITION" />
 
         <receiver
             android:name=".data.receiver.AutoStartReceiver"
+            android:attributionTags="com.sahha.android:auto_start_receiver"
             android:enabled="true"
             android:exported="true"
-            android:attributionTags="com.sahha.android:auto_start_receiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />

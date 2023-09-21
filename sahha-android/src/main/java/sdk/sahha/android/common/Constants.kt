@@ -61,9 +61,12 @@ internal object Constants {
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000
-    const val NOTIFICATION_PERMISSION_SETTINGS = 1001
+    const val NOTIFICATION_HEALTH_CONNECT = 1002
+    const val NOTIFICATION_PERMISSION_SETTINGS = 1003
+    const val HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID = "sahha.healthconnect.service"
 
     // Receivers
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000
     const val SLEEP_DATA_REQUEST = 2002
+    const val SAHHA_ALARM_RECEIVER = 3000
 }

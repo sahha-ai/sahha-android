@@ -34,7 +34,7 @@ class SensorInteractionManager @Inject constructor(
     internal val postStepDataUseCase: PostStepDataUseCase,
     internal val startCollectingStepCounterData: StartCollectingStepCounterData,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
-    internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase
+    internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
 ) {
 
     fun postSensorData(

@@ -17,7 +17,7 @@ object Sahha {
     internal lateinit var sim: SahhaInteractionManager
     internal lateinit var di: AppComponent
     internal lateinit var config: SahhaConfiguration
-    internal val notificationManager by lazy { di.notificationManager }
+    internal val notificationManager by lazy { di.sahhaNotificationManager }
 
     val isAuthenticated: Boolean
         get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false

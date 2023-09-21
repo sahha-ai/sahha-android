@@ -22,6 +22,7 @@ import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -33,7 +34,6 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.interaction.SahhaInteractionManager
 import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Singleton
 
 @Singleton
@@ -56,7 +56,8 @@ internal interface AppComponent {
     val powerManager: PowerManager
     val keyguardManager: KeyguardManager
     val sensorManager: SensorManager
-    val notificationManager: SahhaNotificationManager
+    val sahhaNotificationManager: SahhaNotificationManager
+    val sahhaAlarmManager: SahhaAlarmManager
     val receiverManager: ReceiverManager
     val permissionHandler: PermissionHandler
     val permissionManager: PermissionManager

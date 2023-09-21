@@ -15,13 +15,14 @@ import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 7,
+    version = 8,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -36,7 +37,8 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         SahhaNotificationConfiguration::class,
         StepData::class,
         DeviceInformation::class,
-        StepSession::class
+        StepSession::class,
+        HealthConnectQuery::class
     ]
 )
 
@@ -47,4 +49,5 @@ internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun sleepDao(): SleepDao
     internal abstract fun deviceUsageDao(): DeviceUsageDao
     internal abstract fun configurationDao(): ConfigurationDao
+    internal abstract fun healthConnectConfigDao(): HealthConnectConfigDao
 }
