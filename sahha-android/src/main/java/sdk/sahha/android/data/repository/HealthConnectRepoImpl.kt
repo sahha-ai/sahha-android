@@ -122,11 +122,13 @@ class HealthConnectRepoImpl @Inject constructor(
         defaultScope.launch {
             val config = configRepo.getConfig()
             permissionManager.getHealthConnectStatus(context) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal))
+                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+
                     sensorRepo.startDevicePostWorker(
                         Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                         Constants.DEVICE_POST_WORKER_TAG
                     )
+                }
 
                 if (status == SahhaSensorStatus.enabled)
                     sahhaAlarmManager.setAlarm(
@@ -340,7 +342,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )?.records
     }
 
-    override fun toStepDto(record: StepsRecord): StepDto {
+    override fun stepRecordToStepDto(record: StepsRecord): StepDto {
         val stepDto = StepDto(
             dataType = Constants.HEALTH_CONNECT_STEP_DATA_TYPE,
             count = record.count.toInt(),

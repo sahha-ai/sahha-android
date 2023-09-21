@@ -34,7 +34,7 @@ interface HealthConnectRepo {
         timeRangeFilter: TimeRangeFilter
     ): List<T>?
 
-    fun toStepDto(record: StepsRecord): StepDto
+    fun stepRecordToStepDto(record: StepsRecord): StepDto
     suspend fun getAggregateRecordsByDuration(
         metrics: Set<AggregateMetric<*>>,
         timeRangeFilter: TimeRangeFilter,

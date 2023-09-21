@@ -62,7 +62,7 @@ class SensorInteractionManager @Inject constructor(
         startHealthConnectPostWorkerUseCase()
     }
 
-    internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)?) {
+    internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         if (Sahha.config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
             startCollectingSleepDataUseCase()
         }
