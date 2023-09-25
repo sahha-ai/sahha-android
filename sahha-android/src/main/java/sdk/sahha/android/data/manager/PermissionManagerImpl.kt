@@ -145,15 +145,23 @@ class PermissionManagerImpl @Inject constructor(
                 return@getHealthConnectStatus
             }
 
-            when (status) {
-                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
-                else -> {
-//                    Sahha.sim.startNative(callback)
-                    Sahha.sim.startHealthConnect(callback)
-                }
-            }
+//            when (status) {
+//                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
+//                else -> {
+////                    Sahha.sim.startNative(callback)
+//                    Sahha.sim.startHealthConnect(callback)
+//                }
+//            }
+            testStartNativeAndHc()
         }
 
+    }
+
+    // Tester method
+    private fun testStartNativeAndHc() {
+        Sahha.sim.startNative { error, success ->
+            Sahha.sim.startHealthConnect()
+        }
     }
 
     override fun getSensorStatus(

@@ -73,6 +73,7 @@ internal interface AppComponent {
     val sleepDao: SleepDao
     val deviceUsageDao: DeviceUsageDao
     val configurationDao: ConfigurationDao
+    val testDataDao: TestDataDao
 
     val authRepo: AuthRepo
     val deviceInfoRepo: DeviceInfoRepo

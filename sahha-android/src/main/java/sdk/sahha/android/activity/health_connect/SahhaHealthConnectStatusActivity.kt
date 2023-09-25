@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 internal class SahhaHealthConnectStatusActivity : ComponentActivity() {
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
@@ -49,6 +51,12 @@ internal class SahhaHealthConnectStatusActivity : ComponentActivity() {
         if (atleastOnePermissionGranted(granted)) {
             permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.enabled)
+            Sahha.di.sahhaAlarmManager.setAlarm(
+                this,
+                Instant.now()
+                    .plus(10, ChronoUnit.SECONDS)
+                    .toEpochMilli()
+            )
             finish()
             return
         }

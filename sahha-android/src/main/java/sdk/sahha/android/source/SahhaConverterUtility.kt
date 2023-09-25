@@ -3,7 +3,6 @@ package sdk.sahha.android.source
 import android.content.Context
 import android.icu.text.DateFormat
 import androidx.annotation.Keep
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
@@ -21,7 +20,6 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
@@ -270,5 +268,25 @@ internal object SahhaConverterUtility {
             .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
             .create()
             .toJson(records)
+    }
+
+    fun <T> convertToJsonString(record: T?): String {
+        return GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(
+                Instant::class.java,
+                JsonSerializer<Instant> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .registerTypeAdapter(
+                ZoneOffset::class.java,
+                JsonSerializer<ZoneOffset> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+            .create()
+            .toJson(record)
     }
 }

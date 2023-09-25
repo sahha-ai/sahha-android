@@ -56,6 +56,7 @@ import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.Period
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -353,5 +354,59 @@ class HealthConnectRepoImpl @Inject constructor(
         )
         Session.logJsonString("Step DTO", stepDto)
         return stepDto
+    }
+
+    override suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>? {
+        return if (isFirstQuery(dataType)) runBeforeQuery(dataType)
+        else runAfterQueryTest(dataType)
+    }
+
+    private suspend fun <T : Record> isFirstQuery(dataType: KClass<T>): Boolean {
+        return getLastSuccessfulQuery(dataType)?.let { false } ?: true
+    }
+
+    private suspend fun <T : Record> runBeforeQuery(dataType: KClass<T>): List<T>? {
+        val now = LocalDateTime.now()
+        val records = getRecords(
+            dataType,
+            TimeRangeFilter.before(now)
+        )
+        if (records.isNullOrEmpty()) return null
+
+        saveLastSuccessfulQuery(dataType, now)
+        return records
+    }
+
+    private suspend fun <T : Record> runAfterQuery(dataType: KClass<T>): List<T>? {
+        val lastQueryTimestamp = getLastSuccessfulQuery(StepsRecord::class)
+        return lastQueryTimestamp?.let { timestamp ->
+            val records = getRecords(
+                dataType,
+                TimeRangeFilter.after(timestamp)
+            )
+            if (records.isNullOrEmpty()) return@let null
+
+            saveLastSuccessfulQuery(dataType, LocalDateTime.now())
+            return@let records
+        }
+    }
+
+    private suspend fun <T : Record> runAfterQueryTest(dataType: KClass<T>): List<T>? {
+        val timestamp = getQueryTimeStamp(dataType)
+        val records = getRecords(
+            dataType,
+            TimeRangeFilter.after(timestamp)
+        )
+        if (records.isNullOrEmpty()) return null
+
+        saveLastSuccessfulQuery(dataType, timestamp)
+        return records
+    }
+
+    private suspend fun <T : Record> getQueryTimeStamp(dataType: KClass<T>): LocalDateTime {
+        val timestampDate = getLastSuccessfulQuery(dataType)
+            ?.toLocalDate()
+
+        return LocalDateTime.of(timestampDate, LocalTime.MIDNIGHT)
     }
 }

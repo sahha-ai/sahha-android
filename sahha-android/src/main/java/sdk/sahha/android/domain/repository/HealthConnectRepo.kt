@@ -59,4 +59,5 @@ interface HealthConnectRepo {
     suspend fun clearQueries(queries: List<HealthConnectQuery>)
 
     suspend fun clearAllQueries()
+    suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
 }

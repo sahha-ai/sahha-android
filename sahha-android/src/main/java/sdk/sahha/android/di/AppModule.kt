@@ -371,6 +371,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return db.healthConnectConfigDao()
     }
 
+    @Singleton
+    @Provides
+    fun provideTestDataDao(db: SahhaDatabase): TestDataDao {
+        return db.testDataDao()
+    }
+
     @DefaultScope
     @Singleton
     @Provides

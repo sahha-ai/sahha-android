@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class SahhaHealthConnectPermissionActivity : ComponentActivity() {
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
@@ -38,6 +40,8 @@ class SahhaHealthConnectPermissionActivity : ComponentActivity() {
             HealthPermission.getReadPermission(SleepSessionRecord::class),
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
+            HealthPermission.getWritePermission(StepsRecord::class),
+            HealthPermission.getWritePermission(SleepSessionRecord::class),
         )
 
     // Create the permissions launcher.
@@ -80,10 +84,16 @@ class SahhaHealthConnectPermissionActivity : ComponentActivity() {
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(permissions)) {
+        if (granted.any()) {
             // Permissions already granted; proceed with inserting or reading data.
             permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.enabled)
+            Sahha.di.sahhaAlarmManager.setAlarm(
+                this,
+                Instant.now()
+                    .plus(10, ChronoUnit.SECONDS)
+                    .toEpochMilli()
+            )
         } else {
             permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.disabled)

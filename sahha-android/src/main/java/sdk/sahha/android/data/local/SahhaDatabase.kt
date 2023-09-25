@@ -19,6 +19,8 @@ import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
+import sdk.sahha.android.domain.model.test.TestDataLocal
+import sdk.sahha.android.domain.model.test.TestDataPost
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
@@ -38,7 +40,9 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         StepData::class,
         DeviceInformation::class,
         StepSession::class,
-        HealthConnectQuery::class
+        HealthConnectQuery::class,
+        TestDataLocal::class,
+        TestDataPost::class
     ]
 )
 
@@ -50,4 +54,5 @@ internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun deviceUsageDao(): DeviceUsageDao
     internal abstract fun configurationDao(): ConfigurationDao
     internal abstract fun healthConnectConfigDao(): HealthConnectConfigDao
+    internal abstract fun testDataDao(): TestDataDao
 }
