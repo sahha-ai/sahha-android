@@ -9,6 +9,7 @@ import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
+import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 
 @Dao
 interface MovementDao {
@@ -58,10 +59,29 @@ interface MovementDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveStepSession(stepSession: StepSession)
+
     @Query("SELECT * FROM StepSession")
     suspend fun getAllStepSessions(): List<StepSession>
+
     @Delete
     suspend fun clearStepSessions(stepSessions: List<StepSession>)
+
     @Query("DELETE FROM StepSession")
     suspend fun clearAllStepSessions()
+
+    // Steps Health Connect
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveStepsHc(stepsHc: StepsHealthConnect)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveStepsListHc(stepsListHc: List<StepsHealthConnect>)
+
+    @Query("SELECT * FROM StepsHealthConnect")
+    suspend fun getAllStepsHc(): List<StepsHealthConnect>
+
+    @Delete
+    suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>)
+
+    @Query("DELETE FROM StepsHealthConnect")
+    suspend fun clearAllStepsHc()
 }

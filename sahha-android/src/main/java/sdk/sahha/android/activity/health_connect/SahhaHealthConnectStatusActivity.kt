@@ -13,13 +13,13 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 internal class SahhaHealthConnectStatusActivity : ComponentActivity() {
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
+    private val permissionManager by lazy { Sahha.di.permissionManager }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
     private val healthConnectRepo by lazy { Sahha.di.healthConnectRepo }
+    private val permissions by lazy { Sahha.di.permissionManager.permissions }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,33 +41,28 @@ internal class SahhaHealthConnectStatusActivity : ComponentActivity() {
         }
     }
 
-    private fun atleastOnePermissionGranted(granted: Set<String>): Boolean {
-        return granted.any { it in healthConnectRepo.permissions }
-    }
-
+    //    private fun atleastOnePermissionGranted(granted: Set<String>): Boolean {
+//        return granted.any { it in healthConnectRepo.permissions }
+//    }
     private suspend fun checkPermissions(healthConnectClient: HealthConnectClient) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-
-        if (atleastOnePermissionGranted(granted)) {
+        if (granted.containsAll(permissions)) {
+            println("SahhaHealthConnectStatusActivity0001")
             permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.enabled)
-            Sahha.di.sahhaAlarmManager.setAlarm(
-                this,
-                Instant.now()
-                    .plus(10, ChronoUnit.SECONDS)
-                    .toEpochMilli()
-            )
             finish()
             return
         }
 
         // Else
+        println("SahhaHealthConnectStatusActivity0002")
         permissionHandler.activityCallback.statusCallback
-            ?.invoke(null, SahhaSensorStatus.disabled)
+            ?.invoke(null, SahhaSensorStatus.pending)
         finish()
     }
 
     private fun healthConnectUnavailable() {
+        println("SahhaHealthConnectStatusActivity0003")
         permissionHandler.activityCallback.statusCallback
             ?.invoke(null, SahhaSensorStatus.unavailable)
         finish()

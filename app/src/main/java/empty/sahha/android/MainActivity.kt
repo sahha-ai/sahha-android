@@ -79,12 +79,7 @@ class MainActivity : ComponentActivity() {
         Sahha.configure(
             application,
             config,
-        ) { error, success ->
-            lifecycleScope.launch {
-                Toast.makeText(this@MainActivity, error ?: "Successful $success", Toast.LENGTH_LONG)
-                    .show()
-            }
-        }
+        )
 
         setContent {
             SahhasdkemptyTheme {
@@ -115,7 +110,7 @@ class MainActivity : ComponentActivity() {
                     Sahha.getSensorStatus(
                         this@MainActivity
                     ) { error, sensorStatus ->
-                        permissionStatus = sensorStatus.name
+                        permissionStatus = error ?: sensorStatus.name
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -126,18 +121,18 @@ class MainActivity : ComponentActivity() {
                             item {
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                HealthConnectPermission(context = this@MainActivity)
-                                ForegroundQuery(context = this@MainActivity)
+//                                HealthConnectPermission(context = this@MainActivity)
+//                                ForegroundQuery(context = this@MainActivity)
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
                                     ) { error, status ->
-                                        permissionStatus = status.name
+                                        permissionStatus = error ?: status.name
                                     }
                                 }) {
-                                    Text("Permission Test")
+                                    Text("Grant Permissions")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {

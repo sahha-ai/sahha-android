@@ -100,22 +100,38 @@ internal object SahhaPermissions : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when {
             intent.action == PERMISSION_ENABLED -> {
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionEnabled()
             }
 
             intent.action == PERMISSION_PENDING -> {
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionPending()
             }
 
             intent.action == PERMISSION_DISABLED -> {
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionDisabled()
             }
 
             else -> {
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionUnavailable()
             }
         }
@@ -170,7 +186,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return

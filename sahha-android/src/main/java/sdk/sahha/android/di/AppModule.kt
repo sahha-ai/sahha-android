@@ -37,6 +37,7 @@ import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
 import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.data.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
@@ -50,6 +51,7 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -486,7 +488,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaErrorLogger: SahhaErrorLogger,
         sahhaTimeManager: SahhaTimeManager,
         healthConnectConfigDao: HealthConnectConfigDao,
-        sahhaAlarmManager: SahhaAlarmManager
+        sahhaAlarmManager: SahhaAlarmManager,
+        movementDao: MovementDao
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
             context,
@@ -503,7 +506,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             sahhaErrorLogger,
             sahhaTimeManager,
             healthConnectConfigDao,
-            sahhaAlarmManager
+            sahhaAlarmManager,
+            movementDao
         )
     }
 
@@ -539,5 +543,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return SahhaAlarmManagerImpl(
             alarmManager
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectConstantsMapper(): HealthConnectConstantsMapper {
+        return HealthConnectConstantsMapperImpl()
     }
 }

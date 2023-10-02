@@ -4,13 +4,13 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.Record
-import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
+import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Period
@@ -28,13 +28,15 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    fun startPostWorker()
+    fun startPostWorker(
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
+    )
+
     suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
         timeRangeFilter: TimeRangeFilter
     ): List<T>?
 
-    fun stepRecordToStepDto(record: StepsRecord): StepDto
     suspend fun getAggregateRecordsByDuration(
         metrics: Set<AggregateMetric<*>>,
         timeRangeFilter: TimeRangeFilter,
@@ -57,7 +59,23 @@ interface HealthConnectRepo {
     )
 
     suspend fun clearQueries(queries: List<HealthConnectQuery>)
-
     suspend fun clearAllQueries()
+    suspend fun <T : Record> getCurrentDayRecordsSteps(dataType: KClass<T>): List<T>?
+
+    suspend fun saveStepsHc(stepsHc: StepsHealthConnect)
+    suspend fun saveStepsListHc(stepsListHc: List<StepsHealthConnect>)
+    suspend fun getAllStepsHc(): List<StepsHealthConnect>
+    suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>)
+    suspend fun clearAllStepsHc()
     suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
+    suspend fun postStepData(
+        stepData: List<StepsHealthConnect>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    val successfulQueryTimestamps: HashMap<String, LocalDateTime>
+    suspend fun postSleepSessionData(
+        sleepSessionData: List<SleepSessionRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
 }

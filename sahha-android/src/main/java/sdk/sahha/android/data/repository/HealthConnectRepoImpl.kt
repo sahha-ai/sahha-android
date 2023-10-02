@@ -34,9 +34,11 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.common.Session
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
+import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.mapper.toSleepSendDto
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.di.DefaultScope
@@ -46,15 +48,18 @@ import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
+import sdk.sahha.android.domain.model.steps.StepsHealthConnect
+import sdk.sahha.android.domain.model.steps.toStepDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
@@ -83,7 +88,8 @@ class HealthConnectRepoImpl @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val sahhaTimeManager: SahhaTimeManager,
     private val healthConnectConfigDao: HealthConnectConfigDao,
-    private val sahhaAlarmManager: SahhaAlarmManager
+    private val sahhaAlarmManager: SahhaAlarmManager,
+    private val movementDao: MovementDao
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -95,6 +101,8 @@ class HealthConnectRepoImpl @Inject constructor(
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
         )
+    override val successfulQueryTimestamps =
+        hashMapOf<String, LocalDateTime>()
 
     private fun getDataClassFromPermission(
         permission: String
@@ -119,24 +127,29 @@ class HealthConnectRepoImpl @Inject constructor(
         return CompatibleApps.values().toSet()
     }
 
-    override fun startPostWorker() {
+    override fun startPostWorker(
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
         defaultScope.launch {
             val config = configRepo.getConfig()
-            permissionManager.getHealthConnectStatus(context) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-
-                    sensorRepo.startDevicePostWorker(
-                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                        Constants.DEVICE_POST_WORKER_TAG
-                    )
-                }
-
-                if (status == SahhaSensorStatus.enabled)
-                    sahhaAlarmManager.setAlarm(
-                        context,
-                        Instant.now().plus(15, ChronoUnit.SECONDS).toEpochMilli()
-                    )
+            if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+                sensorRepo.startDevicePostWorker(
+                    Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                    Constants.DEVICE_POST_WORKER_TAG
+                )
             }
+
+            sahhaAlarmManager.setAlarm(
+                context,
+                Instant.now()
+                    .plus(10, ChronoUnit.SECONDS)
+                    .toEpochMilli()
+            )
+
+            callback?.invoke(
+                null,
+                true
+            )
         }
     }
 
@@ -170,6 +183,58 @@ class HealthConnectRepoImpl @Inject constructor(
             .addTag(workerTag)
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, backOffDelaySeconds, TimeUnit.SECONDS)
             .build()
+    }
+
+    private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
+        val token = authRepo.getToken() ?: ""
+        return api.postStepData(
+            TokenBearer(token),
+            stepData
+        )
+    }
+
+    private suspend fun getSleepSessionResponse(sleepSessionData: List<SleepSendDto>): Response<ResponseBody> {
+        val token = authRepo.getToken() ?: ""
+        return api.postSleepDataRange(
+            TokenBearer(token),
+            sleepSessionData
+        )
+    }
+
+    override suspend fun postSleepSessionData(
+        sleepSessionData: List<SleepSessionRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<SleepSessionRecord>) -> Response<ResponseBody> = { chunk ->
+            val sleepSessions = chunk.map { it.toSleepSendDto() }
+            getSleepSessionResponse(sleepSessions)
+        }
+
+        postData(
+            sleepSessionData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postStepData(
+        stepData: List<StepsHealthConnect>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<StepsHealthConnect>) -> Response<ResponseBody> = { chunk ->
+            val steps = chunk.map { it.toStepDto() }
+            getStepResponse(steps)
+        }
+
+        postData(
+            stepData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
     }
 
     override suspend fun <T> postData(
@@ -343,22 +408,34 @@ class HealthConnectRepoImpl @Inject constructor(
         )?.records
     }
 
-    override fun stepRecordToStepDto(record: StepsRecord): StepDto {
-        val stepDto = StepDto(
-            dataType = Constants.HEALTH_CONNECT_STEP_DATA_TYPE,
-            count = record.count.toInt(),
-            source = record.metadata.dataOrigin.packageName,
-            manuallyEntered = record.metadata.recordingMethod == 3,
-            startDateTime = sahhaTimeManager.instantToIsoTime(record.startTime),
-            endDateTime = sahhaTimeManager.instantToIsoTime(record.endTime)
-        )
-        Session.logJsonString("Step DTO", stepDto)
-        return stepDto
+    override suspend fun <T : Record> getCurrentDayRecordsSteps(dataType: KClass<T>): List<T>? {
+        return if (isFirstQuery(dataType)) runBeforeQuerySteps(dataType)
+        else runAfterQuerySteps(dataType)
     }
 
     override suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>? {
         return if (isFirstQuery(dataType)) runBeforeQuery(dataType)
-        else runAfterQueryTest(dataType)
+        else runAfterQuery(dataType)
+    }
+
+    override suspend fun saveStepsHc(stepsHc: StepsHealthConnect) {
+        movementDao.saveStepsHc(stepsHc)
+    }
+
+    override suspend fun saveStepsListHc(stepsListHc: List<StepsHealthConnect>) {
+        movementDao.saveStepsListHc(stepsListHc)
+    }
+
+    override suspend fun getAllStepsHc(): List<StepsHealthConnect> {
+        return movementDao.getAllStepsHc()
+    }
+
+    override suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>) {
+        movementDao.clearStepsListHc(stepsHc)
+    }
+
+    override suspend fun clearAllStepsHc() {
+        movementDao.clearAllStepsHc()
     }
 
     private suspend fun <T : Record> isFirstQuery(dataType: KClass<T>): Boolean {
@@ -373,12 +450,26 @@ class HealthConnectRepoImpl @Inject constructor(
         )
         if (records.isNullOrEmpty()) return null
 
-        saveLastSuccessfulQuery(dataType, now)
+        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
+        return records
+    }
+
+    private suspend fun <T : Record> runBeforeQuerySteps(dataType: KClass<T>): List<T>? {
+        val now = LocalDateTime.of(
+            LocalDate.now(), LocalTime.MIDNIGHT
+        )
+        val records = getRecords(
+            dataType,
+            TimeRangeFilter.before(now)
+        )
+        if (records.isNullOrEmpty()) return null
+
+        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
         return records
     }
 
     private suspend fun <T : Record> runAfterQuery(dataType: KClass<T>): List<T>? {
-        val lastQueryTimestamp = getLastSuccessfulQuery(StepsRecord::class)
+        val lastQueryTimestamp = getLastSuccessfulQuery(dataType)
         return lastQueryTimestamp?.let { timestamp ->
             val records = getRecords(
                 dataType,
@@ -386,24 +477,28 @@ class HealthConnectRepoImpl @Inject constructor(
             )
             if (records.isNullOrEmpty()) return@let null
 
-            saveLastSuccessfulQuery(dataType, LocalDateTime.now())
+            successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
+                LocalDateTime.now()
             return@let records
         }
     }
 
-    private suspend fun <T : Record> runAfterQueryTest(dataType: KClass<T>): List<T>? {
-        val timestamp = getQueryTimeStamp(dataType)
+    private suspend fun <T : Record> runAfterQuerySteps(dataType: KClass<T>): List<T>? {
+        val timestamp = getLastQueryTimeStampForSteps(dataType)
         val records = getRecords(
             dataType,
             TimeRangeFilter.after(timestamp)
         )
         if (records.isNullOrEmpty()) return null
 
-        saveLastSuccessfulQuery(dataType, timestamp)
+        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
+            LocalDateTime.of(
+                LocalDate.now(), LocalTime.MIDNIGHT
+            )
         return records
     }
 
-    private suspend fun <T : Record> getQueryTimeStamp(dataType: KClass<T>): LocalDateTime {
+    private suspend fun <T : Record> getLastQueryTimeStampForSteps(dataType: KClass<T>): LocalDateTime {
         val timestampDate = getLastSuccessfulQuery(dataType)
             ?.toLocalDate()
 

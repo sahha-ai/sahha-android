@@ -15,6 +15,7 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.source.SahhaSettings
 import javax.inject.Inject
 
@@ -85,8 +86,8 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
-                sensor.startHealthConnectPostWorker()
-                callback?.invoke(null, true)
+                sensor.startHealthConnectPostWorker(callback)
+                // callback?.invoke(null, true)
             }
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)

@@ -24,6 +24,7 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -94,6 +95,7 @@ internal interface AppComponent {
     val decryptor: Decryptor
     val healthConnectClient: HealthConnectClient?
     val healthConnectRepo: HealthConnectRepo
+    val healthConnectConstantsMapper: HealthConnectConstantsMapper
 
     val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
 }

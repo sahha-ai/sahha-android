@@ -180,21 +180,6 @@ internal object SahhaConverterUtility {
         }
     }
 
-    internal fun healthConnectStepToStepDto(
-        stepData: List<StepsRecord>,
-    ): List<StepDto> {
-        return stepData.map {
-            StepDto(
-                dataType = "Constants.HEALTH_CONNECT_STEP_DATA_TYPE",
-                count = it.count.toInt(),
-                source = "Constants.HEALTH_CONNECT_STEP_DATA_SOURCE",
-                manuallyEntered = false,
-                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
-                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
-            )
-        }
-    }
-
 //    internal fun heartRateToHeartRateSendDto(
 //        heartRateData: List<HeartRateRecord>,
 //        createdAt: String

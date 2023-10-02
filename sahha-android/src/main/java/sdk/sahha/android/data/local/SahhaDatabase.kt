@@ -19,6 +19,7 @@ import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
+import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.model.test.TestDataLocal
 import sdk.sahha.android.domain.model.test.TestDataPost
 import sdk.sahha.android.source.SahhaNotificationConfiguration
@@ -42,7 +43,8 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         StepSession::class,
         HealthConnectQuery::class,
         TestDataLocal::class,
-        TestDataPost::class
+        TestDataPost::class,
+        StepsHealthConnect::class,
     ]
 )
 

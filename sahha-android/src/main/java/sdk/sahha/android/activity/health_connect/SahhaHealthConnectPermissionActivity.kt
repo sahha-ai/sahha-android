@@ -9,15 +9,6 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
-import androidx.health.connect.client.records.RestingHeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
@@ -27,22 +18,11 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 class SahhaHealthConnectPermissionActivity : ComponentActivity() {
+    private var initialLaunch = true
+    private var status = SahhaSensorStatus.pending
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
-
-    private val permissions =
-        setOf(
-            HealthPermission.getReadPermission(HeartRateRecord::class),
-            HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class),
-            HealthPermission.getReadPermission(RestingHeartRateRecord::class),
-            HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(SleepStageRecord::class),
-            HealthPermission.getReadPermission(SleepSessionRecord::class),
-            HealthPermission.getReadPermission(BloodPressureRecord::class),
-            HealthPermission.getReadPermission(BloodGlucoseRecord::class),
-            HealthPermission.getWritePermission(StepsRecord::class),
-            HealthPermission.getWritePermission(SleepSessionRecord::class),
-        )
+    private val permissions by lazy { Sahha.di.permissionManager.permissions }
 
     // Create the permissions launcher.
     private val requestPermissionActivityContract =
@@ -50,16 +30,8 @@ class SahhaHealthConnectPermissionActivity : ComponentActivity() {
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
-            if (granted.containsAll(permissions)) {
-                // Permissions successfully granted
-                // PERMISSIONS: Set<string> as of Alpha11
-                permissionHandler.activityCallback.statusCallback
-                    ?.invoke(null, SahhaSensorStatus.enabled)
-            } else {
-                // Lack of required permissions
-                permissionHandler.activityCallback.statusCallback
-                    ?.invoke(null, SahhaSensorStatus.disabled)
-            }
+            status = if (granted.containsAll(granted)) SahhaSensorStatus.enabled
+            else SahhaSensorStatus.disabled
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +41,7 @@ class SahhaHealthConnectPermissionActivity : ComponentActivity() {
             lifecycleScope.launch {
                 checkPermissionsAndRun(client)
             }
-        } ?: finish()
+        } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
 
         setContent {
             SahhasdkemptyTheme {
@@ -82,23 +54,54 @@ class SahhaHealthConnectPermissionActivity : ComponentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (initialLaunch) {
+            println("SahhaHealthConnectPermissionActivity0003")
+            initialLaunch = false
+            return
+        }
+
+        // Else
+        enabledStatus()
+    }
+
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.any()) {
+        if (granted.containsAll(permissions)) {
             // Permissions already granted; proceed with inserting or reading data.
-            permissionHandler.activityCallback.statusCallback
-                ?.invoke(null, SahhaSensorStatus.enabled)
+            status = SahhaSensorStatus.enabled
+            enabledStatus()
+            return
+        }
+
+        // Else
+        requestPermissions.launch(permissions)
+    }
+
+    private fun enabledStatus() {
+        if (status == SahhaSensorStatus.enabled) {
+            println("SahhaHealthConnectPermissionActivity0004")
             Sahha.di.sahhaAlarmManager.setAlarm(
                 this,
                 Instant.now()
                     .plus(10, ChronoUnit.SECONDS)
                     .toEpochMilli()
             )
-        } else {
-            permissionHandler.activityCallback.statusCallback
-                ?.invoke(null, SahhaSensorStatus.disabled)
-            requestPermissions.launch(permissions)
         }
+
+        println("SahhaHealthConnectPermissionActivity0005")
+        permissionHandler.activityCallback.statusCallback?.invoke(
+            null, status
+        )
+
+        println("SahhaHealthConnectPermissionActivity0006")
+        finish()
+    }
+
+    private fun returnStatusAndFinish(status: Enum<SahhaSensorStatus>) {
+        permissionHandler.activityCallback.statusCallback
+            ?.invoke(null, status)
         finish()
     }
 }

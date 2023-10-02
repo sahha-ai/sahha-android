@@ -10,6 +10,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.StepsRecord
 import sdk.sahha.android.activity.SahhaPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectStatusActivity
@@ -30,8 +39,30 @@ class PermissionManagerImpl @Inject constructor(
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger
 ) : PermissionManager {
+    override var statusPending = true
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
+
+    private val shouldUseHealthConnect: Boolean
+        get() {
+            val androidSdkVersion = Build.VERSION.SDK_INT
+            val isHealthConnectCompatible = checkHealthConnectCompatible(androidSdkVersion)
+//            isHealthConnectCompatible && hasHealthConnectCompatibleAppInstalled
+            return true
+        }
+
+
+    override val permissions =
+        setOf(
+            HealthPermission.getReadPermission(HeartRateRecord::class),
+            HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class),
+            HealthPermission.getReadPermission(RestingHeartRateRecord::class),
+            HealthPermission.getReadPermission(StepsRecord::class),
+            HealthPermission.getReadPermission(SleepStageRecord::class),
+            HealthPermission.getReadPermission(SleepSessionRecord::class),
+            HealthPermission.getReadPermission(BloodPressureRecord::class),
+            HealthPermission.getReadPermission(BloodGlucoseRecord::class),
+        )
 
     override fun setPermissionLogic(activity: ComponentActivity) {
         permission =
@@ -85,27 +116,37 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
-        val androidSdkVersion = Build.VERSION.SDK_INT
-        val isHealthConnectCompatible = checkHealthConnectCompatible(androidSdkVersion)
-        val hasHealthConnectCompatibleAppInstalled = checkHealthConnectCompatibleAppIsInstalled(
-            context,
-        )
-        val shouldUseHealthConnect =
-            isHealthConnectCompatible && hasHealthConnectCompatibleAppInstalled
         checkAndEnable(
-            context,
-            shouldUseHealthConnect,
-            callback
-        )
+            context
+        ) { _, _ ->
+            if (shouldUseHealthConnect) {
+                sim.startHealthConnect { error, success ->
+                    callback(
+                        error,
+                        if (success) SahhaSensorStatus.enabled
+                        else SahhaSensorStatus.disabled
+                    )
+                }
+                return@checkAndEnable
+            }
+
+            // Else start native sensors
+            sim.startNative { error, success ->
+                callback(
+                    error,
+                    if (success) SahhaSensorStatus.enabled
+                    else SahhaSensorStatus.disabled
+                )
+            }
+        }
     }
 
     private fun checkHealthConnectCompatible(androidSdkVersion: Int): Boolean {
-        return androidSdkVersion >= 34
+        return androidSdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
     }
 
     private fun checkAndEnable(
         context: Context,
-        shouldUseHealthConnect: Boolean,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
         if (shouldUseHealthConnect) {
@@ -115,15 +156,12 @@ class PermissionManagerImpl @Inject constructor(
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
             } ?: callback(SahhaErrors.somethingWentWrong, SahhaSensorStatus.unavailable)
-
-//            sim.startHealthConnect()
             return
         }
 
         // Else use native sensors
         SahhaPermissions.enableSensor(context) { status ->
             callback(null, status)
-            sim.startNative()
         }
     }
 
@@ -136,31 +174,35 @@ class PermissionManagerImpl @Inject constructor(
         ) { err, status ->
             err?.also { e ->
                 callback?.invoke(e, false)
-//                sahhaErrorLogger.application(
-//                    e,
-//                    tag,
-//                    "checkAndStart",
-//                    status.name
-//                )
+                sahhaErrorLogger.application(
+                    e,
+                    tag,
+                    "checkAndStart",
+                    status.name
+                )
                 return@getHealthConnectStatus
             }
 
-//            when (status) {
-//                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
-//                else -> {
-////                    Sahha.sim.startNative(callback)
-//                    Sahha.sim.startHealthConnect(callback)
-//                }
-//            }
-            testStartNativeAndHc()
+            when (status) {
+                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
+                SahhaSensorStatus.pending -> {}
+                SahhaSensorStatus.disabled -> {}
+                SahhaSensorStatus.unavailable -> {
+//                    Sahha.sim.startNative(callback)
+                    Sahha.sim.startHealthConnect(callback)
+                }
+            }
+//            testStartNativeAndHc(callback)
         }
 
     }
 
     // Tester method
-    private fun testStartNativeAndHc() {
+    private fun testStartNativeAndHc(
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
         Sahha.sim.startNative { error, success ->
-            Sahha.sim.startHealthConnect()
+            Sahha.sim.startHealthConnect(callback)
         }
     }
 
@@ -168,6 +210,12 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
+        if(shouldUseHealthConnect) {
+            getHealthConnectStatus(context, callback)
+            return
+        }
+
+        // Else Native
         SahhaPermissions.getSensorStatus(context) {
             callback(null, it)
         }

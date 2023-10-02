@@ -1,15 +1,17 @@
 package sdk.sahha.android.domain.model.dto
 
-import android.health.connect.datatypes.Metadata
 import androidx.annotation.Keep
+import androidx.health.connect.client.records.metadata.DeviceTypes
+import sdk.sahha.android.data.Constants
 
 @Keep
 data class StepDto(
     val dataType: String,
     val count: Int,
     val source: String,
-    val manuallyEntered: Boolean,
     val startDateTime: String,
     val endDateTime: String,
-    val recordingMethod: String = "RECORDING_METHOD_UNKNOWN"
+    val recordingMethod: String = Constants.UNKNOWN,
+    val sourceDevice: String = DeviceTypes.UNKNOWN,
+    val modifiedDateTime: String
 )

@@ -40,7 +40,7 @@ internal class SahhaPermissionActivity @Inject constructor(
         return registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
             val status = convertToActivityStatus(enabled)
             permissionHandler.sensorStatus = status
-            permissionHandler.activityCallback.statusCallback?.let { it(null, status) }
+            permissionHandler.activityCallback.statusCallback?.invoke(null, status)
             finish()
         }
     }

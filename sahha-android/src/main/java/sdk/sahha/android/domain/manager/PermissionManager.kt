@@ -31,4 +31,7 @@ interface PermissionManager {
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     )
+
+    val permissions: Set<String>
+    var statusPending: Boolean
 }

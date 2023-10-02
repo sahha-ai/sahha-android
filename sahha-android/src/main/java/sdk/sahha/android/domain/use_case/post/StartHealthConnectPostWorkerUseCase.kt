@@ -6,7 +6,9 @@ import javax.inject.Inject
 class StartHealthConnectPostWorkerUseCase @Inject constructor(
     private val repository: HealthConnectRepo
 ) {
-    operator fun invoke() {
-        repository.startPostWorker()
+    operator fun invoke(
+        callback: ((err: String?, success: Boolean) -> Unit)? = null
+    ) {
+        repository.startPostWorker(callback)
     }
 }

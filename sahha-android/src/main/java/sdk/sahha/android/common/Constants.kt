@@ -1,6 +1,8 @@
 package sdk.sahha.android.data
 
 internal object Constants {
+    const val UNKNOWN = "UNKNOWN"
+
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
 
@@ -39,6 +41,23 @@ internal object Constants {
     const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
     const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
     const val HEALTH_CONNECT_STEP_DATA_TYPE = "HealthConnectSteps"
+    const val HEALTH_CONNECT_BLOOD_GLUCOSE = "HealthConnectBloodGlucose"
+    const val HEALTH_CONNECT_BLOOD_PRESSURE_SYSTOLIC = "HealthConnectBloodPressureSystolic"
+    const val HEALTH_CONNECT_BLOOD_PRESSURE_DIASTOLIC = "HealthConnectBloodPressureDiastolic"
+    const val HEALTH_CONNECT_HEART_RATE = "HealthConnectHeartRate"
+    const val HEALTH_CONNECT_HEART_RATE_AVG = "HealthConnectHeartRateAvg"
+    const val HEALTH_CONNECT_HEART_RATE_MIN = "HealthConnectHeartRateMin"
+    const val HEALTH_CONNECT_HEART_RATE_MAX = "HealthConnectHeartRateMax"
+    const val HEALTH_CONNECT_RESTING_HEART_RATE = "HealthConnectRestingHeartRate"
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_AVG = "HealthConnectRestingHeartRateAvg"
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_MIN = "HealthConnectRestingHeartRateMin"
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_MAX = "HealthConnectRestingHeartRateMax"
+    const val HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD = "HealthConnectHeartRateVariabilityRmssd"
+
+    // Data Units
+    const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
+    const val HEALTH_CONNECT_UNIT_MMHG = "mmHg"
+    const val HEALTH_CONNECT_UNIT_MILLISECONDS = "milliseconds"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

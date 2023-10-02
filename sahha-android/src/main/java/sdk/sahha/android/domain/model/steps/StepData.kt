@@ -1,9 +1,11 @@
 package sdk.sahha.android.domain.model.steps
 
+import androidx.health.connect.client.records.metadata.Device
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.source.Sahha
 
 @Entity
 data class StepData(
@@ -26,12 +28,13 @@ data class StepData(
 
 fun StepData.toStepDto(): StepDto {
     return StepDto(
-        getDataType(source),
-        count,
-        source,
-        false,
-        detectedAt,
-        detectedAt,
+        dataType = getDataType(source),
+        count = count,
+        source = source,
+        startDateTime = detectedAt,
+        endDateTime = detectedAt,
+        modifiedDateTime = detectedAt,
+        sourceDevice = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE)
     )
 }
 
@@ -40,9 +43,11 @@ private fun getDataType(source: String): String {
         Constants.STEP_COUNTER_DATA_SOURCE -> {
             Constants.STEP_COUNTER_DATA_TYPE
         }
+
         Constants.STEP_DETECTOR_DATA_SOURCE -> {
             Constants.STEP_DETECTOR_DATA_TYPE
         }
+
         else -> "Unknown"
     }
 }
