@@ -13,5 +13,7 @@ data class StepDto(
     val endDateTime: String,
     val recordingMethod: String = Constants.UNKNOWN,
     val sourceDevice: String = DeviceTypes.UNKNOWN,
-    val modifiedDateTime: String
+    val modifiedDateTime: String,
+    val deviceManufacturer: String? = null,
+    val deviceModel: String? = null,
 )

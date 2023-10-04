@@ -304,7 +304,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                 endDateTime = newRecord.endDateTime,
                 modifiedDateTime = newRecord.modifiedDateTime,
                 recordingMethod = newRecord.recordingMethod,
-                sourceDevice = newRecord.sourceDevice
+                sourceDevice = newRecord.sourceDevice,
+                deviceManufacturer = newRecord.deviceManufacturer,
+                deviceModel = newRecord.deviceModel
             )
         )
         return toPost

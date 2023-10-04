@@ -1,10 +1,12 @@
 package sdk.sahha.android.interaction
 
 import android.app.Application
+import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope
@@ -17,6 +19,7 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 private const val tag = "SahhaInteractionManager"
 
@@ -50,15 +53,29 @@ internal class SahhaInteractionManager @Inject constructor(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
                 ).joinAll()
 
-                userData.processAndPutDeviceInfo(application) { _, _ ->
+//                userData.processAndPutDeviceInfo(application) { _, _ ->
 //                    permission.checkPermissionsAndStart(
 //                        application, callback
 //                    )
-                    permission.checkHcAvailabilityAndStart(application)
-                }
+//                }
+
+                awaitProcessAndPutDeviceInfo(application)
+                permission.checkHcAvailabilityAndStart(application)
             }
         }
     }
+
+    private suspend fun awaitProcessAndPutDeviceInfo(context: Context) =
+        suspendCancellableCoroutine { cont ->
+            println("awaitProcessAndPutDeviceInfo0001")
+            defaultScope.launch {
+                println("awaitProcessAndPutDeviceInfo0002")
+                userData.processAndPutDeviceInfo(context) { _, success ->
+                    println("awaitProcessAndPutDeviceInfo0003: $success")
+                    if (cont.isActive) cont.resume(success)
+                }
+            }
+        }
 
     internal fun startNative(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {

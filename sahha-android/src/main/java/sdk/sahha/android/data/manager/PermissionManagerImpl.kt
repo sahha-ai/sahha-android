@@ -20,6 +20,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import sdk.sahha.android.activity.SahhaPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectStatusActivity
@@ -50,9 +51,8 @@ class PermissionManagerImpl @Inject constructor(
 
     private val shouldUseHealthConnect: Boolean
         get() {
-            val androidSdkVersion = Build.VERSION.SDK_INT
-            val isHealthConnectCompatible = checkHealthConnectCompatible(androidSdkVersion)
-//            isHealthConnectCompatible && hasHealthConnectCompatibleAppInstalled
+            val isAndroid14AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+//            return isAndroid14AndAbove
             return true
         }
 
@@ -177,7 +177,7 @@ class PermissionManagerImpl @Inject constructor(
         println("checkAndStart0000")
         val status = awaitStatus(context)
         println("checkAndStart0001")
-        if(status == SahhaSensorStatus.enabled) {
+        if (status == SahhaSensorStatus.enabled) {
             println("checkAndStart0002")
             Sahha.sim.startHealthConnect(callback)
         }
@@ -242,14 +242,31 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        if (shouldUseHealthConnect) {
-            getHealthConnectStatus(context, callback)
-            return
+        defaultScope.launch {
+            if (shouldUseHealthConnect) {
+                val status = awaitStatus()
+                enabledTasks(status)
+                callback(null, awaitStatus())
+                return@launch
+            }
+
+            // Else Native
+            SahhaPermissions.getSensorStatus(context) {
+                callback(null, it)
+            }
         }
 
-        // Else Native
-        SahhaPermissions.getSensorStatus(context) {
-            callback(null, it)
+    }
+
+    private fun enabledTasks(status: Enum<SahhaSensorStatus>) {
+        when(status) {
+            SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect()
+        }
+    }
+
+    private suspend fun awaitStatus(): Enum<SahhaSensorStatus> = suspendCoroutine { cont ->
+        SahhaPermissions.getSensorStatusHealthConnect { status ->
+            cont.resume(status)
         }
     }
 

@@ -81,8 +81,6 @@ internal object SahhaDbUtility {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("CREATE TABLE HealthConnectQuery (id TEXT NOT NULL, lastSuccessfulTimeStampEpochMillis INTEGER NOT NULL, PRIMARY KEY (id))")
-                execSQL("CREATE TABLE TestDataLocal (metaId TEXT NOT NULL, count INTEGER, json TEXT NOT NULL, dataType TEXT NOT NULL, lastModifiedTime TEXT NOT NULL, PRIMARY KEY (metaId))")
-                execSQL("CREATE TABLE TestDataPost (id INTEGER NOT NULL, count INTEGER, json TEXT NOT NULL, dataType TEXT NOT NULL, lastModifiedTime TEXT NOT NULL, PRIMARY KEY (id))")
                 execSQL("CREATE TABLE StepsHealthConnect (metaId NOT NULL, count INTEGER NOT NULL, dataType TEXT NOT NULL, source TEXT NOT NULL, startDateTime TEXT NOT NULL, endDateTime TEXT NOT NULL,  modifiedDateTime TEXT NOT NULL, recordingMethod TEXT NOT NULL, sourceDevice TEXT NOT NULL, PRIMARY KEY (metaId))")
             }
         }

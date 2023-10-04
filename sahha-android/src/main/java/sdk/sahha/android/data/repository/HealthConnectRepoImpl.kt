@@ -160,6 +160,13 @@ class HealthConnectRepoImpl @Inject constructor(
                 )
             }
 
+            sahhaAlarmManager.setAlarm(
+                context,
+                Instant.now()
+                    .plus(10, ChronoUnit.SECONDS)
+                    .toEpochMilli()
+            )
+
             callback?.invoke(null, true)
         }
     }

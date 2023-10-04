@@ -21,22 +21,6 @@ import java.time.temporal.ChronoUnit
 private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
 
-fun StepsRecord.toStepDto(): StepDto {
-    return StepDto(
-        dataType = Constants.HEALTH_CONNECT_STEP_DATA_TYPE,
-        count = count.toInt(),
-        source = metadata.dataOrigin.packageName,
-        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
-        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
-        sourceDevice = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime,
-            endZoneOffset
-        )
-    )
-}
-
 fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
     return StepsHealthConnect(
         metaId = metadata.id,
@@ -50,7 +34,9 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
         modifiedDateTime = timeManager.instantToIsoTime(
             metadata.lastModifiedTime,
             endZoneOffset
-        )
+        ),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 

@@ -42,8 +42,6 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         DeviceInformation::class,
         StepSession::class,
         HealthConnectQuery::class,
-        TestDataLocal::class,
-        TestDataPost::class,
         StepsHealthConnect::class,
     ]
 )
@@ -56,5 +54,4 @@ internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun deviceUsageDao(): DeviceUsageDao
     internal abstract fun configurationDao(): ConfigurationDao
     internal abstract fun healthConnectConfigDao(): HealthConnectConfigDao
-    internal abstract fun testDataDao(): TestDataDao
 }

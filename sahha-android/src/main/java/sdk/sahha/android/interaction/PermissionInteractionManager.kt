@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectStatusActivity
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
@@ -17,7 +18,6 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "PermissionInteractionManager"
 
@@ -96,9 +96,12 @@ class PermissionInteractionManager @Inject constructor(
     private suspend fun awaitHcStatus(
         context: Context,
     ): Enum<SahhaSensorStatus> =
-        suspendCoroutine { cont ->
+        suspendCancellableCoroutine { cont ->
+            println("awaitHcStatus0001")
             getHcStatus(context) { _, status ->
-                cont.resume(status)
+                println("awaitHcStatus0002")
+                if (cont.isActive)
+                    cont.resume(status)
             }
         }
 
@@ -106,6 +109,7 @@ class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
+        activityCallback.statusCallback = null
         activityCallback.statusCallback = callback
         val intent =
             Intent(context, SahhaHealthConnectStatusActivity::class.java)

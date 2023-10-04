@@ -14,7 +14,9 @@ data class StepsHealthConnect(
     val endDateTime: String,
     val modifiedDateTime: String,
     val recordingMethod: String,
-    val sourceDevice: String
+    val sourceDevice: String,
+    val deviceManufacturer: String,
+    val deviceModel: String,
 )
 
 fun StepsHealthConnect.toStepDto(): StepDto {
@@ -26,6 +28,8 @@ fun StepsHealthConnect.toStepDto(): StepDto {
         sourceDevice = sourceDevice,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        modifiedDateTime = modifiedDateTime
+        modifiedDateTime = modifiedDateTime,
+        deviceManufacturer = deviceManufacturer,
+        deviceModel = deviceModel,
     )
 }
