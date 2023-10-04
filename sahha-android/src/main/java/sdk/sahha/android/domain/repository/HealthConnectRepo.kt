@@ -3,6 +3,9 @@ package sdk.sahha.android.domain.repository
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.records.BloodGlucoseRecord
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.time.TimeRangeFilter
@@ -60,14 +63,12 @@ interface HealthConnectRepo {
 
     suspend fun clearQueries(queries: List<HealthConnectQuery>)
     suspend fun clearAllQueries()
-    suspend fun <T : Record> getCurrentDayRecordsSteps(dataType: KClass<T>): List<T>?
-
     suspend fun saveStepsHc(stepsHc: StepsHealthConnect)
     suspend fun saveStepsListHc(stepsListHc: List<StepsHealthConnect>)
     suspend fun getAllStepsHc(): List<StepsHealthConnect>
     suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>)
     suspend fun clearAllStepsHc()
-    suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
+    suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>?
     suspend fun postStepData(
         stepData: List<StepsHealthConnect>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
@@ -78,4 +79,27 @@ interface HealthConnectRepo {
         sleepSessionData: List<SleepSessionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+
+    suspend fun <T : Record> postHeartRateAggregateData(
+        heartRateAggregateData: List<AggregationResultGroupedByDuration>,
+        recordType: KClass<T>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postHeartRateVariabilityRmssdData(
+        heartRateVariabilityRmssdData: List<HeartRateVariabilityRmssdRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postBloodGlucoseData(
+        bloodGlucoseData: List<BloodGlucoseRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postBloodPressureData(
+        bloodPressureData: List<BloodPressureRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
 }

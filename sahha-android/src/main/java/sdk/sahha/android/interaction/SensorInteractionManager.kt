@@ -3,6 +3,7 @@ package sdk.sahha.android.interaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
@@ -12,6 +13,7 @@ import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorD
 import sdk.sahha.android.domain.use_case.background.StartDataCollectionServiceUseCase
 import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
+import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectPostWorkerUseCase
@@ -23,12 +25,14 @@ import javax.inject.Inject
 class SensorInteractionManager @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
+    private val healthConnectRepo: HealthConnectRepo,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
     private val getSensorDataUseCase: GetSensorDataUseCase,
     private val startHealthConnectPostWorkerUseCase: StartHealthConnectPostWorkerUseCase,
+    private val postHealthConnectDataUseCase: PostHealthConnectDataUseCase,
     internal val postSleepDataUseCase: PostSleepDataUseCase,
     internal val postDeviceDataUseCase: PostDeviceDataUseCase,
     internal val postStepDataUseCase: PostStepDataUseCase,
@@ -61,7 +65,8 @@ class SensorInteractionManager @Inject constructor(
     internal fun startHealthConnectPostWorker(
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        startHealthConnectPostWorkerUseCase(callback)
+//        startHealthConnectPostWorkerUseCase(callback)
+        healthConnectRepo.startPostWorker(callback)
     }
 
     internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)? = null) {

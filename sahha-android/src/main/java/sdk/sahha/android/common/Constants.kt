@@ -70,6 +70,9 @@ internal object Constants {
     const val STEP_POST_WORKER_TAG = "stepPost"
     const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
 
+    // Sleep stage
+    const val SLEEP_STAGE_ASLEEP = "asleep"
+
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
     const val AVG_STEP_DISTANCE_FEMALE = 0.7

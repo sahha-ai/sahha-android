@@ -9,7 +9,10 @@ import sdk.sahha.android.data.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
+import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
+import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.DemographicDto
+import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.source.SahhaDemographic
@@ -48,6 +51,24 @@ interface SahhaApi {
     suspend fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SleepSendDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log")
+    suspend fun postHeartRateData(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body heartRateData: List<HeartRateDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/blood/log")
+    suspend fun postBloodGlucoseData(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bloodData: List<BloodGlucoseDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/blood/log")
+    suspend fun postBloodPressureData(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bloodData: List<BloodPressureDto>
     ): Response<ResponseBody>
 
     @POST("profile/device/log")

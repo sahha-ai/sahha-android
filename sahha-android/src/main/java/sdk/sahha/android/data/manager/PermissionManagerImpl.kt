@@ -19,6 +19,7 @@ import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
+import kotlinx.coroutines.CoroutineScope
 import sdk.sahha.android.activity.SahhaPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.activity.health_connect.SahhaHealthConnectStatusActivity
@@ -26,15 +27,19 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
+import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private val tag = "PermissionManagerImpl"
 
 class PermissionManagerImpl @Inject constructor(
+    @DefaultScope private val defaultScope: CoroutineScope,
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger
@@ -165,36 +170,63 @@ class PermissionManagerImpl @Inject constructor(
         }
     }
 
-    override fun checkAndStart(
+    override suspend fun checkAndStart(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        getHealthConnectStatus(
-            context = context,
-        ) { err, status ->
-            err?.also { e ->
-                callback?.invoke(e, false)
-                sahhaErrorLogger.application(
-                    e,
-                    tag,
-                    "checkAndStart",
-                    status.name
-                )
-                return@getHealthConnectStatus
-            }
-
-            when (status) {
-                SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
-                SahhaSensorStatus.pending -> {}
-                SahhaSensorStatus.disabled -> {}
-                SahhaSensorStatus.unavailable -> {
-//                    Sahha.sim.startNative(callback)
-                    Sahha.sim.startHealthConnect(callback)
-                }
-            }
-//            testStartNativeAndHc(callback)
+        println("checkAndStart0000")
+        val status = awaitStatus(context)
+        println("checkAndStart0001")
+        if(status == SahhaSensorStatus.enabled) {
+            println("checkAndStart0002")
+            Sahha.sim.startHealthConnect(callback)
         }
 
+//        when (awaitStatus(context)) {
+//            SahhaSensorStatus.enabled -> {
+//                println("checkAndStart0002")
+//                Sahha.sim.startHealthConnect(callback)
+//            }
+//
+//            SahhaSensorStatus.pending -> {
+//                println("checkAndStart0005")
+//            }
+//
+//            SahhaSensorStatus.disabled -> {
+//                println("checkAndStart0004")
+//            }
+//
+//            SahhaSensorStatus.unavailable -> {
+////                    Sahha.sim.startNative(callback)
+//                println("checkAndStart0003")
+//                Sahha.sim.startHealthConnect(callback)
+//            }
+//
+//            else -> println("checkAndStart0006")
+//        }
+    }
+
+    private suspend fun awaitStatus(context: Context): Enum<SahhaSensorStatus>? {
+        return suspendCoroutine { cont ->
+            getHealthConnectStatus(
+                context = context,
+            ) { err, status ->
+                println("awaitStatus")
+                err?.also { e ->
+                    cont.resume(null)
+                    sahhaErrorLogger.application(
+                        e,
+                        tag,
+                        "checkAndStart",
+                        status.name
+                    )
+                    return@getHealthConnectStatus
+                }
+
+                cont.resume(status)
+//            testStartNativeAndHc(callback)
+            }
+        }
     }
 
     // Tester method
@@ -210,7 +242,7 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        if(shouldUseHealthConnect) {
+        if (shouldUseHealthConnect) {
             getHealthConnectStatus(context, callback)
             return
         }
@@ -225,9 +257,9 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
+        permissionHandler.activityCallback.statusCallback = callback
         val intent = Intent(context, SahhaHealthConnectStatusActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        permissionHandler.activityCallback.statusCallback = callback
         context.startActivity(intent)
     }
 

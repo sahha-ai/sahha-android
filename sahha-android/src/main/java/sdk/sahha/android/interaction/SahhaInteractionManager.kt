@@ -15,7 +15,6 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.source.SahhaSettings
 import javax.inject.Inject
 
@@ -52,9 +51,10 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 userData.processAndPutDeviceInfo(application) { _, _ ->
-                    permission.checkPermissionsAndStart(
-                        application, callback
-                    )
+//                    permission.checkPermissionsAndStart(
+//                        application, callback
+//                    )
+                    permission.checkHcAvailabilityAndStart(application)
                 }
             }
         }
@@ -82,14 +82,18 @@ internal class SahhaInteractionManager @Inject constructor(
     }
 
     internal fun startHealthConnect(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+        println("startHealthConnect0000")
         try {
+            println("startHealthConnect0001")
             defaultScope.launch {
+                println("startHealthConnect0002")
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 sensor.startHealthConnectPostWorker(callback)
                 // callback?.invoke(null, true)
             }
         } catch (e: Exception) {
+            println("startHealthConnect0003")
             callback?.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,

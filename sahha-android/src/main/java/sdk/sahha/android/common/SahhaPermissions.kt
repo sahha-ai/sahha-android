@@ -98,8 +98,8 @@ internal object SahhaPermissions : BroadcastReceiver() {
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        when {
-            intent.action == PERMISSION_ENABLED -> {
+        when (intent.action) {
+            PERMISSION_ENABLED -> {
                 try {
                     context.unregisterReceiver(this)
                 } catch (e: Exception) {
@@ -107,8 +107,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
                 }
                 onPermissionEnabled()
             }
-
-            intent.action == PERMISSION_PENDING -> {
+            PERMISSION_PENDING -> {
                 try {
                     context.unregisterReceiver(this)
                 } catch (e: Exception) {
@@ -116,8 +115,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
                 }
                 onPermissionPending()
             }
-
-            intent.action == PERMISSION_DISABLED -> {
+            PERMISSION_DISABLED -> {
                 try {
                     context.unregisterReceiver(this)
                 } catch (e: Exception) {
@@ -125,7 +123,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
                 }
                 onPermissionDisabled()
             }
-
             else -> {
                 try {
                     context.unregisterReceiver(this)

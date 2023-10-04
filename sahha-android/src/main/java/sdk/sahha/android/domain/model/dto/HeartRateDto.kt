@@ -1,9 +1,12 @@
 package sdk.sahha.android.domain.model.dto
 
+import androidx.annotation.Keep
+
+@Keep
 data class HeartRateDto(
     val dataType: String,
     val count: Long,
-    val source: List<String>,
+    val source: String,
     val startDateTime: String,
     val endDateTime: String,
     val recordingMethod: String? = null,

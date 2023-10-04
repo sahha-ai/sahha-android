@@ -1,7 +1,9 @@
 package sdk.sahha.android.domain.model.dto
 
+import androidx.annotation.Keep
 import sdk.sahha.android.data.Constants
 
+@Keep
 data class BloodPressureDto(
     val dataType: String,
     val recordingMethod: String,

@@ -119,7 +119,7 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
     return BloodPressureDto(
         dataType = Constants.HEALTH_CONNECT_BLOOD_PRESSURE_SYSTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = diastolic.inMillimetersOfMercury,
+        count = systolic.inMillimetersOfMercury,
         source = metadata.dataOrigin.packageName,
         sourceDevice = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
@@ -142,7 +142,7 @@ fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
         count = result[HeartRateRecord.BPM_AVG] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -154,7 +154,7 @@ fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HeartRateDto {
         count = result[HeartRateRecord.BPM_MIN] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -166,7 +166,7 @@ fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HeartRateDto {
         count = result[HeartRateRecord.BPM_MAX] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -178,7 +178,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HeartRateDto 
         count = result[RestingHeartRateRecord.BPM_AVG] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -190,7 +190,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HeartRateDto 
         count = result[RestingHeartRateRecord.BPM_MIN] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -202,7 +202,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HeartRateDto 
         count = result[RestingHeartRateRecord.BPM_MAX] ?: -1,
         source = result.dataOrigins.map {
             it.packageName
-        },
+        }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -213,7 +213,7 @@ fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD,
         count = this.heartRateVariabilityMillis.toLong(),
         unit = Constants.HEALTH_CONNECT_UNIT_MILLISECONDS,
-        source = listOf(this.metadata.dataOrigin.packageName),
+        source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),

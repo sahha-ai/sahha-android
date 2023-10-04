@@ -20,6 +20,7 @@ class HealthConnectPostService : Service() {
         ioScope.launch {
             SahhaReconfigure(this@HealthConnectPostService)
             startNotification(intent)
+            if (stopOnNoAuth()) return@launch
 
             Sahha.di.postHealthConnectDataUseCase { error, successful ->
                 stopSelf()
@@ -29,16 +30,27 @@ class HealthConnectPostService : Service() {
         return START_NOT_STICKY
     }
 
+    private fun stopOnNoAuth(): Boolean {
+        if (!Sahha.isAuthenticated) {
+            println("User has no auth, exiting HealthConnectPostService")
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+        }
+
+        return !Sahha.isAuthenticated
+    }
+
     private fun startNotification(intent: Intent) {
-        Sahha.di.sahhaNotificationManager.setNewNotification(
+        val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             title = intent.getStringExtra("title") ?: "Sending data for analysis...",
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
             "Health Connect Sync",
             HealthConnectPostService::class.java
         )
+
         startForeground(
             Constants.NOTIFICATION_HEALTH_CONNECT,
-            Sahha.di.sahhaNotificationManager.notification
+            notification
         )
     }
 }

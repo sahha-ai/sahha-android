@@ -9,6 +9,6 @@ interface DeviceInfoRepo {
     fun getSdkVersion(): String
     suspend fun putDeviceInformation(
         deviceInformation: DeviceInformation,
-        callback: ((error: String?, success: Boolean) -> Unit)? = null
+        callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     )
 }

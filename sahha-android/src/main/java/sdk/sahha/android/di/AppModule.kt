@@ -52,6 +52,7 @@ import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -313,8 +314,16 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun providePermissionHandler(): PermissionHandler {
-        return PermissionHandler()
+    fun providePermissionHandler(
+        activityCallback: ActivityCallback
+    ): PermissionHandler {
+        return PermissionHandler(activityCallback)
+    }
+
+    @Singleton
+    @Provides
+    fun provideActivityCallback(): ActivityCallback {
+        return ActivityCallback()
     }
 
     @Singleton
@@ -322,9 +331,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
         healthConnectClient: HealthConnectClient?,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        @DefaultScope defaultScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
+            defaultScope,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger
@@ -489,7 +500,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaTimeManager: SahhaTimeManager,
         healthConnectConfigDao: HealthConnectConfigDao,
         sahhaAlarmManager: SahhaAlarmManager,
-        movementDao: MovementDao
+        movementDao: MovementDao,
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
             context,
@@ -507,7 +518,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             sahhaTimeManager,
             healthConnectConfigDao,
             sahhaAlarmManager,
-            movementDao
+            movementDao,
         )
     }
 

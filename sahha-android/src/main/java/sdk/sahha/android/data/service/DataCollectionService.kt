@@ -106,17 +106,17 @@ class DataCollectionService : Service() {
     }
 
     private fun checkAndStartCollectingScreenLockData() {
+        try {
+            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+        }
+
         if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
             Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )
             return
-        }
-
-        try {
-            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 

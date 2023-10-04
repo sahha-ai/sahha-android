@@ -38,7 +38,7 @@ class DeviceInfoRepoImpl(
 
     override suspend fun putDeviceInformation(
         deviceInformation: DeviceInformation,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         val response = putDeviceInformationResponse(deviceInformation)
         try {
