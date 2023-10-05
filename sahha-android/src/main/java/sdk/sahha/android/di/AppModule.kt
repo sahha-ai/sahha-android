@@ -495,6 +495,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         healthConnectConfigDao: HealthConnectConfigDao,
         sahhaAlarmManager: SahhaAlarmManager,
         movementDao: MovementDao,
+        constantsMapper: HealthConnectConstantsMapper
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
             context,
@@ -513,6 +514,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             healthConnectConfigDao,
             sahhaAlarmManager,
             movementDao,
+            constantsMapper
         )
     }
 

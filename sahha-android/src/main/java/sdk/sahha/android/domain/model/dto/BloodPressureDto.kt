@@ -15,5 +15,7 @@ data class BloodPressureDto(
     val modifiedDateTime: String,
     val bodyPosition: String,
     val measurementLocation: String,
-    val unit: String = Constants.HEALTH_CONNECT_UNIT_MMHG
+    val unit: String = Constants.HEALTH_CONNECT_UNIT_MMHG,
+    val deviceManufacturer: String = Constants.UNKNOWN,
+    val deviceModel: String = Constants.UNKNOWN
 )

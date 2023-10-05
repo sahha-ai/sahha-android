@@ -12,5 +12,7 @@ data class SleepSendDto(
     val endDateTime: String,
     val recordingMethod: String = Constants.UNKNOWN,
     val sourceDevice: String = Constants.UNKNOWN,
-    val modifiedDateTime: String = endDateTime
+    val modifiedDateTime: String = endDateTime,
+    val deviceManufacturer: String = Constants.UNKNOWN,
+    val deviceModel: String = Constants.UNKNOWN,
 )

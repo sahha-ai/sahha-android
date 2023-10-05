@@ -13,4 +13,6 @@ data class HeartRateDto(
     val unit: String? = null,
     val sourceDevice: String? = null,
     val modifiedDateTime: String? = null,
+    val deviceManufacturer: String? = null,
+    val deviceModel: String? = null
 )

@@ -12,11 +12,9 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.HeartRateDto
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
-import java.time.temporal.ChronoUnit
 
 private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
@@ -43,11 +41,7 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
 fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
     return SleepSendDto(
         source = metadata.dataOrigin.packageName,
-        durationInMinutes =
-        (endTime.epochSecond - endTime.minus(
-            startTime.epochSecond,
-            ChronoUnit.SECONDS
-        ).epochSecond).toInt(),
+        durationInMinutes = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toInt(),
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -55,7 +49,9 @@ fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
         modifiedDateTime = timeManager.instantToIsoTime(
             metadata.lastModifiedTime,
             endZoneOffset
-        )
+        ),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
@@ -76,7 +72,9 @@ fun BloodGlucoseRecord.toBloodGlucoseDto(): BloodGlucoseDto {
         ),
         mealType = mapper.mealType(mealType) ?: Constants.UNKNOWN,
         relationToMeal = mapper.relationToMeal(relationToMeal) ?: Constants.UNKNOWN,
-        specimenSource = mapper.specimenSource(specimenSource) ?: Constants.UNKNOWN
+        specimenSource = mapper.specimenSource(specimenSource) ?: Constants.UNKNOWN,
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
@@ -98,6 +96,8 @@ fun BloodPressureRecord.toBloodPressureDiastolicDto(): BloodPressureDto {
         ),
         bodyPosition = mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN,
         measurementLocation = mapper.measurementLocation(measurementLocation) ?: Constants.UNKNOWN,
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
@@ -119,6 +119,8 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
         ),
         bodyPosition = mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN,
         measurementLocation = mapper.measurementLocation(measurementLocation) ?: Constants.UNKNOWN,
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
@@ -204,6 +206,8 @@ fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         sourceDevice = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }

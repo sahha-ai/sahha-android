@@ -12,8 +12,12 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.di.IoScope
@@ -39,10 +43,29 @@ class PostHealthConnectDataUseCase @Inject constructor(
     @IoScope private val ioScope: CoroutineScope
 ) {
     suspend operator fun invoke(
+        serviceTimer: Long = 5000,
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
-        println("PostHealthConnectDataUseCase0001")
-        queryAndPostHealthConnectData(callback)
+        val timerOrTask = mutableListOf<Job>()
+        val minimumTimer = ioScope.launch {
+            delay(serviceTimer)
+        }
+
+        val queryTask = ioScope.launch {
+            suspendCancellableCoroutine { cont ->
+                ioScope.launch {
+                    println("PostHealthConnectDataUseCase0001")
+                    queryAndPostHealthConnectData { _, _ ->
+                        if (cont.isActive) cont.resume(Unit)
+                    }
+                }
+            }
+        }
+
+        timerOrTask.add(minimumTimer)
+        timerOrTask.add(queryTask)
+        timerOrTask.joinAll()
+        callback(null, true)
     }
 
     private fun setNextAlarmTime(
@@ -154,7 +177,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     ?.let { lastQuery ->
                                         TimeRangeFilter.Companion.after(lastQuery)
                                     } ?: TimeRangeFilter.Companion.between(
-                                    now.minusHours(1), now
+                                    now.minusDays(1), now
                                 ),
                                 Duration.ofMinutes(15)
                             )?.also { records ->

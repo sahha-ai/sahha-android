@@ -61,6 +61,7 @@ import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.HeartRateDto
@@ -108,6 +109,7 @@ class HealthConnectRepoImpl @Inject constructor(
     private val healthConnectConfigDao: HealthConnectConfigDao,
     private val sahhaAlarmManager: SahhaAlarmManager,
     private val movementDao: MovementDao,
+    private val mapper: HealthConnectConstantsMapper
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -455,8 +457,42 @@ class HealthConnectRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<SleepSessionRecord>) -> Response<ResponseBody> = { chunk ->
+            val summaryHashMap = hashMapOf<Int, Long>()
+            val sleepStageSummary = mutableListOf<SleepSendDto>()
             val sleepSessions = chunk.map { it.toSleepSendDto() }
-            getSleepSessionResponse(sleepSessions)
+            chunk.forEach { session ->
+                session.stages.forEach { stage ->
+                    val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
+                    summaryHashMap[stage.stage] = summaryHashMap[stage.stage]?.let { it + duration } ?: duration
+                }
+
+                summaryHashMap.forEach {
+                    sleepStageSummary.add(
+                        SleepSendDto(
+                            source = session.metadata.dataOrigin.packageName,
+                            sleepStage = mapper.sleepStages(it.key),
+                            durationInMinutes = (it.value / 1000 / 60).toInt(),
+                            startDateTime = sahhaTimeManager.instantToIsoTime(
+                                session.startTime, session.startZoneOffset
+                            ),
+                            endDateTime = sahhaTimeManager.instantToIsoTime(
+                                session.endTime, session.endZoneOffset
+                            ),
+                            modifiedDateTime = sahhaTimeManager.instantToIsoTime(
+                                session.metadata.lastModifiedTime, session.endZoneOffset
+                            ),
+                            recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
+                            sourceDevice = mapper.devices(session.metadata.device?.type),
+                            deviceManufacturer = session.metadata.device?.manufacturer ?: Constants.UNKNOWN,
+                            deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
+                        )
+                    )
+                }
+                summaryHashMap.clear()
+            }
+
+            val sessionsAndStages = sleepSessions + sleepStageSummary
+            getSleepSessionResponse(sessionsAndStages)
         }
 
         postData(

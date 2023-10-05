@@ -17,12 +17,16 @@ class HealthConnectPostService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        println("HealthConnectPostService0001")
         ioScope.launch {
+            println("HealthConnectPostService0002")
             SahhaReconfigure(this@HealthConnectPostService)
             startNotification(intent)
             if (stopOnNoAuth()) return@launch
 
             Sahha.di.postHealthConnectDataUseCase { error, successful ->
+                println("HealthConnectPostService0003")
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }
@@ -40,12 +44,15 @@ class HealthConnectPostService : Service() {
         return !Sahha.isAuthenticated
     }
 
-    private fun startNotification(intent: Intent) {
+    private suspend fun startNotification(intent: Intent) {
+        println("HealthConnectPostService0004")
+        val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
+            icon = config.icon,
             title = intent.getStringExtra("title") ?: "Sending data for analysis...",
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
-            "Health Connect Sync",
-            HealthConnectPostService::class.java
+            channelName = "Health Connect Sync",
+            serviceClass = this::class.java
         )
 
         startForeground(
