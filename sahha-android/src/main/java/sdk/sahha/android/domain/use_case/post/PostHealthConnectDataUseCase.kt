@@ -12,13 +12,13 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
@@ -26,7 +26,9 @@ import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.source.Sahha
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalUnit
 import javax.inject.Inject
@@ -40,32 +42,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private val context: Context,
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
+    private val timeManager: SahhaTimeManager,
     @IoScope private val ioScope: CoroutineScope
 ) {
     suspend operator fun invoke(
-        serviceTimer: Long = 5000,
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
-        val timerOrTask = mutableListOf<Job>()
-        val minimumTimer = ioScope.launch {
-            delay(serviceTimer)
-        }
-
-        val queryTask = ioScope.launch {
-            suspendCancellableCoroutine { cont ->
-                ioScope.launch {
-                    println("PostHealthConnectDataUseCase0001")
-                    queryAndPostHealthConnectData { _, _ ->
-                        if (cont.isActive) cont.resume(Unit)
-                    }
-                }
-            }
-        }
-
-        timerOrTask.add(minimumTimer)
-        timerOrTask.add(queryTask)
-        timerOrTask.joinAll()
-        callback(null, true)
+        queryAndPostHealthConnectData(callback)
     }
 
     private fun setNextAlarmTime(
@@ -85,7 +68,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
         val granted = repo.getGrantedPermissions()
 
         granted.forEach {
-            println("querying... " + it)
+            println("Querying... $it")
             when (it) {
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
                     suspendCoroutine<Unit> { cont ->
@@ -102,25 +85,29 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     val localMatch = local.find { l -> l.metaId == record.metaId }
 
                                     if (localMatch == null) {
-                                        println("StepsRecord0002")
                                         postData = saveLocallyAndPrepPost(postData, record)
                                         continue
                                     }
                                     if (localMatch.modifiedDateTime == record.modifiedDateTime) {
-                                        println("StepsRecord0003")
                                         continue
                                     }
 
                                     // Modified time is different
-                                    println("StepsRecord0004")
                                     postData =
                                         saveLocalAndPrepDiffPost(postData, localMatch, record)
                                 }
 
 
+                                if(postData.isEmpty()) {
+                                    cont.resume(Unit)
+                                    this.cancel()
+                                    return@launch
+                                }
+
                                 repo.postStepData(postData) { error, successful ->
                                     if (successful) {
                                         println("StepsRecord0005")
+                                        clearLastMidnightSteps()
                                         saveQuery(StepsRecord::class, successful)
                                     }
 
@@ -316,7 +303,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
         local: StepsHealthConnect,
         newRecord: StepsHealthConnect
     ): MutableList<StepsHealthConnect> {
-        repo.saveStepsHc(local)
+        repo.saveStepsHc(newRecord)
         toPost.add(
             StepsHealthConnect(
                 metaId = newRecord.metaId,
@@ -348,6 +335,15 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             .getReadPermission(dataType)
                 ] ?: timestamp
             )
+    }
+
+    private suspend fun clearLastMidnightSteps() {
+        val date = repo.getLastSuccessfulQuery(StepsRecord::class)?.toLocalDate()
+        date?.also { d ->
+            val lastMidnight = LocalDateTime.of(d, LocalTime.MIDNIGHT)
+            val currentMidnight = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT)
+            if (currentMidnight > lastMidnight) repo.clearStepsBeforeHc(currentMidnight)
+        }
     }
 
     private fun logError(error: String?, method: String, body: String) {

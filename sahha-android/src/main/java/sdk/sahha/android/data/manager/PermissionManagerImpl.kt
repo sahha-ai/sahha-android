@@ -246,7 +246,7 @@ class PermissionManagerImpl @Inject constructor(
             if (shouldUseHealthConnect) {
                 val status = awaitStatus()
                 enabledTasks(status)
-                callback(null, awaitStatus())
+                callback(null, status)
                 return@launch
             }
 
@@ -280,15 +280,15 @@ class PermissionManagerImpl @Inject constructor(
         context.startActivity(intent)
     }
 
-    private fun checkHealthConnectCompatibleAppIsInstalled(
-        context: Context
-    ): Boolean {
+//    private fun checkHealthConnectCompatibleAppIsInstalled(
+//        context: Context
+//    ): Boolean {
 //        val compatibleApps = healthConnectRepo.getHealthConnectCompatibleApps()
 //        compatibleApps.forEach { app ->
 //            if (isAppInstalled(context, app.packageName)) return true
 //        }
-        return false
-    }
+//        return false
+//    }
 
     private fun isAppInstalled(context: Context, packageName: String): Boolean {
         return try {

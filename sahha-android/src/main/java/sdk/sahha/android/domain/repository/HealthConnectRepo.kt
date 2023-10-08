@@ -102,4 +102,5 @@ interface HealthConnectRepo {
     )
 
     suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
+    suspend fun clearStepsBeforeHc(dateTime: LocalDateTime)
 }

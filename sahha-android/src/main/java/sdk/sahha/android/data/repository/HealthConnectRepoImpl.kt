@@ -463,7 +463,8 @@ class HealthConnectRepoImpl @Inject constructor(
             chunk.forEach { session ->
                 session.stages.forEach { stage ->
                     val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
-                    summaryHashMap[stage.stage] = summaryHashMap[stage.stage]?.let { it + duration } ?: duration
+                    summaryHashMap[stage.stage] =
+                        summaryHashMap[stage.stage]?.let { it + duration } ?: duration
                 }
 
                 summaryHashMap.forEach {
@@ -483,7 +484,8 @@ class HealthConnectRepoImpl @Inject constructor(
                             ),
                             recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
                             sourceDevice = mapper.devices(session.metadata.device?.type),
-                            deviceManufacturer = session.metadata.device?.manufacturer ?: Constants.UNKNOWN,
+                            deviceManufacturer = session.metadata.device?.manufacturer
+                                ?: Constants.UNKNOWN,
                             deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
                         )
                     )
@@ -723,6 +725,11 @@ class HealthConnectRepoImpl @Inject constructor(
         movementDao.clearAllStepsHc()
     }
 
+    override suspend fun clearStepsBeforeHc(dateTime: LocalDateTime) {
+        val iso = sahhaTimeManager.localDateTimeToISO(dateTime)
+        movementDao.clearStepsBeforeHc(iso)
+    }
+
     private suspend fun <T : Record> isFirstQuery(dataType: KClass<T>): Boolean {
         return getLastSuccessfulQuery(dataType)?.let { false } ?: true
     }
@@ -771,16 +778,15 @@ class HealthConnectRepoImpl @Inject constructor(
 
     private suspend fun <T : Record> runAfterQueryFromMidnight(dataType: KClass<T>): List<T>? {
         val timestamp = getLastQueryTimeStampForSteps(dataType)
+        val now = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT)
+
         val records = getRecords(
             dataType,
             TimeRangeFilter.after(timestamp)
         )
         if (records.isNullOrEmpty()) return null
 
-        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
-            LocalDateTime.of(
-                LocalDate.now(), LocalTime.MIDNIGHT
-            )
+        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
         return records
     }
 

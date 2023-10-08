@@ -153,19 +153,6 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun startPostWorkersHealthConnect() {
-        val config = sahhaConfigRepo.getConfig()
-        permissionManager.getHealthConnectStatus(context) { _, status ->
-            checkAndStartWorker(config, SahhaSensor.device.ordinal) {
-                startDevicePostWorker(360, DEVICE_POST_WORKER_TAG)
-            }
-
-            if (status == SahhaSensorStatus.enabled) {
-
-            }
-        }
-    }
-
     override fun stopWorkerByTag(workerTag: String) {
         workManager.cancelAllWorkByTag(workerTag)
     }

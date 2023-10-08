@@ -84,4 +84,7 @@ interface MovementDao {
 
     @Query("DELETE FROM StepsHealthConnect")
     suspend fun clearAllStepsHc()
+
+    @Query("DELETE FROM StepsHealthConnect WHERE endDateTime < :dateTimeIso")
+    suspend fun clearStepsBeforeHc(dateTimeIso: String)
 }

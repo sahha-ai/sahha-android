@@ -68,7 +68,6 @@ interface SensorRepo {
 
     suspend fun clearAllStepSessions()
 
-    suspend fun startPostWorkersHealthConnect()
     suspend fun <T> postData(
         data: List<T>,
         sensor: SahhaSensor,

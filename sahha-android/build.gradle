@@ -9,7 +9,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.14.8.11"
+def gVersionName = "0.15.0-local-03"
 
 android {
     compileSdk 34
@@ -37,7 +37,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+//            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

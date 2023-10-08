@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
@@ -146,9 +147,12 @@ class SahhaNotificationManagerImpl(
             .setPriority(_importanceLevel)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setSmallIcon(_icon)
-            .build()
 
-        return notification
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            notification
+                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+                .build()
+        else notification.build()
     }
 
     private fun createNotificationWithIntent(
