@@ -49,7 +49,7 @@ class PermissionManagerImpl @Inject constructor(
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
 
-    private val shouldUseHealthConnect: Boolean
+    override val shouldUseHealthConnect: Boolean
         get() {
             val isAndroid14AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 //            return isAndroid14AndAbove

@@ -34,4 +34,5 @@ interface PermissionManager {
 
     val permissions: Set<String>
     var statusPending: Boolean
+    val shouldUseHealthConnect: Boolean
 }

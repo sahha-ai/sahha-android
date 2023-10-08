@@ -21,6 +21,6 @@ class SahhaAlarmManagerImpl @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.set(AlarmManager.RTC_WAKEUP, setTimeEpochMillis, pendingIntent)
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, setTimeEpochMillis, pendingIntent)
     }
 }

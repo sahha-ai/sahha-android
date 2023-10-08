@@ -32,7 +32,7 @@ class DataCollectionService : Service() {
     }
 
     override fun onDestroy() {
-        if(ioScope.isActive) ioScope.cancel()
+        if (ioScope.isActive) ioScope.cancel()
         unregisterExistingReceiversAndListeners()
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
@@ -52,26 +52,14 @@ class DataCollectionService : Service() {
         try {
             ioScope.launch {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
+                startForegroundNotification()
 
-                val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-                Sahha.di.sahhaNotificationManager.setNewPersistent(
-                    notificationConfig.icon,
-                    notificationConfig.title,
-                    notificationConfig.shortDescription
-                )
-
-                startForegroundService()
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
-                checkAndStartCollectingScreenLockData()
-                checkAndStartCollectingPedometerData()
-                startTimeZoneChangedReceiver()
 
-                intent?.also {
-                    if (it.action == Constants.ACTION_RESTART_SERVICE) {
-                        stopService()
-                        return@launch
-                    }
-                }
+                startTimeZoneChangedReceiver()
+                startDataCollectors()
+
+                checkAndRestartService(intent)
             }
         } catch (e: Exception) {
             stopService()
@@ -79,6 +67,32 @@ class DataCollectionService : Service() {
         }
 
         return START_STICKY
+    }
+
+    private fun checkAndRestartService(intent: Intent?) {
+        intent?.also {
+            if (it.action == Constants.ACTION_RESTART_SERVICE) {
+                stopService()
+            }
+        }
+    }
+
+    private suspend fun startDataCollectors() {
+        checkAndStartCollectingScreenLockData()
+
+        if (!Sahha.di.permissionManager.shouldUseHealthConnect)
+            checkAndStartCollectingPedometerData()
+    }
+
+    private suspend fun startForegroundNotification() {
+        val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+        Sahha.di.sahhaNotificationManager.setNewPersistent(
+            notificationConfig.icon,
+            notificationConfig.title,
+            notificationConfig.shortDescription
+        )
+
+        startForegroundService()
     }
 
     private fun stopService() {
@@ -121,6 +135,9 @@ class DataCollectionService : Service() {
     }
 
     private fun startForegroundService() {
-        startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.sahhaNotificationManager.notification)
+        startForeground(
+            NOTIFICATION_DATA_COLLECTION,
+            Sahha.di.sahhaNotificationManager.notification
+        )
     }
 }
