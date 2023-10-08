@@ -18,18 +18,15 @@ private const val tag = "SahhaAlarmReceiver"
 
 class SahhaAlarmReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
+    private val notificationManager by lazy { Sahha.di.sahhaNotificationManager }
 
     override fun onReceive(context: Context, intent: Intent) {
         scope.launch {
             try {
                 SahhaReconfigure(context)
-                ContextCompat.startForegroundService(
-                    context,
-                    Intent(
-                        context.applicationContext,
-                        HealthConnectPostService::class.java
-                    )
-                )
+                notificationManager.startHealthConnectPostService()
+                notificationManager.startDataCollectionService(null, null, null, null)
+
                 this.cancel()
             } catch (e: Exception) {
                 Log.e(tag, e.message, e)

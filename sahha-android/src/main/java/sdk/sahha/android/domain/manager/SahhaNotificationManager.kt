@@ -30,4 +30,6 @@ interface SahhaNotificationManager {
         isOngoing: Boolean = false,
         icon: Int = R.drawable.ic_sahha_no_bg
     ): Notification
+
+    fun startHealthConnectPostService()
 }

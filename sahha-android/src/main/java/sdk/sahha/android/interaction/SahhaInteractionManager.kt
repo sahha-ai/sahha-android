@@ -53,6 +53,7 @@ internal class SahhaInteractionManager @Inject constructor(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
                 ).joinAll()
 
+                // TODO TO FIX: Crashes when HC not available
 //                userData.processAndPutDeviceInfo(application) { _, _ ->
 //                    permission.checkPermissionsAndStart(
 //                        application, callback
@@ -107,7 +108,6 @@ internal class SahhaInteractionManager @Inject constructor(
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 sensor.startHealthConnectPostWorker(callback)
-                // callback?.invoke(null, true)
             }
         } catch (e: Exception) {
             println("startHealthConnect0003")

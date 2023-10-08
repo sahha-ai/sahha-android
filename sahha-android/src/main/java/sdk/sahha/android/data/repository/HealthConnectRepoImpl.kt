@@ -153,11 +153,6 @@ class HealthConnectRepoImpl @Inject constructor(
         defaultScope.launch {
             val config = configRepo.getConfig()
             if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
-
-                // TODO, use existing dataCollectionService instead
-                tryUnregisterExistingReceiver(SahhaReceiversAndListeners.screenLocks)
-                Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(context)
-
                 sensorRepo.startDevicePostWorker(
                     Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                     Constants.DEVICE_POST_WORKER_TAG

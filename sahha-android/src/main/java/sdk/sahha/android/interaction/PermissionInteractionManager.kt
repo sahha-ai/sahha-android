@@ -56,11 +56,9 @@ class PermissionInteractionManager @Inject constructor(
     suspend fun checkHcAvailabilityAndStart(
         context: Context
     ) {
-        val status = awaitHcStatus(context)
-        println("checkHcAvailabilityAndStart0001")
+        val status = getCorrectSensorStatus(context)
         when (status) {
             SahhaSensorStatus.enabled -> {
-                println("checkHcAvailabilityAndStart0002")
                 stopWorkersAndSetConfig()
                 checkAndStartScreenStateCollection(context)
             }
@@ -70,7 +68,13 @@ class PermissionInteractionManager @Inject constructor(
                 Sahha.sim.startNative()
             }
         }
-        println("checkHcAvailabilityAndStart0003")
+    }
+
+    private suspend fun getCorrectSensorStatus(context: Context): Enum<SahhaSensorStatus> {
+        return when (permissionManager.shouldUseHealthConnect) {
+            true -> awaitHcStatus(context)
+            false -> awaitNativeStatus(context)
+        }
     }
 
     private suspend fun stopWorkersAndSetConfig() {
@@ -86,6 +90,7 @@ class PermissionInteractionManager @Inject constructor(
             tryUnregisterExistingReceiver(context, SahhaReceiversAndListeners.screenLocks)
             Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(context)
 
+            // Data collection service starts on alarm receiver
             sensorRepo.startDevicePostWorker(
                 Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                 Constants.DEVICE_POST_WORKER_TAG
@@ -93,13 +98,19 @@ class PermissionInteractionManager @Inject constructor(
         }
     }
 
+    private suspend fun awaitNativeStatus(context: Context): Enum<SahhaSensorStatus> =
+        suspendCancellableCoroutine { cont ->
+            getSensorStatus(context) { _, status ->
+                if (cont.isActive)
+                    cont.resume(status)
+            }
+        }
+
     private suspend fun awaitHcStatus(
         context: Context,
     ): Enum<SahhaSensorStatus> =
         suspendCancellableCoroutine { cont ->
-            println("awaitHcStatus0001")
             getHcStatus(context) { _, status ->
-                println("awaitHcStatus0002")
                 if (cont.isActive)
                     cont.resume(status)
             }

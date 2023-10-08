@@ -1,19 +1,13 @@
 package sdk.sahha.android.activity.health_connect
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.ui.Modifier
 import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
-import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
 
 internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
@@ -25,11 +19,12 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        healthConnectClient?.also { client ->
-            lifecycleScope.launch {
+        lifecycleScope.launch {
+            SahhaReconfigure(this@SahhaHealthConnectStatusActivity)
+            healthConnectClient?.also { client ->
                 checkPermissions(client)
-            }
-        } ?: healthConnectUnavailable()
+            } ?: healthConnectUnavailable()
+        }
 
 //        setContent {
 //            SahhasdkemptyTheme {

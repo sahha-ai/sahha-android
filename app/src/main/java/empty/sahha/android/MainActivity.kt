@@ -93,6 +93,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
                     var permissionStatus by remember { mutableStateOf("") }
+//                    var permissionStatus = "place holder"
                     var manualPost by remember { mutableStateOf("") }
                     var manualPostDevice by remember { mutableStateOf("") }
                     var analyzeResponse by remember { mutableStateOf("") }

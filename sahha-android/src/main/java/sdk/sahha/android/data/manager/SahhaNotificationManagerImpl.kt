@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -16,6 +17,7 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.service.DataCollectionService
+import sdk.sahha.android.data.service.HealthConnectPostService
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.source.Sahha
 
@@ -30,6 +32,16 @@ class SahhaNotificationManagerImpl(
 
     override fun setSahhaNotification(_notification: Notification) {
         notification = _notification
+    }
+
+    override fun startHealthConnectPostService() {
+        ContextCompat.startForegroundService(
+            context,
+            Intent(
+                context.applicationContext,
+                HealthConnectPostService::class.java
+            )
+        )
     }
 
     override fun startDataCollectionService(
@@ -49,7 +61,8 @@ class SahhaNotificationManagerImpl(
         )
 
         try {
-            context.startForegroundService(
+            ContextCompat.startForegroundService(
+                context,
                 Intent(context.applicationContext, DataCollectionService::class.java)
                     .setAction(Constants.ACTION_RESTART_SERVICE)
             )

@@ -52,8 +52,8 @@ class PermissionManagerImpl @Inject constructor(
     override val shouldUseHealthConnect: Boolean
         get() {
             val isAndroid14AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-//            return isAndroid14AndAbove
-            return true
+            return isAndroid14AndAbove
+//            return true
         }
 
 

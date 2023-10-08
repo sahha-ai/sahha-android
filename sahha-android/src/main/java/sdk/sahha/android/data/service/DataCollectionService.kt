@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
@@ -25,14 +26,14 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
-    private val ioScope by lazy { CoroutineScope(Dispatchers.IO) }
+    private val scope by lazy { CoroutineScope(Dispatchers.Default) }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onDestroy() {
-        if (ioScope.isActive) ioScope.cancel()
+        if (scope.isActive) scope.cancel()
         unregisterExistingReceiversAndListeners()
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
@@ -49,8 +50,8 @@ class DataCollectionService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        try {
-            ioScope.launch {
+        scope.launch {
+            try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
                 startForegroundNotification()
 
@@ -60,10 +61,10 @@ class DataCollectionService : Service() {
                 startDataCollectors()
 
                 checkAndRestartService(intent)
+            } catch (e: Exception) {
+                stopService()
+                Log.w(tag, e.message, e)
             }
-        } catch (e: Exception) {
-            stopService()
-            Log.w(tag, e.message, e)
         }
 
         return START_STICKY
@@ -85,14 +86,15 @@ class DataCollectionService : Service() {
     }
 
     private suspend fun startForegroundNotification() {
-        val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-        Sahha.di.sahhaNotificationManager.setNewPersistent(
-            notificationConfig.icon,
-            notificationConfig.title,
-            notificationConfig.shortDescription
-        )
-
-        startForegroundService()
+        withContext(Dispatchers.Default) {
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+            Sahha.di.sahhaNotificationManager.setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
+            )
+            startForegroundService()
+        }
     }
 
     private fun stopService() {
