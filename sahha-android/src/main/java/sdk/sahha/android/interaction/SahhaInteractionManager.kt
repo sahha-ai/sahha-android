@@ -10,6 +10,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -31,6 +32,7 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val sensor: SensorInteractionManager,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
+    private val sahhaAlarmManager: SahhaAlarmManager,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     internal suspend fun configure(
@@ -53,13 +55,6 @@ internal class SahhaInteractionManager @Inject constructor(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
                 ).joinAll()
 
-                // TODO TO FIX: Crashes when HC not available
-//                userData.processAndPutDeviceInfo(application) { _, _ ->
-//                    permission.checkPermissionsAndStart(
-//                        application, callback
-//                    )
-//                }
-
                 awaitProcessAndPutDeviceInfo(application)
                 permission.checkHcAvailabilityAndStart(application)
             }
@@ -68,11 +63,8 @@ internal class SahhaInteractionManager @Inject constructor(
 
     private suspend fun awaitProcessAndPutDeviceInfo(context: Context) =
         suspendCancellableCoroutine { cont ->
-            println("awaitProcessAndPutDeviceInfo0001")
             defaultScope.launch {
-                println("awaitProcessAndPutDeviceInfo0002")
                 userData.processAndPutDeviceInfo(context) { _, success ->
-                    println("awaitProcessAndPutDeviceInfo0003: $success")
                     if (cont.isActive) cont.resume(success)
                 }
             }
@@ -81,6 +73,7 @@ internal class SahhaInteractionManager @Inject constructor(
     internal fun startNative(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
         try {
             defaultScope.launch {
+                sahhaAlarmManager.stopAlarm(sahhaAlarmManager.pendingIntent)
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
@@ -100,17 +93,13 @@ internal class SahhaInteractionManager @Inject constructor(
     }
 
     internal fun startHealthConnect(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
-        println("startHealthConnect0000")
         try {
-            println("startHealthConnect0001")
             defaultScope.launch {
-                println("startHealthConnect0002")
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
-                sensor.startHealthConnectPostWorker(callback)
+                sensor.startHealthConnectPostSchedule(callback)
             }
         } catch (e: Exception) {
-            println("startHealthConnect0003")
             callback?.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,

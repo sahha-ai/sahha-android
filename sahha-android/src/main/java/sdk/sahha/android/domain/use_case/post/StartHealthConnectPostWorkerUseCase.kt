@@ -9,6 +9,6 @@ class StartHealthConnectPostWorkerUseCase @Inject constructor(
     operator fun invoke(
         callback: ((err: String?, success: Boolean) -> Unit)? = null
     ) {
-        repository.startPostWorker(callback)
+        repository.startHcPostServiceSchedule(callback)
     }
 }

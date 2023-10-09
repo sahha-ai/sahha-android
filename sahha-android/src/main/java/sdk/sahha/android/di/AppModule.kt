@@ -332,10 +332,10 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         permissionHandler: PermissionHandler,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
-        @DefaultScope defaultScope: CoroutineScope,
+        @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
-            defaultScope,
+            mainScope,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger
@@ -545,9 +545,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideSahhaAlarmManager(
+        context: Context,
         alarmManager: AlarmManager
     ): SahhaAlarmManager {
         return SahhaAlarmManagerImpl(
+            context,
             alarmManager
         )
     }

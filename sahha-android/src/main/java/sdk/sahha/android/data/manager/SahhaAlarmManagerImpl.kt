@@ -10,17 +10,22 @@ import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import javax.inject.Inject
 
 class SahhaAlarmManagerImpl @Inject constructor(
+    context: Context,
     private val alarmManager: AlarmManager
 ) : SahhaAlarmManager {
-    override fun setAlarm(context: Context, setTimeEpochMillis: Long) {
-        val alarmIntent = Intent(context, SahhaAlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            Constants.SAHHA_ALARM_RECEIVER,
-            alarmIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+    private val alarmIntent = Intent(context, SahhaAlarmReceiver::class.java)
+    override val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        Constants.SAHHA_ALARM_RECEIVER,
+        alarmIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
 
+    override fun setAlarm(setTimeEpochMillis: Long) {
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, setTimeEpochMillis, pendingIntent)
+    }
+
+    override fun stopAlarm(pendingIntent: PendingIntent) {
+        alarmManager.cancel(pendingIntent)
     }
 }

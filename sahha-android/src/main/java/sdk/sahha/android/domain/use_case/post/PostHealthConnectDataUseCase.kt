@@ -58,7 +58,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
         val nextTimeStampEpochMillis = Instant.now().plus(amountToAdd, timeUnit).toEpochMilli()
 
         Sahha.di.sahhaAlarmManager.setAlarm(
-            context, nextTimeStampEpochMillis
+            nextTimeStampEpochMillis
         )
     }
 

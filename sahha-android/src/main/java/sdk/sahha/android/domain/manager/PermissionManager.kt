@@ -22,16 +22,6 @@ interface PermissionManager {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
 
-    fun getHealthConnectStatus(
-        context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
-    )
-
-    suspend fun checkAndStart(
-        context: Context,
-        callback: ((error: String?, success: Boolean) -> Unit)? = null
-    )
-
     val permissions: Set<String>
     var statusPending: Boolean
     val shouldUseHealthConnect: Boolean

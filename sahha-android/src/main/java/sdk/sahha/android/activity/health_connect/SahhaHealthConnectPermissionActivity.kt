@@ -84,7 +84,6 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
         if (status == SahhaSensorStatus.enabled) {
             println("SahhaHealthConnectPermissionActivity0004")
             Sahha.di.sahhaAlarmManager.setAlarm(
-                this,
                 Instant.now()
                     .plus(10, ChronoUnit.SECONDS)
                     .toEpochMilli()

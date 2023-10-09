@@ -35,7 +35,6 @@ import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
@@ -74,7 +73,6 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -147,7 +145,7 @@ class HealthConnectRepoImpl @Inject constructor(
         return CompatibleApps.values().toSet()
     }
 
-    override fun startPostWorker(
+    override fun startHcPostServiceSchedule(
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         defaultScope.launch {
@@ -160,7 +158,6 @@ class HealthConnectRepoImpl @Inject constructor(
             }
 
             sahhaAlarmManager.setAlarm(
-                context,
                 Instant.now()
                     .plus(10, ChronoUnit.SECONDS)
                     .toEpochMilli()

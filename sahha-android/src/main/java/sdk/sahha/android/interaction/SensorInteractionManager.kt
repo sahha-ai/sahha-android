@@ -62,11 +62,10 @@ class SensorInteractionManager @Inject constructor(
         if (!Sahha.config.postSensorDataManually) startPostWorkersUseCase()
     }
 
-    internal fun startHealthConnectPostWorker(
+    internal fun startHealthConnectPostSchedule(
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-//        startHealthConnectPostWorkerUseCase(callback)
-        healthConnectRepo.startPostWorker(callback)
+        healthConnectRepo.startHcPostServiceSchedule(callback)
     }
 
     internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
