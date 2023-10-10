@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
@@ -285,7 +286,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
             }
         }
 
-        setNextAlarmTime(10, ChronoUnit.MINUTES)
+        setNextAlarmTime(Constants.DEFAULT_ALARM_INTERVAL_MINS, ChronoUnit.MINUTES)
         callback(null, true)
     }
 

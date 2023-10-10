@@ -7,9 +7,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import sdk.sahha.android.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -25,6 +27,7 @@ import kotlin.coroutines.resume
 private const val tag = "SahhaInteractionManager"
 
 internal class SahhaInteractionManager @Inject constructor(
+    @MainScope private val mainScope: CoroutineScope,
     @DefaultScope private val defaultScope: CoroutineScope,
     internal val auth: AuthInteractionManager,
     internal val permission: PermissionInteractionManager,
@@ -61,6 +64,15 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
+    internal fun requestNotificationPermission(
+        context: Context
+    ) = mainScope.launch {
+        permission.manager.launchPermissionActivity(
+            context,
+            SahhaNotificationPermissionActivity::class.java
+        )
+    }
+
     private suspend fun awaitProcessAndPutDeviceInfo(context: Context) =
         suspendCancellableCoroutine { cont ->
             defaultScope.launch {
@@ -77,7 +89,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
-                    async { sensor.startDataCollection(callback) },
+                    async { sensor.startDataCollection() },
                     async { sensor.checkAndStartPostWorkers() },
                 ).joinAll()
                 callback?.invoke(null, true)

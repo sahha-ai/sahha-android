@@ -13,7 +13,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+<!--    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />-->
 
     <!-- Health Connect -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
@@ -24,6 +24,7 @@
     <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE" />
     <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application>
         <activity
@@ -36,6 +37,12 @@
             android:name=".common.SahhaSensorStatusActivity"
             android:exported="false"
             android:label="@string/title_activity_sahha_permission"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <activity
+            android:name=".activity.SahhaNotificationPermissionActivity"
+            android:exported="false"
+            android:label="SahhaNotificationPermissionActivity"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <service

@@ -15,7 +15,7 @@ import kotlin.coroutines.resume
 private const val tag = "PermissionInteractionManager"
 
 class PermissionInteractionManager @Inject constructor(
-    private val permissionManager: PermissionManager,
+    internal val manager: PermissionManager,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
     private val activityCallback: ActivityCallback,
     private val configRepo: SahhaConfigRepo,
@@ -29,14 +29,14 @@ class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        permissionManager.enableSensors(context, callback)
+        manager.enableSensors(context, callback)
     }
 
     fun getSensorStatus(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        permissionManager.getSensorStatus(context, callback)
+        manager.getSensorStatus(context, callback)
     }
 
     suspend fun checkHcAvailabilityAndStart(

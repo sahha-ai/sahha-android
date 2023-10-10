@@ -114,13 +114,6 @@ object Sahha {
         sim.sensor.postSensorData(callback)
     }
 
-    internal fun getSensorData(
-        sensor: SahhaSensor,
-        callback: ((error: String?, success: String?) -> Unit)
-    ) {
-        sim.sensor.getSensorData(sensor, callback)
-    }
-
     fun openAppSettings(context: Context) {
         sim.permission.openAppSettings(context)
     }
@@ -148,5 +141,16 @@ object Sahha {
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         sim.postAppError(framework, message, path, method, body, callback)
+    }
+
+    internal fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        sim.sensor.getSensorData(sensor, callback)
+    }
+
+    internal fun enableNotificationsAsync(context: Context) {
+        sim.requestNotificationPermission(context)
     }
 }

@@ -12,6 +12,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.data.Constants
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
@@ -38,27 +39,19 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        println("SahhaHealthConnectPermissionActivity0001")
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
+                println("SahhaHealthConnectPermissionActivity0002")
                 checkPermissionsAndRun(client)
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
-
-//        setContent {
-//            SahhasdkemptyTheme {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colors.background.copy(alpha = 0f),
-//                ) {}
-//            }
-//        }
     }
 
     override fun onResume() {
         super.onResume()
         if (initialLaunch) {
-            println("SahhaHealthConnectPermissionActivity0003")
+            println("SahhaHealthConnectPermissionActivity0009")
             initialLaunch = false
             return
         }
@@ -68,34 +61,36 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
+        println("SahhaHealthConnectPermissionActivity0003")
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(permissions)) {
-            // Permissions already granted; proceed with inserting or reading data.
+            println("SahhaHealthConnectPermissionActivity0004")
             status = SahhaSensorStatus.enabled
             enabledStatus()
             return
         }
 
         // Else
+        println("SahhaHealthConnectPermissionActivity0005")
         requestPermissions.launch(permissions)
     }
 
     private fun enabledStatus() {
         if (status == SahhaSensorStatus.enabled) {
-            println("SahhaHealthConnectPermissionActivity0004")
+            println("SahhaHealthConnectPermissionActivity0006")
             Sahha.di.sahhaAlarmManager.setAlarm(
                 Instant.now()
-                    .plus(10, ChronoUnit.SECONDS)
+                    .plus(Constants.DEFAULT_INITIAL_ALARM_DELAY_SECS, ChronoUnit.SECONDS)
                     .toEpochMilli()
             )
         }
 
-        println("SahhaHealthConnectPermissionActivity0005")
+        println("SahhaHealthConnectPermissionActivity0007")
         permissionHandler.activityCallback.statusCallback?.invoke(
             null, status
         )
 
-        println("SahhaHealthConnectPermissionActivity0006")
+        println("SahhaHealthConnectPermissionActivity0008")
         finish()
     }
 

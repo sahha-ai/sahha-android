@@ -1,5 +1,7 @@
 package sdk.sahha.android.data.manager
 
+import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -7,8 +9,10 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.os.Build
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -48,8 +52,8 @@ class PermissionManagerImpl @Inject constructor(
     override val shouldUseHealthConnect: Boolean
         get() {
             val isAndroid14AndAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-            return isAndroid14AndAbove
-//            return true
+//            return isAndroid14AndAbove
+            return true
         }
 
 
@@ -64,6 +68,28 @@ class PermissionManagerImpl @Inject constructor(
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
         )
+
+    override fun <T : Activity> launchPermissionActivity(
+        context: Context,
+        activity: Class<T>
+    ) {
+        val intent = Intent(context, activity).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    }
+
+    override fun enableNotifications(
+        activity: AppCompatActivity,
+        callback: ActivityResultCallback<Boolean>
+    ) {
+        val isTiramisuOrAbove = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        if (!isTiramisuOrAbove) return
+
+        val notificationPermission = Manifest.permission.POST_NOTIFICATIONS
+
+        val contract = ActivityResultContracts.RequestPermission()
+        val request = activity.registerForActivityResult(contract, callback)
+        request.launch(notificationPermission)
+    }
 
     override fun setPermissionLogic(activity: ComponentActivity) {
         permission =
@@ -121,23 +147,15 @@ class PermissionManagerImpl @Inject constructor(
             context
         ) { _, _ ->
             if (shouldUseHealthConnect) {
-                sim.startHealthConnect { error, success ->
-                    callback(
-                        error,
-                        if (success) SahhaSensorStatus.enabled
-                        else SahhaSensorStatus.disabled
-                    )
+                sim.startHealthConnect { _, _ ->
+                    getSensorStatus(context, callback)
                 }
                 return@checkAndEnable
             }
 
             // Else start native sensors
-            sim.startNative { error, success ->
-                callback(
-                    error,
-                    if (success) SahhaSensorStatus.enabled
-                    else SahhaSensorStatus.disabled
-                )
+            sim.startNative { _, _ ->
+                getSensorStatus(context, callback)
             }
         }
     }

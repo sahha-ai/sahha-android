@@ -159,7 +159,7 @@ class HealthConnectRepoImpl @Inject constructor(
 
             sahhaAlarmManager.setAlarm(
                 Instant.now()
-                    .plus(10, ChronoUnit.SECONDS)
+                    .plus(Constants.DEFAULT_INITIAL_ALARM_DELAY_SECS, ChronoUnit.SECONDS)
                     .toEpochMilli()
             )
 

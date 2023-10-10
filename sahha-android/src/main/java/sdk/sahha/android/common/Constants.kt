@@ -22,6 +22,10 @@ internal object Constants {
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
 
+    // Alarm
+    const val DEFAULT_ALARM_INTERVAL_MINS = 15L
+    const val DEFAULT_INITIAL_ALARM_DELAY_SECS = 10L
+
     // Post limits
     const val DEFAULT_POST_LIMIT = 40
     const val SLEEP_POST_LIMIT = 46
@@ -87,8 +91,9 @@ internal object Constants {
     const val NOTIFICATION_PERMISSION_SETTINGS = 1003
     const val HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID = "sahha.healthconnect.service"
 
-    // Receivers
+    // Receivers and Request Codes
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000
     const val SLEEP_DATA_REQUEST = 2002
     const val SAHHA_ALARM_RECEIVER = 3000
+    const val NOTIFICATION_REQUEST_CODE = 4000
 }

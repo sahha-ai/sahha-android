@@ -99,7 +99,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
 internal object SahhaPermissions : BroadcastReceiver() {
     private val permissions by lazy { Sahha.di.permissionManager.permissions }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
-    private val defaultScope by lazy { Sahha.di.defaultScope }
+    private val mainScope by lazy { Sahha.di.mainScope }
 
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 
@@ -188,7 +188,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         healthConnectClient?.also { client ->
-            defaultScope.launch {
+            mainScope.launch {
                 checkPermissions(client, callback)
             }
         } ?: healthConnectUnavailable(callback)

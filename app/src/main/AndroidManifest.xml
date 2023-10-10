@@ -22,13 +22,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".TesterService"
-            android:enabled="true"
-            android:exported="true"/>
-
-        <receiver android:name=".MyAlarmReceiver" />
-
     </application>
 
 </manifest>
