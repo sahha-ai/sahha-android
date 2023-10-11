@@ -67,7 +67,6 @@ class PermissionManagerImpl @Inject constructor(
             HealthPermission.getReadPermission(SleepSessionRecord::class),
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
-            HealthPermission.getWritePermission(HeartRateRecord::class),
         )
 
     override fun <T : Activity> launchPermissionActivity(

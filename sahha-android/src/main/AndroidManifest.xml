@@ -26,8 +26,6 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
-    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
-
     <application>
         <activity
             android:name=".common.SahhaSensorPermissionActivity"

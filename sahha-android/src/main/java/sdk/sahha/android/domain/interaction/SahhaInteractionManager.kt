@@ -61,7 +61,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 awaitProcessAndPutDeviceInfo(application)
-                permission.checkHcAvailabilityAndStart(application)
+                permission.checkHcAvailabilityAndStart(application, callback)
                 notifications.startDataCollectionService(null, null, null, null)
                 permission.manager.launchPermissionActivity(
                     application,

@@ -27,6 +27,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalUnit
 import javax.inject.Inject
@@ -308,7 +309,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private suspend fun <T : Record> saveQuery(
         dataType: KClass<T>,
         postIsSuccessful: Boolean,
-        timestamp: LocalDateTime = LocalDateTime.now()
+        timestamp: ZonedDateTime = ZonedDateTime.now()
     ) {
         if (postIsSuccessful)
             repo.saveLastSuccessfulQuery(
@@ -343,7 +344,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private suspend fun awaitAggregateHeartRatePost() {
         suspendCoroutine<Unit> { cont ->
             ioScope.launch {
-                val now = LocalDateTime.now()
+                val now = ZonedDateTime.now()
                 repo.getAggregateRecordsByDuration(
                     setOf(
                         HeartRateRecord.BPM_MIN,
@@ -352,9 +353,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     ),
                     repo.getLastSuccessfulQuery(HeartRateRecord::class)
                         ?.let { lastQuery ->
-                            TimeRangeFilter.Companion.after(lastQuery)
+                            TimeRangeFilter.Companion.after(lastQuery.toLocalDateTime())
                         } ?: TimeRangeFilter.Companion.between(
-                        now.minusDays(1), now
+                        now.minusDays(1).toLocalDateTime(), now.toLocalDateTime()
                     ),
                     Duration.ofMinutes(15)
                 )?.also { records ->
@@ -377,7 +378,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private suspend fun awaitAggregateRestingHeartRatePost() {
         suspendCoroutine<Unit> { cont ->
             ioScope.launch {
-                val now = LocalDateTime.now()
+                val now = ZonedDateTime.now()
                 repo.getAggregateRecordsByDuration(
                     setOf(
                         RestingHeartRateRecord.BPM_MIN,
@@ -386,9 +387,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     ),
                     repo.getLastSuccessfulQuery(RestingHeartRateRecord::class)
                         ?.let { lastQuery ->
-                            TimeRangeFilter.Companion.after(lastQuery)
+                            TimeRangeFilter.Companion.after(lastQuery.toLocalDateTime())
                         } ?: TimeRangeFilter.Companion.between(
-                        now.minusHours(1), now
+                        now.minusHours(1).toLocalDateTime(), now.toLocalDateTime()
                     ),
                     Duration.ofMinutes(15)
                 )?.also { records ->

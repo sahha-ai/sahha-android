@@ -40,13 +40,14 @@ class PermissionInteractionManager @Inject constructor(
     }
 
     suspend fun checkHcAvailabilityAndStart(
-        context: Context
+        context: Context,
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         val status = awaitStatus(context)
         stopWorkersAndSetConfig()
         when (status) {
-            SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect()
-            SahhaSensorStatus.unavailable -> Sahha.sim.startNative()
+            SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
+            else -> callback?.invoke(null, true)
         }
     }
 

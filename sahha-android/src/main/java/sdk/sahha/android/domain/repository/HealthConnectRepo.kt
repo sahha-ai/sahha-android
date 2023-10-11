@@ -19,12 +19,15 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.Period
+import java.time.ZonedDateTime
 import kotlin.reflect.KClass
 
 interface HealthConnectRepo {
     val permissions: Set<String>
+    val successfulQueryTimestamps: HashMap<String, ZonedDateTime>
     fun getHealthConnectCompatibleApps(): Set<CompatibleApps>
     suspend fun getGrantedPermissions(): Set<String>
+
     suspend fun <T> postData(
         data: List<T>,
         chunkLimit: Int,
@@ -56,13 +59,12 @@ interface HealthConnectRepo {
 
     suspend fun <T : Record> getLastSuccessfulQuery(
         recordType: KClass<T>
-    ): LocalDateTime?
+    ): ZonedDateTime?
 
     suspend fun <T : Record> saveLastSuccessfulQuery(
         recordType: KClass<T>,
-        timeStamp: LocalDateTime
+        timeStamp: ZonedDateTime
     )
-
     suspend fun clearQueries(queries: List<HealthConnectQuery>)
     suspend fun clearAllQueries()
     suspend fun saveStepsHc(stepsHc: StepsHealthConnect)
@@ -71,12 +73,11 @@ interface HealthConnectRepo {
     suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>)
     suspend fun clearAllStepsHc()
     suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>?
+
     suspend fun postStepData(
         stepData: List<StepsHealthConnect>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
-
-    val successfulQueryTimestamps: HashMap<String, LocalDateTime>
     suspend fun postSleepSessionData(
         sleepSessionData: List<SleepSessionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?

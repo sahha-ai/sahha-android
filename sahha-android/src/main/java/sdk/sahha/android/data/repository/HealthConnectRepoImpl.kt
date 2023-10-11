@@ -81,6 +81,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -120,7 +121,7 @@ class HealthConnectRepoImpl @Inject constructor(
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
         )
     override val successfulQueryTimestamps =
-        hashMapOf<String, LocalDateTime>()
+        hashMapOf<String, ZonedDateTime>()
 
     private fun getDataClassFromPermission(
         permission: String
@@ -696,28 +697,22 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun <T : Record> getLastSuccessfulQuery(recordType: KClass<T>): LocalDateTime? {
-        println("getLastSuccessfulQuery0001")
+    override suspend fun <T : Record> getLastSuccessfulQuery(recordType: KClass<T>): ZonedDateTime? {
         val permissionString = HealthPermission.getReadPermission(recordType)
         val query = healthConnectConfigDao.getQueryOf(permissionString)
         val instant = query?.let { q ->
-            println("getLastSuccessfulQuery0002")
             Instant.ofEpochMilli(q.lastSuccessfulTimeStampEpochMillis)
         } ?: return null
 
-        println("getLastSuccessfulQuery0003")
-        val zoneId = ZoneId.systemDefault().rules.getOffset(instant)
-
-        return LocalDateTime.ofInstant(instant, zoneId)
+        return ZonedDateTime.ofInstant(instant, sahhaTimeManager.zoneOffset)
     }
 
     override suspend fun <T : Record> saveLastSuccessfulQuery(
         recordType: KClass<T>,
-        timeStamp: LocalDateTime
+        timeStamp: ZonedDateTime
     ) {
         val permissionString = HealthPermission.getReadPermission(recordType)
-        val zoneOffset = ZoneId.systemDefault().rules.getOffset(Instant.now())
-        val epochMillis = timeStamp.toInstant(zoneOffset).toEpochMilli()
+        val epochMillis = timeStamp.toInstant().toEpochMilli()
 
         healthConnectConfigDao.saveQuery(
             HealthConnectQuery(
@@ -814,11 +809,11 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     private suspend fun <T : Record> runInitialQuery(dataType: KClass<T>): List<T>? {
-        val now = LocalDateTime.now()
+        val now = ZonedDateTime.now()
         val records = getRecords(
             dataType,
             TimeRangeFilter.between(
-                now.minusDays(7), now
+                now.minusDays(7).toInstant(), now.toInstant()
             )
         )
         if (records.isNullOrEmpty()) return null
@@ -828,13 +823,14 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     private suspend fun <T : Record> runBeforeQueryAndStoreMidnight(dataType: KClass<T>): List<T>? {
-        val now = LocalDateTime.now()
-        val currentMidnight = LocalDateTime.of(
+        val now = ZonedDateTime.now()
+        val localMidnight = LocalDateTime.of(
             LocalDate.now(), LocalTime.MIDNIGHT
         )
+        val currentMidnight = ZonedDateTime.of(localMidnight, sahhaTimeManager.zoneOffset)
         val records = getRecords(
             dataType,
-            TimeRangeFilter.before(now)
+            TimeRangeFilter.before(now.toLocalDateTime())
         )
         if (records.isNullOrEmpty()) return null
 
@@ -843,26 +839,24 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     private suspend fun <T : Record> runAfterQuery(dataType: KClass<T>): List<T>? {
-        println("runAfterQuery0001")
         val lastQueryTimestamp = getLastSuccessfulQuery(dataType)
 
         return lastQueryTimestamp?.let { timestamp ->
-            println("runAfterQuery0002")
             val records = getRecords(
-                dataType, TimeRangeFilter.after(timestamp)
+                dataType, TimeRangeFilter.after(timestamp.toInstant())
             )
             if (records.isNullOrEmpty()) return@let null
 
-            println("runAfterQuery0003")
             successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
-                LocalDateTime.now()
+                ZonedDateTime.now()
             return@let records
         }
     }
 
     private suspend fun <T : Record> runAfterQueryFromMidnight(dataType: KClass<T>): List<T>? {
         val timestamp = getLastQueryTimeStampForSteps(dataType)
-        val now = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT)
+        val local = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT)
+        val now = ZonedDateTime.of(local, sahhaTimeManager.zoneOffset)
 
         val records = getRecords(
             dataType,
