@@ -81,7 +81,7 @@ class DataCollectionService : Service() {
     private suspend fun startDataCollectors() {
         checkAndStartCollectingScreenLockData()
 
-        if (!Sahha.di.permissionManager.shouldUseHealthConnect)
+        if (!Sahha.di.permissionManager.shouldUseHealthConnect())
             checkAndStartCollectingPedometerData()
     }
 

@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.service
 
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
@@ -92,7 +93,8 @@ class HealthConnectPostService : Service() {
             title = "Sending data for analysis...",
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
             channelName = "Health Connect Sync",
-            serviceClass = this::class.java
+            serviceClass = this::class.java,
+            importance = NotificationManager.IMPORTANCE_DEFAULT
         )
 
         startForeground(

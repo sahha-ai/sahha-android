@@ -2,6 +2,7 @@ package sdk.sahha.android.domain.manager
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -27,7 +28,7 @@ interface PermissionManager {
 
     val permissions: Set<String>
     var statusPending: Boolean
-    val shouldUseHealthConnect: Boolean
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
+    fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean
 }
