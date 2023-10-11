@@ -14,7 +14,7 @@ class SahhaAlarmManagerImpl @Inject constructor(
     private val alarmManager: AlarmManager
 ) : SahhaAlarmManager {
     private val alarmIntent = Intent(context, SahhaAlarmReceiver::class.java)
-    override val pendingIntent = PendingIntent.getBroadcast(
+    override val pendingIntent: PendingIntent = PendingIntent.getBroadcast(
         context,
         Constants.SAHHA_ALARM_RECEIVER,
         alarmIntent,

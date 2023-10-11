@@ -5,8 +5,10 @@ import androidx.health.connect.client.aggregate.AggregationResultGroupedByDurati
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
@@ -103,4 +105,13 @@ interface HealthConnectRepo {
 
     suspend fun <T : Record> getCurrentDayRecords(dataType: KClass<T>): List<T>?
     suspend fun clearStepsBeforeHc(dateTime: LocalDateTime)
+    suspend fun postHeartRateData(
+        heartRateData: List<HeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postRestingHeartRateData(
+        restingHeartRateData: List<RestingHeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
 }

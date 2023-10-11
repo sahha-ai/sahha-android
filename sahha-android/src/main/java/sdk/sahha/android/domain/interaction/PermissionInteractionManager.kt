@@ -1,4 +1,4 @@
-package sdk.sahha.android.interaction
+package sdk.sahha.android.domain.interaction
 
 import android.content.Context
 import kotlinx.coroutines.suspendCancellableCoroutine

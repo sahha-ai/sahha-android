@@ -450,49 +450,103 @@ class HealthConnectRepoImpl @Inject constructor(
         sleepSessionData: List<SleepSessionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val getResponse: suspend (List<SleepSessionRecord>) -> Response<ResponseBody> = { chunk ->
-            val summaryHashMap = hashMapOf<Int, Long>()
-            val sleepStageSummary = mutableListOf<SleepSendDto>()
-            val sleepSessions = chunk.map { it.toSleepSendDto() }
-            chunk.forEach { session ->
-                session.stages.forEach { stage ->
-                    val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
-                    summaryHashMap[stage.stage] =
-                        summaryHashMap[stage.stage]?.let { it + duration } ?: duration
-                }
-
-                summaryHashMap.forEach {
-                    sleepStageSummary.add(
-                        SleepSendDto(
-                            source = session.metadata.dataOrigin.packageName,
-                            sleepStage = mapper.sleepStages(it.key),
-                            durationInMinutes = (it.value / 1000 / 60).toInt(),
-                            startDateTime = sahhaTimeManager.instantToIsoTime(
-                                session.startTime, session.startZoneOffset
-                            ),
-                            endDateTime = sahhaTimeManager.instantToIsoTime(
-                                session.endTime, session.endZoneOffset
-                            ),
-                            modifiedDateTime = sahhaTimeManager.instantToIsoTime(
-                                session.metadata.lastModifiedTime, session.endZoneOffset
-                            ),
-                            recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
-                            sourceDevice = mapper.devices(session.metadata.device?.type),
-                            deviceManufacturer = session.metadata.device?.manufacturer
-                                ?: Constants.UNKNOWN,
-                            deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
-                        )
+        val sleepStages = mutableListOf<SleepSendDto>()
+        val sleepSessions = sleepSessionData.map { it.toSleepSendDto() }
+        sleepSessionData.forEach { session ->
+            session.stages.forEach { s ->
+                sleepStages.add(
+                    SleepSendDto(
+                        source = session.metadata.dataOrigin.packageName,
+                        sleepStage = mapper.sleepStages(s.stage),
+                        startDateTime = sahhaTimeManager.instantToIsoTime(
+                            s.startTime, session.startZoneOffset
+                        ),
+                        endDateTime = sahhaTimeManager.instantToIsoTime(
+                            s.endTime, session.endZoneOffset
+                        ),
+                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
+                            session.metadata.lastModifiedTime, session.endZoneOffset
+                        ),
+                        recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
+                        sourceDevice = mapper.devices(session.metadata.device?.type),
+                        deviceManufacturer = session.metadata.device?.manufacturer
+                            ?: Constants.UNKNOWN,
+                        deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
                     )
-                }
-                summaryHashMap.clear()
+                )
             }
+        }
+        val sessionsAndStages = sleepSessions + sleepStages
 
-            val sessionsAndStages = sleepSessions + sleepStageSummary
-            getSleepSessionResponse(sessionsAndStages)
+        val getResponse: suspend (List<SleepSendDto>) -> Response<ResponseBody> = { chunk ->
+            getSleepSessionResponse(chunk)
         }
 
         postData(
-            sleepSessionData,
+            sessionsAndStages,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postHeartRateData(
+        heartRateData: List<HeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val samplesList = mutableListOf<HeartRateDto>()
+        heartRateData.forEach { record ->
+            record.samples.forEach { sample ->
+                samplesList.add(
+                    HeartRateDto(
+                        dataType = Constants.HEALTH_CONNECT_HEART_RATE,
+                        count = sample.beatsPerMinute,
+                        source = record.metadata.dataOrigin.packageName,
+                        startDateTime = sahhaTimeManager.instantToIsoTime(
+                            sample.time, record.startZoneOffset
+                        ),
+                        endDateTime = sahhaTimeManager.instantToIsoTime(
+                            sample.time, record.endZoneOffset
+                        ),
+                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
+                            record.metadata.lastModifiedTime, record.endZoneOffset
+                        ),
+                        recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
+                        sourceDevice = mapper.devices(record.metadata.device?.type),
+                        deviceManufacturer = record.metadata.device?.manufacturer
+                            ?: Constants.UNKNOWN,
+                        deviceModel = record.metadata.device?.model ?: Constants.UNKNOWN,
+                    )
+                )
+            }
+        }
+
+        val getResponse: suspend (List<HeartRateDto>) -> Response<ResponseBody> = { chunk ->
+            getHeartRateDataResponse(chunk)
+        }
+
+        postData(
+            samplesList,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postRestingHeartRateData(
+        restingHeartRateData: List<RestingHeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<RestingHeartRateRecord>) -> Response<ResponseBody> =
+            { chunk ->
+                val restingRates = chunk.map { it.toHeartRateDto() }
+                getHeartRateDataResponse(restingRates)
+            }
+
+        postData(
+            restingHeartRateData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
             {},
@@ -643,11 +697,15 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     override suspend fun <T : Record> getLastSuccessfulQuery(recordType: KClass<T>): LocalDateTime? {
+        println("getLastSuccessfulQuery0001")
         val permissionString = HealthPermission.getReadPermission(recordType)
         val query = healthConnectConfigDao.getQueryOf(permissionString)
         val instant = query?.let { q ->
+            println("getLastSuccessfulQuery0002")
             Instant.ofEpochMilli(q.lastSuccessfulTimeStampEpochMillis)
         } ?: return null
+
+        println("getLastSuccessfulQuery0003")
         val zoneId = ZoneId.systemDefault().rules.getOffset(instant)
 
         return LocalDateTime.ofInstant(instant, zoneId)
@@ -689,8 +747,35 @@ class HealthConnectRepoImpl @Inject constructor(
         )?.records
     }
 
+    // Placeholder - could potentially use
+//    suspend fun getChangedRecords(
+//        token: String?,
+//        recordTypes: Set<KClass<Record>>
+//    ): List<Record> {
+//        client ?: return listOf()
+//        var t = token ?: client.getChangesToken(
+//            ChangesTokenRequest(
+//                recordTypes = recordTypes,
+//            )
+//        )
+//
+//        val changed = mutableListOf<Record>()
+//        do {
+//            val response = client.getChanges(t)
+//            response.changes.forEach {
+//                when(it) {
+//                    is UpsertionChange -> {
+//                        changed.add(it.record)
+//                    }
+//                }
+//            }
+//            t = response.nextChangesToken
+//        } while (response.hasMore)
+//        return changed
+//    }
+
     override suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>? {
-        return if (isFirstQuery(dataType)) runBeforeQuery(dataType)
+        return if (isFirstQuery(dataType)) runInitialQuery(dataType)
         else runAfterQuery(dataType)
     }
 
@@ -728,11 +813,13 @@ class HealthConnectRepoImpl @Inject constructor(
         return getLastSuccessfulQuery(dataType)?.let { false } ?: true
     }
 
-    private suspend fun <T : Record> runBeforeQuery(dataType: KClass<T>): List<T>? {
+    private suspend fun <T : Record> runInitialQuery(dataType: KClass<T>): List<T>? {
         val now = LocalDateTime.now()
         val records = getRecords(
             dataType,
-            TimeRangeFilter.before(now)
+            TimeRangeFilter.between(
+                now.minusDays(7), now
+            )
         )
         if (records.isNullOrEmpty()) return null
 
@@ -756,14 +843,17 @@ class HealthConnectRepoImpl @Inject constructor(
     }
 
     private suspend fun <T : Record> runAfterQuery(dataType: KClass<T>): List<T>? {
+        println("runAfterQuery0001")
         val lastQueryTimestamp = getLastSuccessfulQuery(dataType)
+
         return lastQueryTimestamp?.let { timestamp ->
+            println("runAfterQuery0002")
             val records = getRecords(
-                dataType,
-                TimeRangeFilter.after(timestamp)
+                dataType, TimeRangeFilter.after(timestamp)
             )
             if (records.isNullOrEmpty()) return@let null
 
+            println("runAfterQuery0003")
             successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
                 LocalDateTime.now()
             return@let records
@@ -789,5 +879,49 @@ class HealthConnectRepoImpl @Inject constructor(
             ?.toLocalDate()
 
         return LocalDateTime.of(timestampDate, LocalTime.MIDNIGHT)
+    }
+
+    // Could potentially use in the future
+    private suspend fun getSummarisedSleepStagesResponse(
+        chunk: List<SleepSessionRecord>
+    ): Response<ResponseBody> {
+        val summaryHashMap = hashMapOf<Int, Long>()
+        val sleepStageSummary = mutableListOf<SleepSendDto>()
+        val sleepSessions = chunk.map { it.toSleepSendDto() }
+        chunk.forEach { session ->
+            session.stages.forEach { stage ->
+                val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
+                summaryHashMap[stage.stage] =
+                    summaryHashMap[stage.stage]?.let { it + duration } ?: duration
+            }
+
+            summaryHashMap.forEach {
+                sleepStageSummary.add(
+                    SleepSendDto(
+                        source = session.metadata.dataOrigin.packageName,
+                        sleepStage = mapper.sleepStages(it.key),
+                        durationInMinutes = (it.value / 1000 / 60).toInt(),
+                        startDateTime = sahhaTimeManager.instantToIsoTime(
+                            session.startTime, session.startZoneOffset
+                        ),
+                        endDateTime = sahhaTimeManager.instantToIsoTime(
+                            session.endTime, session.endZoneOffset
+                        ),
+                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
+                            session.metadata.lastModifiedTime, session.endZoneOffset
+                        ),
+                        recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
+                        sourceDevice = mapper.devices(session.metadata.device?.type),
+                        deviceManufacturer = session.metadata.device?.manufacturer
+                            ?: Constants.UNKNOWN,
+                        deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
+                    )
+                )
+            }
+            summaryHashMap.clear()
+        }
+
+        val sessionsAndStages = sleepSessions + sleepStageSummary
+        return getSleepSessionResponse(sessionsAndStages)
     }
 }

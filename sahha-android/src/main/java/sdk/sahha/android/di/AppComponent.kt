@@ -33,7 +33,7 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
-import sdk.sahha.android.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 

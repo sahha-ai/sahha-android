@@ -13,10 +13,7 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.Constants
@@ -99,7 +96,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 }
 
 
-                                if(postData.isEmpty()) {
+                                if (postData.isEmpty()) {
                                     cont.resume(Unit)
                                     this.cancel()
                                     return@launch
@@ -152,64 +149,49 @@ class PostHealthConnectDataUseCase @Inject constructor(
                 }
 
                 HealthPermission.getReadPermission(HeartRateRecord::class) -> {
+                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0001")
                     suspendCoroutine<Unit> { cont ->
+                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0002")
                         ioScope.launch {
-                            val now = LocalDateTime.now()
-                            repo.getAggregateRecordsByDuration(
-                                setOf(
-                                    HeartRateRecord.BPM_MIN,
-                                    HeartRateRecord.BPM_MAX,
-                                    HeartRateRecord.BPM_AVG,
-                                ),
-                                repo.getLastSuccessfulQuery(HeartRateRecord::class)
-                                    ?.let { lastQuery ->
-                                        TimeRangeFilter.Companion.after(lastQuery)
-                                    } ?: TimeRangeFilter.Companion.between(
-                                    now.minusDays(1), now
-                                ),
-                                Duration.ofMinutes(15)
-                            )?.also { records ->
-                                repo.postHeartRateAggregateData(
-                                    records,
-                                    HeartRateRecord::class
-                                ) { error, successful ->
+                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0003")
+                            repo.getNewRecords(HeartRateRecord::class)?.also { records ->
+                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0004")
+                                repo.postHeartRateData(records) { error, successful ->
+                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0005")
                                     if (successful)
-                                        saveQuery(HeartRateRecord::class, successful, now)
+                                        saveQuery(HeartRateRecord::class, successful)
 
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        records.toString()
+                                    )
+                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0006")
                                     cont.resume(Unit)
                                     this.cancel()
                                 }
+                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0007")
                             } ?: cont.resume(Unit)
+                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0008")
                             this.cancel()
                         }
+                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0009")
                     }
                 }
 
                 HealthPermission.getReadPermission(RestingHeartRateRecord::class) -> {
                     suspendCoroutine<Unit> { cont ->
                         ioScope.launch {
-                            val now = LocalDateTime.now()
-                            repo.getAggregateRecordsByDuration(
-                                setOf(
-                                    RestingHeartRateRecord.BPM_MIN,
-                                    RestingHeartRateRecord.BPM_MAX,
-                                    RestingHeartRateRecord.BPM_AVG,
-                                ),
-                                repo.getLastSuccessfulQuery(RestingHeartRateRecord::class)
-                                    ?.let { lastQuery ->
-                                        TimeRangeFilter.Companion.after(lastQuery)
-                                    } ?: TimeRangeFilter.Companion.between(
-                                    now.minusHours(1), now
-                                ),
-                                Duration.ofMinutes(15)
-                            )?.also { records ->
-                                repo.postHeartRateAggregateData(
-                                    records,
-                                    RestingHeartRateRecord::class
-                                ) { error, successful ->
+                            repo.getNewRecords(RestingHeartRateRecord::class)?.also { records ->
+                                repo.postRestingHeartRateData(records) { error, successful ->
                                     if (successful)
-                                        saveQuery(RestingHeartRateRecord::class, successful)
+                                        saveQuery(HeartRateRecord::class, successful)
 
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        records.toString()
+                                    )
                                     cont.resume(Unit)
                                     this.cancel()
                                 }
@@ -354,6 +336,75 @@ class PostHealthConnectDataUseCase @Inject constructor(
                 method,
                 body
             )
+        }
+    }
+
+    // Potentially re-use in the future
+    private suspend fun awaitAggregateHeartRatePost() {
+        suspendCoroutine<Unit> { cont ->
+            ioScope.launch {
+                val now = LocalDateTime.now()
+                repo.getAggregateRecordsByDuration(
+                    setOf(
+                        HeartRateRecord.BPM_MIN,
+                        HeartRateRecord.BPM_MAX,
+                        HeartRateRecord.BPM_AVG,
+                    ),
+                    repo.getLastSuccessfulQuery(HeartRateRecord::class)
+                        ?.let { lastQuery ->
+                            TimeRangeFilter.Companion.after(lastQuery)
+                        } ?: TimeRangeFilter.Companion.between(
+                        now.minusDays(1), now
+                    ),
+                    Duration.ofMinutes(15)
+                )?.also { records ->
+                    repo.postHeartRateAggregateData(
+                        records,
+                        HeartRateRecord::class
+                    ) { error, successful ->
+                        if (successful)
+                            saveQuery(HeartRateRecord::class, successful, now)
+
+                        cont.resume(Unit)
+                        this.cancel()
+                    }
+                } ?: cont.resume(Unit)
+                this.cancel()
+            }
+        }
+    }
+
+    private suspend fun awaitAggregateRestingHeartRatePost() {
+        suspendCoroutine<Unit> { cont ->
+            ioScope.launch {
+                val now = LocalDateTime.now()
+                repo.getAggregateRecordsByDuration(
+                    setOf(
+                        RestingHeartRateRecord.BPM_MIN,
+                        RestingHeartRateRecord.BPM_MAX,
+                        RestingHeartRateRecord.BPM_AVG,
+                    ),
+                    repo.getLastSuccessfulQuery(RestingHeartRateRecord::class)
+                        ?.let { lastQuery ->
+                            TimeRangeFilter.Companion.after(lastQuery)
+                        } ?: TimeRangeFilter.Companion.between(
+                        now.minusHours(1), now
+                    ),
+                    Duration.ofMinutes(15)
+                )?.also { records ->
+                    repo.postHeartRateAggregateData(
+                        records,
+                        RestingHeartRateRecord::class
+                    ) { error, successful ->
+                        if (successful)
+                            saveQuery(RestingHeartRateRecord::class, successful)
+
+                        cont.resume(Unit)
+                        this.cancel()
+                    }
+                } ?: cont.resume(Unit)
+                this.cancel()
+            }
         }
     }
 }

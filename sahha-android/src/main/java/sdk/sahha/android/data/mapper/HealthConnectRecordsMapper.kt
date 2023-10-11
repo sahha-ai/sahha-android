@@ -124,6 +124,27 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
     )
 }
 
+fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
+    return HeartRateDto(
+        dataType = Constants.HEALTH_CONNECT_RESTING_HEART_RATE,
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        count = beatsPerMinute,
+        source = metadata.dataOrigin.packageName,
+        sourceDevice = mapper.devices(metadata.device?.type),
+        startDateTime = timeManager.instantToIsoTime(
+            time, zoneOffset
+        ),
+        endDateTime = timeManager.instantToIsoTime(
+            time, zoneOffset
+        ),
+        modifiedDateTime = timeManager.instantToIsoTime(
+            metadata.lastModifiedTime, zoneOffset
+        ),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
 fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
     return HeartRateDto(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_AVG,

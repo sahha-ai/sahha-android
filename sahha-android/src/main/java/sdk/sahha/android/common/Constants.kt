@@ -23,11 +23,11 @@ internal object Constants {
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
 
     // Alarm
-    const val DEFAULT_ALARM_INTERVAL_MINS = 15L
+    const val DEFAULT_ALARM_INTERVAL_MINS = 3L
     const val DEFAULT_INITIAL_ALARM_DELAY_SECS = 10L
 
     // Post limits
-    const val DEFAULT_POST_LIMIT = 40
+    const val DEFAULT_POST_LIMIT = 25
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
     const val STEP_SESSION_POST_LIMIT = 40

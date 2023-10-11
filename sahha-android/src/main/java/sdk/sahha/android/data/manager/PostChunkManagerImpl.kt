@@ -19,7 +19,7 @@ class PostChunkManagerImpl : PostChunkManager {
             val success = postData(chunk)
             if (!success) {
                 callback?.invoke(SahhaErrors.failedToPostAllData, false)
-                break
+                return
             }
 
             ++postedChunkCount

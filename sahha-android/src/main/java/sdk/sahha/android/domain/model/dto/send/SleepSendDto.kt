@@ -6,7 +6,7 @@ import sdk.sahha.android.data.Constants
 @Keep
 data class SleepSendDto(
     val source: String,
-    val durationInMinutes: Int,
+    val durationInMinutes: Int? = null,
     val sleepStage: String? = Constants.SLEEP_STAGE_ASLEEP,
     val startDateTime: String,
     val endDateTime: String,

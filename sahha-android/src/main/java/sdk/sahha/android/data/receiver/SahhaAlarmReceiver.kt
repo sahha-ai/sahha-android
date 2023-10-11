@@ -25,7 +25,6 @@ class SahhaAlarmReceiver : BroadcastReceiver() {
             try {
                 SahhaReconfigure(context)
                 notificationManager.startHealthConnectPostService()
-                notificationManager.startDataCollectionService(null, null, null, null)
 
                 this.cancel()
             } catch (e: Exception) {

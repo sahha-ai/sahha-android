@@ -8,7 +8,7 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
 import java.util.*
 

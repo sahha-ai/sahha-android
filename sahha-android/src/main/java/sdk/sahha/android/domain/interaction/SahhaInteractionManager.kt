@@ -1,4 +1,4 @@
-package sdk.sahha.android.interaction
+package sdk.sahha.android.domain.interaction
 
 import android.app.Application
 import android.content.Context
@@ -13,6 +13,7 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -33,6 +34,7 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val permission: PermissionInteractionManager,
     internal val userData: UserDataInteractionManager,
     internal val sensor: SensorInteractionManager,
+    internal val notifications: SahhaNotificationManager,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     private val sahhaAlarmManager: SahhaAlarmManager,
@@ -60,6 +62,11 @@ internal class SahhaInteractionManager @Inject constructor(
 
                 awaitProcessAndPutDeviceInfo(application)
                 permission.checkHcAvailabilityAndStart(application)
+                notifications.startDataCollectionService(null, null, null, null)
+                permission.manager.launchPermissionActivity(
+                    application,
+                    SahhaNotificationPermissionActivity::class.java,
+                )
             }
         }
     }
