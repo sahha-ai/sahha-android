@@ -28,7 +28,7 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(
             metadata.lastModifiedTime,
             endZoneOffset
@@ -45,7 +45,7 @@ fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(
             metadata.lastModifiedTime,
             endZoneOffset
@@ -60,7 +60,7 @@ fun BloodGlucoseRecord.toBloodGlucoseDto(): BloodGlucoseDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         count = level.inMillimolesPerLiter,
         source = metadata.dataOrigin.packageName,
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
@@ -84,7 +84,7 @@ fun BloodPressureRecord.toBloodPressureDiastolicDto(): BloodPressureDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         count = diastolic.inMillimetersOfMercury,
         source = metadata.dataOrigin.packageName,
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
@@ -107,7 +107,7 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         count = systolic.inMillimetersOfMercury,
         source = metadata.dataOrigin.packageName,
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
@@ -130,7 +130,7 @@ fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         count = beatsPerMinute,
         source = metadata.dataOrigin.packageName,
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
@@ -226,7 +226,7 @@ fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        sourceDevice = mapper.devices(metadata.device?.type),
+        deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
         deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
         deviceModel = metadata.device?.model ?: Constants.UNKNOWN

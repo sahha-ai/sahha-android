@@ -34,7 +34,7 @@ fun StepData.toStepDto(): StepDto {
         startDateTime = detectedAt,
         endDateTime = detectedAt,
         modifiedDateTime = detectedAt,
-        sourceDevice = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE)
+        deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE)
     )
 }
 

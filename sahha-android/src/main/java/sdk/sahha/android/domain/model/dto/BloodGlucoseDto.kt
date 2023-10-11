@@ -8,7 +8,7 @@ data class BloodGlucoseDto(
     val recordingMethod: String,
     val count: Double,
     val source: String,
-    val sourceDevice: String,
+    val deviceType: String,
     val startDateTime: String,
     val endDateTime: String,
     val modifiedDateTime: String,

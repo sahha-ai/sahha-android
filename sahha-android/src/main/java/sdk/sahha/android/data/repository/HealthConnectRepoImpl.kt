@@ -80,7 +80,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
@@ -469,7 +468,7 @@ class HealthConnectRepoImpl @Inject constructor(
                             session.metadata.lastModifiedTime, session.endZoneOffset
                         ),
                         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
-                        sourceDevice = mapper.devices(session.metadata.device?.type),
+                        deviceType = mapper.devices(session.metadata.device?.type),
                         deviceManufacturer = session.metadata.device?.manufacturer
                             ?: Constants.UNKNOWN,
                         deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
@@ -514,7 +513,7 @@ class HealthConnectRepoImpl @Inject constructor(
                             record.metadata.lastModifiedTime, record.endZoneOffset
                         ),
                         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
-                        sourceDevice = mapper.devices(record.metadata.device?.type),
+                        deviceType = mapper.devices(record.metadata.device?.type),
                         deviceManufacturer = record.metadata.device?.manufacturer
                             ?: Constants.UNKNOWN,
                         deviceModel = record.metadata.device?.model ?: Constants.UNKNOWN,
@@ -905,7 +904,7 @@ class HealthConnectRepoImpl @Inject constructor(
                             session.metadata.lastModifiedTime, session.endZoneOffset
                         ),
                         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
-                        sourceDevice = mapper.devices(session.metadata.device?.type),
+                        deviceType = mapper.devices(session.metadata.device?.type),
                         deviceManufacturer = session.metadata.device?.manufacturer
                             ?: Constants.UNKNOWN,
                         deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,

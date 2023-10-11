@@ -22,7 +22,7 @@ fun StepSession.toStepDto(): StepDto {
         endDateTime = endDateTime,
         dataType = Constants.CUSTOM_STEP_SESSION_DATA_TYPE,
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
-        sourceDevice = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
+        deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
         modifiedDateTime = endDateTime
     )
 }
