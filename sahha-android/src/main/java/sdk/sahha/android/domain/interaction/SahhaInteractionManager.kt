@@ -24,6 +24,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SahhaInteractionManager"
 
@@ -61,12 +62,12 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 awaitProcessAndPutDeviceInfo(application)
-                permission.checkHcAvailabilityAndStart(application, callback)
-                notifications.startDataCollectionService()
                 permission.manager.launchPermissionActivity(
                     application,
                     SahhaNotificationPermissionActivity::class.java,
                 )
+
+                permission.checkHcAvailabilityAndStart(application, callback)
             }
         }
     }
@@ -116,7 +117,9 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
-                sensor.startHealthConnectPostSchedule(callback)
+                notifications.startDataCollectionService{ _, _ ->
+                    sensor.startHealthConnectPostSchedule(callback)
+                }
             }
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)

@@ -58,11 +58,8 @@ class DataCollectionService : Service() {
     override fun onDestroy() {
         if (scope.isActive) scope.cancel()
         unregisterExistingReceiversAndListeners()
-        am.setAlarm(
-            ZonedDateTime.now()
-                .plusSeconds(5)
-                .toInstant()
-                .toEpochMilli()
+        startForegroundService(
+            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
