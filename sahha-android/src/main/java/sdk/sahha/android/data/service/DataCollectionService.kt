@@ -20,6 +20,7 @@ import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
+import java.time.ZonedDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
@@ -27,26 +28,10 @@ class DataCollectionService : Service() {
     private lateinit var config: SahhaConfiguration
 
     private val scope by lazy { CoroutineScope(Dispatchers.Default) }
+    private val am by lazy { Sahha.di.sahhaAlarmManager }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
-    }
-
-    override fun onDestroy() {
-        if (scope.isActive) scope.cancel()
-        unregisterExistingReceiversAndListeners()
-        startForegroundService(
-            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
-        )
-    }
-
-    private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
-            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
-        ))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -68,6 +53,26 @@ class DataCollectionService : Service() {
         }
 
         return START_STICKY
+    }
+
+    override fun onDestroy() {
+        if (scope.isActive) scope.cancel()
+        unregisterExistingReceiversAndListeners()
+        am.setAlarm(
+            ZonedDateTime.now()
+                .plusSeconds(5)
+                .toInstant()
+                .toEpochMilli()
+        )
+    }
+
+    private fun unregisterExistingReceiversAndListeners() {
+        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
+            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
+        ))
     }
 
     private fun checkAndRestartService(intent: Intent?) {

@@ -8,10 +8,10 @@ interface SahhaNotificationManager {
     var notification: Notification
     fun setSahhaNotification(_notification: Notification)
     fun startDataCollectionService(
-        _icon: Int?,
-        _title: String?,
-        _shortDescription: String?,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        _icon: Int? = null,
+        _title: String? = null,
+        _shortDescription: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     )
 
     fun setNewPersistent(

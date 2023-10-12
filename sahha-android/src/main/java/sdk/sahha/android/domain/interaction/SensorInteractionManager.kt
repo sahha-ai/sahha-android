@@ -74,21 +74,12 @@ class SensorInteractionManager @Inject constructor(
         }
 
         // Pedometer/device checkers are in the service
-        startDataCollectionService(callback = callback)
+        startDataCollectionServiceUseCase(callback = callback)
     }
 
     internal suspend fun postStepSessions(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         repository.postStepSessions(repository.getAllStepSessions(), callback)
-    }
-
-    private fun startDataCollectionService(
-        icon: Int? = null,
-        title: String? = null,
-        shortDescription: String? = null,
-        callback: ((error: String?, success: Boolean) -> Unit)? = null
-    ) {
-        startDataCollectionServiceUseCase(icon, title, shortDescription, callback)
     }
 }
