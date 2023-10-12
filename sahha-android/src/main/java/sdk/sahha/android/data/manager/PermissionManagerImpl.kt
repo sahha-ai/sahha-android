@@ -52,8 +52,8 @@ class PermissionManagerImpl @Inject constructor(
     override fun shouldUseHealthConnect(
         buildVersion: Int
     ): Boolean {
-        return buildVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-//        return true
+//        return buildVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        return true
     }
 
 

@@ -94,7 +94,7 @@ class HealthConnectPostService : Service() {
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
             channelName = "Health Connect Sync",
             serviceClass = this::class.java,
-            importance = NotificationManager.IMPORTANCE_DEFAULT
+//            importance = NotificationManager.IMPORTANCE_DEFAULT
         )
 
         startForeground(
