@@ -1,8 +1,19 @@
 package sdk.sahha.android.domain.interaction
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
@@ -16,22 +27,27 @@ import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
-import sdk.sahha.android.domain.use_case.post.StartHealthConnectPostWorkerUseCase
+import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
+import kotlin.coroutines.resume
+
+private const val tag = "SensorInteractionManager"
 
 class SensorInteractionManager @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
+    private val permissionManager: PermissionManager,
+    private val notificationManager: SahhaNotificationManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
     private val getSensorDataUseCase: GetSensorDataUseCase,
-    private val startHealthConnectPostWorkerUseCase: StartHealthConnectPostWorkerUseCase,
+    private val startHealthConnectBackgroundTasksUseCase: StartHealthConnectBackgroundTasksUseCase,
     private val postHealthConnectDataUseCase: PostHealthConnectDataUseCase,
     internal val postSleepDataUseCase: PostSleepDataUseCase,
     internal val postDeviceDataUseCase: PostDeviceDataUseCase,
@@ -39,12 +55,18 @@ class SensorInteractionManager @Inject constructor(
     internal val startCollectingStepCounterData: StartCollectingStepCounterData,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
+    internal val sahhaErrorLogger: SahhaErrorLogger
 ) {
 
     fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         ioScope.launch {
+            if (permissionManager.shouldUseHealthConnect()) {
+                notificationManager.startHealthConnectPostService()
+                return@launch
+            }
+
             postAllSensorDataUseCase(callback)
         }
     }
@@ -62,10 +84,10 @@ class SensorInteractionManager @Inject constructor(
         if (!Sahha.config.postSensorDataManually) startPostWorkersUseCase()
     }
 
-    internal fun startHealthConnectPostSchedule(
+    internal fun checkAndStartDevicePostWorker(
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        healthConnectRepo.startHcPostServiceSchedule(callback)
+        healthConnectRepo.startDevicePostWorker(callback)
     }
 
     internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
@@ -81,5 +103,44 @@ class SensorInteractionManager @Inject constructor(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         repository.postStepSessions(repository.getAllStepSessions(), callback)
+    }
+
+    internal suspend fun postWithMinimumDelay(callback: (error: String?, successful: Boolean) -> Unit) {
+        var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
+        println("postWithMinimumDelay0001")
+        val query = ioScope.launch {
+            try {
+                println("postWithMinimumDelay0002")
+                withTimeout(300000) {
+                    println("postWithMinimumDelay0003")
+                    result = awaitHealthConnectPost()
+                }
+            } catch (e: TimeoutCancellationException) {
+                result = Pair(e.message, false)
+                Log.e(tag, "Task timed out after 30 seconds")
+            }
+        }
+
+        val minimumTime = ioScope.launch {
+            println("postWithMinimumDelay0004")
+            delay(5000)
+        }
+
+        println("postWithMinimumDelay0005")
+        val minimumTimeOrQuery = listOf(query, minimumTime)
+        minimumTimeOrQuery.joinAll()
+        if (query.isActive) query.cancel()
+        if (minimumTime.isActive) minimumTime.cancel()
+
+        callback(result.first, result.second)
+    }
+
+    private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
+        ioScope.launch {
+            postHealthConnectDataUseCase { error, successful ->
+                if (cont.isActive) cont.resume(Pair(error, successful))
+                this.cancel()
+            }
+        }
     }
 }

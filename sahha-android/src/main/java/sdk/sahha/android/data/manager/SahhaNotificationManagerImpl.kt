@@ -10,6 +10,8 @@ import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -18,7 +20,9 @@ import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.service.DataCollectionService
 import sdk.sahha.android.data.service.HealthConnectPostService
+import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.Sahha
 
 private val tag = "SahhaNotificationManagerImpl"
@@ -26,7 +30,9 @@ private val tag = "SahhaNotificationManagerImpl"
 class SahhaNotificationManagerImpl(
     private val context: Context,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val notificationManager: NotificationManager
+    private val notificationManager: NotificationManager,
+    private val configRepo: SahhaConfigRepo,
+    @DefaultScope private val defaultScope: CoroutineScope
 ) : SahhaNotificationManager {
     override lateinit var notification: Notification
 
@@ -50,32 +56,37 @@ class SahhaNotificationManagerImpl(
         _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        val notificationConfig = runBlocking {
-            Sahha.di.configurationDao.getNotificationConfig()
-        }
+        defaultScope.launch {
+            val config = configRepo.getConfig()
+            if (config.sensorArray.isEmpty()) return@launch
 
-        setNewPersistent(
-            notificationConfig.icon,
-            notificationConfig.title,
-            notificationConfig.shortDescription
-        )
+            val notificationConfig = runBlocking {
+                Sahha.di.configurationDao.getNotificationConfig()
+            }
 
-        try {
-            ContextCompat.startForegroundService(
-                context,
-                Intent(context.applicationContext, DataCollectionService::class.java)
-                    .setAction(Constants.ACTION_RESTART_SERVICE)
+            setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
             )
-            callback?.invoke(null, true)
-        } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
 
-            sahhaErrorLogger.application(
-                e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
-                "startDataCollectionService",
-                "icon: $_icon, title: $_title, shortDescription: $_shortDescription"
-            )
+            try {
+                ContextCompat.startForegroundService(
+                    context,
+                    Intent(context.applicationContext, DataCollectionService::class.java)
+                        .setAction(Constants.ACTION_RESTART_SERVICE)
+                )
+                callback?.invoke(null, true)
+            } catch (e: Exception) {
+                callback?.also { it(e.message, false) }
+
+                sahhaErrorLogger.application(
+                    e.message ?: SahhaErrors.somethingWentWrong,
+                    tag,
+                    "startDataCollectionService",
+                    "icon: $_icon, title: $_title, shortDescription: $_shortDescription"
+                )
+            }
         }
     }
 

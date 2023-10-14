@@ -145,9 +145,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     fun provideSahhaNotificationManager(
         context: Context,
         sahhaErrorLogger: SahhaErrorLogger,
-        notificationManager: NotificationManager
+        notificationManager: NotificationManager,
+        configRepo: SahhaConfigRepo,
+        @DefaultScope defaultScope: CoroutineScope,
     ): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context, sahhaErrorLogger, notificationManager)
+        return SahhaNotificationManagerImpl(context, sahhaErrorLogger, notificationManager, configRepo, defaultScope)
     }
 
     @Singleton
@@ -483,7 +485,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
         chunkManager: PostChunkManager,
-        permissionManager: PermissionManager,
+        notificationManager: SahhaNotificationManager,
         configRepo: SahhaConfigRepo,
         authRepo: AuthRepo,
         sensorRepo: SensorRepo,
@@ -502,7 +504,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             defaultScope,
             ioScope,
             chunkManager,
-            permissionManager,
+            notificationManager,
             configRepo,
             authRepo,
             sensorRepo,

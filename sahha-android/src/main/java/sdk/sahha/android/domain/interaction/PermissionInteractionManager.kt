@@ -39,14 +39,19 @@ class PermissionInteractionManager @Inject constructor(
         manager.getSensorStatus(context, callback)
     }
 
-    suspend fun checkHcAvailabilityAndStart(
+    suspend fun startHcOrNativeDataCollection(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         val status = awaitStatus(context)
         stopWorkersAndSetConfig()
         when (status) {
-            SahhaSensorStatus.enabled -> Sahha.sim.startHealthConnect(callback)
+            SahhaSensorStatus.enabled -> {
+                if (manager.shouldUseHealthConnect())
+                    Sahha.sim.startHealthConnect(callback)
+                else Sahha.sim.startNative(callback)
+            }
+
             else -> callback?.invoke(null, true)
         }
     }

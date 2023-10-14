@@ -24,11 +24,7 @@ class SahhaAlarmReceiver : BroadcastReceiver() {
             try {
                 SahhaReconfigure(context)
 
-                when (pm.shouldUseHealthConnect()) {
-                    true -> nm.startHealthConnectPostService()
-                    false -> nm.startDataCollectionService()
-                }
-
+                nm.startHealthConnectPostService()
                 this.cancel()
             } catch (e: Exception) {
                 Log.e(tag, e.message, e)

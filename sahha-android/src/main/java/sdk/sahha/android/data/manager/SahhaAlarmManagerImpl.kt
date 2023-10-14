@@ -22,7 +22,7 @@ class SahhaAlarmManagerImpl @Inject constructor(
     )
 
     override fun setAlarm(setTimeEpochMillis: Long) {
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, setTimeEpochMillis, pendingIntent)
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setTimeEpochMillis, pendingIntent)
     }
 
     override fun stopAlarm(pendingIntent: PendingIntent) {

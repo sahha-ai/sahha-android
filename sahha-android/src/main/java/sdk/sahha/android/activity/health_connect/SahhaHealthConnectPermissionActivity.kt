@@ -1,23 +1,13 @@
 package sdk.sahha.android.activity.health_connect
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.ui.Modifier
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
-import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     private var initialLaunch = true
@@ -78,11 +68,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     private fun enabledStatus() {
         if (status == SahhaSensorStatus.enabled) {
             println("SahhaHealthConnectPermissionActivity0006")
-            Sahha.di.sahhaAlarmManager.setAlarm(
-                Instant.now()
-                    .plus(Constants.DEFAULT_INITIAL_ALARM_DELAY_SECS, ChronoUnit.SECONDS)
-                    .toEpochMilli()
-            )
+            Sahha.di.sahhaNotificationManager.startHealthConnectPostService()
         }
 
         println("SahhaHealthConnectPermissionActivity0007")

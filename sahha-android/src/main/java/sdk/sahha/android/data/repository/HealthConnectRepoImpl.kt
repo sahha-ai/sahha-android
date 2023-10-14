@@ -57,9 +57,9 @@ import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
-import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
+import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
@@ -81,7 +81,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -95,7 +94,7 @@ class HealthConnectRepoImpl @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
     private val chunkManager: PostChunkManager,
-    private val permissionManager: PermissionManager,
+    private val notificationManager: SahhaNotificationManager,
     private val configRepo: SahhaConfigRepo,
     private val authRepo: AuthRepo,
     private val sensorRepo: SensorRepo,
@@ -145,7 +144,7 @@ class HealthConnectRepoImpl @Inject constructor(
         return CompatibleApps.values().toSet()
     }
 
-    override fun startHcPostServiceSchedule(
+    override fun startDevicePostWorker(
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         defaultScope.launch {
@@ -156,12 +155,6 @@ class HealthConnectRepoImpl @Inject constructor(
                     Constants.DEVICE_POST_WORKER_TAG
                 )
             }
-
-            sahhaAlarmManager.setAlarm(
-                Instant.now()
-                    .plus(Constants.DEFAULT_INITIAL_ALARM_DELAY_SECS, ChronoUnit.SECONDS)
-                    .toEpochMilli()
-            )
 
             callback?.invoke(null, true)
         }

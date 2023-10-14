@@ -36,7 +36,7 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    fun startHcPostServiceSchedule(
+    fun startDevicePostWorker(
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     )
 

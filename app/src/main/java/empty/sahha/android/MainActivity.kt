@@ -1,6 +1,5 @@
 package empty.sahha.android
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -40,6 +39,7 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDateTime
 import java.util.Date
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
                 title = "Foreground Service",
                 shortDescription = "This mainly handles the steps and screen locks"
-            )
+            ),
         )
 
         Sahha.configure(
@@ -125,11 +125,13 @@ class MainActivity : ComponentActivity() {
                                         application,
                                         config
                                     ) { error, success ->
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            error ?: "Successful $success",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        lifecycleScope.launch {
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                error ?: "Successful $success",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }) {
                                     Text("Configure")
