@@ -24,9 +24,7 @@ object Session {
 
     private fun packageNameContains(context: Context, text: String): Boolean {
         val packageName = context.packageName
-
-        return packageName
-            .contains(text)
+        return packageName.contains(text)
     }
 
     internal fun <T> logJsonString(

@@ -36,7 +36,7 @@ import java.time.ZoneOffset
 private const val tag = "SahhaConverterUtility"
 
 @Keep
-internal object SahhaConverterUtility {
+object SahhaConverterUtility {
     private val timeManager by lazy { Sahha.di.timeManager }
 
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
@@ -235,7 +235,7 @@ internal object SahhaConverterUtility {
         return null
     }
 
-    fun <T> convertToJsonString(records: List<T>?): String {
+    internal fun <T> convertToJsonString(records: List<T>?): String {
         return GsonBuilder()
             .setPrettyPrinting()
             .registerTypeAdapter(
@@ -255,7 +255,7 @@ internal object SahhaConverterUtility {
             .toJson(records)
     }
 
-    fun <T> convertToJsonString(record: T?): String {
+    internal fun <T> convertToJsonString(record: T?): String {
         return GsonBuilder()
             .setPrettyPrinting()
             .registerTypeAdapter(

@@ -82,7 +82,7 @@ class UserDataInteractionManager @Inject constructor(
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
                     saveAndPutDeviceInfo(context, callback)
-                callback?.invoke(null, true)
+                else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
