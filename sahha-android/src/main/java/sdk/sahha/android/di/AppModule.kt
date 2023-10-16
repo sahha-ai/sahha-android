@@ -25,7 +25,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants
@@ -149,7 +148,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         configRepo: SahhaConfigRepo,
         @DefaultScope defaultScope: CoroutineScope,
     ): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context, sahhaErrorLogger, notificationManager, configRepo, defaultScope)
+        return SahhaNotificationManagerImpl(
+            context,
+            sahhaErrorLogger,
+            notificationManager,
+            configRepo,
+            defaultScope
+        )
     }
 
     @Singleton
@@ -239,28 +244,28 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         okHttpClient: OkHttpClient,
         apiClass: Class<T>
     ): T {
-        return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_DEV)
-            .client(okHttpClient)
-            .addConverterFactory(gson)
-            .build()
-            .create(apiClass)
+//        return Retrofit.Builder()
+//            .baseUrl(BuildConfig.API_DEV)
+//            .client(okHttpClient)
+//            .addConverterFactory(gson)
+//            .build()
+//            .create(apiClass)
 
-//        return if (environment == SahhaEnvironment.production) {
-//            Retrofit.Builder()
-//                .baseUrl(BuildConfig.API_PROD)
-//                .client(okHttpClient)
-//                .addConverterFactory(gson)
-//                .build()
-//                .create(apiClass)
-//        } else {
-//            Retrofit.Builder()
-//                .baseUrl(BuildConfig.API_SANDBOX)
-//                .client(okHttpClient)
-//                .addConverterFactory(gson)
-//                .build()
-//                .create(apiClass)
-//        }
+        return if (environment == SahhaEnvironment.production) {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.API_PROD)
+                .client(okHttpClient)
+                .addConverterFactory(gson)
+                .build()
+                .create(apiClass)
+        } else {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.API_SANDBOX)
+                .client(okHttpClient)
+                .addConverterFactory(gson)
+                .build()
+                .create(apiClass)
+        }
     }
 
     @Singleton
