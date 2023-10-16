@@ -146,7 +146,7 @@ class PermissionManagerImpl @Inject constructor(
             context
         ) { _, _ ->
             if (shouldUseHealthConnect()) {
-                sim.startHealthConnect { _, _ ->
+                sim.startHealthConnect(context) { _, _ ->
                     getSensorStatus(context, callback)
                 }
                 return@checkAndEnable
@@ -185,7 +185,7 @@ class PermissionManagerImpl @Inject constructor(
     ) {
         if (shouldUseHealthConnect()) {
             SahhaPermissions.getSensorStatusHealthConnect {
-                enabledTasks(it)
+                enabledTasks(context, it)
                 callback(null, it)
             }
             return
@@ -197,9 +197,9 @@ class PermissionManagerImpl @Inject constructor(
         }
     }
 
-    private fun enabledTasks(status: Enum<SahhaSensorStatus>) {
+    private fun enabledTasks(context: Context, status: Enum<SahhaSensorStatus>) {
         when (status) {
-            SahhaSensorStatus.enabled -> sim.startHealthConnect()
+            SahhaSensorStatus.enabled -> sim.startHealthConnect(context)
         }
     }
 

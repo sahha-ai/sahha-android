@@ -1,5 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
+import android.content.Context
+import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
@@ -11,6 +13,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
@@ -42,6 +45,7 @@ class SensorInteractionManager @Inject constructor(
     private val healthConnectRepo: HealthConnectRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
+    private val sensorManager: SensorManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
@@ -64,11 +68,22 @@ class SensorInteractionManager @Inject constructor(
         ioScope.launch {
             if (permissionManager.shouldUseHealthConnect()) {
                 notificationManager.startHealthConnectPostService()
+                callback.invoke(null, true)
                 return@launch
             }
 
             postAllSensorDataUseCase(callback)
         }
+    }
+
+    internal fun unregisterExistingReceiversAndListeners(context: Context) {
+        SahhaErrors.wrapMultipleFunctionTryCatch(
+            tag, "Could not unregister listener", listOf(
+                { context.unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
+                { sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
+                { sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+                { context.unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
+            ))
     }
 
     internal fun getSensorData(

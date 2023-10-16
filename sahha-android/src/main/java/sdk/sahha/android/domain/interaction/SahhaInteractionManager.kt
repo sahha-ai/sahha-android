@@ -111,10 +111,14 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
-    internal fun startHealthConnect(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+    internal fun startHealthConnect(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
         try {
             defaultScope.launch {
                 sensorRepo.stopAllWorkers()
+                sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
                 Sahha.config = sahhaConfigRepo.getConfig()
                 notifications.startDataCollectionService { _, _ ->
                     sensor.checkAndStartDevicePostWorker(callback)

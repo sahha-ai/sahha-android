@@ -20,7 +20,6 @@ import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
-import java.time.ZonedDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
@@ -28,7 +27,7 @@ class DataCollectionService : Service() {
     private lateinit var config: SahhaConfiguration
 
     private val scope by lazy { CoroutineScope(Dispatchers.Default) }
-    private val am by lazy { Sahha.di.sahhaAlarmManager }
+    private val sensors by lazy { Sahha.sim.sensor }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -57,19 +56,10 @@ class DataCollectionService : Service() {
 
     override fun onDestroy() {
         if (scope.isActive) scope.cancel()
-        unregisterExistingReceiversAndListeners()
+        sensors.unregisterExistingReceiversAndListeners(this)
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
-    }
-
-    private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
-            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
-        ))
     }
 
     private fun checkAndRestartService(intent: Intent?) {
