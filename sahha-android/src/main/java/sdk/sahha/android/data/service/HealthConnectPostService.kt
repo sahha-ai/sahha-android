@@ -57,7 +57,6 @@ class HealthConnectPostService : Service() {
 
     private fun stopOnNoAuth(): Boolean {
         if (!Sahha.isAuthenticated) {
-            println("User has no auth, exiting HealthConnectPostService")
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
@@ -66,7 +65,6 @@ class HealthConnectPostService : Service() {
     }
 
     private suspend fun startNotification() {
-        println("HealthConnectPostService0004")
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,

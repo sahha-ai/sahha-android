@@ -3,9 +3,6 @@ package sdk.sahha.android.source
 import android.content.Context
 import android.icu.text.DateFormat
 import androidx.annotation.Keep
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
-import androidx.health.connect.client.records.StepsRecord
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
@@ -151,68 +148,6 @@ object SahhaConverterUtility {
     internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationDto {
         return deviceInfo.toDeviceInformationSendDto()
     }
-
-    // Health Connect conversions
-    internal fun sleepSessionToSleepDto(
-        sleepSessionData: List<SleepSessionRecord>,
-    ): List<SleepDto> {
-        return sleepSessionData.map {
-            SleepDto(
-                id = -1,
-                source = "Constants.HEALTH_CONNECT_SLEEP_SESSION_DATA_SOURCE",
-                sleepStage = "asleep",
-                durationInMinutes = timeManager.calculateDurationFromInstant(it.startTime, it.endTime) ,
-                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
-                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
-            )
-        }
-    }
-
-    internal fun sleepStageToSleepDto(
-        sleepStageData: List<SleepStageRecord>,
-    ): List<SleepDto> {
-        return sleepStageData.map {
-            SleepDto(
-                durationInMinutes = timeManager.calculateDurationFromInstant(it.startTime, it.endTime),
-                startDateTime = timeManager.instantToIsoTime(it.startTime, it.startZoneOffset),
-                endDateTime = timeManager.instantToIsoTime(it.endTime, it.endZoneOffset),
-            )
-        }
-    }
-
-//    internal fun heartRateToHeartRateSendDto(
-//        heartRateData: List<HeartRateRecord>,
-//        createdAt: String
-//    ): List<HeartRateSendDto> {
-//        return heartRateData.map { record ->
-//            HeartRateSendDto(
-//                startDateTime = timeManager.instantToIsoTime(
-//                    record.startTime,
-//                    record.startZoneOffset
-//                ),
-//                endDateTime = timeManager.instantToIsoTime(record.endTime, record.endZoneOffset),
-//                samples = heartRateSampleToHeartRateSampleSendDto(
-//                    record.samples,
-//                    record.startZoneOffset,
-//                    createdAt
-//                )
-//            )
-//        }
-//    }
-//
-//    private fun heartRateSampleToHeartRateSampleSendDto(
-//        heartRateSamples: List<HeartRateRecord.Sample>,
-//        timeOffset: ZoneOffset?,
-//        createdAt: String
-//    ): List<HeartRateSampleSendDto> {
-//        return heartRateSamples.map { sample ->
-//            HeartRateSampleSendDto(
-//                beatsPerMinute = sample.beatsPerMinute,
-//                timestamp = timeManager.instantToIsoTime(sample.time, timeOffset),
-//                createdAt = createdAt
-//            )
-//        }
-//    }
 
     fun stringToDrawableResource(context: Context, iconString: String?): Int? {
         return try {

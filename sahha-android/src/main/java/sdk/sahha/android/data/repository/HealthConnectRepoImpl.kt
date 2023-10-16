@@ -53,7 +53,6 @@ import sdk.sahha.android.data.mapper.toRestingHeartRateMaxDto
 import sdk.sahha.android.data.mapper.toRestingHeartRateMinDto
 import sdk.sahha.android.data.mapper.toSleepSendDto
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.data.worker.post.HealthConnectPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
@@ -168,12 +167,6 @@ class HealthConnectRepoImpl @Inject constructor(
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
         }
-    }
-
-    private fun startHealthConnectWorker(repeatIntervalMinutes: Long, workerTag: String) {
-        val workRequest =
-            getWorkRequest<HealthConnectPostWorker>(repeatIntervalMinutes, workerTag, 60)
-        startWorkManager(workRequest, workerTag)
     }
 
     private fun startWorkManager(

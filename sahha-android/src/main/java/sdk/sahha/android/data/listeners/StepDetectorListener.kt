@@ -50,37 +50,6 @@ class StepDetectorListener : SensorEventListener2 {
                     endDateTime = Sahha.di.timeManager.epochMillisToISO(steps.last())
                 )
             )
-
-            val grantedHealthConnect = Sahha.di.healthConnectRepo.getGrantedPermissions()
-            if (
-                grantedHealthConnect.contains(
-                    HealthPermission
-                        .getWritePermission(StepsRecord::class)
-                )
-            ) {
-                val zoneOffset = ZoneId.systemDefault().rules.getOffset(
-                    Instant.now()
-                )
-                Sahha.di.healthConnectClient
-                    ?.insertRecords(
-                        listOf(
-                            StepsRecord(
-                                startTime = Instant.ofEpochMilli(steps.first()),
-                                startZoneOffset = zoneOffset,
-                                count = steps.count().toLong(),
-                                endTime = Instant.ofEpochMilli(steps.last()),
-                                endZoneOffset = zoneOffset,
-                                metadata = Metadata(
-                                    device = Device(
-                                        manufacturer = Build.MANUFACTURER,
-                                        model = Build.MODEL,
-                                        type = TYPE_PHONE
-                                    )
-                                )
-                            )
-                        )
-                    )
-            }
         }
     }
 

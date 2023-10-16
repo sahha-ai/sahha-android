@@ -20,7 +20,9 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             defaultScope.launch {
                 SahhaReconfigure(context)
-
+                Sahha.sim.permission.startHcOrNativeDataCollection(
+                    context.applicationContext,
+                )
             }
         }
     }

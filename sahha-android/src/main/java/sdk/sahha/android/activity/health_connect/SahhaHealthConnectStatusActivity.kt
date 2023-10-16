@@ -25,21 +25,8 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
                 checkPermissions(client)
             } ?: healthConnectUnavailable()
         }
-
-//        setContent {
-//            SahhasdkemptyTheme {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colors.background.copy(alpha = 0f),
-//                ) {}
-//            }
-//        }
     }
 
-    //    private fun atleastOnePermissionGranted(granted: Set<String>): Boolean {
-//        return granted.any { it in healthConnectRepo.permissions }
-//    }
     private suspend fun checkPermissions(healthConnectClient: HealthConnectClient) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(permissions)) {

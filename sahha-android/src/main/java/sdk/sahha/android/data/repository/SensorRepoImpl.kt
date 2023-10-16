@@ -128,7 +128,6 @@ class SensorRepoImpl @Inject constructor(
                 context,
             ) { _, status ->
                 checkAndStartWorker(config, SahhaSensor.device.ordinal) {
-//                    Sahha.sim.sensor.startDataCollection() // TODO start phone screen collector, not working atm
                     startDevicePostWorker(
                         Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                         DEVICE_POST_WORKER_TAG

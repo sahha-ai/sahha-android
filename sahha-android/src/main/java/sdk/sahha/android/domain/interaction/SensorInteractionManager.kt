@@ -96,7 +96,10 @@ class SensorInteractionManager @Inject constructor(
     }
 
     internal fun checkAndStartPostWorkers() {
-        if (!Sahha.config.postSensorDataManually) startPostWorkersUseCase()
+        if (!Sahha.config.postSensorDataManually) {
+            startPostWorkersUseCase()
+            startDataCollection()
+        }
     }
 
     internal fun checkAndStartDevicePostWorker(
