@@ -1,7 +1,11 @@
 package sdk.sahha.android.source
 
 import android.content.Context
+import android.icu.text.DateFormat
 import androidx.annotation.Keep
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializer
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -23,11 +27,15 @@ import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.toStepDto
+import java.time.Instant
+import java.time.ZoneOffset
 
 private const val tag = "SahhaConverterUtility"
 
 @Keep
 object SahhaConverterUtility {
+    private val timeManager by lazy { Sahha.di.timeManager }
+
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
         val jsonObject = JSONObject()
 
@@ -160,5 +168,45 @@ object SahhaConverterUtility {
             return _json
         }
         return null
+    }
+
+    internal fun <T> convertToJsonString(records: List<T>?): String {
+        return GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(
+                Instant::class.java,
+                JsonSerializer<Instant> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .registerTypeAdapter(
+                ZoneOffset::class.java,
+                JsonSerializer<ZoneOffset> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+            .create()
+            .toJson(records)
+    }
+
+    internal fun <T> convertToJsonString(record: T?): String {
+        return GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(
+                Instant::class.java,
+                JsonSerializer<Instant> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .registerTypeAdapter(
+                ZoneOffset::class.java,
+                JsonSerializer<ZoneOffset> { src, _, _ ->
+                    JsonPrimitive(src.toString())
+                }
+            )
+            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+            .create()
+            .toJson(record)
     }
 }

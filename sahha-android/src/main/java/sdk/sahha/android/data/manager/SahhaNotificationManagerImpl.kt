@@ -4,11 +4,14 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -16,19 +19,35 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.data.service.DataCollectionService
+import sdk.sahha.android.data.service.HealthConnectPostService
+import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.Sahha
 
 private val tag = "SahhaNotificationManagerImpl"
 
 class SahhaNotificationManagerImpl(
     private val context: Context,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val notificationManager: NotificationManager,
+    private val configRepo: SahhaConfigRepo,
+    @DefaultScope private val defaultScope: CoroutineScope
 ) : SahhaNotificationManager {
     override lateinit var notification: Notification
 
     override fun setSahhaNotification(_notification: Notification) {
         notification = _notification
+    }
+
+    override fun startHealthConnectPostService() {
+        ContextCompat.startForegroundService(
+            context,
+            Intent(
+                context.applicationContext,
+                HealthConnectPostService::class.java
+            )
+        )
     }
 
     override fun startDataCollectionService(
@@ -37,30 +56,37 @@ class SahhaNotificationManagerImpl(
         _shortDescription: String?,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        val notificationConfig = runBlocking {
-            Sahha.di.configurationDao.getNotificationConfig()
-        }
+        defaultScope.launch {
+            val config = configRepo.getConfig()
+            if (config.sensorArray.isEmpty()) return@launch
 
-        setNewPersistent(
-            notificationConfig.icon,
-            notificationConfig.title,
-            notificationConfig.shortDescription
-        )
+            val notificationConfig = runBlocking {
+                Sahha.di.configurationDao.getNotificationConfig()
+            }
 
-        try {
-            context.startForegroundService(
-                Intent(context.applicationContext, DataCollectionService::class.java)
-                    .setAction(Constants.ACTION_RESTART_SERVICE)
+            setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
             )
-        } catch (e: Exception) {
-            callback?.also { it(e.message, false) }
 
-            sahhaErrorLogger.application(
-                e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
-                "startDataCollectionService",
-                "icon: $_icon, title: $_title, shortDescription: $_shortDescription"
-            )
+            try {
+                ContextCompat.startForegroundService(
+                    context,
+                    Intent(context.applicationContext, DataCollectionService::class.java)
+                        .setAction(Constants.ACTION_RESTART_SERVICE)
+                )
+                callback?.invoke(null, true)
+            } catch (e: Exception) {
+                callback?.also { it(e.message, false) }
+
+                sahhaErrorLogger.application(
+                    e.message ?: SahhaErrors.somethingWentWrong,
+                    tag,
+                    "startDataCollectionService",
+                    "icon: $_icon, title: $_title, shortDescription: $_shortDescription"
+                )
+            }
         }
     }
 
@@ -95,73 +121,26 @@ class SahhaNotificationManagerImpl(
         )
     }
 
-    private fun createNotification(
-        _service: Service,
-        _channelId: String,
-        _channelName: String,
-        _importanceLevel: Int,
-        _contentTitle: String,
-        _contentText: String,
-        _isOngoing: Boolean,
-        _notificationId: Int
-    ) {
-        val NOTIFICATION_CHANNEL_ID = "sahha.$_channelId"
-        val channelName = _channelName
-        val chan =
-            NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                channelName,
-                _importanceLevel
-            )
-        chan.lightColor = Color.parseColor("#FF333242")
-        chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_service.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationBuilder =
-            NotificationCompat.Builder(_service, NOTIFICATION_CHANNEL_ID)
-        val notification = notificationBuilder.setOngoing(_isOngoing)
-            .setContentTitle(_contentTitle)
-            .setContentText(_contentText)
-            .setPriority(_importanceLevel)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-        _service.startForeground(_notificationId, notification)
-    }
-
-    private fun createNotificationForWorker(
-        _context: Context,
-        _channelId: String,
-        _channelName: String,
-        _importanceLevel: Int,
-        _contentTitle: String,
-        _contentText: String,
-        _isOngoing: Boolean,
-        _notificationId: Int
-    ) {
-        val NOTIFICATION_CHANNEL_ID = "sahha.$_channelId"
-        val channelName = _channelName
-        val chan =
-            NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                channelName,
-                _importanceLevel
-            )
-        chan.lightColor = Color.parseColor("#FF333242")
-        chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
-        val notificationBuilder =
-            NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
-        val notification = notificationBuilder.setOngoing(_isOngoing)
-            .setContentTitle(_contentTitle)
-            .setContentText(_contentText)
-            .setPriority(_importanceLevel)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-
-        manager.notify(_notificationId, notification)
+    override fun <T> setNewNotification(
+        title: String,
+        channelId: String,
+        channelName: String,
+        serviceClass: Class<T>,
+        descriptionText: String,
+        importance: Int,
+        isOngoing: Boolean,
+        icon: Int
+    ): Notification {
+        return getNewNotification(
+            context,
+            channelId,
+            channelName,
+            importance,
+            title,
+            descriptionText,
+            isOngoing,
+            icon
+        )
     }
 
     private fun getNewNotification(
@@ -184,9 +163,7 @@ class SahhaNotificationManagerImpl(
             )
         chan.lightColor = Color.parseColor("#FF333242")
         chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
+        notificationManager.createNotificationChannel(chan)
         val notificationBuilder =
             NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
         val notification = notificationBuilder.setOngoing(_isOngoing)
@@ -195,9 +172,12 @@ class SahhaNotificationManagerImpl(
             .setPriority(_importanceLevel)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setSmallIcon(_icon)
-            .build()
 
-        return notification
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            notification
+                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+                .build()
+        else notification.build()
     }
 
     private fun createNotificationWithIntent(
@@ -233,9 +213,7 @@ class SahhaNotificationManagerImpl(
             )
         chan.lightColor = Color.parseColor("#FF333242")
         chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-        val manager =
-            (_context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(chan)
+        notificationManager.createNotificationChannel(chan)
         val notificationBuilder =
             NotificationCompat.Builder(_context, NOTIFICATION_CHANNEL_ID)
         val notification = notificationBuilder.setOngoing(_isOngoing)
@@ -248,6 +226,6 @@ class SahhaNotificationManagerImpl(
             .setSmallIcon(_icon)
             .build()
 
-        manager.notify(_notificationId, notification)
+        notificationManager.notify(_notificationId, notification)
     }
 }

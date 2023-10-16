@@ -26,7 +26,9 @@ import sdk.sahha.android.data.worker.post.SleepPostWorker
 import sdk.sahha.android.data.worker.post.StepPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
+import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -58,7 +60,8 @@ class SensorRepoImpl @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val mutex: Mutex,
     private val api: SahhaApi,
-    private val chunkManager: PostChunkManager
+    private val chunkManager: PostChunkManager,
+    private val permissionManager: PermissionManager
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val sensorToWorkerAction = mapOf(
@@ -110,13 +113,21 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
+    private fun checkAndStartWorker(
+        config: SahhaConfiguration,
+        sensorId: Int,
+        startWorker: () -> Unit
+    ) {
+        if (config.sensorArray.contains(sensorId)) startWorker()
+    }
+
     override fun startPostWorkersAsync() {
         ioScope.launch {
             val config = sahhaConfigRepo.getConfig()
             Sahha.getSensorStatus(
                 context,
             ) { _, status ->
-                if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+                checkAndStartWorker(config, SahhaSensor.device.ordinal) {
                     startDevicePostWorker(
                         Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                         DEVICE_POST_WORKER_TAG
@@ -124,13 +135,13 @@ class SensorRepoImpl @Inject constructor(
                 }
 
                 if (status == SahhaSensorStatus.enabled) {
-                    if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+                    checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
                         startSleepPostWorker(
                             Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                             SLEEP_POST_WORKER_TAG
                         )
                     }
-                    if (config.sensorArray.contains(SahhaSensor.pedometer.ordinal)) {
+                    checkAndStartWorker(config, SahhaSensor.pedometer.ordinal) {
                         startStepPostWorker(
                             Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                             STEP_POST_WORKER_TAG
@@ -372,7 +383,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
 
-    private suspend fun <T> postData(
+    override suspend fun <T> postData(
         data: List<T>,
         sensor: SahhaSensor,
         chunkLimit: Int,
@@ -400,7 +411,7 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun <T> sendChunk(
+    override suspend fun <T> sendChunk(
         chunk: List<T>,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
         clearData: suspend (List<T>) -> Unit,
@@ -423,7 +434,7 @@ class SensorRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun handleException(
+    override suspend fun handleException(
         e: Exception,
         functionName: String,
         data: String,
@@ -490,6 +501,7 @@ class SensorRepoImpl @Inject constructor(
                         successfulLogic
                     )
                 }
+
                 sahhaErrorLogger.application(
                     SahhaErrors.attemptingTokenRefresh,
                     tag,
@@ -597,6 +609,7 @@ class SensorRepoImpl @Inject constructor(
                 }
 
                 else -> {
+                    callback(null, true)
                     deferredResult.complete(Unit)
                 }
             }

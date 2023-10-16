@@ -1,4 +1,4 @@
-package sdk.sahha.android.interaction
+package sdk.sahha.android.domain.interaction
 
 import android.content.Context
 import android.util.Log
@@ -75,14 +75,14 @@ class UserDataInteractionManager @Inject constructor(
     internal suspend fun processAndPutDeviceInfo(
         context: Context,
         isAuthenticating: Boolean = false,
-        callback: ((error: String?, success: Boolean) -> Unit)? = null
+        callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     ) {
         try {
             val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
                     saveAndPutDeviceInfo(context, callback)
-                callback?.invoke(null, true)
+                else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
@@ -93,7 +93,7 @@ class UserDataInteractionManager @Inject constructor(
     private suspend fun handleSavingDeviceInfo(
         context: Context,
         isAuthenticating: Boolean,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         if (isAuthenticating) {
             saveAndPutDeviceInfo(context, callback)
@@ -105,7 +105,7 @@ class UserDataInteractionManager @Inject constructor(
 
     private suspend fun saveAndPutDeviceInfo(
         context: Context,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         val framework = sahhaConfigRepo.getConfig().framework
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName

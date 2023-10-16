@@ -7,8 +7,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensorStatus
 
 class AutoStartReceiver : BroadcastReceiver() {
     private val defaultScope = CoroutineScope(Default)
@@ -19,7 +20,9 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             defaultScope.launch {
                 SahhaReconfigure(context)
-                Sahha.sim.start()
+                Sahha.sim.permission.startHcOrNativeDataCollection(
+                    context.applicationContext,
+                )
             }
         }
     }

@@ -10,7 +10,7 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.interaction.UserDataInteractionManager
+import sdk.sahha.android.domain.interaction.UserDataInteractionManager
 import javax.inject.Inject
 
 private const val tag = "SaveTokensUseCase"

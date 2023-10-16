@@ -33,13 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDateTime
 import java.util.Date
@@ -56,15 +56,13 @@ class MainActivity : ComponentActivity() {
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
                 title = "Foreground Service",
                 shortDescription = "This mainly handles the steps and screen locks"
-            )
+            ),
         )
 
         Sahha.configure(
             application,
             config,
-        ) { error, success ->
-            Toast.makeText(this, error ?: "Successful $success", Toast.LENGTH_LONG).show()
-        }
+        )
 
         setContent {
             SahhasdkemptyTheme {
@@ -78,6 +76,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     var greeting by remember { mutableStateOf("Android") }
                     var permissionStatus by remember { mutableStateOf("") }
+//                    var permissionStatus = "place holder"
                     var manualPost by remember { mutableStateOf("") }
                     var manualPostDevice by remember { mutableStateOf("") }
                     var analyzeResponse by remember { mutableStateOf("") }
@@ -95,7 +94,7 @@ class MainActivity : ComponentActivity() {
                     Sahha.getSensorStatus(
                         this@MainActivity
                     ) { error, sensorStatus ->
-                        permissionStatus = sensorStatus.name
+                        permissionStatus = error ?: sensorStatus.name
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -104,18 +103,21 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
+//                                NotificationPermission(context = application)
+//                                Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
                                     ) { error, status ->
-                                        permissionStatus = status.name
+                                        permissionStatus = error ?: status.name
                                     }
                                 }) {
-                                    Text("Permission Test")
+                                    Text("Grant Permissions")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -123,11 +125,13 @@ class MainActivity : ComponentActivity() {
                                         application,
                                         config
                                     ) { error, success ->
-                                        Toast.makeText(
-                                            this@MainActivity,
-                                            error ?: "Successful $success",
-                                            Toast.LENGTH_LONG
-                                        ).show()
+                                        lifecycleScope.launch {
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                error ?: "Successful $success",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                     }
                                 }) {
                                     Text("Configure")
@@ -247,8 +251,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                     } else {
-                                        analyzeResponseLocalDateTime =
-                                            SahhaErrors.androidVersionTooLow(8)
+                                        analyzeResponseLocalDateTime = "Version too low"
                                     }
                                 }) {
                                     Text("Analyze")
@@ -417,3 +420,15 @@ fun MyOutlinedTextField(
         })
     )
 }
+
+//@Composable
+//fun NotificationPermission(context: Context) {
+//    Text("Notification Permission")
+//    Spacer(modifier = Modifier.padding(16.dp))
+//    Button(onClick = {
+//        Sahha.enableNotificationsAsync(context)
+//    }) {
+//        Text("Enable")
+//    }
+//    Spacer(modifier = Modifier.padding(16.dp))
+//}

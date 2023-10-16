@@ -14,7 +14,7 @@ import sdk.sahha.android.source.SahhaConverterUtility
 
 private const val tag = "SahhaResponseHandler"
 
-object SahhaResponseHandler {
+internal object SahhaResponseHandler {
     internal fun returnFormattedResponse(
         response: Response<ResponseBody>,
         callback: ((error: String?, success: String?) -> Unit)?,

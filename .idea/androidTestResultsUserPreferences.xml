@@ -49,12 +49,12 @@
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
                 <map>
+                  <entry key="36131JEHN06350" value="120" />
                   <entry key="Duration" value="90" />
+                  <entry key="Google&#10; Pixel 7a" value="120" />
                   <entry key="Pixel_6_API_32" value="120" />
-                  <entry key="Pixel_6_API_34" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
-                  <entry key="Tests" value="400" />
-                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
+                  <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -75,7 +75,91 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1984906377">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1952758307">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1817151789">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1765377829">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1705976830">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1644422397">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1627556610">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
@@ -117,6 +201,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1567273362">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1540485459">
           <value>
             <AndroidTestResultsTableState>
@@ -130,6 +228,21 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1489014000">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1472075751">
           <value>
             <AndroidTestResultsTableState>
@@ -137,7 +250,9 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="458" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -200,7 +315,35 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1244070007">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1187572991">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1134322458">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
@@ -255,6 +398,34 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-952490275">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-920888918">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-871814643">
           <value>
             <AndroidTestResultsTableState>
@@ -295,6 +466,20 @@
           </value>
         </entry>
         <entry key="-801914926">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-772524158">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">
@@ -392,6 +577,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-198310185">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-182022208">
           <value>
             <AndroidTestResultsTableState>
@@ -400,6 +599,20 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
                   <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-158944202">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -503,6 +716,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="50237147">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="91510699">
           <value>
             <AndroidTestResultsTableState>
@@ -554,7 +781,9 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
+                  <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -573,6 +802,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="241109894">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="296349052">
           <value>
             <AndroidTestResultsTableState>
@@ -581,6 +824,21 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6_API_32" value="120" />
                   <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="306449373">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung" value="120" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -628,6 +886,34 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="512952838">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="576516773">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="606613726">
           <value>
             <AndroidTestResultsTableState>
@@ -661,6 +947,7 @@
               <option name="preferredColumnWidths">
                 <map>
                   <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
@@ -765,6 +1052,21 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1109864797">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1164854446">
           <value>
             <AndroidTestResultsTableState>
@@ -848,6 +1150,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1298553529">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1303810630">
           <value>
             <AndroidTestResultsTableState>
@@ -902,6 +1218,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1438446468">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1440950116">
           <value>
             <AndroidTestResultsTableState>
@@ -911,6 +1241,20 @@
                   <entry key="Pixel_6_API_32" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1519618745">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -927,7 +1271,6 @@
                   <entry key="Pixel_6_API_UpsideDownCake" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
-                  <entry key="adb-R9JR907GC0P-qtynkx._adb-tls-connect._tcp." value="120" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
                 </map>
               </option>
@@ -986,6 +1329,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1985860571">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="36131JEHN06350" value="120" />
+                  <entry key="Duration" value="90" />
+                  <entry key="Google&#10; Pixel 7a" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1989231815">
           <value>
             <AndroidTestResultsTableState>
@@ -1000,6 +1357,20 @@
           </value>
         </entry>
         <entry key="2116972987">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="R9JR907GC0P" value="120" />
+                  <entry key="Tests" value="360" />
+                  <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="2122143448">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">

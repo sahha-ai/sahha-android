@@ -7,10 +7,10 @@ class StartDataCollectionServiceUseCase @Inject constructor (
     private val manager: SahhaNotificationManager
 ) {
     operator fun invoke(
-        icon: Int?,
-        title: String?,
-        shortDescription: String?,
-        callback: ((error: String?, success: Boolean) -> Unit)?
+        icon: Int? = null,
+        title: String? = null,
+        shortDescription: String? = null,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         manager.startDataCollectionService(icon, title, shortDescription, callback)
     }

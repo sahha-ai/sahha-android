@@ -1,13 +1,17 @@
 package sdk.sahha.android.di
 
+import android.app.AlarmManager
 import android.app.KeyguardManager
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +25,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.Constants
@@ -31,21 +34,28 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
+import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.data.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
@@ -133,9 +143,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideSahhaNotificationManager(
         context: Context,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        notificationManager: NotificationManager,
+        configRepo: SahhaConfigRepo,
+        @DefaultScope defaultScope: CoroutineScope,
     ): SahhaNotificationManager {
-        return SahhaNotificationManagerImpl(context, sahhaErrorLogger)
+        return SahhaNotificationManagerImpl(
+            context,
+            sahhaErrorLogger,
+            notificationManager,
+            configRepo,
+            defaultScope
+        )
     }
 
     @Singleton
@@ -225,21 +244,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         okHttpClient: OkHttpClient,
         apiClass: Class<T>
     ): T {
-        val shouldBeDevEnv =
-            Session.shouldBeDevEnvironment(
-                context, environment
-            )
+//        return Retrofit.Builder()
+//            .baseUrl(BuildConfig.API_DEV)
+//            .client(okHttpClient)
+//            .addConverterFactory(gson)
+//            .build()
+//            .create(apiClass)
 
-        return if (shouldBeDevEnv) {
-            println("dev")
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.API_DEV)
-                .client(okHttpClient)
-                .addConverterFactory(gson)
-                .build()
-                .create(apiClass)
-        } else if (environment == SahhaEnvironment.production) {
-            println("prod")
+        return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_PROD)
                 .client(okHttpClient)
@@ -247,7 +259,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
                 .build()
                 .create(apiClass)
         } else {
-            println("sandbox")
             Retrofit.Builder()
                 .baseUrl(BuildConfig.API_SANDBOX)
                 .client(okHttpClient)
@@ -283,7 +294,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaErrorLogger: SahhaErrorLogger,
         mutex: Mutex,
         api: SahhaApi,
-        chunkManager: PostChunkManager
+        chunkManager: PostChunkManager,
+        permissionManager: PermissionManager
     ): SensorRepo {
         return SensorRepoImpl(
             context,
@@ -297,23 +309,39 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             sahhaErrorLogger,
             mutex,
             api,
-            chunkManager
+            chunkManager,
+            permissionManager
         )
     }
 
     @Singleton
     @Provides
-    fun providePermissionHandler(): PermissionHandler {
-        return PermissionHandler()
+    fun providePermissionHandler(
+        activityCallback: ActivityCallback
+    ): PermissionHandler {
+        return PermissionHandler(activityCallback)
+    }
+
+    @Singleton
+    @Provides
+    fun provideActivityCallback(): ActivityCallback {
+        return ActivityCallback()
     }
 
     @Singleton
     @Provides
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
-        sahhaErrorLogger: SahhaErrorLogger
+        healthConnectClient: HealthConnectClient?,
+        sahhaErrorLogger: SahhaErrorLogger,
+        @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
-        return PermissionManagerImpl(permissionHandler, sahhaErrorLogger)
+        return PermissionManagerImpl(
+            mainScope,
+            permissionHandler,
+            healthConnectClient,
+            sahhaErrorLogger
+        )
     }
 
     @Singleton
@@ -350,6 +378,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideConfigDao(db: SahhaDatabase): ConfigurationDao {
         return db.configurationDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConfigDao(db: SahhaDatabase): HealthConnectConfigDao {
+        return db.healthConnectConfigDao()
     }
 
     @DefaultScope
@@ -431,5 +465,100 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun providePostChunkManager(): PostChunkManager {
         return PostChunkManagerImpl()
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectClient(context: Context): HealthConnectClient? {
+        return try {
+            HealthConnectClient.getOrCreate(context)
+        } catch (e: Exception) {
+            println("Caught: " + e.message)
+            null
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectRepo(
+        context: Context,
+        @DefaultScope defaultScope: CoroutineScope,
+        @IoScope ioScope: CoroutineScope,
+        chunkManager: PostChunkManager,
+        notificationManager: SahhaNotificationManager,
+        configRepo: SahhaConfigRepo,
+        authRepo: AuthRepo,
+        sensorRepo: SensorRepo,
+        workManager: WorkManager,
+        api: SahhaApi,
+        client: HealthConnectClient?,
+        sahhaErrorLogger: SahhaErrorLogger,
+        sahhaTimeManager: SahhaTimeManager,
+        healthConnectConfigDao: HealthConnectConfigDao,
+        sahhaAlarmManager: SahhaAlarmManager,
+        movementDao: MovementDao,
+        constantsMapper: HealthConnectConstantsMapper
+    ): HealthConnectRepo {
+        return HealthConnectRepoImpl(
+            context,
+            defaultScope,
+            ioScope,
+            chunkManager,
+            notificationManager,
+            configRepo,
+            authRepo,
+            sensorRepo,
+            workManager,
+            api,
+            client,
+            sahhaErrorLogger,
+            sahhaTimeManager,
+            healthConnectConfigDao,
+            sahhaAlarmManager,
+            movementDao,
+            constantsMapper
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideWorkManager(
+        context: Context
+    ): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideNotificationManager(
+        context: Context
+    ): NotificationManager {
+        return context.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideAlarmManager(
+        context: Context
+    ): AlarmManager {
+        return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideSahhaAlarmManager(
+        context: Context,
+        alarmManager: AlarmManager
+    ): SahhaAlarmManager {
+        return SahhaAlarmManagerImpl(
+            context,
+            alarmManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectConstantsMapper(): HealthConnectConstantsMapper {
+        return HealthConnectConstantsMapperImpl()
     }
 }

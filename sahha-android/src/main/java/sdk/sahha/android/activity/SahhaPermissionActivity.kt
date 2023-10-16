@@ -1,4 +1,4 @@
-package sdk.sahha.android
+package sdk.sahha.android.activity
 
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +17,7 @@ import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
 import javax.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SahhaPermissionActivity @Inject constructor(
+internal class SahhaPermissionActivity @Inject constructor(
     private val permissionHandler: PermissionHandler
 ) : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +40,7 @@ class SahhaPermissionActivity @Inject constructor(
         return registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
             val status = convertToActivityStatus(enabled)
             permissionHandler.sensorStatus = status
-            permissionHandler.activityCallback.requestPermission?.let { it(null, status) }
+            permissionHandler.activityCallback.statusCallback?.invoke(null, status)
             finish()
         }
     }

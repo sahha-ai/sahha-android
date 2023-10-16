@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import androidx.health.connect.client.HealthConnectClient
 import dagger.BindsInstance
 import dagger.Component
 import kotlinx.coroutines.CoroutineScope
@@ -21,16 +22,19 @@ import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
+import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Singleton
 
 @Singleton
@@ -53,7 +57,8 @@ internal interface AppComponent {
     val powerManager: PowerManager
     val keyguardManager: KeyguardManager
     val sensorManager: SensorManager
-    val notificationManager: SahhaNotificationManager
+    val sahhaNotificationManager: SahhaNotificationManager
+    val sahhaAlarmManager: SahhaAlarmManager
     val receiverManager: ReceiverManager
     val permissionHandler: PermissionHandler
     val permissionManager: PermissionManager
@@ -87,4 +92,9 @@ internal interface AppComponent {
     val timeManager: SahhaTimeManager
     val encryptor: Encryptor
     val decryptor: Decryptor
+    val healthConnectClient: HealthConnectClient?
+    val healthConnectRepo: HealthConnectRepo
+    val healthConnectConstantsMapper: HealthConnectConstantsMapper
+
+    val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
 }

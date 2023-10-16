@@ -1,6 +1,8 @@
 package sdk.sahha.android.domain.repository
 
 import android.content.Context
+import okhttp3.ResponseBody
+import retrofit2.Response
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -65,4 +67,26 @@ interface SensorRepo {
     )
 
     suspend fun clearAllStepSessions()
+
+    suspend fun <T> postData(
+        data: List<T>,
+        sensor: SahhaSensor,
+        chunkLimit: Int,
+        getResponse: suspend (List<T>) -> Response<ResponseBody>,
+        clearData: suspend (List<T>) -> Unit,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun <T> sendChunk(
+        chunk: List<T>,
+        getResponse: suspend (List<T>) -> Response<ResponseBody>,
+        clearData: suspend (List<T>) -> Unit
+    ): Boolean
+
+    suspend fun handleException(
+        e: Exception,
+        functionName: String,
+        data: String,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
 }

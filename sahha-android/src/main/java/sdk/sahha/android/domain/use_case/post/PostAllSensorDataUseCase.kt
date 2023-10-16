@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.use_case.post
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.interaction.AuthInteractionManager
+import sdk.sahha.android.domain.interaction.AuthInteractionManager
 import javax.inject.Inject
 
 private const val tag = "PostAllSensorDataUseCase"

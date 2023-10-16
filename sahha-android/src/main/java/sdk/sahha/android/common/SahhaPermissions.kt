@@ -11,6 +11,9 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.health.connect.client.HealthConnectClient
+import kotlinx.coroutines.launch
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
@@ -20,7 +23,7 @@ internal const val PERMISSION_ENABLED = "SahhaPermissionActivity.permission_enab
 internal const val PERMISSION_PENDING = "SahhaPermissionActivity.permission_pending"
 internal const val PERMISSION_DISABLED = "SahhaPermissionActivity.permission_disabled"
 
-class SahhaSensorPermissionActivity : AppCompatActivity() {
+internal class SahhaSensorPermissionActivity : AppCompatActivity() {
 
     private val permissionRequestCode = 0
 
@@ -69,7 +72,7 @@ class SahhaSensorPermissionActivity : AppCompatActivity() {
     }
 }
 
-class SahhaSensorStatusActivity : AppCompatActivity() {
+internal class SahhaSensorStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -93,29 +96,48 @@ class SahhaSensorStatusActivity : AppCompatActivity() {
     }
 }
 
-object SahhaPermissions : BroadcastReceiver() {
+internal object SahhaPermissions : BroadcastReceiver() {
+    private val permissions by lazy { Sahha.di.permissionManager.permissions }
+    private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
+    private val mainScope by lazy { Sahha.di.mainScope }
 
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        when {
-            intent.action == PERMISSION_ENABLED -> {
-                context.unregisterReceiver(this)
+        when (intent.action) {
+            PERMISSION_ENABLED -> {
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionEnabled()
             }
 
-            intent.action == PERMISSION_PENDING -> {
-                context.unregisterReceiver(this)
+            PERMISSION_PENDING -> {
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionPending()
             }
 
-            intent.action == PERMISSION_DISABLED -> {
-                context.unregisterReceiver(this)
+            PERMISSION_DISABLED -> {
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionDisabled()
             }
 
             else -> {
-                context.unregisterReceiver(this)
+                try {
+                    context.unregisterReceiver(this)
+                } catch (e: Exception) {
+                    println(e.message)
+                }
                 onPermissionUnavailable()
             }
         }
@@ -139,6 +161,37 @@ object SahhaPermissions : BroadcastReceiver() {
     private fun onPermissionUnavailable() {
         permissionCallback?.invoke(SahhaSensorStatus.unavailable)
         permissionCallback = null
+    }
+
+    private suspend fun checkPermissions(
+        healthConnectClient: HealthConnectClient,
+        callback: ((Enum<SahhaSensorStatus>) -> Unit)?
+    ) {
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        if (granted.containsAll(permissions)) {
+            println("SahhaHealthConnectStatusActivity0001")
+            callback?.invoke(SahhaSensorStatus.enabled)
+            return
+        }
+
+        // Else
+        println("SahhaHealthConnectStatusActivity0002")
+        callback?.invoke(SahhaSensorStatus.disabled)
+    }
+
+    private fun healthConnectUnavailable(callback: ((Enum<SahhaSensorStatus>) -> Unit)?) {
+        println("SahhaHealthConnectStatusActivity0003")
+        callback?.invoke(SahhaSensorStatus.unavailable)
+    }
+
+    fun getSensorStatusHealthConnect(
+        callback: ((Enum<SahhaSensorStatus>) -> Unit)?
+    ) {
+        healthConnectClient?.also { client ->
+            mainScope.launch {
+                checkPermissions(client, callback)
+            }
+        } ?: healthConnectUnavailable(callback)
     }
 
     fun getSensorStatus(
@@ -170,7 +223,6 @@ object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return

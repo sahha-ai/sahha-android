@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
@@ -25,60 +26,67 @@ class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
-    private val ioScope by lazy { CoroutineScope(Dispatchers.IO) }
+    private val scope by lazy { CoroutineScope(Dispatchers.Default) }
+    private val sensors by lazy { Sahha.sim.sensor }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        scope.launch {
+            try {
+                SahhaReconfigure(this@DataCollectionService.applicationContext)
+                startForegroundNotification()
+
+                config = Sahha.di.configurationDao.getConfig() ?: return@launch
+
+                startTimeZoneChangedReceiver()
+                startDataCollectors()
+
+                checkAndRestartService(intent)
+            } catch (e: Exception) {
+                stopService()
+                Log.w(tag, e.message, e)
+            }
+        }
+
+        return START_STICKY
+    }
+
     override fun onDestroy() {
-        if(ioScope.isActive) ioScope.cancel()
-        unregisterExistingReceiversAndListeners()
+        if (scope.isActive) scope.cancel()
+        sensors.unregisterExistingReceiversAndListeners(this)
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
         )
     }
 
-    private fun unregisterExistingReceiversAndListeners() {
-        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
-            { unregisterReceiver(SahhaReceiversAndListeners.screenLocks) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            { unregisterReceiver(SahhaReceiversAndListeners.timezoneDetector) }
-        ))
+    private fun checkAndRestartService(intent: Intent?) {
+        intent?.also {
+            if (it.action == Constants.ACTION_RESTART_SERVICE) {
+                stopService()
+            }
+        }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        try {
-            ioScope.launch {
-                SahhaReconfigure(this@DataCollectionService.applicationContext)
+    private suspend fun startDataCollectors() {
+        checkAndStartCollectingScreenLockData()
 
-                val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-                Sahha.di.notificationManager.setNewPersistent(
-                    notificationConfig.icon,
-                    notificationConfig.title,
-                    notificationConfig.shortDescription
-                )
+        if (!Sahha.di.permissionManager.shouldUseHealthConnect())
+            checkAndStartCollectingPedometerData()
+    }
 
-                startForegroundService()
-                config = Sahha.di.configurationDao.getConfig() ?: return@launch
-                checkAndStartCollectingScreenLockData()
-                checkAndStartCollectingPedometerData()
-                startTimeZoneChangedReceiver()
-
-                intent?.also {
-                    if (it.action == Constants.ACTION_RESTART_SERVICE) {
-                        stopService()
-                        return@launch
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            stopService()
-            Log.w(tag, e.message, e)
+    private suspend fun startForegroundNotification() {
+        withContext(Dispatchers.Default) {
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+            Sahha.di.sahhaNotificationManager.setNewPersistent(
+                notificationConfig.icon,
+                notificationConfig.title,
+                notificationConfig.shortDescription
+            )
+            startForegroundService()
         }
-
-        return START_STICKY
     }
 
     private fun stopService() {
@@ -106,21 +114,24 @@ class DataCollectionService : Service() {
     }
 
     private fun checkAndStartCollectingScreenLockData() {
+        try {
+            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+        }
+
         if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
             Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )
             return
         }
-
-        try {
-            unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
-        } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
-        }
     }
 
     private fun startForegroundService() {
-        startForeground(NOTIFICATION_DATA_COLLECTION, Sahha.di.notificationManager.notification)
+        startForeground(
+            NOTIFICATION_DATA_COLLECTION,
+            Sahha.di.sahhaNotificationManager.notification
+        )
     }
 }

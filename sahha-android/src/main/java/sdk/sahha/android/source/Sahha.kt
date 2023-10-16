@@ -4,12 +4,11 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
 import java.util.*
 
@@ -18,7 +17,7 @@ object Sahha {
     internal lateinit var sim: SahhaInteractionManager
     internal lateinit var di: AppComponent
     internal lateinit var config: SahhaConfiguration
-    internal val notificationManager by lazy { di.notificationManager }
+    internal val notificationManager by lazy { di.sahhaNotificationManager }
 
     val isAuthenticated: Boolean
         get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false
@@ -44,7 +43,7 @@ object Sahha {
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
-        runBlocking {
+        di.defaultScope.launch {
             sim.configure(application, sahhaSettings, callback)
         }
     }
@@ -115,13 +114,6 @@ object Sahha {
         sim.sensor.postSensorData(callback)
     }
 
-    internal fun getSensorData(
-        sensor: SahhaSensor,
-        callback: ((error: String?, success: String?) -> Unit)
-    ) {
-        sim.sensor.getSensorData(sensor, callback)
-    }
-
     fun openAppSettings(context: Context) {
         sim.permission.openAppSettings(context)
     }
@@ -149,5 +141,16 @@ object Sahha {
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         sim.postAppError(framework, message, path, method, body, callback)
+    }
+
+    internal fun getSensorData(
+        sensor: SahhaSensor,
+        callback: ((error: String?, success: String?) -> Unit)
+    ) {
+        sim.sensor.getSensorData(sensor, callback)
+    }
+
+    internal fun enableNotificationsAsync(context: Context) {
+        sim.requestNotificationPermission(context)
     }
 }
