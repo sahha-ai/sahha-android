@@ -40,6 +40,7 @@ import kotlin.coroutines.resume
 private const val tag = "SensorInteractionManager"
 
 class SensorInteractionManager @Inject constructor(
+    private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
@@ -66,7 +67,7 @@ class SensorInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         ioScope.launch {
-            if (permissionManager.shouldUseHealthConnect()) {
+            if (permissionManager.shouldUseHealthConnect(context)) {
                 notificationManager.startHealthConnectPostService()
                 callback.invoke(null, true)
                 return@launch

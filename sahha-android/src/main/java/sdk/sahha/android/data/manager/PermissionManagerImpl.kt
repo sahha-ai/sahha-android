@@ -50,9 +50,17 @@ class PermissionManagerImpl @Inject constructor(
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
     
     override fun shouldUseHealthConnect(
+        context: Context,
         buildVersion: Int
     ): Boolean {
-        return buildVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        val packageName = context.packageName
+        val status = HealthConnectClient.getSdkStatus(context, packageName)
+
+        val sdkIsAvailable = status == HealthConnectClient.SDK_AVAILABLE
+        val clientIsAvailable = healthConnectClient != null
+        val aboveAndroid9 = buildVersion >= Build.VERSION_CODES.O_MR1
+
+        return sdkIsAvailable && clientIsAvailable && aboveAndroid9
     }
 
 
@@ -145,7 +153,7 @@ class PermissionManagerImpl @Inject constructor(
         checkAndEnable(
             context
         ) { _, _ ->
-            if (shouldUseHealthConnect()) {
+            if (shouldUseHealthConnect(context)) {
                 sim.startHealthConnect(context) { _, _ ->
                     getSensorStatus(context, callback)
                 }
@@ -163,7 +171,7 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
-        if (shouldUseHealthConnect()) {
+        if (shouldUseHealthConnect(context)) {
             healthConnectClient?.also {
                 permissionHandler.activityCallback.statusCallback = callback
                 val intent = Intent(context, SahhaHealthConnectPermissionActivity::class.java)
@@ -183,7 +191,7 @@ class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        if (shouldUseHealthConnect()) {
+        if (shouldUseHealthConnect(context)) {
             SahhaPermissions.getSensorStatusHealthConnect {
                 enabledTasks(context, it)
                 callback(null, it)

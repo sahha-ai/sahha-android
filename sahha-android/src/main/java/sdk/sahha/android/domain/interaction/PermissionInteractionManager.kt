@@ -47,7 +47,7 @@ class PermissionInteractionManager @Inject constructor(
         stopWorkersAndSetConfig()
         when (status) {
             SahhaSensorStatus.enabled -> {
-                if (manager.shouldUseHealthConnect())
+                if (manager.shouldUseHealthConnect(context))
                     Sahha.sim.startHealthConnect(context, callback)
                 else Sahha.sim.startNative(callback)
             }

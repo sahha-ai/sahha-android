@@ -1,6 +1,7 @@
 package sdk.sahha.android.data.service
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
@@ -42,7 +43,7 @@ class DataCollectionService : Service() {
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
                 startTimeZoneChangedReceiver()
-                startDataCollectors()
+                startDataCollectors(this@DataCollectionService)
 
                 checkAndRestartService(intent)
             } catch (e: Exception) {
@@ -70,10 +71,10 @@ class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun startDataCollectors() {
+    private suspend fun startDataCollectors(context: Context) {
         checkAndStartCollectingScreenLockData()
 
-        if (!Sahha.di.permissionManager.shouldUseHealthConnect())
+        if (!Sahha.di.permissionManager.shouldUseHealthConnect(context))
             checkAndStartCollectingPedometerData()
     }
 
