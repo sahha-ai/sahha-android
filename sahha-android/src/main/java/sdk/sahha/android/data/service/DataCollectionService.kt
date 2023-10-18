@@ -56,7 +56,7 @@ class DataCollectionService : Service() {
     }
 
     override fun onDestroy() {
-        if (scope.isActive) scope.cancel()
+//        if (scope.isActive) scope.cancel()
         sensors.unregisterExistingReceiversAndListeners(this)
         startForegroundService(
             Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
@@ -74,7 +74,7 @@ class DataCollectionService : Service() {
     private suspend fun startDataCollectors(context: Context) {
         checkAndStartCollectingScreenLockData()
 
-        if (!Sahha.di.permissionManager.shouldUseHealthConnect(context))
+        if (!Sahha.di.permissionManager.shouldUseHealthConnect())
             checkAndStartCollectingPedometerData()
     }
 

@@ -30,5 +30,5 @@ interface PermissionManager {
     var statusPending: Boolean
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
-    fun shouldUseHealthConnect(context: Context, buildVersion: Int = Build.VERSION.SDK_INT): Boolean
+    fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean
 }

@@ -25,7 +25,7 @@ class SahhaAlarmReceiver : BroadcastReceiver() {
                 SahhaReconfigure(context)
 
                 nm.startHealthConnectPostService()
-                this.cancel()
+//                //this.cancel()
             } catch (e: Exception) {
                 Log.e(tag, e.message, e)
                 Sahha.di.sahhaErrorLogger
@@ -35,7 +35,7 @@ class SahhaAlarmReceiver : BroadcastReceiver() {
                         "onReceive",
                         e.stackTraceToString()
                     )
-                this.cancel()
+//                //this.cancel()
             }
         }
     }

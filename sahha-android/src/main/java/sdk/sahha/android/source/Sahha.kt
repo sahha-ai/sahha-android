@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.annotation.Keep
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
@@ -111,6 +112,7 @@ object Sahha {
     fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
+        if(!isAuthenticated) callback(SahhaErrors.noToken, false)
         sim.sensor.postSensorData(callback)
     }
 

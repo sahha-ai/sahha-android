@@ -397,7 +397,7 @@ class HealthConnectRepoImpl @Inject constructor(
                     error?.also { errors.add(it) }
                     successes.add(success)
                     cont.resume(Unit)
-                    this.cancel()
+                    //this.cancel()
                 }
             }
         }
@@ -413,7 +413,7 @@ class HealthConnectRepoImpl @Inject constructor(
                     error?.also { errors.add(it) }
                     successes.add(success)
                     cont.resume(Unit)
-                    this.cancel()
+                    //this.cancel()
                 }
             }
         }
