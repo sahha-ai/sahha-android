@@ -52,7 +52,10 @@ class PermissionManagerImpl @Inject constructor(
     override fun shouldUseHealthConnect(
         buildVersion: Int
     ): Boolean {
-        return buildVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        val clientIsAvailable = healthConnectClient != null
+        val isAboveAndroid8 = buildVersion >= Build.VERSION_CODES.P
+
+        return clientIsAvailable && isAboveAndroid8
     }
 
 

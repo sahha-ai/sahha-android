@@ -9,6 +9,8 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Device.Companion.TYPE_PHONE
 import androidx.health.connect.client.records.metadata.Metadata
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -22,6 +24,7 @@ class StepDetectorListener : SensorEventListener2 {
     internal val steps = mutableListOf<Long>()
     internal var sessionJob: Job? = null
     private var timestampEpoch = 0L
+    private val listenerScope = CoroutineScope(Dispatchers.IO)
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         timestampEpoch = Sahha.di.timeManager.nowInEpoch()
         incrementSessionSteps()
@@ -34,7 +37,7 @@ class StepDetectorListener : SensorEventListener2 {
 
     private fun processSession() {
         sessionJob?.cancel()
-        sessionJob = Sahha.di.ioScope.launch {
+        sessionJob = listenerScope.launch {
             delay(Constants.STEP_SESSION_COOLDOWN_MILLIS)
             storeSessionSteps()
             resetSessionSteps()

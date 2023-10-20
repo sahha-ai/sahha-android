@@ -40,6 +40,7 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
 
 fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
     return SleepSendDto(
+        sleepStage = mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING),
         source = metadata.dataOrigin.packageName,
         durationInMinutes = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toInt(),
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),

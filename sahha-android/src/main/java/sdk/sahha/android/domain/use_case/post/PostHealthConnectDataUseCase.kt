@@ -95,7 +95,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
 
                                         if (postData.isEmpty()) {
                                             cont.resume(Unit)
-                                            this.cancel()
+                                            //this.cancel()
                                             return@launch
                                         }
 
@@ -114,10 +114,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 postData.toString()
                                             )
                                             cont.resume(Unit)
-                                            this.cancel()
+                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -138,10 +138,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 records.toString()
                                             )
                                             cont.resume(Unit)
-                                            this.cancel()
+                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -168,12 +168,12 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             )
                                             println("HealthPermission.getReadPermission(HeartRateRecord::class)0006")
                                             cont.resume(Unit)
-                                            this.cancel()
+                                            //this.cancel()
                                         }
                                         println("HealthPermission.getReadPermission(HeartRateRecord::class)0007")
                                     } ?: cont.resume(Unit)
                                     println("HealthPermission.getReadPermission(HeartRateRecord::class)0008")
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                                 println("HealthPermission.getReadPermission(HeartRateRecord::class)0009")
                             }
@@ -196,10 +196,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                     records.toString()
                                                 )
                                                 cont.resume(Unit)
-                                                this.cancel()
+                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -224,10 +224,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                     records.toString()
                                                 )
                                                 cont.resume(Unit)
-                                                this.cancel()
+                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -248,10 +248,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 records.toString()
                                             )
                                             cont.resume(Unit)
-                                            this.cancel()
+                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -271,10 +271,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 results.add(successful)
                                                 error?.also { e -> errors.add(e) }
                                                 cont.resume(Unit)
-                                                this.cancel()
+                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    //this.cancel()
                                 }
                             }
                         }
@@ -403,10 +403,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(HeartRateRecord::class, successful, now)
 
                         cont.resume(Unit)
-                        this.cancel()
+                        //this.cancel()
                     }
                 } ?: cont.resume(Unit)
-                this.cancel()
+                //this.cancel()
             }
         }
     }
@@ -437,10 +437,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(RestingHeartRateRecord::class, successful)
 
                         cont.resume(Unit)
-                        this.cancel()
+                        //this.cancel()
                     }
                 } ?: cont.resume(Unit)
-                this.cancel()
+                //this.cancel()
             }
         }
     }

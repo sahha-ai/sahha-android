@@ -4,6 +4,7 @@ import android.content.Context
 import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -40,6 +41,7 @@ import kotlin.coroutines.resume
 private const val tag = "SensorInteractionManager"
 
 class SensorInteractionManager @Inject constructor(
+    private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
@@ -125,8 +127,9 @@ class SensorInteractionManager @Inject constructor(
 
     internal suspend fun postWithMinimumDelay(callback: (error: String?, successful: Boolean) -> Unit) {
         var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
+        val postScope = CoroutineScope(Dispatchers.IO)
         println("postWithMinimumDelay0001")
-        val query = ioScope.launch {
+        val query = postScope.launch {
             try {
                 println("postWithMinimumDelay0002")
                 withTimeout(300000) {
@@ -139,7 +142,7 @@ class SensorInteractionManager @Inject constructor(
             }
         }
 
-        val minimumTime = ioScope.launch {
+        val minimumTime = postScope.launch {
             println("postWithMinimumDelay0004")
             delay(5000)
         }
@@ -157,7 +160,7 @@ class SensorInteractionManager @Inject constructor(
         ioScope.launch {
             postHealthConnectDataUseCase { error, successful ->
                 if (cont.isActive) cont.resume(Pair(error, successful))
-                this.cancel()
+                //this.cancel()
             }
         }
     }
