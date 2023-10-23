@@ -8,9 +8,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
@@ -160,12 +162,15 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
-        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val masterKeyAlias =
+            MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
         return EncryptedSharedPreferences.create(
+            context,
             "encrypted_prefs",
             masterKeyAlias,
-            context,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
