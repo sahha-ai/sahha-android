@@ -35,12 +35,15 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSettings
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.Date
 import kotlin.random.Random
 
@@ -278,18 +281,52 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     val rnd = Random.Default
-                                    val genders = listOf("Male", "Female", "Gender diverse")
+                                    val gendersList = listOf("Male", "Female", "Gender diverse")
+                                    val incomeRangeList = listOf(
+                                        "Up to $15,000",
+                                        "Up to $25,000",
+                                        "Up to $50,000",
+                                        "Up to $75,000",
+                                        "Up to $100,000",
+                                        "Up to $125,000",
+                                        "Up to $150,000",
+                                        "Up to $175,000",
+                                        "Up to and over $200,000",
+                                    )
+                                    val educationList = listOf(
+                                        "Primary",
+                                        "Secondary",
+                                        "Tertiary",
+                                        "Masters",
+                                        "Doctoral",
+                                        "Trade",
+                                    )
+                                    val relationshipList = listOf(
+                                        "Single",
+                                        "Partner",
+                                        "Spouse",
+                                    )
+                                    val localeList = listOf(
+                                        "Rural",
+                                        "Urban",
+                                    )
+                                    val livingArrangementList = listOf(
+                                        "Renting",
+                                        "Home owner",
+                                        "Homeless",
+                                    )
+                                    val birthDate = rnd.nextInt(1900, 2016)
                                     postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
-                                            age = rnd.nextInt(18, 100),
-                                            gender = genders[rnd.nextInt(3)],
-                                            incomeRange = "$${rnd.nextInt(10, 41)}K - $${rnd.nextInt(60, 1001)}K",
-                                            education = "Tertiary",
-                                            relationship = "Single",
-                                            locale = "Urban",
-                                            livingArrangement = "Renting",
-                                            birthDate = "${rnd.nextInt(1900, 2016)}-01-01"
+                                            age = LocalDate.now().year - birthDate,
+                                            gender = gendersList[rnd.nextInt(gendersList.size)],
+                                            incomeRange = incomeRangeList[rnd.nextInt(incomeRangeList.size)],
+                                            education = educationList[rnd.nextInt(educationList.size)],
+                                            relationship = relationshipList[rnd.nextInt(relationshipList.size)],
+                                            locale = localeList[rnd.nextInt(localeList.size)],
+                                            livingArrangement = livingArrangementList[rnd.nextInt(livingArrangementList.size)],
+                                            birthDate = "${birthDate}-01-01"
                                         )
                                     ) { error, success ->
                                         if (success)
