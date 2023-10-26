@@ -39,23 +39,30 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDateTime
 import java.util.Date
+import kotlin.random.Random
 
 const val SEVEN_DAYS_MILLIS = 604800000L
+
+private const val MY_SHARED_PREFS = "my_shared_prefs"
+private const val APP_ID = "my_app_id"
+private const val APP_SECRET = "my_app_secret"
+private const val EXTERNAL_ID = "my_external_id"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sharedPrefs = getSharedPreferences(MY_SHARED_PREFS, MODE_PRIVATE)
 
         val config = SahhaSettings(
             environment = SahhaEnvironment.sandbox,
             notificationSettings = SahhaNotificationConfiguration(
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
                 title = "Foreground Service",
-                shortDescription = "This mainly handles the steps and screen locks"
+                shortDescription = "This mainly handles native steps and screen locks"
             ),
         )
 
@@ -90,6 +97,10 @@ class MainActivity : ComponentActivity() {
                     var externalId by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
                     var authStatus by remember { mutableStateOf("Pending") }
+
+                    appId = sharedPrefs.getString(APP_ID, null) ?: ""
+                    appSecret = sharedPrefs.getString(APP_SECRET, null) ?: ""
+                    externalId = sharedPrefs.getString(EXTERNAL_ID, null) ?: ""
 
                     Sahha.getSensorStatus(
                         this@MainActivity
@@ -162,7 +173,7 @@ class MainActivity : ComponentActivity() {
                                     })
                                 )
                                 OutlinedTextField(
-                                    value = appSecret,
+                                    value =  appSecret,
                                     singleLine = true,
                                     onValueChange = {
                                         appSecret = it
@@ -175,7 +186,7 @@ class MainActivity : ComponentActivity() {
                                     })
                                 )
                                 OutlinedTextField(
-                                    value = externalId,
+                                    value =  externalId,
                                     singleLine = true,
                                     onValueChange = {
                                         externalId = it
@@ -190,13 +201,18 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     authStatus = "Loading..."
 
+                                    sharedPrefs.edit()
+                                        .putString(APP_ID, appId)
+                                        .putString(APP_SECRET, appSecret)
+                                        .putString(EXTERNAL_ID, externalId)
+                                        .apply()
+
                                     Sahha.authenticate(
                                         appId,
                                         appSecret,
                                         externalId
                                     ) { error, success ->
-                                        if (success) authStatus = "Successful" else authStatus =
-                                            error ?: "Failed"
+                                        authStatus = if (success) "Successful" else error ?: "Failed"
                                     }
                                 }) {
                                     Text("Authenticate")
@@ -261,22 +277,19 @@ class MainActivity : ComponentActivity() {
                                 Text(analyzeResponseLocalDateTime)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    val rnd = Random.Default
+                                    val genders = listOf("Male", "Female", "Gender diverse")
                                     postDemo = ""
                                     Sahha.postDemographic(
                                         SahhaDemographic(
-                                            31,
-                                            "Male",
-                                            "NZ",
-                                            "KR",
-                                            "South Korean",
-                                            "Software Developer",
-                                            "Information Technology",
-                                            "$40K - $69K",
-                                            "Tertiary",
-                                            "Spouse",
-                                            "Urban",
-                                            "Renting",
-                                            "1990-01-01"
+                                            age = rnd.nextInt(18, 100),
+                                            gender = genders[rnd.nextInt(3)],
+                                            incomeRange = "$${rnd.nextInt(10, 41)}K - $${rnd.nextInt(60, 1001)}K",
+                                            education = "Tertiary",
+                                            relationship = "Single",
+                                            locale = "Urban",
+                                            livingArrangement = "Renting",
+                                            birthDate = "${rnd.nextInt(1900, 2016)}-01-01"
                                         )
                                     ) { error, success ->
                                         if (success)

@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.use_case.post
 
 import android.content.Context
+import android.util.Log
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -58,19 +59,16 @@ class PostHealthConnectDataUseCase @Inject constructor(
         if (mutex.tryLock()) {
             try {
                 granted.forEach {
-                    println("Querying... $it")
                     when (it) {
                         HealthPermission.getReadPermission(StepsRecord::class) -> {
                             suspendCoroutine<Unit> { cont ->
                                 ioScope.launch {
                                     repo.getCurrentDayRecords(StepsRecord::class)?.also { r ->
-                                        println("StepsRecord0000")
                                         var postData = mutableListOf<StepsHealthConnect>()
                                         val local = repo.getAllStepsHc()
 
                                         val queries = r.map { qr -> qr.toStepsHealthConnect() }
 
-                                        println("StepsRecord0001")
                                         for (record in queries) {
                                             val localMatch =
                                                 local.find { l -> l.metaId == record.metaId }
@@ -95,15 +93,15 @@ class PostHealthConnectDataUseCase @Inject constructor(
 
                                         if (postData.isEmpty()) {
                                             cont.resume(Unit)
-                                            //this.cancel()
+                                            
                                             return@launch
                                         }
 
                                         repo.postStepData(postData) { error, successful ->
                                             if (successful) {
-                                                println("StepsRecord0005")
                                                 clearLastMidnightSteps()
                                                 saveQuery(StepsRecord::class, successful)
+                                                Log.i(tag, "Posted step data successfully.")
                                             }
 
                                             results.add(successful)
@@ -114,10 +112,8 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 postData.toString()
                                             )
                                             cont.resume(Unit)
-                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
@@ -127,8 +123,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 ioScope.launch {
                                     repo.getNewRecords(SleepSessionRecord::class)?.also { records ->
                                         repo.postSleepSessionData(records) { error, successful ->
-                                            if (successful)
+                                            if (successful) {
                                                 saveQuery(SleepSessionRecord::class, successful)
+                                                Log.i(tag, "Posted sleep data successfully.")
+                                            }
 
                                             results.add(successful)
                                             error?.also { e -> errors.add(e) }
@@ -138,26 +136,21 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 records.toString()
                                             )
                                             cont.resume(Unit)
-                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
 
                         HealthPermission.getReadPermission(HeartRateRecord::class) -> {
-                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0001")
                             suspendCoroutine<Unit> { cont ->
-                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0002")
                                 ioScope.launch {
-                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0003")
                                     repo.getNewRecords(HeartRateRecord::class)?.also { records ->
-                                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0004")
                                         repo.postHeartRateData(records) { error, successful ->
-                                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0005")
-                                            if (successful)
+                                            if (successful) {
                                                 saveQuery(HeartRateRecord::class, successful)
+                                                Log.i(tag, "Posted heart rate data successfully.")
+                                            }
 
                                             results.add(successful)
                                             error?.also { e -> errors.add(e) }
@@ -166,16 +159,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 "queryAndPostHealthConnectData",
                                                 records.toString()
                                             )
-                                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0006")
                                             cont.resume(Unit)
-                                            //this.cancel()
                                         }
-                                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0007")
                                     } ?: cont.resume(Unit)
-                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0008")
-                                    //this.cancel()
                                 }
-                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0009")
                             }
                         }
 
@@ -185,8 +172,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     repo.getNewRecords(RestingHeartRateRecord::class)
                                         ?.also { records ->
                                             repo.postRestingHeartRateData(records) { error, successful ->
-                                                if (successful)
+                                                if (successful) {
                                                     saveQuery(HeartRateRecord::class, successful)
+                                                    Log.i(tag, "Posted resting heart rate data successfully.")
+                                                }
 
                                                 results.add(successful)
                                                 error?.also { e -> errors.add(e) }
@@ -196,10 +185,8 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                     records.toString()
                                                 )
                                                 cont.resume(Unit)
-                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
@@ -210,11 +197,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     repo.getNewRecords(HeartRateVariabilityRmssdRecord::class)
                                         ?.also { records ->
                                             repo.postHeartRateVariabilityRmssdData(records) { error, successful ->
-                                                if (successful)
+                                                if (successful) {
                                                     saveQuery(
                                                         HeartRateVariabilityRmssdRecord::class,
                                                         successful
                                                     )
+                                                    Log.i(tag, "Posted heart rate variability data successfully.")
+                                                }
 
                                                 results.add(successful)
                                                 error?.also { e -> errors.add(e) }
@@ -224,10 +213,8 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                     records.toString()
                                                 )
                                                 cont.resume(Unit)
-                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
@@ -237,8 +224,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 ioScope.launch {
                                     repo.getNewRecords(BloodGlucoseRecord::class)?.also { records ->
                                         repo.postBloodGlucoseData(records) { error, successful ->
-                                            if (successful)
+                                            if (successful) {
                                                 saveQuery(BloodGlucoseRecord::class, successful)
+                                                Log.i(tag, "Posted blood glucose data successfully.")
+                                            }
 
                                             results.add(successful)
                                             error?.also { e -> errors.add(e) }
@@ -248,10 +237,8 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                                 records.toString()
                                             )
                                             cont.resume(Unit)
-                                            //this.cancel()
                                         }
                                     } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
@@ -262,19 +249,19 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     repo.getNewRecords(BloodPressureRecord::class)
                                         ?.also { records ->
                                             repo.postBloodPressureData(records) { error, successful ->
-                                                if (successful)
+                                                if (successful) {
                                                     saveQuery(
                                                         BloodPressureRecord::class,
                                                         successful
                                                     )
+                                                    Log.i(tag, "Posted blood pressure data successfully.")
+                                                }
 
                                                 results.add(successful)
                                                 error?.also { e -> errors.add(e) }
                                                 cont.resume(Unit)
-                                                //this.cancel()
                                             }
                                         } ?: cont.resume(Unit)
-                                    //this.cancel()
                                 }
                             }
                         }
@@ -403,10 +390,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(HeartRateRecord::class, successful, now)
 
                         cont.resume(Unit)
-                        //this.cancel()
+                        
                     }
                 } ?: cont.resume(Unit)
-                //this.cancel()
+                
             }
         }
     }
@@ -437,10 +424,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(RestingHeartRateRecord::class, successful)
 
                         cont.resume(Unit)
-                        //this.cancel()
+                        
                     }
                 } ?: cont.resume(Unit)
-                //this.cancel()
+                
             }
         }
     }

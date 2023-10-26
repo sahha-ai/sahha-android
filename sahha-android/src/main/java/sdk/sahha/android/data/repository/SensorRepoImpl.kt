@@ -563,6 +563,10 @@ class SensorRepoImpl @Inject constructor(
                     )
                     errorSummary = updatedErrorSummary
                     successfulResults = updatedSuccessfulResults
+
+                    if(successful) Log.i(tag, "Successfully posted ${sensor.name} data.")
+                    else error?.also { Log.i(tag, "Error posting ${sensor.name} data: $it") }
+
                     deferredResult.complete(Unit)
                 }
             }
