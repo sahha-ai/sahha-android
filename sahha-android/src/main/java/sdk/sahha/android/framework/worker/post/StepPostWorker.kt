@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.worker.post
+package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
 import androidx.work.CoroutineWorker

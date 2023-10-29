@@ -1,4 +1,4 @@
-package sdk.sahha.android.activity
+package sdk.sahha.android.framework.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

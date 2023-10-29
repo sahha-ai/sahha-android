@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.receiver
+package sdk.sahha.android.framework.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context

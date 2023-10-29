@@ -1,4 +1,4 @@
-package sdk.sahha.android.activity.health_connect
+package sdk.sahha.android.framework.activity.health_connect
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

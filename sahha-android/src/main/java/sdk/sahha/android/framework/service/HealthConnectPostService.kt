@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.service
+package sdk.sahha.android.framework.service
 
 import android.app.Service
 import android.content.Intent

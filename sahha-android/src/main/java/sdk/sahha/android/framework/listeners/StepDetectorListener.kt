@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.listeners
+package sdk.sahha.android.framework.listeners
 
 import android.hardware.Sensor
 import android.hardware.SensorEvent

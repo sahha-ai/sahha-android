@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.worker
+package sdk.sahha.android.framework.worker
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -13,7 +13,7 @@ import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.SleepSegmentRequest
 import com.google.android.gms.tasks.Task
 import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
-import sdk.sahha.android.data.receiver.SleepReceiver
+import sdk.sahha.android.framework.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :

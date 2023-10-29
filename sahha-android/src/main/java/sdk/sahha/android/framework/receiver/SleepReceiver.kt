@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.receiver
+package sdk.sahha.android.framework.receiver
 
 import android.app.NotificationManager
 import android.app.Service
