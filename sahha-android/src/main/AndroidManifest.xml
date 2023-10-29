@@ -41,24 +41,24 @@
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <activity
-            android:name=".activity.SahhaNotificationPermissionActivity"
+            android:name=".framework.activity.SahhaNotificationPermissionActivity"
             android:exported="false"
             android:label="SahhaNotificationPermissionActivity"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <service
-            android:name=".data.service.DataCollectionService"
+            android:name=".framework.service.DataCollectionService"
             android:exported="false"
             android:foregroundServiceType="health" />
 
         <service
-            android:name=".data.service.HealthConnectPostService"
+            android:name=".framework.service.HealthConnectPostService"
             android:exported="false"
             android:foregroundServiceType="health" />
 
         <!-- Activity to show rationale of Health Connect permissions -->
         <activity
-            android:name=".activity.health_connect.SahhaHealthConnectPermissionActivity"
+            android:name=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity"
             android:enabled="true"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
@@ -71,7 +71,7 @@
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
-            android:targetActivity=".activity.health_connect.SahhaHealthConnectPermissionActivity"
+            android:targetActivity=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity"
             android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
@@ -80,27 +80,27 @@
         </activity-alias>
 
         <activity
-            android:name=".activity.health_connect.SahhaHealthConnectStatusActivity"
+            android:name=".framework.activity.health_connect.SahhaHealthConnectStatusActivity"
             android:enabled="true"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <receiver
-            android:name=".data.receiver.SahhaAlarmReceiver"
+            android:name=".framework.receiver.SahhaAlarmReceiver"
             android:attributionTags="com.sahha.android:alarm_receiver"
             android:enabled="true"
             android:exported="false" />
 
 
         <receiver
-            android:name=".data.receiver.SleepReceiver"
+            android:name=".framework.receiver.SleepReceiver"
             android:attributionTags="com.sahha.android:sleep_receiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.ACTIVITY_RECOGNITION" />
 
         <receiver
-            android:name=".data.receiver.AutoStartReceiver"
+            android:name=".framework.receiver.AutoStartReceiver"
             android:attributionTags="com.sahha.android:auto_start_receiver"
             android:enabled="true"
             android:exported="true"

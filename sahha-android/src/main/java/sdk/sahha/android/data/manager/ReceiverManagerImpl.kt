@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.receiver.ActivityRecognitionReceiver
+import sdk.sahha.android.framework.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.manager.ReceiverManager
 
 class ReceiverManagerImpl(

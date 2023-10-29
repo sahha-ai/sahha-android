@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.receiver.SahhaAlarmReceiver
+import sdk.sahha.android.framework.receiver.SahhaAlarmReceiver
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import javax.inject.Inject
 

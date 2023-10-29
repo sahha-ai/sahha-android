@@ -20,10 +20,10 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.data.worker.SleepCollectionWorker
-import sdk.sahha.android.data.worker.post.DevicePostWorker
-import sdk.sahha.android.data.worker.post.SleepPostWorker
-import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.framework.worker.SleepCollectionWorker
+import sdk.sahha.android.framework.worker.post.DevicePostWorker
+import sdk.sahha.android.framework.worker.post.SleepPostWorker
+import sdk.sahha.android.framework.worker.post.StepPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager

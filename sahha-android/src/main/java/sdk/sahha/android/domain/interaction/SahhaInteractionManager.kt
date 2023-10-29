@@ -7,7 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import sdk.sahha.android.activity.SahhaNotificationPermissionActivity
+import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope

@@ -24,8 +24,8 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.CoroutineScope
-import sdk.sahha.android.activity.SahhaPermissionActivity
-import sdk.sahha.android.activity.health_connect.SahhaHealthConnectPermissionActivity
+import sdk.sahha.android.framework.activity.SahhaPermissionActivity
+import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
