@@ -77,6 +77,13 @@ internal object Constants {
     // Sleep stage
     const val SLEEP_STAGE_ASLEEP = "asleep"
 
+    // Insights
+    const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
+    const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
+    const val UNIT_MINUTES = "minutes"
+    const val UNIT_STEPS = "steps"
+
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
     const val AVG_STEP_DISTANCE_FEMALE = 0.7
