@@ -63,6 +63,27 @@ class AuthRepoImpl(
         }
     }
 
+    override suspend fun postRefreshTokenAndReturnNew(
+        retryLogic: (suspend (newToken: String?) -> Unit),
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val tokenData = getTokenData(callback) ?: return
+        try {
+            val response = api.postRefreshTokenResponse(
+                TokenBearer(tokenData.profileToken),
+                RefreshTokenSendDto(tokenData.refreshToken)
+            )
+
+            if (ResponseCode.isSuccessful(response.code())) {
+                handleSuccessfulResponse(response, retryLogic, callback)
+            } else {
+                handleFailedResponse(response, callback)
+            }
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
+        }
+    }
+
     private fun getTokenData(callback: ((error: String?, successful: Boolean) -> Unit)?): TokenData? {
         val token = getToken()
         val refreshToken = getRefreshToken()
@@ -82,6 +103,16 @@ class AuthRepoImpl(
     ) {
         storeNewTokens(response.body(), callback)
         retryLogic()
+    }
+
+    private suspend fun handleSuccessfulResponse(
+        response: Response<TokenData>,
+        retryLogic: (suspend (newToken: String?) -> Unit),
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val tokens = response.body()
+        storeNewTokens(tokens, callback)
+        retryLogic(tokens?.profileToken)
     }
 
     private fun handleFailedResponse(

@@ -2,8 +2,6 @@ package sdk.sahha.android.domain.repository
 
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
-import okhttp3.ResponseBody
-import retrofit2.Response
 import sdk.sahha.android.domain.model.insight.InsightData
 
 interface InsightsRepo {
@@ -20,7 +18,9 @@ interface InsightsRepo {
     ): Long
 
     suspend fun postInsights(
+        token: String,
         insights: List<InsightData>,
+        refreshedToken: Boolean = false,
         callback: ((error: String?, successful: Boolean) -> Unit)
-    ): Response<ResponseBody>
+    )
 }

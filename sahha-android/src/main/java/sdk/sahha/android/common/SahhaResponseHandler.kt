@@ -40,7 +40,16 @@ internal object SahhaResponseHandler {
         }
     }
 
-    internal suspend fun storeNewTokens(
+    internal suspend fun newTokenOnExpired(
+        code: Int,
+        retryLogic: suspend (newToken: String?) -> Unit,
+    ) {
+        if (ResponseCode.isUnauthorized(code)) {
+            Sahha.di.authRepo.postRefreshTokenAndReturnNew(retryLogic)
+        }
+    }
+
+    internal fun storeNewTokens(
         tokenData: TokenData?,
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {

@@ -15,6 +15,7 @@ import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.*
+import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.source.SahhaDemographic
 
 interface SahhaApi {
@@ -109,5 +110,11 @@ interface SahhaApi {
     suspend fun putDeviceInformation(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body deviceInformation: DeviceInformationDto
+    ): Response<ResponseBody>
+
+    @POST("profile/insight")
+    suspend fun postInsightsData(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body insights: List<InsightData>
     ): Response<ResponseBody>
 }

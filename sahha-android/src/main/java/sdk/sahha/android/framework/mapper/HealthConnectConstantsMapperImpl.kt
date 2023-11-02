@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.mapper
+package sdk.sahha.android.framework.mapper
 
 import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord

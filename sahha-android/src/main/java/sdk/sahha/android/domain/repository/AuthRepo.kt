@@ -18,11 +18,15 @@ interface AuthRepo {
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     )
 
+    suspend fun postRefreshTokenAndReturnNew(
+        retryLogic: suspend (newToken: String?) -> Unit,
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
+    )
+
     suspend fun getTokensByExternalId(
         appId: String,
         appSecret: String,
         externalId: ExternalIdSendDto
     ): Response<TokenData>
-
     suspend fun clearTokenData(callback: suspend (error: String?, success: Boolean) -> Unit)
 }

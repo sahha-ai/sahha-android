@@ -8,8 +8,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -38,12 +36,12 @@ import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.manager.ReceiverManagerImpl
 import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
-import sdk.sahha.android.data.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
+import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
@@ -58,11 +56,13 @@ import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.post.*
+import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
@@ -316,6 +316,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             api,
             chunkManager,
             permissionManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideInsightsRepository(
+        timeManager: SahhaTimeManager,
+        api: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger,
+        @IoScope ioScope: CoroutineScope
+    ): InsightsRepo {
+        return InsightsRepoImpl(
+            timeManager,
+            api,
+            sahhaErrorLogger,
+            ioScope
         )
     }
 

@@ -75,7 +75,7 @@ internal object Constants {
     const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
 
     // Sleep stage
-    const val SLEEP_STAGE_ASLEEP = "asleep"
+    const val SLEEP_STAGE_SLEEPING = "sleeping"
 
     // Insights
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"

@@ -3,9 +3,11 @@ package sdk.sahha.android.domain.interaction
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.insight.InsightData
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -16,6 +18,7 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 class InsightsInteractionManager @Inject constructor(
+    private val authRepo: AuthRepo,
     private val insightsRepo: InsightsRepo,
     private val healthConnectRepo: HealthConnectRepo,
     private val configRepo: SahhaConfigRepo,
@@ -23,6 +26,7 @@ class InsightsInteractionManager @Inject constructor(
 ) {
     private val insights = mutableListOf<InsightData>()
     suspend fun postInsightsData(callback: ((error: String?, successful: Boolean) -> Unit)) {
+        val token = authRepo.getToken() ?: ""
         val sensors = configRepo.getConfig().sensorArray
         insights.clear()
 
@@ -52,8 +56,11 @@ class InsightsInteractionManager @Inject constructor(
             )
         }
 
-        insights.ifEmpty { return }
-        insightsRepo.postInsights(insights, callback)
+        insights.ifEmpty {
+            callback(SahhaErrors.noInsightsData, false)
+            return
+        }
+        insightsRepo.postInsights(token = token, insights = insights, callback = callback)
     }
 
     private suspend fun addSleepInsights(start: LocalDateTime, end: LocalDateTime) {
