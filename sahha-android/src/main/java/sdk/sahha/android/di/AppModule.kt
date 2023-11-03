@@ -33,9 +33,9 @@ import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
-import sdk.sahha.android.data.manager.ReceiverManagerImpl
-import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
-import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.framework.manager.ReceiverManagerImpl
+import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
+import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl

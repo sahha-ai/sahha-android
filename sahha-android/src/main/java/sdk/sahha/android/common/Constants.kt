@@ -18,7 +18,7 @@ internal object Constants {
     const val PLATFORM_NAME = "android"
     const val MAX_STEP_POST_VALUE = 1000
     const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
-    const val NOTIFICATION_TITLE_DEFAULT = "Analytics are running"
+    const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
 
@@ -92,15 +92,21 @@ internal object Constants {
     const val ONE_DAY_IN_MILLIS = 86400000L
     const val SEVEN_DAYS_IN_MILLIS = 604800000L
 
+    // Insights config
+    const val INSIGHTS_SLEEP_ALARM_HOUR = 18
+    const val INSIGHTS_STEPS_ALARM_HOUR = 0
+
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000
     const val NOTIFICATION_HEALTH_CONNECT = 1002
     const val NOTIFICATION_PERMISSION_SETTINGS = 1003
     const val HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID = "sahha.healthconnect.service"
+    const val INSIGHTS_NOTIFICATION_CHANNEL_ID = "sahha.insights.service"
 
     // Receivers and Request Codes
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000
     const val SLEEP_DATA_REQUEST = 2002
-    const val SAHHA_ALARM_RECEIVER = 3000
+    const val HEALTH_CONNECT_QUERY_RECEIVER = 3000
+    const val INSIGHTS_QUERY_RECEIVER = 3001
     const val NOTIFICATION_REQUEST_CODE = 4000
 }

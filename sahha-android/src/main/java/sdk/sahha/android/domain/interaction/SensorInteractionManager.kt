@@ -33,6 +33,7 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
+import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
@@ -69,7 +70,7 @@ class SensorInteractionManager @Inject constructor(
     ) {
         ioScope.launch {
             if (permissionManager.shouldUseHealthConnect()) {
-                notificationManager.startHealthConnectPostService()
+                notificationManager.startForegroundService(HealthConnectPostService::class.java)
                 callback.invoke(null, true)
                 return@launch
             }

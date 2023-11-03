@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.manager
+package sdk.sahha.android.framework.manager
 
 import android.app.PendingIntent
 import android.content.Context

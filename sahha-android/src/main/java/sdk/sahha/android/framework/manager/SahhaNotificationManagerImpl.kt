@@ -1,4 +1,4 @@
-package sdk.sahha.android.data.manager
+package sdk.sahha.android.framework.manager
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -40,12 +40,12 @@ class SahhaNotificationManagerImpl(
         notification = _notification
     }
 
-    override fun startHealthConnectPostService() {
+    override fun <T> startForegroundService(serviceClass: Class<T>) {
         ContextCompat.startForegroundService(
             context,
             Intent(
                 context.applicationContext,
-                HealthConnectPostService::class.java
+                serviceClass
             )
         )
     }

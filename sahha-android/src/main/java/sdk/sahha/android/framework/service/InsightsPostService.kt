@@ -11,33 +11,30 @@ import sdk.sahha.android.data.Constants
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 
-private const val tag = "HealthConnectPostService"
-
-class HealthConnectPostService : Service() {
-    private val defaultScope by lazy { CoroutineScope(Dispatchers.Default) }
+private const val tag = "InsightsPostService"
+class InsightsPostService : Service() {
+    private val scope by lazy { CoroutineScope(Dispatchers.IO) }
+    private val insights by lazy { Sahha.sim.insights }
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        defaultScope.launch {
-            SahhaReconfigure(this@HealthConnectPostService)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        scope.launch {
+            SahhaReconfigure(this@InsightsPostService)
             startNotification()
-            if (stopOnNoAuth()) return@launch
+            if(stopOnNoAuth()) return@launch
 
-            Sahha.di
-                .sahhaInteractionManager
-                .sensor
-                .postWithMinimumDelay { error, _ ->
-                    error?.also { e ->
-                        Sahha.di.sahhaErrorLogger.application(
-                            e, tag, "onStartCommand"
-                        )
-                    }
-
-                    stopForeground(STOP_FOREGROUND_REMOVE)
-                    stopSelf()
+            insights.postInsightsData { error, successful ->
+                error?.also { e ->
+                    Sahha.di.sahhaErrorLogger.application(
+                        e, tag, "onStartCommand"
+                    )
                 }
+
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }
         }
 
         return START_NOT_STICKY
@@ -45,6 +42,10 @@ class HealthConnectPostService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        scheduleNextAlarm()
+    }
+
+    private fun scheduleNextAlarm() {
         Sahha.di.sahhaAlarmManager.setAlarm(
             Sahha.di.sahhaAlarmManager.pendingIntent,
             ZonedDateTime.now()
@@ -67,9 +68,9 @@ class HealthConnectPostService : Service() {
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,
-            title = "Synchronizing health connect data...",
-            channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
-            channelName = "Health Connect Sync",
+            title = "Synchronizing insight data...",
+            channelId = Constants.INSIGHTS_NOTIFICATION_CHANNEL_ID,
+            channelName = "Insights",
             serviceClass = this::class.java,
         )
 

@@ -31,5 +31,5 @@ interface SahhaNotificationManager {
         icon: Int = R.drawable.ic_sahha_no_bg
     ): Notification
 
-    fun startHealthConnectPostService()
+    fun <T> startForegroundService(serviceClass: Class<T>)
 }

@@ -86,7 +86,7 @@
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <receiver
-            android:name=".framework.receiver.SahhaAlarmReceiver"
+            android:name=".framework.receiver.HealthConnectQueryReceiver"
             android:attributionTags="com.sahha.android:alarm_receiver"
             android:enabled="true"
             android:exported="false" />

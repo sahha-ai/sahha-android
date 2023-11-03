@@ -34,11 +34,11 @@ class InsightsInteractionManager @Inject constructor(
             addSleepInsights(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),
-                    LocalTime.of(18, 0)
+                    LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 0)
                 ),
                 LocalDateTime.of(
                     LocalDate.now(),
-                    LocalTime.of(18, 0)
+                    LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 0)
                 )
             )
         }
@@ -47,11 +47,11 @@ class InsightsInteractionManager @Inject constructor(
             addStepsInsight(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),
-                    LocalTime.of(0, 0)
+                    LocalTime.of(Constants.INSIGHTS_STEPS_ALARM_HOUR, 0)
                 ),
                 LocalDateTime.of(
                     LocalDate.now(),
-                    LocalTime.of(0, 0)
+                    LocalTime.of(Constants.INSIGHTS_STEPS_ALARM_HOUR, 0)
                 )
             )
         }
