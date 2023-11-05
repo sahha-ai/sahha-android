@@ -1,9 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.app.Application
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
@@ -20,7 +18,6 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
-import sdk.sahha.android.framework.receiver.InsightsQueryReceiver
 import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
@@ -86,20 +83,14 @@ internal class SahhaInteractionManager @Inject constructor(
     private fun scheduleInsightsAlarm(
         context: Context
     ) {
-        val insightsIntent = Intent(context, InsightsQueryReceiver::class.java)
-        val insightsPendingIntent = PendingIntent.getBroadcast(
-            context,
-            Constants.INSIGHTS_QUERY_RECEIVER,
-            insightsIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
+        val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
         val timestamp =
             ZonedDateTime.of(
                 LocalDate.now(),
                 LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
                 ZonedDateTime.now().offset
             )
+
         alarms.setAlarm(insightsPendingIntent, timestamp.toInstant().toEpochMilli())
     }
 
@@ -121,10 +112,13 @@ internal class SahhaInteractionManager @Inject constructor(
             }
         }
 
-    internal fun startNative(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+    internal fun startNative(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
         try {
             defaultScope.launch {
-                alarms.stopAlarm(alarms.pendingIntent)
+                alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(

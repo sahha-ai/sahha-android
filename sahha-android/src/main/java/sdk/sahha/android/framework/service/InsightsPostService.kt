@@ -9,9 +9,12 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.data.Constants
 import sdk.sahha.android.source.Sahha
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZonedDateTime
 
 private const val tag = "InsightsPostService"
+
 class InsightsPostService : Service() {
     private val scope by lazy { CoroutineScope(Dispatchers.IO) }
     private val insights by lazy { Sahha.sim.insights }
@@ -23,7 +26,7 @@ class InsightsPostService : Service() {
         scope.launch {
             SahhaReconfigure(this@InsightsPostService)
             startNotification()
-            if(stopOnNoAuth()) return@launch
+            if (stopOnNoAuth()) return@launch
 
             insights.postInsightsData { error, successful ->
                 error?.also { e ->
@@ -47,11 +50,12 @@ class InsightsPostService : Service() {
 
     private fun scheduleNextAlarm() {
         Sahha.di.sahhaAlarmManager.setAlarm(
-            Sahha.di.sahhaAlarmManager.pendingIntent,
-            ZonedDateTime.now()
-                .plusMinutes(Constants.DEFAULT_ALARM_INTERVAL_MINS)
-                .toInstant()
-                .toEpochMilli()
+            Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this),
+            ZonedDateTime.of(
+                LocalDate.now().plusDays(1),
+                LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
+                ZonedDateTime.now().offset
+            ).toInstant().toEpochMilli()
         )
     }
 
@@ -68,7 +72,7 @@ class InsightsPostService : Service() {
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,
-            title = "Synchronizing insight data...",
+            title = "Synchronizing insights...",
             channelId = Constants.INSIGHTS_NOTIFICATION_CHANNEL_ID,
             channelName = "Insights",
             serviceClass = this::class.java,

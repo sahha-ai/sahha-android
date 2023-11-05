@@ -46,7 +46,7 @@ class HealthConnectPostService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Sahha.di.sahhaAlarmManager.setAlarm(
-            Sahha.di.sahhaAlarmManager.pendingIntent,
+            Sahha.di.sahhaAlarmManager.getHealthConnectQueryPendingIntent(this),
             ZonedDateTime.now()
                 .plusMinutes(Constants.DEFAULT_ALARM_INTERVAL_MINS)
                 .toInstant()
@@ -67,7 +67,7 @@ class HealthConnectPostService : Service() {
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,
-            title = "Synchronizing health connect data...",
+            title = "Synchronizing health connect...",
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
             channelName = "Health Connect Sync",
             serviceClass = this::class.java,

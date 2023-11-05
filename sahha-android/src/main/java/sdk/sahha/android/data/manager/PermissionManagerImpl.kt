@@ -156,7 +156,7 @@ class PermissionManagerImpl @Inject constructor(
             }
 
             // Else start native sensors
-            sim.startNative { _, _ ->
+            sim.startNative(context) { _, _ ->
                 getSensorStatus(context, callback)
             }
         }

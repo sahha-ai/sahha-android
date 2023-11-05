@@ -1,9 +1,12 @@
 package sdk.sahha.android.domain.manager
 
 import android.app.PendingIntent
+import android.content.Context
 
 interface SahhaAlarmManager {
-    val pendingIntent: PendingIntent
     fun setAlarm(pendingIntent: PendingIntent, setTimeEpochMillis: Long)
     fun stopAlarm(pendingIntent: PendingIntent)
+    fun stopAllAlarms(context: Context)
+    fun getHealthConnectQueryPendingIntent(context: Context): PendingIntent
+    fun getInsightsQueryPendingIntent(context: Context): PendingIntent
 }
