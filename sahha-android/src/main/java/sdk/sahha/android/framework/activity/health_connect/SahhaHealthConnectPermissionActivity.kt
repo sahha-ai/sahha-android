@@ -30,10 +30,8 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        println("SahhaHealthConnectPermissionActivity0001")
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
-                println("SahhaHealthConnectPermissionActivity0002")
                 checkPermissionsAndRun(client)
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
@@ -42,7 +40,6 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (initialLaunch) {
-            println("SahhaHealthConnectPermissionActivity0009")
             initialLaunch = false
             return
         }
@@ -52,32 +49,26 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
-        println("SahhaHealthConnectPermissionActivity0003")
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(permissions)) {
-            println("SahhaHealthConnectPermissionActivity0004")
             status = SahhaSensorStatus.enabled
             enabledStatus()
             return
         }
 
         // Else
-        println("SahhaHealthConnectPermissionActivity0005")
         requestPermissions.launch(permissions)
     }
 
     private fun enabledStatus() {
         if (status == SahhaSensorStatus.enabled) {
-            println("SahhaHealthConnectPermissionActivity0006")
             Sahha.di.sahhaNotificationManager.startForegroundService(HealthConnectPostService::class.java)
         }
 
-        println("SahhaHealthConnectPermissionActivity0007")
         permissionHandler.activityCallback.statusCallback?.invoke(
             null, status
         )
 
-        println("SahhaHealthConnectPermissionActivity0008")
         finish()
     }
 
