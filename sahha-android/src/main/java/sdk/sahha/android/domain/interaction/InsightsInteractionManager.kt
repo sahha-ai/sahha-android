@@ -40,44 +40,33 @@ class InsightsInteractionManager @Inject constructor(
     suspend fun postWithMinimumDelay(
         delayMilliseconds: Long = Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS,
     ) {
-        println("InsightsInteractionManager0003")
         val postJob = ioScope.launch {
-            println("InsightsInteractionManager0004")
             try {
-                println("InsightsInteractionManager0005")
                 suspendCoroutine { cont ->
-                    println("InsightsInteractionManager0006")
                     ioScope.launch {
-                        println("InsightsInteractionManager0007")
                         withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
                             postInsightsData { _, _ ->
-                                println("InsightsInteractionManager0011")
                                 cont.resume(Unit)
                             }
                         }
                     }
                 }
             } catch (e: TimeoutCancellationException) {
-                println("InsightsInteractionManager0008")
                 this.cancel(e)
             }
         }
         val minimumDelayJob = ioScope.launch { delay(delayMilliseconds) }
 
-        println("InsightsInteractionManager0009")
         val jobs = listOf(postJob, minimumDelayJob)
         jobs.joinAll()
-        println("InsightsInteractionManager0010")
     }
 
     suspend fun postInsightsData(callback: (suspend (error: String?, successful: Boolean) -> Unit)) {
-        println("InsightsInteractionManager0020")
         val token = authRepo.getToken() ?: ""
         val sensors = configRepo.getConfig().sensorArray
         insights.clear()
 
         if (sensors.contains(SahhaSensor.sleep.ordinal)) {
-            println("InsightsInteractionManager0021")
             addSleepInsights(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),
@@ -91,7 +80,6 @@ class InsightsInteractionManager @Inject constructor(
         }
 
         if (sensors.contains(SahhaSensor.pedometer.ordinal)) {
-            println("InsightsInteractionManager0022")
             addStepsInsight(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),
@@ -105,11 +93,9 @@ class InsightsInteractionManager @Inject constructor(
         }
 
         insights.ifEmpty {
-            println("InsightsInteractionManager0023")
             callback(SahhaErrors.noInsightsData, false)
             return
         }
-        println("InsightsInteractionManager0024")
         insightsRepo.postInsights(token = token, insights = insights, callback = callback)
     }
 

@@ -23,9 +23,7 @@ class InsightsPostService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("InsightsPostService0001")
         scope.launch {
-            println("InsightsPostService0002")
             SahhaReconfigure(this@InsightsPostService)
             startNotification()
             if (stopOnNoAuth()) return@launch
@@ -41,12 +39,10 @@ class InsightsPostService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        println("InsightsPostService0010")
         scheduleNextAlarm()
     }
 
     private fun scheduleNextAlarm() {
-        println("InsightsPostService0011")
         Sahha.di.sahhaAlarmManager.setAlarm(
             Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this.applicationContext),
             ZonedDateTime.of(

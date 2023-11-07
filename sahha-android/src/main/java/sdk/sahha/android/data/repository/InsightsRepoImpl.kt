@@ -118,20 +118,15 @@ class InsightsRepoImpl @Inject constructor(
         refreshedToken: Boolean,
         callback: suspend (error: String?, successful: Boolean) -> Unit
     ) {
-        println("InsightsRepoImpl0001")
         val response = api.postInsightsData(token, insights)
         val code = response.code()
 
         try {
             if (ResponseCode.isUnauthorized(code)) {
                 if (!refreshedToken) {
-                    println("InsightsRepoImpl0003")
                     suspendCancellableCoroutine { cont ->
-                        println("InsightsRepoImpl0004")
                         ioScope.launch {
-                            println("InsightsRepoImpl0005")
                             SahhaResponseHandler.newTokenOnExpired(code) { newToken ->
-                                println("InsightsRepoImpl0006")
                                 postInsights(
                                     newToken ?: token,
                                     insights,
@@ -145,24 +140,20 @@ class InsightsRepoImpl @Inject constructor(
                     return
                 }
 
-                println("InsightsRepoImpl0007")
                 callback(SahhaErrors.invalidToken, false)
                 sahhaErrorLogger.api(response)
                 return
             }
 
             if (ResponseCode.isSuccessful(code)) {
-                println("InsightsRepoImpl0008")
                 callback(null, true)
                 return
             }
 
             // Other error
-            println("InsightsRepoImpl0009")
             callback("${response.code()}: ${response.message()}", false)
             sahhaErrorLogger.api(response)
         } catch (e: Exception) {
-            println("InsightsRepoImpl0010")
             callback(e.message, false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
