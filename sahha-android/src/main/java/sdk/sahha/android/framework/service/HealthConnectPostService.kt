@@ -67,7 +67,7 @@ class HealthConnectPostService : Service() {
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,
-            title = "Synchronizing health connect...",
+            title = "Syncing health data...",
             channelId = Constants.HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID,
             channelName = "Health Connect Sync",
             serviceClass = this::class.java,

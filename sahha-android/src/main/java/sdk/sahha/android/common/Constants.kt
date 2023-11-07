@@ -2,6 +2,7 @@ package sdk.sahha.android.common
 
 internal object Constants {
     const val UNKNOWN = "UNKNOWN"
+    const val AWAKE_IN_OR_OUT_OF_BED = "awake_in_or_out_of_bed"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"

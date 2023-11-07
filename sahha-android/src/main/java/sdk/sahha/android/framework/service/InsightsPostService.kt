@@ -66,9 +66,9 @@ class InsightsPostService : Service() {
         val config = Sahha.di.sahhaConfigRepo.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.setNewNotification(
             icon = config.icon,
-            title = "Synchronizing insights...",
+            title = "Syncing health insights...",
             channelId = Constants.INSIGHTS_NOTIFICATION_CHANNEL_ID,
-            channelName = "Insights",
+            channelName = "Insights Sync",
             serviceClass = this::class.java,
         )
 
