@@ -2,8 +2,8 @@ package sdk.sahha.android.common.security
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import sdk.sahha.android.data.Constants.ANDROID_KEY_STORE
-import sdk.sahha.android.data.Constants.TRANSFORMATION
+import sdk.sahha.android.common.Constants.ANDROID_KEY_STORE
+import sdk.sahha.android.common.Constants.TRANSFORMATION
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import javax.crypto.Cipher

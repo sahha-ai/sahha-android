@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.health.connect.client.time.TimeRangeFilter
-import sdk.sahha.android.data.Constants.ONE_DAY_IN_MILLIS
+import sdk.sahha.android.common.Constants.ONE_DAY_IN_MILLIS
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime

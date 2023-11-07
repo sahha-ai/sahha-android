@@ -6,7 +6,6 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -15,6 +14,7 @@ import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
@@ -33,6 +33,7 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
+import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
@@ -69,7 +70,7 @@ class SensorInteractionManager @Inject constructor(
     ) {
         ioScope.launch {
             if (permissionManager.shouldUseHealthConnect()) {
-                notificationManager.startHealthConnectPostService()
+                notificationManager.startForegroundService(HealthConnectPostService::class.java)
                 callback.invoke(null, true)
                 return@launch
             }
@@ -132,7 +133,7 @@ class SensorInteractionManager @Inject constructor(
         val query = postScope.launch {
             try {
                 println("postWithMinimumDelay0002")
-                withTimeout(300000) {
+                withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
                     println("postWithMinimumDelay0003")
                     result = awaitHealthConnectPost()
                 }
@@ -144,7 +145,7 @@ class SensorInteractionManager @Inject constructor(
 
         val minimumTime = postScope.launch {
             println("postWithMinimumDelay0004")
-            delay(5000)
+            delay(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
         }
 
         println("postWithMinimumDelay0005")

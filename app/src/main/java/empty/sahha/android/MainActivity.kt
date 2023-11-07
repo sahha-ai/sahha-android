@@ -120,8 +120,6 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
-//                                NotificationPermission(context = application)
-//                                Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -372,6 +370,24 @@ fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
     }
+}
+
+@Composable
+fun ButtonAndTextTemplate(
+    buttonLabel: String,
+    onClick: () -> Unit
+) {
+    var status by remember { mutableStateOf("Pending...") }
+
+    Spacer(modifier = Modifier.padding(16.dp))
+    Text(status)
+    Button(onClick = {
+        status = "Loading..."
+        onClick()
+    }) {
+        Text(buttonLabel)
+    }
+    Spacer(modifier = Modifier.padding(16.dp))
 }
 
 @Composable

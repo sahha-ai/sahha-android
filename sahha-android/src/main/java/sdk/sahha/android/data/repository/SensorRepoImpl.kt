@@ -12,18 +12,18 @@ import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Response
 import sdk.sahha.android.common.*
-import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.Constants.DEVICE_POST_WORKER_TAG
-import sdk.sahha.android.data.Constants.SLEEP_POST_WORKER_TAG
-import sdk.sahha.android.data.Constants.STEP_POST_WORKER_TAG
+import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Constants.DEVICE_POST_WORKER_TAG
+import sdk.sahha.android.common.Constants.SLEEP_POST_WORKER_TAG
+import sdk.sahha.android.common.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.data.worker.SleepCollectionWorker
-import sdk.sahha.android.data.worker.post.DevicePostWorker
-import sdk.sahha.android.data.worker.post.SleepPostWorker
-import sdk.sahha.android.data.worker.post.StepPostWorker
+import sdk.sahha.android.framework.worker.SleepCollectionWorker
+import sdk.sahha.android.framework.worker.post.DevicePostWorker
+import sdk.sahha.android.framework.worker.post.SleepPostWorker
+import sdk.sahha.android.framework.worker.post.StepPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
@@ -43,7 +43,6 @@ import sdk.sahha.android.source.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SensorRepoImpl"
 
@@ -407,6 +406,7 @@ class SensorRepoImpl @Inject constructor(
                 callback?.invoke(error, successful)
             }
         } catch (e: Exception) {
+            callback?.invoke(e.message, false)
             handleException(e, "postData", data.toString(), callback)
         }
     }
@@ -416,7 +416,7 @@ class SensorRepoImpl @Inject constructor(
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
         clearData: suspend (List<T>) -> Unit,
     ): Boolean {
-        return suspendCoroutine { cont ->
+        return suspendCancellableCoroutine { cont ->
             ioScope.launch {
                 try {
                     val response = getResponse(chunk)
@@ -424,10 +424,10 @@ class SensorRepoImpl @Inject constructor(
 
                     handleResponse(response, { getResponse(chunk) }, null) {
                         clearData(chunk)
-                        cont.resume(true)
+                        if(cont.isActive) cont.resume(true)
                     }
                 } catch (e: Exception) {
-                    cont.resume(false)
+                    if(cont.isActive) cont.resume(false)
                     Log.w(tag, e.message, e)
                 }
             }

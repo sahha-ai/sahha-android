@@ -11,6 +11,7 @@ internal object SahhaErrors {
     const val typeResponse = "response"
 
     const val attemptingTokenRefresh = "Error: Invalid token, attempting to refresh token..."
+    const val invalidToken = "Error: The token was invalid"
     const val sensorInvalid = "Error: Sensor not valid"
     const val datesInvalid = "Error: Both start and end dates must be entered or null"
     const val emptyProfileToken = "Error: The profile token was null or empty"
@@ -25,6 +26,7 @@ internal object SahhaErrors {
     const val noDemographics = "Error: Demographic data was null"
     const val postingInProgress = "Error: There is already a post in progress, please try again shortly"
     const val failedToPostAllData = "Error: Failed to post all data, please try again"
+    const val noInsightsData = "Error: There were no insights"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

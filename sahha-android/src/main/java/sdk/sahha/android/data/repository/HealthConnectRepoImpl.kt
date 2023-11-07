@@ -28,7 +28,6 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -38,7 +37,7 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.mapper.toBloodGlucoseDto

@@ -1,16 +1,10 @@
 package sdk.sahha.android.common
 
-import android.util.Log
-import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaConverterUtility
 
 private const val tag = "SahhaResponseHandler"
 
@@ -40,7 +34,16 @@ internal object SahhaResponseHandler {
         }
     }
 
-    internal suspend fun storeNewTokens(
+    internal suspend fun newTokenOnExpired(
+        code: Int,
+        retryLogic: suspend (newToken: String?) -> Unit,
+    ) {
+        if (ResponseCode.isUnauthorized(code)) {
+            Sahha.di.authRepo.postRefreshTokenAndReturnNew(retryLogic)
+        } else retryLogic(Sahha.di.authRepo.getToken())
+    }
+
+    internal fun storeNewTokens(
         tokenData: TokenData?,
         callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
