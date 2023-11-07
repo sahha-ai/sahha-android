@@ -44,23 +44,23 @@ class InsightsRepoImpl @Inject constructor(
         var sleptDuration = 0L
         summary.forEach {
             when (it.key) {
-                SleepStageRecord.STAGE_TYPE_DEEP -> {
+                SleepSessionRecord.STAGE_TYPE_DEEP -> {
                     sleptDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_LIGHT -> {
+                SleepSessionRecord.STAGE_TYPE_LIGHT -> {
                     sleptDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_REM -> {
+                SleepSessionRecord.STAGE_TYPE_REM -> {
                     sleptDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_SLEEPING -> {
+                SleepSessionRecord.STAGE_TYPE_SLEEPING -> {
                     sleptDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_UNKNOWN -> {
+                SleepSessionRecord.STAGE_TYPE_UNKNOWN -> {
                     sleptDuration += it.value
                 }
             }
@@ -74,27 +74,31 @@ class InsightsRepoImpl @Inject constructor(
         var inBedDuration = 0L
         summary.forEach {
             when (it.key) {
-                SleepStageRecord.STAGE_TYPE_DEEP -> {
+                SleepSessionRecord.STAGE_TYPE_DEEP -> {
                     inBedDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_LIGHT -> {
+                SleepSessionRecord.STAGE_TYPE_LIGHT -> {
                     inBedDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_REM -> {
+                SleepSessionRecord.STAGE_TYPE_REM -> {
                     inBedDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_SLEEPING -> {
+                SleepSessionRecord.STAGE_TYPE_SLEEPING -> {
                     inBedDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_UNKNOWN -> {
+                SleepSessionRecord.STAGE_TYPE_UNKNOWN -> {
                     inBedDuration += it.value
                 }
 
-                SleepStageRecord.STAGE_TYPE_AWAKE -> {
+                SleepSessionRecord.STAGE_TYPE_AWAKE -> {
+                    inBedDuration += it.value
+                }
+
+                SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED -> {
                     inBedDuration += it.value
                 }
             }

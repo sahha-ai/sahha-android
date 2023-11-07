@@ -4,15 +4,19 @@ import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.MealType
-import androidx.health.connect.client.records.SleepStageRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.DeviceTypes
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 
 class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
     override fun sleepStages(constantInt: Int): String? {
-        return SleepStageRecord.STAGE_TYPE_INT_TO_STRING_MAP[constantInt]
+        return when (constantInt) {
+            SleepSessionRecord.STAGE_TYPE_AWAKE -> Constants.AWAKE_IN_OR_OUT_OF_BED
+            else -> SleepSessionRecord.STAGE_TYPE_INT_TO_STRING_MAP[constantInt]
+        }
     }
 
     override fun devices(constantInt: Int?): String {
