@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.BuildConfig
-import sdk.sahha.android.data.Constants.PLATFORM_NAME
+import sdk.sahha.android.common.Constants.PLATFORM_NAME
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.source.Sahha
 

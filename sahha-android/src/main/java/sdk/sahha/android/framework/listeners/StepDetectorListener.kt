@@ -3,22 +3,14 @@ package sdk.sahha.android.framework.listeners
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener2
-import android.os.Build
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.metadata.Device
-import androidx.health.connect.client.records.metadata.Device.Companion.TYPE_PHONE
-import androidx.health.connect.client.records.metadata.Metadata
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
-import java.time.Instant
-import java.time.ZoneId
 
 class StepDetectorListener : SensorEventListener2 {
     internal val steps = mutableListOf<Long>()

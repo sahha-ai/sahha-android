@@ -27,7 +27,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.*

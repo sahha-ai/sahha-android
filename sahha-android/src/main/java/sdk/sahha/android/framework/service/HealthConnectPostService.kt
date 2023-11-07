@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 

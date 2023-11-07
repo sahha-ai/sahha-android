@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.framework.receiver.HealthConnectQueryReceiver
 import sdk.sahha.android.framework.receiver.InsightsQueryReceiver

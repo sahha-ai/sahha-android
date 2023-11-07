@@ -1,4 +1,4 @@
-package sdk.sahha.android.data
+package sdk.sahha.android.common
 
 internal object Constants {
     const val UNKNOWN = "UNKNOWN"
@@ -21,6 +21,7 @@ internal object Constants {
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
+    const val POST_TIMEOUT_LIMIT_MILLIS = 300000L
 
     // Alarm
     const val DEFAULT_ALARM_INTERVAL_MINS = 15L
@@ -39,6 +40,7 @@ internal object Constants {
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
+    const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
 
     // Data Type
     const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
@@ -77,6 +79,16 @@ internal object Constants {
     // Sleep stage
     const val SLEEP_STAGE_SLEEPING = "sleeping"
 
+    // Device types
+    const val DEVICE_TYPE_WATCH = "WATCH"
+    const val DEVICE_TYPE_PHONE = "PHONE"
+    const val DEVICE_TYPE_SCALE = "SCALE"
+    const val DEVICE_TYPE_RING = "RING"
+    const val DEVICE_TYPE_HEAD_MOUNTED = "HEAD_MOUNTED"
+    const val DEVICE_TYPE_FITNESS_BAND = "FITNESS_BAND"
+    const val DEVICE_TYPE_CHEST_STRAP = "CHEST_STRAP"
+    const val DEVICE_TYPE_SMART_DISPLAY = "SMART_DISPLAY"
+
     // Insights
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
     const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
@@ -99,9 +111,11 @@ internal object Constants {
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000
     const val NOTIFICATION_HEALTH_CONNECT = 1002
+    const val NOTIFICATION_INSIGHTS = 1004
     const val NOTIFICATION_PERMISSION_SETTINGS = 1003
     const val HEALTH_CONNECT_NOTIFICATION_CHANNEL_ID = "sahha.healthconnect.service"
     const val INSIGHTS_NOTIFICATION_CHANNEL_ID = "sahha.insights.service"
+    const val TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS = 5000L
 
     // Receivers and Request Codes
     const val ACTIVITY_RECOGNITION_RECEIVER = 2000

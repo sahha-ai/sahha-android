@@ -56,6 +56,11 @@
             android:exported="false"
             android:foregroundServiceType="health" />
 
+        <service
+            android:name=".framework.service.InsightsPostService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
+
         <!-- Activity to show rationale of Health Connect permissions -->
         <activity
             android:name=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity"
@@ -87,7 +92,13 @@
 
         <receiver
             android:name=".framework.receiver.HealthConnectQueryReceiver"
-            android:attributionTags="com.sahha.android:alarm_receiver"
+            android:attributionTags="com.sahha.android:hc_query_receiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".framework.receiver.InsightsQueryReceiver"
+            android:attributionTags="com.sahha.android:insights_receiver"
             android:enabled="true"
             android:exported="false" />
 

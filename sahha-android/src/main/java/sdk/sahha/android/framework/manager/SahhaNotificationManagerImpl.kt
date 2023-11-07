@@ -17,9 +17,8 @@ import sdk.sahha.android.R
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.framework.service.DataCollectionService
-import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.SahhaConfigRepo

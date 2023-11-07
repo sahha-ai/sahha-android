@@ -1,7 +1,7 @@
 package sdk.sahha.android.domain.model.dto
 
 import androidx.annotation.Keep
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 
 @Keep
 data class BloodGlucoseDto(

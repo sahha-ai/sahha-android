@@ -4,9 +4,9 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
-import sdk.sahha.android.data.Constants.APP_ID_HEADER
-import sdk.sahha.android.data.Constants.APP_SECRET_HEADER
-import sdk.sahha.android.data.Constants.AUTHORIZATION_HEADER
+import sdk.sahha.android.common.Constants.APP_ID_HEADER
+import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
+import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto

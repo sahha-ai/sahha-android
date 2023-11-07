@@ -4,8 +4,8 @@ import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.R
-import sdk.sahha.android.data.Constants.NOTIFICATION_DESC_DEFAULT
-import sdk.sahha.android.data.Constants.NOTIFICATION_TITLE_DEFAULT
+import sdk.sahha.android.common.Constants.NOTIFICATION_DESC_DEFAULT
+import sdk.sahha.android.common.Constants.NOTIFICATION_TITLE_DEFAULT
 
 @Keep
 @Entity

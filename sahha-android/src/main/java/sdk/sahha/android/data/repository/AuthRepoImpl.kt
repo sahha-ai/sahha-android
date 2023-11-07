@@ -3,12 +3,11 @@ package sdk.sahha.android.data.repository
 import android.content.SharedPreferences
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
-import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler.storeNewTokens
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.Constants.UERT
-import sdk.sahha.android.data.Constants.UET
+import sdk.sahha.android.common.Constants.UERT
+import sdk.sahha.android.common.Constants.UET
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto

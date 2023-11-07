@@ -9,15 +9,13 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.data.Constants
-import sdk.sahha.android.data.Constants.NOTIFICATION_DATA_COLLECTION
+import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor

@@ -6,8 +6,8 @@ import android.os.IBinder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.data.Constants
 import sdk.sahha.android.source.Sahha
 import java.time.LocalDate
 import java.time.LocalTime
@@ -23,21 +23,17 @@ class InsightsPostService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        println("InsightsPostService0001")
         scope.launch {
+            println("InsightsPostService0002")
             SahhaReconfigure(this@InsightsPostService)
             startNotification()
             if (stopOnNoAuth()) return@launch
 
-            insights.postInsightsData { error, successful ->
-                error?.also { e ->
-                    Sahha.di.sahhaErrorLogger.application(
-                        e, tag, "onStartCommand"
-                    )
-                }
+            insights.postWithMinimumDelay()
 
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-            }
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
         }
 
         return START_NOT_STICKY
@@ -45,12 +41,14 @@ class InsightsPostService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        println("InsightsPostService0010")
         scheduleNextAlarm()
     }
 
     private fun scheduleNextAlarm() {
+        println("InsightsPostService0011")
         Sahha.di.sahhaAlarmManager.setAlarm(
-            Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this),
+            Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this.applicationContext),
             ZonedDateTime.of(
                 LocalDate.now().plusDays(1),
                 LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
@@ -79,7 +77,7 @@ class InsightsPostService : Service() {
         )
 
         startForeground(
-            Constants.NOTIFICATION_HEALTH_CONNECT,
+            Constants.NOTIFICATION_INSIGHTS,
             notification
         )
     }

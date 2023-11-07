@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus

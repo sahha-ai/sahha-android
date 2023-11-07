@@ -21,6 +21,6 @@ interface InsightsRepo {
         token: String,
         insights: List<InsightData>,
         refreshedToken: Boolean = false,
-        callback: ((error: String?, successful: Boolean) -> Unit)
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)
     )
 }

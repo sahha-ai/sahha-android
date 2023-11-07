@@ -12,7 +12,7 @@ import androidx.work.WorkerParameters
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.SleepSegmentRequest
 import com.google.android.gms.tasks.Task
-import sdk.sahha.android.data.Constants.SLEEP_DATA_REQUEST
+import sdk.sahha.android.common.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.framework.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
