@@ -15,7 +15,6 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     private var status = SahhaSensorStatus.pending
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
-    private val permissions by lazy { Sahha.di.permissionManager.permissions }
 
     // Create the permissions launcher.
     private val requestPermissionActivityContract =
@@ -49,15 +48,16 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
+        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(permissions)) {
+        if (granted.containsAll(hcPermissions)) {
             status = SahhaSensorStatus.enabled
             enabledStatus()
             return
         }
 
         // Else
-        requestPermissions.launch(permissions)
+        requestPermissions.launch(hcPermissions)
     }
 
     private fun enabledStatus() {

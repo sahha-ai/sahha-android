@@ -8,4 +8,6 @@ enum class SahhaSensor {
     device,
     sleep,
     pedometer,
+    heart,
+    blood
 }
