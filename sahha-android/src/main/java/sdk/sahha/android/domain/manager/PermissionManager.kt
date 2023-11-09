@@ -26,8 +26,8 @@ interface PermissionManager {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
 
-    val permissions: Set<String>
     var statusPending: Boolean
+    suspend fun getHcPermissions(): Set<String>
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
     fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean

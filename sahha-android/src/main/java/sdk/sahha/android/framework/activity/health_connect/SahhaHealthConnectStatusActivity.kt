@@ -11,10 +11,7 @@ import sdk.sahha.android.source.SahhaSensorStatus
 
 internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
-    private val permissionManager by lazy { Sahha.di.permissionManager }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
-    private val healthConnectRepo by lazy { Sahha.di.healthConnectRepo }
-    private val permissions by lazy { permissionManager.permissions }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +25,9 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissions(healthConnectClient: HealthConnectClient) {
+        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(permissions)) {
-            println("SahhaHealthConnectStatusActivity0001")
+        if (granted.containsAll(hcPermissions)) {
             permissionHandler.activityCallback.statusCallback
                 ?.invoke(null, SahhaSensorStatus.enabled)
             finish()
@@ -38,14 +35,12 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
         }
 
         // Else
-        println("SahhaHealthConnectStatusActivity0002")
         permissionHandler.activityCallback.statusCallback
             ?.invoke(null, SahhaSensorStatus.disabled)
         finish()
     }
 
     private fun healthConnectUnavailable() {
-        println("SahhaHealthConnectStatusActivity0003")
         permissionHandler.activityCallback.statusCallback
             ?.invoke(null, SahhaSensorStatus.unavailable)
         finish()

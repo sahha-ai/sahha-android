@@ -353,12 +353,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
+        configRepo: SahhaConfigRepo,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
         @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
             mainScope,
+            configRepo,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger

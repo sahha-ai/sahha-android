@@ -24,8 +24,6 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.CoroutineScope
-import sdk.sahha.android.framework.activity.SahhaPermissionActivity
-import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
@@ -33,7 +31,11 @@ import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
+import sdk.sahha.android.framework.activity.SahhaPermissionActivity
+import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
@@ -41,6 +43,7 @@ private val tag = "PermissionManagerImpl"
 
 class PermissionManagerImpl @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
+    private val configRepo: SahhaConfigRepo,
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger
@@ -48,7 +51,7 @@ class PermissionManagerImpl @Inject constructor(
     override var statusPending = true
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
-    
+
     override fun shouldUseHealthConnect(
         buildVersion: Int
     ): Boolean {
@@ -59,17 +62,33 @@ class PermissionManagerImpl @Inject constructor(
     }
 
 
-    override val permissions =
-        setOf(
-            HealthPermission.getReadPermission(HeartRateRecord::class),
-            HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class),
-            HealthPermission.getReadPermission(RestingHeartRateRecord::class),
-            HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(SleepStageRecord::class),
-            HealthPermission.getReadPermission(SleepSessionRecord::class),
-            HealthPermission.getReadPermission(BloodPressureRecord::class),
-            HealthPermission.getReadPermission(BloodGlucoseRecord::class),
-        )
+    override suspend fun getHcPermissions(): Set<String> {
+        val p = mutableSetOf<String>()
+        val enabledSensors = configRepo.getConfig().sensorArray
+
+        if (enabledSensors.contains(SahhaSensor.sleep.ordinal)) {
+            p.add(HealthPermission.getReadPermission(SleepStageRecord::class))
+            p.add(HealthPermission.getReadPermission(SleepSessionRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.pedometer.ordinal)) {
+            p.add(HealthPermission.getReadPermission(StepsRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
+            p.add(HealthPermission.getReadPermission(HeartRateRecord::class))
+            p.add(HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class))
+            p.add(HealthPermission.getReadPermission(RestingHeartRateRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.blood.ordinal)) {
+            p.add(HealthPermission.getReadPermission(BloodPressureRecord::class))
+            p.add(HealthPermission.getReadPermission(BloodGlucoseRecord::class))
+        }
+
+        return p
+    }
+
 
     override fun <T : Activity> launchPermissionActivity(
         context: Context,
@@ -224,3 +243,4 @@ class PermissionManagerImpl @Inject constructor(
         }
     }
 }
+
