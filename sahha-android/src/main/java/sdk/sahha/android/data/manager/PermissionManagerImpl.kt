@@ -56,9 +56,9 @@ class PermissionManagerImpl @Inject constructor(
         buildVersion: Int
     ): Boolean {
         val clientIsAvailable = healthConnectClient != null
-        val isAboveAndroid8 = buildVersion >= Build.VERSION_CODES.P
+        val isAndroid9OrAbove = buildVersion >= Build.VERSION_CODES.P
 
-        return clientIsAvailable && isAboveAndroid8
+        return clientIsAvailable && isAndroid9OrAbove
     }
 
 
