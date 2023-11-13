@@ -4,11 +4,15 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.framework.receiver.HealthConnectQueryReceiver
 import sdk.sahha.android.framework.receiver.InsightsQueryReceiver
+import sdk.sahha.android.source.Sahha
 import javax.inject.Inject
+
+private const val tag = "SahhaAlarmManagerImpl"
 
 class SahhaAlarmManagerImpl @Inject constructor(
     private val alarmManager: AlarmManager
@@ -34,6 +38,7 @@ class SahhaAlarmManagerImpl @Inject constructor(
     }
 
     override fun setAlarm(pendingIntent: PendingIntent, setTimeEpochMillis: Long) {
+        Log.i(tag, "Alarm set: ${Sahha.di.timeManager.epochMillisToISO(setTimeEpochMillis)}")
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             setTimeEpochMillis,

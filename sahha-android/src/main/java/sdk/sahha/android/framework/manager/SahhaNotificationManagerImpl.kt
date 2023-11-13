@@ -59,9 +59,7 @@ class SahhaNotificationManagerImpl(
             val config = configRepo.getConfig()
             if (config.sensorArray.isEmpty()) return@launch
 
-            val notificationConfig = runBlocking {
-                Sahha.di.configurationDao.getNotificationConfig()
-            }
+            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
 
             setNewPersistent(
                 notificationConfig.icon,

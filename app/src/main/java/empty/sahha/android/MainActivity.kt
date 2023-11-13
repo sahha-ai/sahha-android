@@ -68,6 +68,9 @@ class MainActivity : ComponentActivity() {
 //                title = "Foreground Service",
 //                shortDescription = "This mainly handles native steps and screen locks"
             ),
+//            sensors = setOf(
+//
+//            )
         )
 
         Sahha.configure(
