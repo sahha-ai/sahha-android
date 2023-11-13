@@ -1,6 +1,7 @@
 package sdk.sahha.android.data.mapper
 
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -9,9 +10,9 @@ import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.domain.model.HealthData
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
@@ -125,8 +126,8 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
     )
 }
 
-fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
-    return HeartRateDto(
+fun RestingHeartRateRecord.toHeartRateDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_RESTING_HEART_RATE,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         count = beatsPerMinute,
@@ -146,8 +147,8 @@ fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_AVG,
         count = result[HeartRateRecord.BPM_AVG] ?: -1,
         source = result.dataOrigins.map {
@@ -158,8 +159,8 @@ fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_MIN,
         count = result[HeartRateRecord.BPM_MIN] ?: -1,
         source = result.dataOrigins.map {
@@ -170,8 +171,8 @@ fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_MAX,
         count = result[HeartRateRecord.BPM_MAX] ?: -1,
         source = result.dataOrigins.map {
@@ -182,8 +183,8 @@ fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_RESTING_HEART_RATE_AVG,
         count = result[RestingHeartRateRecord.BPM_AVG] ?: -1,
         source = result.dataOrigins.map {
@@ -194,8 +195,8 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HeartRateDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_RESTING_HEART_RATE_MIN,
         count = result[RestingHeartRateRecord.BPM_MIN] ?: -1,
         source = result.dataOrigins.map {
@@ -206,8 +207,8 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HeartRateDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_RESTING_HEART_RATE_MAX,
         count = result[RestingHeartRateRecord.BPM_MAX] ?: -1,
         source = result.dataOrigins.map {
@@ -218,8 +219,8 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HeartRateDto 
     )
 }
 
-fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
-    return HeartRateDto(
+fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HealthData {
+    return HealthData(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD,
         count = this.heartRateVariabilityMillis.toLong(),
         unit = Constants.HEALTH_CONNECT_UNIT_MILLISECONDS,
@@ -229,6 +230,22 @@ fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthData {
+    return HealthData(
+        dataType = Constants.HEALTH_CONNECT_ACTIVE_CALORIES_BURNED,
+        count = energy.inCalories.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_CALORIES,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset),
         deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
         deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )

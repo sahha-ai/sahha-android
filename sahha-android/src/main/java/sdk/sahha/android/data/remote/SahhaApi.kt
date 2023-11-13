@@ -7,12 +7,12 @@ import retrofit2.http.*
 import sdk.sahha.android.common.Constants.APP_ID_HEADER
 import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
+import sdk.sahha.android.domain.model.HealthData
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.DemographicDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.domain.model.insight.InsightData
@@ -57,7 +57,7 @@ interface SahhaApi {
     @POST("profile/heart/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body heartRateData: List<HeartRateDto>
+        @Body heartRateData: List<HealthData>
     ): Response<ResponseBody>
 
     @POST("profile/blood/log")
@@ -76,6 +76,12 @@ interface SahhaApi {
     suspend fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>
+    ): Response<ResponseBody>
+
+    @POST("placeholder/activeCaloriesBurned")
+    suspend fun postActiveCaloriesBurned(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body activeCalBurnedData: List<HealthData>
     ): Response<ResponseBody>
 
     @POST("profile/analyze")

@@ -8,6 +8,7 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -31,15 +32,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import retrofit2.Response
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.mapper.toActiveCaloriesBurned
 import sdk.sahha.android.data.mapper.toBloodGlucoseDto
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolicDto
 import sdk.sahha.android.data.mapper.toBloodPressureSystolicDto
@@ -59,9 +61,9 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.HealthData
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
@@ -210,7 +212,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getHeartRateDataResponse(heartRateData: List<HeartRateDto>): Response<ResponseBody> {
+    private suspend fun getHeartRateDataResponse(heartRateData: List<HealthData>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postHeartRateData(
             TokenBearer(token),
@@ -480,11 +482,11 @@ class HealthConnectRepoImpl @Inject constructor(
         heartRateData: List<HeartRateRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val samplesList = mutableListOf<HeartRateDto>()
+        val samplesList = mutableListOf<HealthData>()
         heartRateData.forEach { record ->
             record.samples.forEach { sample ->
                 samplesList.add(
-                    HeartRateDto(
+                    HealthData(
                         dataType = Constants.HEALTH_CONNECT_HEART_RATE,
                         count = sample.beatsPerMinute,
                         source = record.metadata.dataOrigin.packageName,
@@ -507,7 +509,7 @@ class HealthConnectRepoImpl @Inject constructor(
             }
         }
 
-        val getResponse: suspend (List<HeartRateDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<HealthData>) -> Response<ResponseBody> = { chunk ->
             getHeartRateDataResponse(chunk)
         }
 
@@ -550,6 +552,29 @@ class HealthConnectRepoImpl @Inject constructor(
 
         postData(
             stepData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postActiveCaloriesBurnedData(
+        activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<ActiveCaloriesBurnedRecord>) -> Response<ResponseBody> =
+            { chunk ->
+                val token = authRepo.getToken() ?: ""
+                val activeCalsBurned = chunk.map { it.toActiveCaloriesBurned() }
+                api.postActiveCaloriesBurned(
+                    TokenBearer(token),
+                    activeCalsBurned
+                )
+            }
+
+        postData(
+            activeCalBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
             {},

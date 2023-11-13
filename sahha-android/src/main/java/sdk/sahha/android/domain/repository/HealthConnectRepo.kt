@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.repository
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -14,6 +15,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import sdk.sahha.android.domain.model.HealthData
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
@@ -113,6 +115,11 @@ interface HealthConnectRepo {
 
     suspend fun postRestingHeartRateData(
         restingHeartRateData: List<RestingHeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postActiveCaloriesBurnedData(
+        activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 }
