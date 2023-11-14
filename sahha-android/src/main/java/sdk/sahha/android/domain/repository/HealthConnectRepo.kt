@@ -6,6 +6,7 @@ import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.Record
@@ -120,6 +121,11 @@ interface HealthConnectRepo {
 
     suspend fun postActiveCaloriesBurnedData(
         activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postBodyTempData(
+        bodyTempData: List<BodyTemperatureRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 }

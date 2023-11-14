@@ -6,6 +6,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.Record
@@ -245,6 +246,25 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             error, successful,
                                             "Posted active calories burned data successfully.",
                                             records, ActiveCaloriesBurnedRecord::class
+                                        )
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BodyTemperatureRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(BodyTemperatureRecord::class)?.also { records ->
+                                repo.postBodyTempData(records) { error, successful ->
+                                    processPostResponse(
+                                        HealthConnectPostParameters(
+                                            error, successful,
+                                            "Posted body temperature data successfully.",
+                                            records, BodyTemperatureRecord::class
                                         )
                                     )
                                     cont.resume(Unit)

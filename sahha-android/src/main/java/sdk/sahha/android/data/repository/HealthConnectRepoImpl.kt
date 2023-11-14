@@ -11,6 +11,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.Record
@@ -45,6 +46,7 @@ import sdk.sahha.android.data.mapper.toActiveCaloriesBurned
 import sdk.sahha.android.data.mapper.toBloodGlucoseDto
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolicDto
 import sdk.sahha.android.data.mapper.toBloodPressureSystolicDto
+import sdk.sahha.android.data.mapper.toBodyTemperature
 import sdk.sahha.android.data.mapper.toHeartRateAvgDto
 import sdk.sahha.android.data.mapper.toHeartRateDto
 import sdk.sahha.android.data.mapper.toHeartRateMaxDto
@@ -575,6 +577,29 @@ class HealthConnectRepoImpl @Inject constructor(
 
         postData(
             activeCalBurnedData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postBodyTempData(
+        bodyTempData: List<BodyTemperatureRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<BodyTemperatureRecord>) -> Response<ResponseBody> =
+            { chunk ->
+                val token = authRepo.getToken() ?: ""
+                val bodyTemps = chunk.map { it.toBodyTemperature() }
+                api.postBodyTemperatures(
+                    TokenBearer(token),
+                    bodyTemps
+                )
+            }
+
+        postData(
+            bodyTempData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
             {},

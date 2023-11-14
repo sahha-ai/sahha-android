@@ -78,10 +78,16 @@ interface SahhaApi {
         @Body lockData: List<PhoneUsageSendDto>
     ): Response<ResponseBody>
 
-    @POST("placeholder/activeCaloriesBurned")
+    @POST("placeholder/activity/log")
     suspend fun postActiveCaloriesBurned(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body activeCalBurnedData: List<HealthData>
+    ): Response<ResponseBody>
+
+    @POST("placeholder/activity/log")
+    suspend fun postBodyTemperatures(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bodyTempData: List<HealthData>
     ): Response<ResponseBody>
 
     @POST("profile/analyze")
