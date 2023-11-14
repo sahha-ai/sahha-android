@@ -7,16 +7,20 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
-import sdk.sahha.android.domain.model.HealthData
+import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
@@ -126,6 +130,26 @@ interface HealthConnectRepo {
 
     suspend fun postBodyTempData(
         bodyTempData: List<BodyTemperatureRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postFloorsClimbedData(
+        floorsClimbedData: List<FloorsClimbedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postOxygenSaturation(
+        oxygenSaturationData: List<OxygenSaturationRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postTotalCaloriesBurned(
+        totalCaloriesBurnedData: List<TotalCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postVo2MaxData(
+        vo2MaxData: List<Vo2MaxRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 }

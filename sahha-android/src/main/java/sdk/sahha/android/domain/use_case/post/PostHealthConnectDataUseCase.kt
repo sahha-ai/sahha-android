@@ -7,12 +7,16 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -265,6 +269,82 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             error, successful,
                                             "Posted body temperature data successfully.",
                                             records, BodyTemperatureRecord::class
+                                        )
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(FloorsClimbedRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(FloorsClimbedRecord::class)?.also { records ->
+                                repo.postFloorsClimbedData(records) { error, successful ->
+                                    processPostResponse(
+                                        HealthConnectPostParameters(
+                                            error, successful,
+                                            "Posted floors climbed data successfully.",
+                                            records, FloorsClimbedRecord::class
+                                        )
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(OxygenSaturationRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(OxygenSaturationRecord::class)?.also { records ->
+                                repo.postOxygenSaturation(records) { error, successful ->
+                                    processPostResponse(
+                                        HealthConnectPostParameters(
+                                            error, successful,
+                                            "Posted oxygen saturation data successfully.",
+                                            records, OxygenSaturationRecord::class
+                                        )
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(TotalCaloriesBurnedRecord::class)?.also { records ->
+                                repo.postTotalCaloriesBurned(records) { error, successful ->
+                                    processPostResponse(
+                                        HealthConnectPostParameters(
+                                            error, successful,
+                                            "Posted total calories burned data successfully.",
+                                            records, TotalCaloriesBurnedRecord::class
+                                        )
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(Vo2MaxRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(Vo2MaxRecord::class)?.also { records ->
+                                repo.postVo2MaxData(records) { error, successful ->
+                                    processPostResponse(
+                                        HealthConnectPostParameters(
+                                            error, successful,
+                                            "Posted VO2 max data successfully.",
+                                            records, Vo2MaxRecord::class
                                         )
                                     )
                                     cont.resume(Unit)

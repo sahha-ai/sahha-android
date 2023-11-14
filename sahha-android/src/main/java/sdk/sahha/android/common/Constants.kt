@@ -62,6 +62,10 @@ internal object Constants {
     const val HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD = "HealthConnectHeartRateVariabilityRmssd"
     const val HEALTH_CONNECT_ACTIVE_CALORIES_BURNED = "HealthConnectActiveCaloriesBurned"
     const val HEALTH_CONNECT_BODY_TEMPERATURE = "HealthConnectBodyTemperature"
+    const val HEALTH_CONNECT_FLOORS_CLIMBED = "HealthConnectFloorsClimbed"
+    const val HEALTH_CONNECT_OXYGEN_SATURATION = "HealthConnectOxygenSaturation"
+    const val HEALTH_CONNECT_TOTAL_CALORIES_BURNED = "HealthConnectTotalCaloriesBurned"
+    const val HEALTH_CONNECT_VO2_MAX = "HealthConnectVo2Max"
 
     // Data Units
     const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
@@ -69,6 +73,9 @@ internal object Constants {
     const val HEALTH_CONNECT_UNIT_MILLISECONDS = "milliseconds"
     const val HEALTH_CONNECT_UNIT_CALORIES = "calories"
     const val HEALTH_CONNECT_UNIT_CELSIUS = "celsius"
+    const val HEALTH_CONNECT_UNIT_FLOORS = "floors"
+    const val HEALTH_CONNECT_UNIT_PERCENTAGE = "percentage"
+    const val HEALTH_CONNECT_UNIT_ML_PER_KG_PER_MIN = "mL/kg/min"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

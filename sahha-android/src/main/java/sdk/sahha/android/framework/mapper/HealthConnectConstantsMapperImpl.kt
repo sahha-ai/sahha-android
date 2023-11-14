@@ -5,6 +5,7 @@ import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.MealType
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.DeviceTypes
 import sdk.sahha.android.common.Constants
@@ -60,5 +61,9 @@ class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
 
     override fun measurementLocation(constantInt: Int): String? {
         return BloodPressureRecord.MEASUREMENT_LOCATION_INT_TO_STRING_MAP[constantInt]
+    }
+
+    override fun measurementMethod(constantInt: Int): String? {
+        return Vo2MaxRecord.MEASUREMENT_METHOD_INT_TO_STRING_MAP[constantInt]
     }
 }
