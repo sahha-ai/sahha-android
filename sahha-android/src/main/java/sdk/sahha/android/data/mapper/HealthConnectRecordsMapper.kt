@@ -254,7 +254,7 @@ fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthData {
 
 fun BodyTemperatureRecord.toBodyTemperature(): HealthData {
     return HealthData(
-        dataType = Constants.HEALTH_CONNECT_ACTIVE_CALORIES_BURNED,
+        dataType = Constants.HEALTH_CONNECT_BODY_TEMPERATURE,
         count = temperature.inCelsius.toLong(),
         unit = Constants.HEALTH_CONNECT_UNIT_CELSIUS,
         source = metadata.dataOrigin.packageName,
