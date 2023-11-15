@@ -3,12 +3,11 @@ package sdk.sahha.android.data.repository
 import android.content.SharedPreferences
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
-import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler.storeNewTokens
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.Constants.UERT
-import sdk.sahha.android.data.Constants.UET
+import sdk.sahha.android.common.Constants.UERT
+import sdk.sahha.android.common.Constants.UET
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
@@ -63,6 +62,27 @@ class AuthRepoImpl(
         }
     }
 
+    override suspend fun postRefreshTokenAndReturnNew(
+        retryLogic: (suspend (newToken: String?) -> Unit),
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val tokenData = getTokenData(callback) ?: return
+        try {
+            val response = api.postRefreshTokenResponse(
+                TokenBearer(tokenData.profileToken),
+                RefreshTokenSendDto(tokenData.refreshToken)
+            )
+
+            if (ResponseCode.isSuccessful(response.code())) {
+                handleSuccessfulResponse(response, retryLogic, callback)
+            } else {
+                handleFailedResponse(response, callback)
+            }
+        } catch (e: Exception) {
+            callback?.invoke(e.message, false)
+        }
+    }
+
     private fun getTokenData(callback: ((error: String?, successful: Boolean) -> Unit)?): TokenData? {
         val token = getToken()
         val refreshToken = getRefreshToken()
@@ -82,6 +102,16 @@ class AuthRepoImpl(
     ) {
         storeNewTokens(response.body(), callback)
         retryLogic()
+    }
+
+    private suspend fun handleSuccessfulResponse(
+        response: Response<TokenData>,
+        retryLogic: (suspend (newToken: String?) -> Unit),
+        callback: ((error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val tokens = response.body()
+        storeNewTokens(tokens, callback)
+        retryLogic(tokens?.profileToken)
     }
 
     private fun handleFailedResponse(

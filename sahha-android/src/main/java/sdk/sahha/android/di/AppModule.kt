@@ -10,7 +10,7 @@ import android.hardware.SensorManager
 import android.os.PowerManager
 import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
+import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
@@ -27,21 +27,18 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
-import sdk.sahha.android.data.manager.ReceiverManagerImpl
-import sdk.sahha.android.data.manager.SahhaAlarmManagerImpl
-import sdk.sahha.android.data.manager.SahhaNotificationManagerImpl
-import sdk.sahha.android.data.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
+import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
@@ -56,11 +53,16 @@ import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.background.*
 import sdk.sahha.android.domain.use_case.post.*
+import sdk.sahha.android.framework.manager.ReceiverManagerImpl
+import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
+import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
+import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
@@ -160,12 +162,15 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
-        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val masterKeyAlias =
+            MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
         return EncryptedSharedPreferences.create(
+            context,
             "encrypted_prefs",
             masterKeyAlias,
-            context,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
@@ -316,6 +321,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
+    fun provideInsightsRepository(
+        timeManager: SahhaTimeManager,
+        api: SahhaApi,
+        sahhaErrorLogger: SahhaErrorLogger,
+        @IoScope ioScope: CoroutineScope
+    ): InsightsRepo {
+        return InsightsRepoImpl(
+            timeManager,
+            api,
+            sahhaErrorLogger,
+            ioScope
+        )
+    }
+
+    @Singleton
+    @Provides
     fun providePermissionHandler(
         activityCallback: ActivityCallback
     ): PermissionHandler {
@@ -332,12 +353,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
+        configRepo: SahhaConfigRepo,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
         @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
             mainScope,
+            configRepo,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger
@@ -387,21 +410,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     }
 
     @DefaultScope
-    @Singleton
     @Provides
     fun provideDefaultScope(): CoroutineScope {
         return CoroutineScope(Default)
     }
 
     @IoScope
-    @Singleton
     @Provides
     fun provideIoScope(): CoroutineScope {
         return CoroutineScope(IO)
     }
 
     @MainScope
-    @Singleton
     @Provides
     fun provideMainScope(): CoroutineScope {
         return CoroutineScope(Main)
@@ -547,11 +567,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideSahhaAlarmManager(
-        context: Context,
         alarmManager: AlarmManager
     ): SahhaAlarmManager {
         return SahhaAlarmManagerImpl(
-            context,
             alarmManager
         )
     }

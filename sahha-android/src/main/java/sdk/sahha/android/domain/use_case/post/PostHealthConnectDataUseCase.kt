@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.use_case.post
 
 import android.content.Context
+import android.util.Log
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -12,11 +13,9 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.di.IoScope
@@ -55,241 +54,226 @@ class PostHealthConnectDataUseCase @Inject constructor(
         val results = mutableListOf<Boolean>()
         val errors = mutableListOf<String>()
 
-        if (mutex.tryLock()) {
-            try {
-                granted.forEach {
-                    println("Querying... $it")
-                    when (it) {
-                        HealthPermission.getReadPermission(StepsRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getCurrentDayRecords(StepsRecord::class)?.also { r ->
-                                        println("StepsRecord0000")
-                                        var postData = mutableListOf<StepsHealthConnect>()
-                                        val local = repo.getAllStepsHc()
+        granted.forEach {
+            when (it) {
+                HealthPermission.getReadPermission(StepsRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getCurrentDayRecords(StepsRecord::class)?.also { r ->
+                                var postData = mutableListOf<StepsHealthConnect>()
+                                val local = repo.getAllStepsHc()
 
-                                        val queries = r.map { qr -> qr.toStepsHealthConnect() }
+                                val queries = r.map { qr -> qr.toStepsHealthConnect() }
 
-                                        println("StepsRecord0001")
-                                        for (record in queries) {
-                                            val localMatch =
-                                                local.find { l -> l.metaId == record.metaId }
+                                for (record in queries) {
+                                    val localMatch =
+                                        local.find { l -> l.metaId == record.metaId }
 
-                                            if (localMatch == null) {
-                                                postData = saveLocallyAndPrepPost(postData, record)
-                                                continue
-                                            }
-                                            if (localMatch.modifiedDateTime == record.modifiedDateTime) {
-                                                continue
-                                            }
+                                    if (localMatch == null) {
+                                        postData = saveLocallyAndPrepPost(postData, record)
+                                        continue
+                                    }
+                                    if (localMatch.modifiedDateTime == record.modifiedDateTime) {
+                                        continue
+                                    }
 
-                                            // Modified time is different
-                                            postData =
-                                                saveLocalAndPrepDiffPost(
-                                                    postData,
-                                                    localMatch,
-                                                    record
-                                                )
-                                        }
-
-
-                                        if (postData.isEmpty()) {
-                                            cont.resume(Unit)
-                                            this.cancel()
-                                            return@launch
-                                        }
-
-                                        repo.postStepData(postData) { error, successful ->
-                                            if (successful) {
-                                                println("StepsRecord0005")
-                                                clearLastMidnightSteps()
-                                                saveQuery(StepsRecord::class, successful)
-                                            }
-
-                                            results.add(successful)
-                                            error?.also { e -> errors.add(e) }
-                                            logError(
-                                                error,
-                                                "queryAndPostHealthConnectData",
-                                                postData.toString()
-                                            )
-                                            cont.resume(Unit)
-                                            this.cancel()
-                                        }
-                                    } ?: cont.resume(Unit)
-                                    this.cancel()
+                                    // Modified time is different
+                                    postData =
+                                        saveLocalAndPrepDiffPost(
+                                            postData,
+                                            localMatch,
+                                            record
+                                        )
                                 }
-                            }
-                        }
 
-                        HealthPermission.getReadPermission(SleepSessionRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getNewRecords(SleepSessionRecord::class)?.also { records ->
-                                        repo.postSleepSessionData(records) { error, successful ->
-                                            if (successful)
-                                                saveQuery(SleepSessionRecord::class, successful)
 
-                                            results.add(successful)
-                                            error?.also { e -> errors.add(e) }
-                                            logError(
-                                                error,
-                                                "queryAndPostHealthConnectData",
-                                                records.toString()
-                                            )
-                                            cont.resume(Unit)
-                                            this.cancel()
-                                        }
-                                    } ?: cont.resume(Unit)
-                                    this.cancel()
+                                if (postData.isEmpty()) {
+                                    cont.resume(Unit)
+
+                                    return@launch
                                 }
-                            }
-                        }
 
-                        HealthPermission.getReadPermission(HeartRateRecord::class) -> {
-                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0001")
-                            suspendCoroutine<Unit> { cont ->
-                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0002")
-                                ioScope.launch {
-                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0003")
-                                    repo.getNewRecords(HeartRateRecord::class)?.also { records ->
-                                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0004")
-                                        repo.postHeartRateData(records) { error, successful ->
-                                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0005")
-                                            if (successful)
-                                                saveQuery(HeartRateRecord::class, successful)
+                                repo.postStepData(postData) { error, successful ->
+                                    if (successful) {
+                                        clearLastMidnightSteps()
+                                        saveQuery(StepsRecord::class, successful)
+                                        Log.i(tag, "Posted step data successfully.")
+                                    }
 
-                                            results.add(successful)
-                                            error?.also { e -> errors.add(e) }
-                                            logError(
-                                                error,
-                                                "queryAndPostHealthConnectData",
-                                                records.toString()
-                                            )
-                                            println("HealthPermission.getReadPermission(HeartRateRecord::class)0006")
-                                            cont.resume(Unit)
-                                            this.cancel()
-                                        }
-                                        println("HealthPermission.getReadPermission(HeartRateRecord::class)0007")
-                                    } ?: cont.resume(Unit)
-                                    println("HealthPermission.getReadPermission(HeartRateRecord::class)0008")
-                                    this.cancel()
+                                    results.add(successful)
+                                    error?.also { e -> errors.add(e) }
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        postData.toString()
+                                    )
+                                    cont.resume(Unit)
                                 }
-                                println("HealthPermission.getReadPermission(HeartRateRecord::class)0009")
-                            }
-                        }
-
-                        HealthPermission.getReadPermission(RestingHeartRateRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getNewRecords(RestingHeartRateRecord::class)
-                                        ?.also { records ->
-                                            repo.postRestingHeartRateData(records) { error, successful ->
-                                                if (successful)
-                                                    saveQuery(HeartRateRecord::class, successful)
-
-                                                results.add(successful)
-                                                error?.also { e -> errors.add(e) }
-                                                logError(
-                                                    error,
-                                                    "queryAndPostHealthConnectData",
-                                                    records.toString()
-                                                )
-                                                cont.resume(Unit)
-                                                this.cancel()
-                                            }
-                                        } ?: cont.resume(Unit)
-                                    this.cancel()
-                                }
-                            }
-                        }
-
-                        HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getNewRecords(HeartRateVariabilityRmssdRecord::class)
-                                        ?.also { records ->
-                                            repo.postHeartRateVariabilityRmssdData(records) { error, successful ->
-                                                if (successful)
-                                                    saveQuery(
-                                                        HeartRateVariabilityRmssdRecord::class,
-                                                        successful
-                                                    )
-
-                                                results.add(successful)
-                                                error?.also { e -> errors.add(e) }
-                                                logError(
-                                                    error,
-                                                    "queryAndPostHealthConnectData",
-                                                    records.toString()
-                                                )
-                                                cont.resume(Unit)
-                                                this.cancel()
-                                            }
-                                        } ?: cont.resume(Unit)
-                                    this.cancel()
-                                }
-                            }
-                        }
-
-                        HealthPermission.getReadPermission(BloodGlucoseRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getNewRecords(BloodGlucoseRecord::class)?.also { records ->
-                                        repo.postBloodGlucoseData(records) { error, successful ->
-                                            if (successful)
-                                                saveQuery(BloodGlucoseRecord::class, successful)
-
-                                            results.add(successful)
-                                            error?.also { e -> errors.add(e) }
-                                            logError(
-                                                error,
-                                                "queryAndPostHealthConnectData",
-                                                records.toString()
-                                            )
-                                            cont.resume(Unit)
-                                            this.cancel()
-                                        }
-                                    } ?: cont.resume(Unit)
-                                    this.cancel()
-                                }
-                            }
-                        }
-
-                        HealthPermission.getReadPermission(BloodPressureRecord::class) -> {
-                            suspendCoroutine<Unit> { cont ->
-                                ioScope.launch {
-                                    repo.getNewRecords(BloodPressureRecord::class)
-                                        ?.also { records ->
-                                            repo.postBloodPressureData(records) { error, successful ->
-                                                if (successful)
-                                                    saveQuery(
-                                                        BloodPressureRecord::class,
-                                                        successful
-                                                    )
-
-                                                results.add(successful)
-                                                error?.also { e -> errors.add(e) }
-                                                cont.resume(Unit)
-                                                this.cancel()
-                                            }
-                                        } ?: cont.resume(Unit)
-                                    this.cancel()
-                                }
-                            }
+                            } ?: cont.resume(Unit)
                         }
                     }
                 }
 
-                if (checkIsAllTrue(results))
-                    callback(null, true)
-                else callback(sumErrors(errors), false)
-            } finally {
-                mutex.unlock()
+                HealthPermission.getReadPermission(SleepSessionRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(SleepSessionRecord::class)?.also { records ->
+                                repo.postSleepSessionData(records) { error, successful ->
+                                    if (successful) {
+                                        saveQuery(SleepSessionRecord::class, successful)
+                                        Log.i(tag, "Posted sleep data successfully.")
+                                    }
+
+                                    results.add(successful)
+                                    error?.also { e -> errors.add(e) }
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        records.toString()
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(HeartRateRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(HeartRateRecord::class)?.also { records ->
+                                repo.postHeartRateData(records) { error, successful ->
+                                    if (successful) {
+                                        saveQuery(HeartRateRecord::class, successful)
+                                        Log.i(tag, "Posted heart rate data successfully.")
+                                    }
+
+                                    results.add(successful)
+                                    error?.also { e -> errors.add(e) }
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        records.toString()
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(RestingHeartRateRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(RestingHeartRateRecord::class)
+                                ?.also { records ->
+                                    repo.postRestingHeartRateData(records) { error, successful ->
+                                        if (successful) {
+                                            saveQuery(HeartRateRecord::class, successful)
+                                            Log.i(
+                                                tag,
+                                                "Posted resting heart rate data successfully."
+                                            )
+                                        }
+
+                                        results.add(successful)
+                                        error?.also { e -> errors.add(e) }
+                                        logError(
+                                            error,
+                                            "queryAndPostHealthConnectData",
+                                            records.toString()
+                                        )
+                                        cont.resume(Unit)
+                                    }
+                                } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(HeartRateVariabilityRmssdRecord::class)
+                                ?.also { records ->
+                                    repo.postHeartRateVariabilityRmssdData(records) { error, successful ->
+                                        if (successful) {
+                                            saveQuery(
+                                                HeartRateVariabilityRmssdRecord::class,
+                                                successful
+                                            )
+                                            Log.i(
+                                                tag,
+                                                "Posted heart rate variability data successfully."
+                                            )
+                                        }
+
+                                        results.add(successful)
+                                        error?.also { e -> errors.add(e) }
+                                        logError(
+                                            error,
+                                            "queryAndPostHealthConnectData",
+                                            records.toString()
+                                        )
+                                        cont.resume(Unit)
+                                    }
+                                } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BloodGlucoseRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(BloodGlucoseRecord::class)?.also { records ->
+                                repo.postBloodGlucoseData(records) { error, successful ->
+                                    if (successful) {
+                                        saveQuery(BloodGlucoseRecord::class, successful)
+                                        Log.i(tag, "Posted blood glucose data successfully.")
+                                    }
+
+                                    results.add(successful)
+                                    error?.also { e -> errors.add(e) }
+                                    logError(
+                                        error,
+                                        "queryAndPostHealthConnectData",
+                                        records.toString()
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BloodPressureRecord::class) -> {
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(BloodPressureRecord::class)
+                                ?.also { records ->
+                                    repo.postBloodPressureData(records) { error, successful ->
+                                        if (successful) {
+                                            saveQuery(
+                                                BloodPressureRecord::class,
+                                                successful
+                                            )
+                                            Log.i(tag, "Posted blood pressure data successfully.")
+                                        }
+
+                                        results.add(successful)
+                                        error?.also { e -> errors.add(e) }
+                                        cont.resume(Unit)
+                                    }
+                                } ?: cont.resume(Unit)
+                        }
+                    }
+                }
             }
-        } else {
-            callback(SahhaErrors.postingInProgress, false)
         }
+
+        if (checkIsAllTrue(results))
+            callback(null, true)
+        else callback(sumErrors(errors), false)
+
     }
 
     private fun checkIsAllTrue(results: List<Boolean>): Boolean {
@@ -351,8 +335,8 @@ class PostHealthConnectDataUseCase @Inject constructor(
             repo.saveLastSuccessfulQuery(
                 dataType,
                 repo.successfulQueryTimestamps[
-                        HealthPermission
-                            .getReadPermission(dataType)
+                    HealthPermission
+                        .getReadPermission(dataType)
                 ] ?: timestamp
             )
     }
@@ -403,10 +387,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(HeartRateRecord::class, successful, now)
 
                         cont.resume(Unit)
-                        this.cancel()
+
                     }
                 } ?: cont.resume(Unit)
-                this.cancel()
+
             }
         }
     }
@@ -437,10 +421,10 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             saveQuery(RestingHeartRateRecord::class, successful)
 
                         cont.resume(Unit)
-                        this.cancel()
+
                     }
                 } ?: cont.resume(Unit)
-                this.cancel()
+
             }
         }
     }

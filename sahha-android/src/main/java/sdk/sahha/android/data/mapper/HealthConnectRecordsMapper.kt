@@ -8,7 +8,7 @@ import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.HeartRateDto
@@ -40,6 +40,7 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
 
 fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
     return SleepSendDto(
+        sleepStage = mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING),
         source = metadata.dataOrigin.packageName,
         durationInMinutes = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toInt(),
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),

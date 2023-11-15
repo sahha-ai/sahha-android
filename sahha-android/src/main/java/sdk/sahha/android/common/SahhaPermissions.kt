@@ -97,7 +97,6 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
 }
 
 internal object SahhaPermissions : BroadcastReceiver() {
-    private val permissions by lazy { Sahha.di.permissionManager.permissions }
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
     private val mainScope by lazy { Sahha.di.mainScope }
 
@@ -167,20 +166,19 @@ internal object SahhaPermissions : BroadcastReceiver() {
         healthConnectClient: HealthConnectClient,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
+        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(permissions)) {
-            println("SahhaHealthConnectStatusActivity0001")
+
+        if (granted.containsAll(hcPermissions)) {
             callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
 
         // Else
-        println("SahhaHealthConnectStatusActivity0002")
         callback?.invoke(SahhaSensorStatus.disabled)
     }
 
     private fun healthConnectUnavailable(callback: ((Enum<SahhaSensorStatus>) -> Unit)?) {
-        println("SahhaHealthConnectStatusActivity0003")
         callback?.invoke(SahhaSensorStatus.unavailable)
     }
 

@@ -7,9 +7,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import sdk.sahha.android.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
@@ -17,11 +17,16 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
+import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -34,10 +39,11 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val permission: PermissionInteractionManager,
     internal val userData: UserDataInteractionManager,
     internal val sensor: SensorInteractionManager,
+    internal val insights: InsightsInteractionManager,
     internal val notifications: SahhaNotificationManager,
+    private val alarms: SahhaAlarmManager,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
-    private val sahhaAlarmManager: SahhaAlarmManager,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     internal suspend fun configure(
@@ -66,9 +72,27 @@ internal class SahhaInteractionManager @Inject constructor(
                     SahhaNotificationPermissionActivity::class.java,
                 )
 
-                permission.startHcOrNativeDataCollection(application, callback)
+                permission.startHcOrNativeDataCollection(application) { error, successful ->
+                    if (permission.manager.shouldUseHealthConnect())
+                        scheduleInsightsAlarm(application)
+                    callback?.invoke(error, successful)
+                }
             }
         }
+    }
+
+    private fun scheduleInsightsAlarm(
+        context: Context
+    ) {
+        val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
+        val timestamp =
+            ZonedDateTime.of(
+                LocalDate.now(),
+                LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
+                ZonedDateTime.now().offset
+            )
+
+        alarms.setAlarm(insightsPendingIntent, timestamp.toInstant().toEpochMilli())
     }
 
     internal fun requestNotificationPermission(
@@ -89,10 +113,13 @@ internal class SahhaInteractionManager @Inject constructor(
             }
         }
 
-    internal fun startNative(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+    internal fun startNative(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
         try {
             defaultScope.launch {
-                sahhaAlarmManager.stopAlarm(sahhaAlarmManager.pendingIntent)
+                alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
@@ -122,7 +149,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 Sahha.config = sahhaConfigRepo.getConfig()
                 notifications.startDataCollectionService { _, _ ->
                     sensor.checkAndStartDevicePostWorker(callback)
-                    notifications.startHealthConnectPostService()
+                    notifications.startForegroundService(HealthConnectPostService::class.java)
                 }
             }
         } catch (e: Exception) {

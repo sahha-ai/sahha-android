@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.use_case.background
 
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 

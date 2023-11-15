@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 
 internal object SahhaDbUtility {
     fun getDb(context: Context): SahhaDatabase {

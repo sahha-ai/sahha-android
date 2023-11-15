@@ -11,9 +11,9 @@ import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import retrofit2.Call
 import retrofit2.Response
-import sdk.sahha.android.data.Constants.API_ERROR
-import sdk.sahha.android.data.Constants.APPLICATION_ERROR
-import sdk.sahha.android.data.Constants.PLATFORM_NAME
+import sdk.sahha.android.common.Constants.API_ERROR
+import sdk.sahha.android.common.Constants.APPLICATION_ERROR
+import sdk.sahha.android.common.Constants.PLATFORM_NAME
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog

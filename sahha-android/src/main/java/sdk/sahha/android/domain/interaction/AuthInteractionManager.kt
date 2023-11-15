@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.interaction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.security.Decryptor
-import sdk.sahha.android.data.Constants
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.security.EncryptUtility
