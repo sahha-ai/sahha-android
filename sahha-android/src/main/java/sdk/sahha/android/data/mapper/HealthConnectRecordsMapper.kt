@@ -9,18 +9,22 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
@@ -29,6 +33,7 @@ import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
+import java.time.ZoneOffset
 
 private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
@@ -478,3 +483,54 @@ fun Vo2MaxRecord.toVo2Max(): Vo2MaxDto {
         deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
+
+fun RespiratoryRateRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_RESPIRATORY_RATE,
+        count = rate.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_BREATHS_PER_MIN,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun StepsCadenceRecord.Sample.toHealthDataDto(
+    metadata: Metadata,
+    zoneOffset: ZoneOffset?
+): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_STEPS_CADENCE,
+        count = rate.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_STEPS_PER_MIN,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+//fun ExerciseSessionRecord.TODO(): HealthDataDto {
+//    return HealthDataDto(
+//        dataType = Constants.HEALTH_CONNECT_STEPS_CADENCE,
+//        count = this.,
+//        unit = Constants.HEALTH_CONNECT_UNIT_STEPS_PER_MIN,
+//        source = metadata.dataOrigin.packageName,
+//        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+//        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+//        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+//        deviceType = mapper.devices(metadata.device?.type),
+//        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+//        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+//        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+//    )
+//}

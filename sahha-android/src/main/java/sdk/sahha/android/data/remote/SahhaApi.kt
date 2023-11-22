@@ -157,6 +157,18 @@ interface SahhaApi {
         @Body weightData: List<HealthDataDto>
     ): Response<ResponseBody>
 
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postRespiratoryRate(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body respiratoryRate: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postStepsCadence(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body stepsCadence: List<HealthDataDto>
+    ): Response<ResponseBody>
+
     @POST("profile/analyze")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,

@@ -73,6 +73,9 @@ internal object Constants {
     const val HEALTH_CONNECT_LEAN_BODY_MASS = "HealthConnectLeanBodyMass"
     const val HEALTH_CONNECT_HEIGHT = "HealthConnectHeight"
     const val HEALTH_CONNECT_WEIGHT = "HealthConnectWeight"
+    const val HEALTH_CONNECT_RESPIRATORY_RATE = "HealthConnectRespiratoryRate"
+    const val HEALTH_CONNECT_STEPS_CADENCE = "HealthConnectStepsCadence"
+    const val HEALTH_CONNECT_EXERCISE_SESSION = "HealthConnectExerciseSession"
 
     // Data Units
     const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
@@ -87,6 +90,10 @@ internal object Constants {
     const val HEALTH_CONNECT_UNIT_GRAMS = "grams"
     const val HEALTH_CONNECT_UNIT_KILOGRAMS = "kilograms"
     const val HEALTH_CONNECT_UNIT_INCHES = "inches"
+    const val HEALTH_CONNECT_UNIT_BREATHS_PER_MIN = "breaths/min"
+    const val HEALTH_CONNECT_UNIT_STEPS_PER_MIN = "steps/min"
+    const val UNIT_MINUTES = "minutes"
+    const val UNIT_STEPS = "steps"
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
@@ -116,8 +123,6 @@ internal object Constants {
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
     const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
     const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
-    const val UNIT_MINUTES = "minutes"
-    const val UNIT_STEPS = "steps"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78

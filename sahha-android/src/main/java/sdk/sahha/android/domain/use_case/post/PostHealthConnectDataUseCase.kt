@@ -19,8 +19,10 @@ import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -34,6 +36,7 @@ import sdk.sahha.android.data.mapper.toHealthDataDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
@@ -549,6 +552,98 @@ class PostHealthConnectDataUseCase @Inject constructor(
                         }
                     }
                 }
+
+                HealthPermission.getReadPermission(RespiratoryRateRecord::class) -> {
+                    val recordType = RespiratoryRateRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postRespiratoryRate(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted respiratory rate successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(StepsCadenceRecord::class) -> {
+                    val recordType = StepsCadenceRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                val samples = mutableListOf<HealthDataDto>()
+                                records.forEach { cadence ->
+                                    samples += cadence.samples.map { sample ->
+                                        sample.toHealthDataDto(
+                                            cadence.metadata,
+                                            cadence.endZoneOffset
+                                        )
+                                    }
+                                }
+                                repo.postData(
+                                    data = samples,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        api.postStepsCadence(
+                                            TokenBearer(token),
+                                            chunk
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted steps cadence successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+//                HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
+//                    val recordType = ExerciseSessionRecord::class
+//                    suspendCoroutine { cont ->
+//                        ioScope.launch {
+//                            repo.getNewRecords(recordType)?.also { records ->
+//                                repo.postData(
+//                                    data = records,
+//                                    getResponse = { chunk ->
+//                                        val token = authRepo.getToken() ?: ""
+//                                        val chunked = chunk.map { it.toHealthDataDto() }
+//                                        api.postExerciseSessions(
+//                                            TokenBearer(token),
+//                                            chunked
+//                                        )
+//                                    }
+//                                ) { error, successful ->
+//                                    processPostResponse(
+//                                        error, successful,
+//                                        "Posted exercise sessions successfully.",
+//                                        records, recordType
+//                                    )
+//                                    cont.resume(Unit)
+//                                }
+//                            } ?: cont.resume(Unit)
+//                        }
+//                    }
+//                }
             }
         }
 
