@@ -2,6 +2,7 @@ package sdk.sahha.android.data.mapper
 
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
@@ -15,9 +16,9 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
+import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
@@ -153,13 +154,35 @@ fun RestingHeartRateRecord.toHeartRateDto(): HealthDataDto {
     )
 }
 
+fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto? {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_ACTIVE_CALORIES_BURNED,
+        count = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inCalories?.toLong()
+            ?: return null,
+        unit = Constants.HEALTH_CONNECT_UNIT_CALORIES,
+        source = result.dataOrigins.map { it.packageName }.toString(),
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+    )
+}
+
+fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto? {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_TOTAL_CALORIES_BURNED,
+        count = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inCalories?.toLong()
+            ?: return null,
+        unit = Constants.HEALTH_CONNECT_UNIT_CALORIES,
+        source = result.dataOrigins.map { it.packageName }.toString(),
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+    )
+}
+
 fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.HEALTH_CONNECT_HEART_RATE_AVG,
         count = result[HeartRateRecord.BPM_AVG] ?: -1,
-        source = result.dataOrigins.map {
-            it.packageName
-        }.toString(),
+        source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
     )
@@ -316,6 +339,22 @@ fun TotalCaloriesBurnedRecord.toTotalCaloriesBurned(): HealthDataDto {
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun BasalBodyTemperatureRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_BASAL_BODY_TEMPERATURE,
+        count = temperature.inCelsius.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_CELSIUS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
         deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
         deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )

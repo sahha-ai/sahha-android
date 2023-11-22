@@ -1,9 +1,11 @@
 package sdk.sahha.android.domain.use_case.post
 
-import android.content.Context
 import android.util.Log
+import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
@@ -20,13 +22,14 @@ import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import sdk.sahha.android.common.SahhaErrorLogger
-import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.data.mapper.toHealthDataDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
+import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
-import sdk.sahha.android.domain.model.health_connect.HealthConnectPostParameters
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import java.time.Duration
 import java.time.LocalDate
@@ -41,11 +44,10 @@ import kotlin.reflect.KClass
 private const val tag = "PostHealthConnectDataUseCase"
 
 class PostHealthConnectDataUseCase @Inject constructor(
-    private val context: Context,
+    private val authRepo: AuthRepo,
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val timeManager: SahhaTimeManager,
-    private val mutex: Mutex,
+    private val api: SahhaApi,
     @IoScope private val ioScope: CoroutineScope
 ) {
     private val results = mutableListOf<Boolean>()
@@ -106,11 +108,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 repo.postStepData(postData) { error, successful ->
                                     if (successful) clearLastMidnightSteps()
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted step data successfully.",
-                                            records, StepsRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted step data successfully.",
+                                        records, StepsRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -125,11 +125,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(SleepSessionRecord::class)?.also { records ->
                                 repo.postSleepSessionData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted sleep data successfully.",
-                                            records, SleepSessionRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted sleep data successfully.",
+                                        records, SleepSessionRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -144,11 +142,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(HeartRateRecord::class)?.also { records ->
                                 repo.postHeartRateData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted heart rate data successfully.",
-                                            records, HeartRateRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted heart rate data successfully.",
+                                        records, HeartRateRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -164,11 +160,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 ?.also { records ->
                                     repo.postRestingHeartRateData(records) { error, successful ->
                                         processPostResponse(
-                                            HealthConnectPostParameters(
-                                                error, successful,
-                                                "Posted resting heart rate data successfully.",
-                                                records, RestingHeartRateRecord::class
-                                            )
+                                            error, successful,
+                                            "Posted resting heart rate data successfully.",
+                                            records, RestingHeartRateRecord::class
                                         )
                                         cont.resume(Unit)
                                     }
@@ -184,11 +178,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 ?.also { records ->
                                     repo.postHeartRateVariabilityRmssdData(records) { error, successful ->
                                         processPostResponse(
-                                            HealthConnectPostParameters(
-                                                error, successful,
-                                                "Posted heart rate variability data successfully.",
-                                                records, HeartRateVariabilityRmssdRecord::class
-                                            )
+                                            error, successful,
+                                            "Posted heart rate variability data successfully.",
+                                            records, HeartRateVariabilityRmssdRecord::class
                                         )
                                         cont.resume(Unit)
                                     }
@@ -203,13 +195,11 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(BloodGlucoseRecord::class)?.also { records ->
                                 repo.postBloodGlucoseData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error,
-                                            successful,
-                                            "Posted blood glucose data successfully.",
-                                            records,
-                                            BloodGlucoseRecord::class
-                                        )
+                                        error,
+                                        successful,
+                                        "Posted blood glucose data successfully.",
+                                        records,
+                                        BloodGlucoseRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -225,13 +215,11 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                 ?.also { records ->
                                     repo.postBloodPressureData(records) { error, successful ->
                                         processPostResponse(
-                                            HealthConnectPostParameters(
-                                                error,
-                                                successful,
-                                                "Posted blood pressure data successfully.",
-                                                records,
-                                                BloodPressureRecord::class
-                                            )
+                                            error,
+                                            successful,
+                                            "Posted blood pressure data successfully.",
+                                            records,
+                                            BloodPressureRecord::class
                                         )
                                         cont.resume(Unit)
                                     }
@@ -241,20 +229,53 @@ class PostHealthConnectDataUseCase @Inject constructor(
                 }
 
                 HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class) -> {
+                    val recordType = ActiveCaloriesBurnedRecord::class
                     suspendCoroutine<Unit> { cont ->
                         ioScope.launch {
-                            repo.getNewRecords(ActiveCaloriesBurnedRecord::class)?.also { records ->
-                                repo.postActiveCaloriesBurnedData(records) { error, successful ->
+                            postAggregateData(
+                                metrics = setOf(
+                                    ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
+                                ),
+                                lastQuery = repo.getLastSuccessfulQuery(recordType),
+                            ) { records ->
+                                repo.postAggregateActiveCaloriesBurned(
+                                    records,
+                                ) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted active calories burned data successfully.",
-                                            records, ActiveCaloriesBurnedRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted active calories burned successfully.",
+                                        records,
+                                        recordType
                                     )
                                     cont.resume(Unit)
                                 }
-                            } ?: cont.resume(Unit)
+                            }
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class) -> {
+                    val recordType = TotalCaloriesBurnedRecord::class
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            postAggregateData(
+                                metrics = setOf(
+                                    TotalCaloriesBurnedRecord.ENERGY_TOTAL
+                                ),
+                                lastQuery = repo.getLastSuccessfulQuery(recordType),
+                            ) { records ->
+                                repo.postAggregateTotalCaloriesBurned(
+                                    records,
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted total calories burned successfully.",
+                                        records,
+                                        recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            }
                         }
                     }
                 }
@@ -265,11 +286,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(BodyTemperatureRecord::class)?.also { records ->
                                 repo.postBodyTempData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted body temperature data successfully.",
-                                            records, BodyTemperatureRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted body temperature data successfully.",
+                                        records, BodyTemperatureRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -284,11 +303,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(FloorsClimbedRecord::class)?.also { records ->
                                 repo.postFloorsClimbedData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted floors climbed data successfully.",
-                                            records, FloorsClimbedRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted floors climbed data successfully.",
+                                        records, FloorsClimbedRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -303,30 +320,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(OxygenSaturationRecord::class)?.also { records ->
                                 repo.postOxygenSaturation(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted oxygen saturation data successfully.",
-                                            records, OxygenSaturationRecord::class
-                                        )
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
-                }
-
-                HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class) -> {
-                    suspendCoroutine<Unit> { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(TotalCaloriesBurnedRecord::class)?.also { records ->
-                                repo.postTotalCaloriesBurned(records) { error, successful ->
-                                    processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted total calories burned data successfully.",
-                                            records, TotalCaloriesBurnedRecord::class
-                                        )
+                                        error, successful,
+                                        "Posted oxygen saturation data successfully.",
+                                        records, OxygenSaturationRecord::class
                                     )
                                     cont.resume(Unit)
                                 }
@@ -341,11 +337,37 @@ class PostHealthConnectDataUseCase @Inject constructor(
                             repo.getNewRecords(Vo2MaxRecord::class)?.also { records ->
                                 repo.postVo2MaxData(records) { error, successful ->
                                     processPostResponse(
-                                        HealthConnectPostParameters(
-                                            error, successful,
-                                            "Posted VO2 max data successfully.",
-                                            records, Vo2MaxRecord::class
+                                        error, successful,
+                                        "Posted VO2 max data successfully.",
+                                        records, Vo2MaxRecord::class
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class) -> {
+                    val recordType = BasalBodyTemperatureRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postBasalBodyTemperature(
+                                            TokenBearer(token),
+                                            chunked
                                         )
+                                    },
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted basal body temperature data successfully.",
+                                        records, recordType
                                     )
                                     cont.resume(Unit)
                                 }
@@ -361,15 +383,21 @@ class PostHealthConnectDataUseCase @Inject constructor(
         else callback(sumErrors(errors), false)
     }
 
-    private suspend fun <T : Record> processPostResponse(params: HealthConnectPostParameters<T>) {
-        if (params.successful) {
-            saveQuery(params.recordClass, true)
-            Log.i(tag, params.successfulLog)
+    internal suspend fun <R : Record, A> processPostResponse(
+        error: String?,
+        successful: Boolean,
+        successfulLog: String,
+        records: List<A>,
+        recordType: KClass<R>
+    ) {
+        if (successful) {
+            saveQuery(recordType, true)
+            Log.i(tag, successfulLog)
         }
 
-        results.add(params.successful)
-        params.error?.also { e -> errors.add(e) }
-        logError(params.error, "queryAndPostHealthConnectData", params.records.toString())
+        results.add(successful)
+        error?.also { e -> errors.add(e) }
+        logError(error, "queryAndPostHealthConnectData", records.toString())
     }
 
     private fun checkIsAllTrue(results: List<Boolean>): Boolean {
@@ -456,72 +484,25 @@ class PostHealthConnectDataUseCase @Inject constructor(
         }
     }
 
-    // Potentially re-use in the future
-    private suspend fun awaitAggregateHeartRatePost() {
-        suspendCoroutine<Unit> { cont ->
-            ioScope.launch {
-                val now = ZonedDateTime.now()
-                repo.getAggregateRecordsByDuration(
-                    setOf(
-                        HeartRateRecord.BPM_MIN,
-                        HeartRateRecord.BPM_MAX,
-                        HeartRateRecord.BPM_AVG,
-                    ),
-                    repo.getLastSuccessfulQuery(HeartRateRecord::class)
-                        ?.let { lastQuery ->
-                            TimeRangeFilter.Companion.after(lastQuery.toLocalDateTime())
-                        } ?: TimeRangeFilter.Companion.between(
-                        now.minusDays(1).toLocalDateTime(), now.toLocalDateTime()
-                    ),
-                    Duration.ofMinutes(15)
-                )?.also { records ->
-                    repo.postHeartRateAggregateData(
-                        records,
-                        HeartRateRecord::class
-                    ) { error, successful ->
-                        if (successful)
-                            saveQuery(HeartRateRecord::class, successful, now)
-
-                        cont.resume(Unit)
-
-                    }
-                } ?: cont.resume(Unit)
-
-            }
-        }
-    }
-
-    private suspend fun awaitAggregateRestingHeartRatePost() {
-        suspendCoroutine<Unit> { cont ->
-            ioScope.launch {
-                val now = ZonedDateTime.now()
-                repo.getAggregateRecordsByDuration(
-                    setOf(
-                        RestingHeartRateRecord.BPM_MIN,
-                        RestingHeartRateRecord.BPM_MAX,
-                        RestingHeartRateRecord.BPM_AVG,
-                    ),
-                    repo.getLastSuccessfulQuery(RestingHeartRateRecord::class)
-                        ?.let { lastQuery ->
-                            TimeRangeFilter.Companion.after(lastQuery.toLocalDateTime())
-                        } ?: TimeRangeFilter.Companion.between(
-                        now.minusHours(1).toLocalDateTime(), now.toLocalDateTime()
-                    ),
-                    Duration.ofMinutes(15)
-                )?.also { records ->
-                    repo.postHeartRateAggregateData(
-                        records,
-                        RestingHeartRateRecord::class
-                    ) { error, successful ->
-                        if (successful)
-                            saveQuery(RestingHeartRateRecord::class, successful)
-
-                        cont.resume(Unit)
-
-                    }
-                } ?: cont.resume(Unit)
-
-            }
+    private suspend fun postAggregateData(
+        metrics: Set<AggregateMetric<*>>,
+        lastQuery: ZonedDateTime?,
+        lastDays: Long = 3,
+        duration: Duration = Duration.ofMinutes(15),
+        postData: suspend (records: List<AggregationResultGroupedByDuration>) -> Unit
+    ) {
+        ioScope.launch {
+            val now = ZonedDateTime.now()
+            repo.getAggregateRecordsByDuration(
+                metrics,
+                lastQuery
+                    ?.let { query ->
+                        TimeRangeFilter.Companion.after(query.toLocalDateTime())
+                    } ?: TimeRangeFilter.Companion.between(
+                    now.minusDays(lastDays).toLocalDateTime(), now.toLocalDateTime()
+                ),
+                duration
+            )?.also { records -> postData(records) }
         }
     }
 }

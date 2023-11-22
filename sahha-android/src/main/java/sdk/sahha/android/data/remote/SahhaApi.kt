@@ -79,40 +79,46 @@ interface SahhaApi {
         @Body lockData: List<PhoneUsageSendDto>
     ): Response<ResponseBody>
 
-    @POST("PLACEHOLDER")
+    @POST("profile/heart/log") // TODO PLACEHOLDER
     suspend fun postActiveCaloriesBurned(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body activeCaloriesBurnedData: List<HealthDataDto>
+        @Body activeCaloriesBurnedData: List<HealthDataDto?>
     ): Response<ResponseBody>
 
-    @POST("PLACEHOLDER")
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postTotalCaloriesBurned(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body totalCaloriesBurnedData: List<HealthDataDto?>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
     suspend fun postBodyTemperatures(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body bodyTempData: List<HealthDataDto>
     ): Response<ResponseBody>
 
-    @POST("PLACEHOLDER")
+    @POST("profile/heart/log") // TODO PLACEHOLDER
     suspend fun postFloorsClimbed(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body floorsClimbedData: List<HealthDataDto>
     ): Response<ResponseBody>
 
-    @POST("PLACEHOLDER")
+    @POST("profile/heart/log") // TODO PLACEHOLDER
     suspend fun postOxygenSaturation(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body oxygenSaturationData: List<HealthDataDto>
     ): Response<ResponseBody>
 
-    @POST("PLACEHOLDER")
-    suspend fun postTotalCaloriesBurned(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body totalCaloriesBurnedData: List<HealthDataDto>
-    ): Response<ResponseBody>
-
-    @POST("PLACEHOLDER")
+    @POST("profile/heart/log") // TODO PLACEHOLDER
     suspend fun postVo2Max(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body vo2MaxData: List<Vo2MaxDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postBasalBodyTemperature(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body basalBodyTempData: List<HealthDataDto>
     ): Response<ResponseBody>
 
     @POST("profile/analyze")

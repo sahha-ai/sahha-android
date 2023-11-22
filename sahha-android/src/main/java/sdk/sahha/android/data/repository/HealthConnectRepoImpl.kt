@@ -71,9 +71,9 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
-import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
+import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
@@ -569,11 +569,11 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun postActiveCaloriesBurnedData(
-        activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
+    override suspend fun postAggregateActiveCaloriesBurned(
+        activeCalBurnedData: List<AggregationResultGroupedByDuration>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val getResponse: suspend (List<ActiveCaloriesBurnedRecord>) -> Response<ResponseBody> =
+        val getResponse: suspend (List<AggregationResultGroupedByDuration>) -> Response<ResponseBody> =
             { chunk ->
                 val token = authRepo.getToken() ?: ""
                 val activeCalsBurned = chunk.map { it.toActiveCaloriesBurned() }
@@ -585,6 +585,29 @@ class HealthConnectRepoImpl @Inject constructor(
 
         postData(
             activeCalBurnedData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postAggregateTotalCaloriesBurned(
+        totalCalBurnedData: List<AggregationResultGroupedByDuration>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<AggregationResultGroupedByDuration>) -> Response<ResponseBody> =
+            { chunk ->
+                val token = authRepo.getToken() ?: ""
+                val totalCalsBurned = chunk.map { it.toTotalCaloriesBurned() }
+                api.postTotalCaloriesBurned(
+                    TokenBearer(token),
+                    totalCalsBurned
+                )
+            }
+
+        postData(
+            totalCalBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
             {},
@@ -654,6 +677,29 @@ class HealthConnectRepoImpl @Inject constructor(
 
         postData(
             oxygenSaturationData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            {},
+            callback
+        )
+    }
+
+    override suspend fun postActiveCaloriesBurned(
+        activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<ActiveCaloriesBurnedRecord>) -> Response<ResponseBody> =
+            { chunk ->
+                val token = authRepo.getToken() ?: ""
+                val totalCaloriesBurned = chunk.map { it.toActiveCaloriesBurned() }
+                api.postActiveCaloriesBurned(
+                    TokenBearer(token),
+                    totalCaloriesBurned
+                )
+            }
+
+        postData(
+            activeCalBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
             {},

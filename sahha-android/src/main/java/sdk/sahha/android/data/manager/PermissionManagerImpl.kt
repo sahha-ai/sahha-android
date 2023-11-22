@@ -15,14 +15,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
+import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -85,6 +98,20 @@ class PermissionManagerImpl @Inject constructor(
             p.add(HealthPermission.getReadPermission(BloodPressureRecord::class))
             p.add(HealthPermission.getReadPermission(BloodGlucoseRecord::class))
         }
+
+        p.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
+        p.add(HealthPermission.getReadPermission(BasalMetabolicRateRecord::class))
+        p.add(HealthPermission.getReadPermission(BodyFatRecord::class))
+        p.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
+        p.add(HealthPermission.getReadPermission(LeanBodyMassRecord::class))
+        p.add(HealthPermission.getReadPermission(HeightRecord::class))
+        p.add(HealthPermission.getReadPermission(WeightRecord::class))
+        p.add(HealthPermission.getReadPermission(RespiratoryRateRecord::class))
+        p.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
+        p.add(HealthPermission.getReadPermission(Vo2MaxRecord::class))
+        p.add(HealthPermission.getReadPermission(OxygenSaturationRecord::class))
+        p.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
+        p.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
 
         return p
     }

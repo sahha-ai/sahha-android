@@ -52,13 +52,13 @@ internal object Constants {
     const val HEALTH_CONNECT_BLOOD_PRESSURE_SYSTOLIC = "HealthConnectBloodPressureSystolic"
     const val HEALTH_CONNECT_BLOOD_PRESSURE_DIASTOLIC = "HealthConnectBloodPressureDiastolic"
     const val HEALTH_CONNECT_HEART_RATE = "HealthConnectHeartRate"
-    const val HEALTH_CONNECT_HEART_RATE_AVG = "HealthConnectHeartRateAvg"
-    const val HEALTH_CONNECT_HEART_RATE_MIN = "HealthConnectHeartRateMin"
-    const val HEALTH_CONNECT_HEART_RATE_MAX = "HealthConnectHeartRateMax"
+    const val HEALTH_CONNECT_HEART_RATE_AVG = "HealthConnectHeartRateAvg" // Not currently used
+    const val HEALTH_CONNECT_HEART_RATE_MIN = "HealthConnectHeartRateMin" // Not currently used
+    const val HEALTH_CONNECT_HEART_RATE_MAX = "HealthConnectHeartRateMax" // Not currently used
     const val HEALTH_CONNECT_RESTING_HEART_RATE = "HealthConnectRestingHeartRate"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_AVG = "HealthConnectRestingHeartRateAvg"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MIN = "HealthConnectRestingHeartRateMin"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MAX = "HealthConnectRestingHeartRateMax"
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_AVG = "HealthConnectRestingHeartRateAvg" // Not currently used
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_MIN = "HealthConnectRestingHeartRateMin" // Not currently used
+    const val HEALTH_CONNECT_RESTING_HEART_RATE_MAX = "HealthConnectRestingHeartRateMax" // Not currently used
     const val HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD = "HealthConnectHeartRateVariabilityRmssd"
     const val HEALTH_CONNECT_ACTIVE_CALORIES_BURNED = "HealthConnectActiveCaloriesBurned"
     const val HEALTH_CONNECT_BODY_TEMPERATURE = "HealthConnectBodyTemperature"
@@ -66,6 +66,7 @@ internal object Constants {
     const val HEALTH_CONNECT_OXYGEN_SATURATION = "HealthConnectOxygenSaturation"
     const val HEALTH_CONNECT_TOTAL_CALORIES_BURNED = "HealthConnectTotalCaloriesBurned"
     const val HEALTH_CONNECT_VO2_MAX = "HealthConnectVo2Max"
+    const val HEALTH_CONNECT_BASAL_BODY_TEMPERATURE = "HealthConnectBasalBodyTemperature"
 
     // Data Units
     const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
