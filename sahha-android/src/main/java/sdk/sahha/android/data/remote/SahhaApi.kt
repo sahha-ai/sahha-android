@@ -121,6 +121,42 @@ interface SahhaApi {
         @Body basalBodyTempData: List<HealthDataDto>
     ): Response<ResponseBody>
 
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postBasalMetabolicRate(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body basalMetabolicRateData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postBodyFat(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bodyFatData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postBodyWaterMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bodyWaterMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postLeanBodyMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body leanBodyMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postHeight(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body heightData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/heart/log") // TODO PLACEHOLDER
+    suspend fun postWeight(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body weightData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
     @POST("profile/analyze")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,

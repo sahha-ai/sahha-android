@@ -3,18 +3,24 @@ package sdk.sahha.android.data.mapper
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
+import androidx.health.connect.client.records.WeightRecord
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
@@ -349,6 +355,102 @@ fun BasalBodyTemperatureRecord.toHealthDataDto(): HealthDataDto {
         dataType = Constants.HEALTH_CONNECT_BASAL_BODY_TEMPERATURE,
         count = temperature.inCelsius.toLong(),
         unit = Constants.HEALTH_CONNECT_UNIT_CELSIUS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun BasalMetabolicRateRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_BASAL_METABOLIC_RATE,
+        count = this.basalMetabolicRate.inKilocaloriesPerDay.toLong(), // TODO: decide on unit
+        unit = Constants.HEALTH_CONNECT_UNIT_KCAL_PER_DAY,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun BodyFatRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_BODY_FAT,
+        count = percentage.value.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_PERCENTAGE,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun BodyWaterMassRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_BODY_WATER_MASS,
+        count = mass.inGrams.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_GRAMS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun LeanBodyMassRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_LEAN_BODY_MASS,
+        count = mass.inGrams.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_GRAMS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun HeightRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_HEIGHT,
+        count = height.inInches.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_INCHES,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun WeightRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_WEIGHT,
+        count = weight.inKilograms.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_KILOGRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),

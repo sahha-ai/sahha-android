@@ -6,12 +6,17 @@ import androidx.health.connect.client.aggregate.AggregationResultGroupedByDurati
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
@@ -19,6 +24,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -367,6 +373,174 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     processPostResponse(
                                         error, successful,
                                         "Posted basal body temperature data successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BasalMetabolicRateRecord::class) -> {
+                    val recordType = BasalMetabolicRateRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postBasalMetabolicRate(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted basal metabolic rate successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BodyFatRecord::class) -> {
+                    val recordType = BodyFatRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postBodyFat(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted body fat successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BodyWaterMassRecord::class) -> {
+                    val recordType = BodyWaterMassRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postBodyWaterMass(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted body water mass successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(LeanBodyMassRecord::class) -> {
+                    val recordType = LeanBodyMassRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postLeanBodyMass(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted lean body mass successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(HeightRecord::class) -> {
+                    val recordType = HeightRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postHeight(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted height successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(WeightRecord::class) -> {
+                    val recordType = WeightRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postWeight(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted weight successfully.",
                                         records, recordType
                                     )
                                     cont.resume(Unit)
