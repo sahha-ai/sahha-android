@@ -129,7 +129,7 @@ class InsightsInteractionManager @Inject constructor(
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_REM_SLEEP,
-                    insightsRepo.getMinutesInRemSleep(summary),
+                    insightsRepo.getMinutesInSleepStage(summary, SleepSessionRecord.STAGE_TYPE_REM),
                     Constants.UNIT_MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
@@ -138,7 +138,10 @@ class InsightsInteractionManager @Inject constructor(
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_LIGHT_SLEEP,
-                    insightsRepo.getMinutesInLightSleep(summary),
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_LIGHT
+                    ),
                     Constants.UNIT_MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
@@ -147,7 +150,10 @@ class InsightsInteractionManager @Inject constructor(
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_DEEP_SLEEP,
-                    insightsRepo.getMinutesInDeepSleep(summary),
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_DEEP
+                    ),
                     Constants.UNIT_MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)

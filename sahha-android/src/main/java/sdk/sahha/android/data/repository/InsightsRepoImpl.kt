@@ -105,16 +105,8 @@ class InsightsRepoImpl @Inject constructor(
         return inBedDuration.toMinutes()
     }
 
-    override fun getMinutesInRemSleep(summary: HashMap<Int, Long>): Long {
-        return summary[SleepSessionRecord.STAGE_TYPE_REM]?.toMinutes() ?: 0
-    }
-
-    override fun getMinutesInLightSleep(summary: HashMap<Int, Long>): Long {
-        return summary[SleepSessionRecord.STAGE_TYPE_LIGHT]?.toMinutes() ?: 0
-    }
-
-    override fun getMinutesInDeepSleep(summary: HashMap<Int, Long>): Long {
-        return summary[SleepSessionRecord.STAGE_TYPE_DEEP]?.toMinutes() ?: 0
+    override fun getMinutesInSleepStage(summary: HashMap<Int, Long>, sleepStage: Int): Long {
+        return summary[sleepStage]?.toMinutes() ?: 0
     }
 
     override fun getStepCount(stepsRecords: List<StepsRecord>): Long {

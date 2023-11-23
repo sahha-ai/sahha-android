@@ -14,16 +14,9 @@ interface InsightsRepo {
         sleepRecords: List<SleepSessionRecord>,
     ): Long
 
-    fun getMinutesInRemSleep(
+    fun getMinutesInSleepStage(
         summary: HashMap<Int, Long>,
-    ): Long
-
-    fun getMinutesInLightSleep(
-        summary: HashMap<Int, Long>,
-    ): Long
-
-    fun getMinutesInDeepSleep(
-        summary: HashMap<Int, Long>,
+        sleepStage: Int,
     ): Long
 
     fun getStepCount(
