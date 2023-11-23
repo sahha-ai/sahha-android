@@ -106,6 +106,8 @@ class InsightsInteractionManager @Inject constructor(
         )
 
         sleepRecords?.also { records ->
+            val summary = insightsRepo.getSleepStageSummary(records)
+
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_ASLEEP,
@@ -119,6 +121,33 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_BED,
                     insightsRepo.getMinutesInBed(records),
+                    Constants.UNIT_MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_REM_SLEEP,
+                    insightsRepo.getMinutesInRemSleep(summary),
+                    Constants.UNIT_MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_LIGHT_SLEEP,
+                    insightsRepo.getMinutesInLightSleep(summary),
+                    Constants.UNIT_MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_DEEP_SLEEP,
+                    insightsRepo.getMinutesInDeepSleep(summary),
                     Constants.UNIT_MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)

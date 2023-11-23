@@ -1,7 +1,6 @@
 package sdk.sahha.android.data.repository
 
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -15,7 +14,6 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.repository.InsightsRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -27,7 +25,7 @@ class InsightsRepoImpl @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     @IoScope private val ioScope: CoroutineScope
 ) : InsightsRepo {
-    internal fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long> {
+    override fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long> {
         val summaryHashMap = hashMapOf<Int, Long>()
         sleepRecords.forEach { session ->
             session.stages.forEach { stage ->
@@ -105,6 +103,18 @@ class InsightsRepoImpl @Inject constructor(
         }
 
         return inBedDuration.toMinutes()
+    }
+
+    override fun getMinutesInRemSleep(summary: HashMap<Int, Long>): Long {
+        return summary[SleepSessionRecord.STAGE_TYPE_REM]?.toMinutes() ?: 0
+    }
+
+    override fun getMinutesInLightSleep(summary: HashMap<Int, Long>): Long {
+        return summary[SleepSessionRecord.STAGE_TYPE_LIGHT]?.toMinutes() ?: 0
+    }
+
+    override fun getMinutesInDeepSleep(summary: HashMap<Int, Long>): Long {
+        return summary[SleepSessionRecord.STAGE_TYPE_DEEP]?.toMinutes() ?: 0
     }
 
     override fun getStepCount(stepsRecords: List<StepsRecord>): Long {
