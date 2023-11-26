@@ -79,7 +79,7 @@ class InsightsInteractionManager @Inject constructor(
             )
         }
 
-        if (sensors.contains(SahhaSensor.pedometer.ordinal)) {
+        if (sensors.contains(SahhaSensor.movement.ordinal)) {
             addStepsInsight(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),

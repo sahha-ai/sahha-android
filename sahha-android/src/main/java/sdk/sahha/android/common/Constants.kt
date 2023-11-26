@@ -76,6 +76,7 @@ internal object Constants {
     const val HEALTH_CONNECT_RESPIRATORY_RATE = "HealthConnectRespiratoryRate"
     const val HEALTH_CONNECT_STEPS_CADENCE = "HealthConnectStepsCadence"
     const val HEALTH_CONNECT_EXERCISE_SESSION = "HealthConnectExerciseSession"
+    const val HEALTH_CONNECT_BONE_MASS = "HealthConnectBoneMass"
 
     // Data Units
     const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"

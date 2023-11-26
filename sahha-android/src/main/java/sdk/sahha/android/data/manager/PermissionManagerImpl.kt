@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -22,6 +23,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -34,6 +36,7 @@ import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
@@ -76,44 +79,58 @@ class PermissionManagerImpl @Inject constructor(
 
 
     override suspend fun getHcPermissions(): Set<String> {
-        val p = mutableSetOf<String>()
+        val permissions = mutableSetOf<String>()
         val enabledSensors = configRepo.getConfig().sensorArray
 
         if (enabledSensors.contains(SahhaSensor.sleep.ordinal)) {
-            p.add(HealthPermission.getReadPermission(SleepStageRecord::class))
-            p.add(HealthPermission.getReadPermission(SleepSessionRecord::class))
+            permissions.add(HealthPermission.getReadPermission(SleepStageRecord::class))
+            permissions.add(HealthPermission.getReadPermission(SleepSessionRecord::class))
         }
 
-        if (enabledSensors.contains(SahhaSensor.pedometer.ordinal)) {
-            p.add(HealthPermission.getReadPermission(StepsRecord::class))
+        if (enabledSensors.contains(SahhaSensor.movement.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
+            permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
-            p.add(HealthPermission.getReadPermission(HeartRateRecord::class))
-            p.add(HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class))
-            p.add(HealthPermission.getReadPermission(RestingHeartRateRecord::class))
+            permissions.add(HealthPermission.getReadPermission(HeartRateRecord::class))
+            permissions.add(HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class))
+            permissions.add(HealthPermission.getReadPermission(RestingHeartRateRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.blood.ordinal)) {
-            p.add(HealthPermission.getReadPermission(BloodPressureRecord::class))
-            p.add(HealthPermission.getReadPermission(BloodGlucoseRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BloodPressureRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BloodGlucoseRecord::class))
         }
 
-        p.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
-        p.add(HealthPermission.getReadPermission(BasalMetabolicRateRecord::class))
-        p.add(HealthPermission.getReadPermission(BodyFatRecord::class))
-        p.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
-        p.add(HealthPermission.getReadPermission(LeanBodyMassRecord::class))
-        p.add(HealthPermission.getReadPermission(HeightRecord::class))
-        p.add(HealthPermission.getReadPermission(WeightRecord::class))
-        p.add(HealthPermission.getReadPermission(RespiratoryRateRecord::class))
-        p.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
-        p.add(HealthPermission.getReadPermission(Vo2MaxRecord::class))
-        p.add(HealthPermission.getReadPermission(OxygenSaturationRecord::class))
-        p.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
-        p.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
+        if (enabledSensors.contains(SahhaSensor.oxygen.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(Vo2MaxRecord::class))
+            permissions.add(HealthPermission.getReadPermission(OxygenSaturationRecord::class))
+            permissions.add(HealthPermission.getReadPermission(RespiratoryRateRecord::class))
+        }
 
-        return p
+        if (enabledSensors.contains(SahhaSensor.energy.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class))
+            permissions.add(HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BasalMetabolicRateRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.body.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(LeanBodyMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(HeightRecord::class))
+            permissions.add(HealthPermission.getReadPermission(WeightRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.exercise.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
+        }
+
+        return permissions
     }
 
 

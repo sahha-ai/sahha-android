@@ -12,6 +12,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
@@ -608,6 +609,34 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     processPostResponse(
                                         error, successful,
                                         "Posted steps cadence successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BoneMassRecord::class) -> {
+                    val recordType = BoneMassRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        api.postRespiratoryRate(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted bone mass successfully.",
                                         records, recordType
                                     )
                                     cont.resume(Unit)

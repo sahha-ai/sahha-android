@@ -9,6 +9,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -508,6 +509,22 @@ fun StepsCadenceRecord.Sample.toHealthDataDto(
         dataType = Constants.HEALTH_CONNECT_STEPS_CADENCE,
         count = rate.toLong(),
         unit = Constants.HEALTH_CONNECT_UNIT_STEPS_PER_MIN,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
+        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
+        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+    )
+}
+
+fun BoneMassRecord.toHealthDataDto(): HealthDataDto {
+    return HealthDataDto(
+        dataType = Constants.HEALTH_CONNECT_BONE_MASS,
+        count = mass.inGrams.toLong(),
+        unit = Constants.HEALTH_CONNECT_UNIT_GRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),

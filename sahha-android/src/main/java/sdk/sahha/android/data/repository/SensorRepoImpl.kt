@@ -66,7 +66,7 @@ class SensorRepoImpl @Inject constructor(
     private val sensorToWorkerAction = mapOf(
         SahhaSensor.sleep to Pair(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker),
         SahhaSensor.device to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
-        SahhaSensor.pedometer to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
+        SahhaSensor.movement to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
     )
 
     override suspend fun startStepDetectorAsync(
@@ -140,7 +140,7 @@ class SensorRepoImpl @Inject constructor(
                             SLEEP_POST_WORKER_TAG
                         )
                     }
-                    checkAndStartWorker(config, SahhaSensor.pedometer.ordinal) {
+                    checkAndStartWorker(config, SahhaSensor.movement.ordinal) {
                         startStepPostWorker(
                             Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                             STEP_POST_WORKER_TAG
@@ -181,7 +181,7 @@ class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.pedometer -> {
+                SahhaSensor.movement -> {
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
                         callback(null, stepSummary)
@@ -327,7 +327,7 @@ class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepData,
-            SahhaSensor.pedometer,
+            SahhaSensor.movement,
             Constants.STEP_POST_LIMIT,
             getResponse,
             movementDao::clearStepData,
@@ -345,7 +345,7 @@ class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepSessions,
-            SahhaSensor.pedometer,
+            SahhaSensor.movement,
             Constants.STEP_SESSION_POST_LIMIT,
             getResponse,
             this::clearStepSessions,
@@ -605,7 +605,7 @@ class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.pedometer -> {
+                SahhaSensor.movement -> {
                     postStepSessions(getAllStepSessions()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
