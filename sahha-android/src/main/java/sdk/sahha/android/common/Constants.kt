@@ -91,6 +91,7 @@ internal object Constants {
         const val INCHES = "inches"
         const val METRES = "metres"
         const val BREATHS_PER_MIN = "breaths/min"
+        const val BEATS_PER_MIN = "bpm"
         const val STEPS_PER_MIN = "steps/min"
         const val MINUTES = "minutes"
         const val STEPS = "steps"

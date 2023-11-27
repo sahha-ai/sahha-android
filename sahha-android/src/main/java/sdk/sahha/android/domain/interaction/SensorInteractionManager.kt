@@ -11,10 +11,10 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
@@ -157,9 +157,9 @@ class SensorInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
+            println("awaitHealthConnectPost")
             postHealthConnectDataUseCase { error, successful ->
                 if (cont.isActive) cont.resume(Pair(error, successful))
-                //this.cancel()
             }
         }
     }

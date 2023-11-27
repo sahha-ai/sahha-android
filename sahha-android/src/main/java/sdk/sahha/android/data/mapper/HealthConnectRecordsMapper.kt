@@ -142,7 +142,8 @@ fun RestingHeartRateRecord.toHeartRateDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.RESTING_HEART_RATE,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = beatsPerMinute,
+        value = beatsPerMinute,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = metadata.dataOrigin.packageName,
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
@@ -162,7 +163,7 @@ fun RestingHeartRateRecord.toHeartRateDto(): HealthDataDto {
 fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto? {
     return HealthDataDto(
         dataType = Constants.DataTypes.ACTIVE_CALORIES_BURNED,
-        count = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inCalories?.toLong()
+        value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inCalories?.toLong()
             ?: return null,
         unit = Constants.DataUnits.CALORIES,
         source = result.dataOrigins.map { it.packageName }.toString(),
@@ -174,7 +175,7 @@ fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto? 
 fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto? {
     return HealthDataDto(
         dataType = Constants.DataTypes.TOTAL_CALORIES_BURNED,
-        count = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inCalories?.toLong()
+        value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inCalories?.toLong()
             ?: return null,
         unit = Constants.DataUnits.CALORIES,
         source = result.dataOrigins.map { it.packageName }.toString(),
@@ -186,7 +187,8 @@ fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto? {
 fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.HEART_RATE_AVG,
-        count = result[HeartRateRecord.BPM_AVG] ?: -1,
+        value = result[HeartRateRecord.BPM_AVG] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
@@ -196,7 +198,8 @@ fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HealthDataDto {
 fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.HEART_RATE_MIN,
-        count = result[HeartRateRecord.BPM_MIN] ?: -1,
+        value = result[HeartRateRecord.BPM_MIN] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
         }.toString(),
@@ -208,7 +211,8 @@ fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HealthDataDto {
 fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.HEART_RATE_MAX,
-        count = result[HeartRateRecord.BPM_MAX] ?: -1,
+        value = result[HeartRateRecord.BPM_MAX] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
         }.toString(),
@@ -220,7 +224,8 @@ fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HealthDataDto {
 fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.RESTING_HEART_RATE_AVG,
-        count = result[RestingHeartRateRecord.BPM_AVG] ?: -1,
+        value = result[RestingHeartRateRecord.BPM_AVG] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
         }.toString(),
@@ -232,7 +237,8 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HealthDataDto
 fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.RESTING_HEART_RATE_MIN,
-        count = result[RestingHeartRateRecord.BPM_MIN] ?: -1,
+        value = result[RestingHeartRateRecord.BPM_MIN] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
         }.toString(),
@@ -244,7 +250,8 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HealthDataDto
 fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.RESTING_HEART_RATE_MAX,
-        count = result[RestingHeartRateRecord.BPM_MAX] ?: -1,
+        value = result[RestingHeartRateRecord.BPM_MAX] ?: -1,
+        unit = Constants.DataUnits.BEATS_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
         }.toString(),
@@ -256,7 +263,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HealthDataDto
 fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.HEART_RATE_VARIABILITY,
-        count = this.heartRateVariabilityMillis.toLong(),
+        value = this.heartRateVariabilityMillis.toLong(),
         unit = Constants.DataUnits.MILLISECONDS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -272,7 +279,7 @@ fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HealthDataDto {
 fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.ACTIVE_CALORIES_BURNED,
-        count = energy.inCalories.toLong(),
+        value = energy.inCalories.toLong(),
         unit = Constants.DataUnits.CALORIES,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
@@ -288,7 +295,7 @@ fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthDataDto {
 fun OxygenSaturationRecord.toOxygenSaturation(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.OXYGEN_SATURATION,
-        count = percentage.value.toLong(),
+        value = percentage.value.toLong(),
         unit = Constants.DataUnits.PERCENTAGE,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -304,7 +311,7 @@ fun OxygenSaturationRecord.toOxygenSaturation(): HealthDataDto {
 fun TotalCaloriesBurnedRecord.toTotalCaloriesBurned(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.TOTAL_CALORIES_BURNED,
-        count = energy.inCalories.toLong(),
+        value = energy.inCalories.toLong(),
         unit = Constants.DataUnits.CALORIES,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
@@ -320,7 +327,7 @@ fun TotalCaloriesBurnedRecord.toTotalCaloriesBurned(): HealthDataDto {
 fun BasalMetabolicRateRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.BASAL_METABOLIC_RATE,
-        count = this.basalMetabolicRate.inKilocaloriesPerDay.toLong(), // TODO: decide on unit
+        value = this.basalMetabolicRate.inKilocaloriesPerDay.toLong(), // TODO: decide on unit
         unit = Constants.DataUnits.KCAL_PER_DAY,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -336,7 +343,7 @@ fun BasalMetabolicRateRecord.toHealthDataDto(): HealthDataDto {
 fun BodyFatRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.BODY_FAT,
-        count = percentage.value.toLong(),
+        value = percentage.value.toLong(),
         unit = Constants.DataUnits.PERCENTAGE,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -352,7 +359,7 @@ fun BodyFatRecord.toHealthDataDto(): HealthDataDto {
 fun BodyWaterMassRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.BODY_WATER_MASS,
-        count = mass.inGrams.toLong(),
+        value = mass.inGrams.toLong(),
         unit = Constants.DataUnits.GRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -368,7 +375,7 @@ fun BodyWaterMassRecord.toHealthDataDto(): HealthDataDto {
 fun LeanBodyMassRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.LEAN_BODY_MASS,
-        count = mass.inGrams.toLong(),
+        value = mass.inGrams.toLong(),
         unit = Constants.DataUnits.GRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -384,7 +391,7 @@ fun LeanBodyMassRecord.toHealthDataDto(): HealthDataDto {
 fun HeightRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.HEIGHT,
-        count = height.inMeters.toLong(),
+        value = height.inMeters.toLong(),
         unit = Constants.DataUnits.METRES,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -400,7 +407,7 @@ fun HeightRecord.toHealthDataDto(): HealthDataDto {
 fun WeightRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.WEIGHT,
-        count = weight.inKilograms.toLong(),
+        value = weight.inKilograms.toLong(),
         unit = Constants.DataUnits.KILOGRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -416,7 +423,7 @@ fun WeightRecord.toHealthDataDto(): HealthDataDto {
 fun Vo2MaxRecord.toVo2Max(): Vo2MaxDto {
     return Vo2MaxDto(
         dataType = Constants.DataTypes.VO2_MAX,
-        count = vo2MillilitersPerMinuteKilogram.toLong(),
+        value = vo2MillilitersPerMinuteKilogram.toLong(),
         unit = Constants.DataUnits.ML_PER_KG_PER_MIN,
         measurementMethod = mapper.measurementMethod(measurementMethod) ?: Constants.UNKNOWN,
         source = metadata.dataOrigin.packageName,
@@ -433,7 +440,7 @@ fun Vo2MaxRecord.toVo2Max(): Vo2MaxDto {
 fun RespiratoryRateRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.RESPIRATORY_RATE,
-        count = rate.toLong(),
+        value = rate.toLong(),
         unit = Constants.DataUnits.BREATHS_PER_MIN,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -449,7 +456,7 @@ fun RespiratoryRateRecord.toHealthDataDto(): HealthDataDto {
 fun BoneMassRecord.toHealthDataDto(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.BONE_MASS,
-        count = mass.inGrams.toLong(),
+        value = mass.inGrams.toLong(),
         unit = Constants.DataUnits.GRAMS,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),

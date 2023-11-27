@@ -79,6 +79,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -494,7 +495,8 @@ class HealthConnectRepoImpl @Inject constructor(
                 samplesList.add(
                     HealthDataDto(
                         dataType = Constants.DataTypes.HEART_RATE,
-                        count = sample.beatsPerMinute,
+                        value = sample.beatsPerMinute,
+                        unit = Constants.DataUnits.BEATS_PER_MIN,
                         source = record.metadata.dataOrigin.packageName,
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             sample.time, record.startZoneOffset
@@ -573,6 +575,7 @@ class HealthConnectRepoImpl @Inject constructor(
             { chunk ->
                 val token = authRepo.getToken() ?: ""
                 val activeCalsBurned = chunk.map { it.toActiveCaloriesBurned() }
+                println(activeCalsBurned)
                 api.postActiveCaloriesBurned(
                     TokenBearer(token),
                     activeCalsBurned
