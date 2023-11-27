@@ -134,16 +134,6 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun postBodyTempData(
-        bodyTempData: List<BodyTemperatureRecord>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    )
-
-    suspend fun postFloorsClimbedData(
-        floorsClimbedData: List<FloorsClimbedRecord>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    )
-
     suspend fun postOxygenSaturation(
         oxygenSaturationData: List<OxygenSaturationRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?

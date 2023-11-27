@@ -79,7 +79,7 @@ class InsightsInteractionManager @Inject constructor(
             )
         }
 
-        if (sensors.contains(SahhaSensor.movement.ordinal)) {
+        if (sensors.contains(SahhaSensor.activity.ordinal)) {
             addStepsInsight(
                 LocalDateTime.of(
                     LocalDate.now().minusDays(1),
@@ -110,7 +110,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_ASLEEP,
                     insightsRepo.getMinutesSlept(records),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -119,7 +119,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_BED,
                     insightsRepo.getMinutesInBed(records),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -138,7 +138,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_STEP_COUNT,
                     insightsRepo.getStepCount(records),
-                    Constants.UNIT_STEPS,
+                    Constants.DataUnits.STEPS,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )

@@ -44,57 +44,57 @@ internal object Constants {
     const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
 
     // Data Type
-    const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
-    const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
-    const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
-    const val HEALTH_CONNECT_STEP_DATA_TYPE = "HealthConnectSteps"
-    const val HEALTH_CONNECT_BLOOD_GLUCOSE = "HealthConnectBloodGlucose"
-    const val HEALTH_CONNECT_BLOOD_PRESSURE_SYSTOLIC = "HealthConnectBloodPressureSystolic"
-    const val HEALTH_CONNECT_BLOOD_PRESSURE_DIASTOLIC = "HealthConnectBloodPressureDiastolic"
-    const val HEALTH_CONNECT_HEART_RATE = "HealthConnectHeartRate"
-    const val HEALTH_CONNECT_HEART_RATE_AVG = "HealthConnectHeartRateAvg" // Not currently used
-    const val HEALTH_CONNECT_HEART_RATE_MIN = "HealthConnectHeartRateMin" // Not currently used
-    const val HEALTH_CONNECT_HEART_RATE_MAX = "HealthConnectHeartRateMax" // Not currently used
-    const val HEALTH_CONNECT_RESTING_HEART_RATE = "HealthConnectRestingHeartRate"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_AVG = "HealthConnectRestingHeartRateAvg" // Not currently used
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MIN = "HealthConnectRestingHeartRateMin" // Not currently used
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MAX = "HealthConnectRestingHeartRateMax" // Not currently used
-    const val HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD = "HealthConnectHeartRateVariabilityRmssd"
-    const val HEALTH_CONNECT_ACTIVE_CALORIES_BURNED = "HealthConnectActiveCaloriesBurned"
-    const val HEALTH_CONNECT_BODY_TEMPERATURE = "HealthConnectBodyTemperature"
-    const val HEALTH_CONNECT_FLOORS_CLIMBED = "HealthConnectFloorsClimbed"
-    const val HEALTH_CONNECT_OXYGEN_SATURATION = "HealthConnectOxygenSaturation"
-    const val HEALTH_CONNECT_TOTAL_CALORIES_BURNED = "HealthConnectTotalCaloriesBurned"
-    const val HEALTH_CONNECT_VO2_MAX = "HealthConnectVo2Max"
-    const val HEALTH_CONNECT_BASAL_BODY_TEMPERATURE = "HealthConnectBasalBodyTemperature"
-    const val HEALTH_CONNECT_BASAL_METABOLIC_RATE = "HealthConnectBasalMetabolicRate"
-    const val HEALTH_CONNECT_BODY_FAT = "HealthConnectBodyFat"
-    const val HEALTH_CONNECT_BODY_WATER_MASS = "HealthConnectBodyWaterMass"
-    const val HEALTH_CONNECT_LEAN_BODY_MASS = "HealthConnectLeanBodyMass"
-    const val HEALTH_CONNECT_HEIGHT = "HealthConnectHeight"
-    const val HEALTH_CONNECT_WEIGHT = "HealthConnectWeight"
-    const val HEALTH_CONNECT_RESPIRATORY_RATE = "HealthConnectRespiratoryRate"
-    const val HEALTH_CONNECT_STEPS_CADENCE = "HealthConnectStepsCadence"
-    const val HEALTH_CONNECT_EXERCISE_SESSION = "HealthConnectExerciseSession"
-    const val HEALTH_CONNECT_BONE_MASS = "HealthConnectBoneMass"
+    object DataTypes {
+        const val STEP_COUNTER = "TotalSteps"
+        const val STEP_DETECTOR = "SingleStep"
+        const val SAHHA_STEP_SESSION = "CustomStepSessions"
+        const val STEP = "StepCount"
+        const val BLOOD_GLUCOSE = "BloodGlucose"
+        const val BLOOD_PRESSURE_SYSTOLIC = "BloodPressureSystolic"
+        const val BLOOD_PRESSURE_DIASTOLIC = "BloodPressureDiastolic"
+        const val HEART_RATE = "HeartRate"
+        const val HEART_RATE_AVG = "HeartRateAvg" // Not currently used
+        const val HEART_RATE_MIN = "HeartRateMin" // Not currently used
+        const val HEART_RATE_MAX = "HeartRateMax" // Not currently used
+        const val RESTING_HEART_RATE = "RestingHeartRate"
+        const val RESTING_HEART_RATE_AVG = "RestingHeartRateAvg" // Not currently used
+        const val RESTING_HEART_RATE_MIN = "RestingHeartRateMin" // Not currently used
+        const val RESTING_HEART_RATE_MAX = "RestingHeartRateMax" // Not currently used
+        const val HEART_RATE_VARIABILITY = "HeartRateVariability"
+        const val ACTIVE_CALORIES_BURNED = "ActiveCaloriesBurned"
+        const val OXYGEN_SATURATION = "OxygenSaturation"
+        const val TOTAL_CALORIES_BURNED = "TotalCaloriesBurned"
+        const val VO2_MAX = "Vo2Max"
+        const val BASAL_METABOLIC_RATE = "BasalMetabolicRate"
+        const val BODY_FAT = "BodyFat"
+        const val BODY_WATER_MASS = "BodyWaterMass"
+        const val LEAN_BODY_MASS = "LeanBodyMass"
+        const val HEIGHT = "Height"
+        const val WEIGHT = "Weight"
+        const val RESPIRATORY_RATE = "RespiratoryRate"
+        const val BONE_MASS = "BoneMass"
+    }
 
     // Data Units
-    const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
-    const val HEALTH_CONNECT_UNIT_MMHG = "mmHg"
-    const val HEALTH_CONNECT_UNIT_MILLISECONDS = "milliseconds"
-    const val HEALTH_CONNECT_UNIT_CALORIES = "calories"
-    const val HEALTH_CONNECT_UNIT_CELSIUS = "celsius"
-    const val HEALTH_CONNECT_UNIT_FLOORS = "floors"
-    const val HEALTH_CONNECT_UNIT_PERCENTAGE = "percentage"
-    const val HEALTH_CONNECT_UNIT_ML_PER_KG_PER_MIN = "mL/kg/min"
-    const val HEALTH_CONNECT_UNIT_KCAL_PER_DAY = "kcal/day"
-    const val HEALTH_CONNECT_UNIT_GRAMS = "grams"
-    const val HEALTH_CONNECT_UNIT_KILOGRAMS = "kilograms"
-    const val HEALTH_CONNECT_UNIT_INCHES = "inches"
-    const val HEALTH_CONNECT_UNIT_BREATHS_PER_MIN = "breaths/min"
-    const val HEALTH_CONNECT_UNIT_STEPS_PER_MIN = "steps/min"
-    const val UNIT_MINUTES = "minutes"
-    const val UNIT_STEPS = "steps"
+    object DataUnits {
+        const val MMOL_PER_LITRE = "mmol/L"
+        const val MMHG = "mmHg"
+        const val MILLISECONDS = "milliseconds"
+        const val CALORIES = "calories"
+        const val CELSIUS = "celsius"
+        const val FLOORS = "floors"
+        const val PERCENTAGE = "percentage"
+        const val ML_PER_KG_PER_MIN = "mL/kg/min"
+        const val KCAL_PER_DAY = "kcal/day"
+        const val GRAMS = "grams"
+        const val KILOGRAMS = "kilograms"
+        const val INCHES = "inches"
+        const val METRES = "metres"
+        const val BREATHS_PER_MIN = "breaths/min"
+        const val STEPS_PER_MIN = "steps/min"
+        const val MINUTES = "minutes"
+        const val STEPS = "steps"
+    }
 
     // Sahha Error API parameters
     const val API_ERROR = "api"

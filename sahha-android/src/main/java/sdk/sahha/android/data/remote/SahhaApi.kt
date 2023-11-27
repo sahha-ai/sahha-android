@@ -43,22 +43,10 @@ interface SahhaApi {
         @Body refreshToken: RefreshTokenSendDto
     ): Response<TokenData>
 
-    @POST("profile/movement/log")
+    @POST("profile/activity/log")
     suspend fun postStepData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<StepDto>
-    ): Response<ResponseBody>
-
-    @POST("profile/movement/log") // TODO PLACEHOLDER
-    suspend fun postFloorsClimbed(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body floorsClimbedData: List<HealthDataDto>
-    ): Response<ResponseBody>
-
-    @POST("profile/movement/log") // TODO PLACEHOLDER
-    suspend fun postStepsCadence(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body stepsCadence: List<HealthDataDto>
     ): Response<ResponseBody>
 
     @POST("profile/sleep/log")
@@ -67,7 +55,7 @@ interface SahhaApi {
         @Body sleepData: List<SleepSendDto>
     ): Response<ResponseBody>
 
-    @POST("profile/heart/log")
+    @POST("profile/activity/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body heartRateData: List<HealthDataDto>
@@ -109,18 +97,6 @@ interface SahhaApi {
         @Body basalMetabolicRateData: List<HealthDataDto>
     ): Response<ResponseBody>
 
-    @POST("profile/body/log") // TODO PLACEHOLDER
-    suspend fun postBasalBodyTemperature(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body basalBodyTempData: List<HealthDataDto>
-    ): Response<ResponseBody>
-
-    @POST("profile/body/log") // TODO PLACEHOLDER
-    suspend fun postBodyTemperatures(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body bodyTempData: List<HealthDataDto>
-    ): Response<ResponseBody>
-
     @POST("profile/oxygen/log") // TODO PLACEHOLDER
     suspend fun postOxygenSaturation(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
@@ -158,6 +134,12 @@ interface SahhaApi {
     ): Response<ResponseBody>
 
     @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postBoneMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body boneMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
     suspend fun postHeight(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body heightData: List<HealthDataDto>
@@ -167,12 +149,6 @@ interface SahhaApi {
     suspend fun postWeight(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body weightData: List<HealthDataDto>
-    ): Response<ResponseBody>
-
-    @POST("profile/body/log") // TODO PLACEHOLDER
-    suspend fun postBoneMass(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body boneMassData: List<HealthDataDto>
     ): Response<ResponseBody>
 
     @POST("profile/analyze")

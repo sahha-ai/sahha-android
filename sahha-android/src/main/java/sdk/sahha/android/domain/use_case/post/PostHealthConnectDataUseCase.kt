@@ -290,40 +290,6 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     }
                 }
 
-                HealthPermission.getReadPermission(BodyTemperatureRecord::class) -> {
-                    suspendCoroutine<Unit> { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(BodyTemperatureRecord::class)?.also { records ->
-                                repo.postBodyTempData(records) { error, successful ->
-                                    processPostResponse(
-                                        error, successful,
-                                        "Posted body temperature data successfully.",
-                                        records, BodyTemperatureRecord::class
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
-                }
-
-                HealthPermission.getReadPermission(FloorsClimbedRecord::class) -> {
-                    suspendCoroutine<Unit> { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(FloorsClimbedRecord::class)?.also { records ->
-                                repo.postFloorsClimbedData(records) { error, successful ->
-                                    processPostResponse(
-                                        error, successful,
-                                        "Posted floors climbed data successfully.",
-                                        records, FloorsClimbedRecord::class
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
-                }
-
                 HealthPermission.getReadPermission(OxygenSaturationRecord::class) -> {
                     suspendCoroutine<Unit> { cont ->
                         ioScope.launch {
@@ -350,34 +316,6 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         error, successful,
                                         "Posted VO2 max data successfully.",
                                         records, Vo2MaxRecord::class
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
-                }
-
-                HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class) -> {
-                    val recordType = BasalBodyTemperatureRecord::class
-                    suspendCoroutine { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(recordType)?.also { records ->
-                                repo.postData(
-                                    data = records,
-                                    getResponse = { chunk ->
-                                        val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
-                                        api.postBasalBodyTemperature(
-                                            TokenBearer(token),
-                                            chunked
-                                        )
-                                    },
-                                ) { error, successful ->
-                                    processPostResponse(
-                                        error, successful,
-                                        "Posted basal body temperature data successfully.",
-                                        records, recordType
                                     )
                                     cont.resume(Unit)
                                 }
@@ -582,42 +520,6 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     }
                 }
 
-                HealthPermission.getReadPermission(StepsCadenceRecord::class) -> {
-                    val recordType = StepsCadenceRecord::class
-                    suspendCoroutine { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(recordType)?.also { records ->
-                                val samples = mutableListOf<HealthDataDto>()
-                                records.forEach { cadence ->
-                                    samples += cadence.samples.map { sample ->
-                                        sample.toHealthDataDto(
-                                            cadence.metadata,
-                                            cadence.endZoneOffset
-                                        )
-                                    }
-                                }
-                                repo.postData(
-                                    data = samples,
-                                    getResponse = { chunk ->
-                                        val token = authRepo.getToken() ?: ""
-                                        api.postStepsCadence(
-                                            TokenBearer(token),
-                                            chunk
-                                        )
-                                    }
-                                ) { error, successful ->
-                                    processPostResponse(
-                                        error, successful,
-                                        "Posted steps cadence successfully.",
-                                        records, recordType
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
-                }
-
                 HealthPermission.getReadPermission(BoneMassRecord::class) -> {
                     val recordType = BoneMassRecord::class
                     suspendCoroutine { cont ->
@@ -645,34 +547,6 @@ class PostHealthConnectDataUseCase @Inject constructor(
                         }
                     }
                 }
-
-//                HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
-//                    val recordType = ExerciseSessionRecord::class
-//                    suspendCoroutine { cont ->
-//                        ioScope.launch {
-//                            repo.getNewRecords(recordType)?.also { records ->
-//                                repo.postData(
-//                                    data = records,
-//                                    getResponse = { chunk ->
-//                                        val token = authRepo.getToken() ?: ""
-//                                        val chunked = chunk.map { it.toHealthDataDto() }
-//                                        api.postExerciseSessions(
-//                                            TokenBearer(token),
-//                                            chunked
-//                                        )
-//                                    }
-//                                ) { error, successful ->
-//                                    processPostResponse(
-//                                        error, successful,
-//                                        "Posted exercise sessions successfully.",
-//                                        records, recordType
-//                                    )
-//                                    cont.resume(Unit)
-//                                }
-//                            } ?: cont.resume(Unit)
-//                        }
-//                    }
-//                }
             }
         }
 

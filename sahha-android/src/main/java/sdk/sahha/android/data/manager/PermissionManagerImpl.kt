@@ -87,9 +87,8 @@ class PermissionManagerImpl @Inject constructor(
             permissions.add(HealthPermission.getReadPermission(SleepSessionRecord::class))
         }
 
-        if (enabledSensors.contains(SahhaSensor.movement.ordinal)) {
+        if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
-            permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
@@ -116,18 +115,12 @@ class PermissionManagerImpl @Inject constructor(
         }
 
         if (enabledSensors.contains(SahhaSensor.body.ordinal)) {
-            permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
-            permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
-            permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
-            permissions.add(HealthPermission.getReadPermission(LeanBodyMassRecord::class))
-            permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(HeightRecord::class))
             permissions.add(HealthPermission.getReadPermission(WeightRecord::class))
-            permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
-        }
-
-        if (enabledSensors.contains(SahhaSensor.exercise.ordinal)) {
-            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
+            permissions.add(HealthPermission.getReadPermission(LeanBodyMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
         }
 
         return permissions

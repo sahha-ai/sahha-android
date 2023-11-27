@@ -6,12 +6,10 @@ import androidx.annotation.Keep
 enum class SahhaSensor {
     device,
     sleep,
-    movement,
+    activity,
     heart,
     blood,
     oxygen,
     energy,
     body,
-    activity,
-    exercise
 }
