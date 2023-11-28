@@ -130,6 +130,8 @@ class InsightsInteractionManager @Inject constructor(
         )
 
         sleepRecords?.also { records ->
+            val summary = insightsRepo.getSleepStageSummary(records)
+
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_ASLEEP,
@@ -144,6 +146,39 @@ class InsightsInteractionManager @Inject constructor(
                     Constants.INSIGHT_NAME_TIME_IN_BED,
                     insightsRepo.getMinutesInBed(records),
                     Constants.DataUnits.MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_REM_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(summary, SleepSessionRecord.STAGE_TYPE_REM),
+                    Constants.UNIT_MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_LIGHT_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_LIGHT
+                    ),
+                    Constants.UNIT_MINUTES,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_DEEP_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_DEEP
+                    ),
+                    Constants.UNIT_MINUTES,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )

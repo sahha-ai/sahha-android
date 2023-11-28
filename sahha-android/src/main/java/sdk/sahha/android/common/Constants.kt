@@ -125,6 +125,9 @@ internal object Constants {
     // Insights
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
     const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_REM_SLEEP = "TimeInREMSleepDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_LIGHT_SLEEP = "TimeInLightSleepDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_DEEP_SLEEP = "TimeInDeepSleepDailyTotal"
     const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
     const val INSIGHT_NAME_ACTIVE_ENERGY = "ActiveEnergyBurnedDailyTotal"
     const val INSIGHT_NAME_TOTAL_ENERGY = "TotalEnergyBurnedDailyTotal"

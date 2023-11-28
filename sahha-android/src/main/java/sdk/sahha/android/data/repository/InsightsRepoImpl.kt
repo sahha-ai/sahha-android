@@ -31,7 +31,7 @@ class InsightsRepoImpl @Inject constructor(
     private val client: HealthConnectClient?,
     @IoScope private val ioScope: CoroutineScope
 ) : InsightsRepo {
-    internal fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long> {
+    override fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long> {
         val summaryHashMap = hashMapOf<Int, Long>()
         sleepRecords.forEach { session ->
             session.stages.forEach { stage ->
@@ -126,6 +126,10 @@ class InsightsRepoImpl @Inject constructor(
         return inBedDuration.toMinutes()
     }
 
+    override fun getMinutesInSleepStage(summary: HashMap<Int, Long>, sleepStage: Int): Long {
+        return summary[sleepStage]?.toMinutes() ?: 0
+    }
+  
     override fun getStepCount(stepsRecords: List<StepsRecord>): Double {
         var count = 0.0
         stepsRecords.forEach {
