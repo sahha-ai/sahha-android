@@ -128,8 +128,7 @@ class SensorInteractionManager @Inject constructor(
 
     internal suspend fun postWithMinimumDelay(callback: (error: String?, successful: Boolean) -> Unit) {
         var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
-        val postScope = CoroutineScope(Dispatchers.IO)
-        val query = postScope.launch {
+        val query = ioScope.launch {
             try {
                 withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
                     result = awaitHealthConnectPost()
@@ -141,7 +140,7 @@ class SensorInteractionManager @Inject constructor(
             }
         }
 
-        val minimumTime = postScope.launch {
+        val minimumTime = ioScope.launch {
             println("postWithMinimumDelay0004")
             delay(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
         }

@@ -575,7 +575,6 @@ class HealthConnectRepoImpl @Inject constructor(
             { chunk ->
                 val token = authRepo.getToken() ?: ""
                 val activeCalsBurned = chunk.map { it.toActiveCaloriesBurned() }
-                println(activeCalsBurned)
                 api.postActiveCaloriesBurned(
                     TokenBearer(token),
                     activeCalsBurned

@@ -160,11 +160,11 @@ fun RestingHeartRateRecord.toHeartRateDto(): HealthDataDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto? {
+fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.ACTIVE_CALORIES_BURNED,
         value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inCalories?.toLong()
-            ?: return null,
+            ?: 0,
         unit = Constants.DataUnits.CALORIES,
         source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
@@ -172,11 +172,11 @@ fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto? 
     )
 }
 
-fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto? {
+fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto {
     return HealthDataDto(
         dataType = Constants.DataTypes.TOTAL_CALORIES_BURNED,
         value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inCalories?.toLong()
-            ?: return null,
+            ?: 0,
         unit = Constants.DataUnits.CALORIES,
         source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),

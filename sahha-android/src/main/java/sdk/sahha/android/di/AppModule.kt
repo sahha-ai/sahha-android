@@ -80,7 +80,6 @@ annotation class IoScope
 @Retention(AnnotationRetention.RUNTIME)
 annotation class DefaultScope
 
-
 @Module
 internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton

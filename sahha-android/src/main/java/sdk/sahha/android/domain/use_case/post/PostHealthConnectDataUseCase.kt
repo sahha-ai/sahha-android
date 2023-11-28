@@ -5,15 +5,12 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
-import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
-import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -23,7 +20,6 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -32,15 +28,16 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.mapper.toHealthDataDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
-import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.Sahha
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -66,12 +63,14 @@ class PostHealthConnectDataUseCase @Inject constructor(
     suspend operator fun invoke(
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
-        queryAndPostHealthConnectData(callback)
+        if (!Session.hcQueryInProgress)
+            queryAndPostHealthConnectData(callback)
     }
 
     private suspend fun queryAndPostHealthConnectData(
         callback: ((error: String?, successful: Boolean) -> Unit)
     ) {
+        Session.hcQueryInProgress = true
         val granted = repo.getGrantedPermissions()
         results.clear()
         errors.clear()
@@ -550,6 +549,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
             }
         }
 
+        Session.hcQueryInProgress = false
         if (checkIsAllTrue(results))
             callback(null, true)
         else callback(sumErrors(errors), false)
@@ -569,7 +569,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
 
         results.add(successful)
         error?.also { e -> errors.add(e) }
-        logError(error, "queryAndPostHealthConnectData", records.toString())
+        checkAndLogError(error, "queryAndPostHealthConnectData", records.toString())
     }
 
     private fun checkIsAllTrue(results: List<Boolean>): Boolean {
@@ -646,7 +646,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
         }
     }
 
-    private fun logError(error: String?, method: String, body: String) {
+    private fun checkAndLogError(error: String?, method: String, body: String) {
         error?.also { e ->
             sahhaErrorLogger.application(
                 e, tag,
