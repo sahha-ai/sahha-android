@@ -126,6 +126,8 @@ internal object Constants {
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
     const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
     const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
+    const val INSIGHT_NAME_ACTIVE_ENERGY = "ActiveEnergyBurnedDailyTotal"
+    const val INSIGHT_NAME_TOTAL_ENERGY = "TotalEnergyBurnedDailyTotal"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
@@ -136,8 +138,8 @@ internal object Constants {
     const val SEVEN_DAYS_IN_MILLIS = 604800000L
 
     // Insights config
-    const val INSIGHTS_SLEEP_ALARM_HOUR = 18
-    const val INSIGHTS_STEPS_ALARM_HOUR = 0
+    const val INSIGHTS_ALARM_6PM = 18
+    const val INSIGHTS_ALARM_12AM = 0
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000

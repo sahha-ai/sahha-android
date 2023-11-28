@@ -55,7 +55,7 @@ interface SahhaApi {
         @Body sleepData: List<SleepSendDto>
     ): Response<ResponseBody>
 
-    @POST("profile/activity/log")
+    @POST("profile/heart/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body heartRateData: List<HealthDataDto>

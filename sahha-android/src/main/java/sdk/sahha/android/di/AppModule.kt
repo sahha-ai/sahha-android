@@ -324,12 +324,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         timeManager: SahhaTimeManager,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger,
+        client: HealthConnectClient?,
         @IoScope ioScope: CoroutineScope
     ): InsightsRepo {
         return InsightsRepoImpl(
             timeManager,
             api,
             sahhaErrorLogger,
+            client,
             ioScope
         )
     }

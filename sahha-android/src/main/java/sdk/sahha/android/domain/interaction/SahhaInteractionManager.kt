@@ -82,13 +82,14 @@ internal class SahhaInteractionManager @Inject constructor(
     }
 
     private fun scheduleInsightsAlarm(
-        context: Context
+        context: Context,
+        localTime: LocalTime = LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5)
     ) {
         val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
         val timestamp =
             ZonedDateTime.of(
                 LocalDate.now(),
-                LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
+                localTime,
                 ZonedDateTime.now().offset
             )
 

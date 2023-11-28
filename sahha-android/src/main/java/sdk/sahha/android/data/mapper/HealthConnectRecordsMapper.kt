@@ -26,6 +26,7 @@ import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
 
@@ -180,6 +181,26 @@ fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto {
         source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+    )
+}
+
+fun AggregationResultGroupedByDuration.toActiveEnergyInsight(): InsightData {
+    return InsightData(
+        name = Constants.INSIGHT_NAME_ACTIVE_ENERGY,
+        value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
+        unit = Constants.DataUnits.KILOCALORIES,
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset)
+    )
+}
+
+fun AggregationResultGroupedByDuration.toTotalEnergyInsight(): InsightData {
+    return InsightData(
+        name = Constants.INSIGHT_NAME_TOTAL_ENERGY,
+        value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0,
+        unit = Constants.DataUnits.KILOCALORIES,
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset)
     )
 }
 
