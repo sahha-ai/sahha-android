@@ -1,21 +1,19 @@
 package sdk.sahha.android.domain.model.dto
 
-import androidx.annotation.Keep
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
-@Keep
-data class BloodPressureDto(
+
+data class HealthDataDto(
     val dataType: String,
-    val recordingMethod: String,
     val value: Double,
     val source: String,
-    val deviceType: String,
     val startDateTime: String,
     val endDateTime: String,
-    val modifiedDateTime: String,
-    val bodyPosition: String,
-    val measurementLocation: String,
-    val unit: String = Constants.DataUnits.MMHG,
+    val recordingMethod: String? = RecordingMethodsHealthConnect.RECORDING_METHOD_UNKNOWN.name,
+    val unit: String? = null,
+    val deviceType: String = Constants.UNKNOWN,
+    val modifiedDateTime: String? = null,
     val deviceManufacturer: String = Constants.UNKNOWN,
     val deviceModel: String = Constants.UNKNOWN
 )

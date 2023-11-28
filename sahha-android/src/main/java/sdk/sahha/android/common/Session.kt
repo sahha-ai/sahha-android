@@ -11,6 +11,8 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 object Session {
+    var hcQueryInProgress = false
+
     internal fun shouldBeDevEnvironment(
         context: Context,
         environment: Enum<SahhaEnvironment>

@@ -23,7 +23,7 @@ fun StepsHealthConnect.toStepDto(): StepDto {
     return StepDto(
         dataType = dataType,
         recordingMethod = recordingMethod,
-        count = count,
+        value = count,
         source = source,
         deviceType = deviceType,
         startDateTime = startDateTime,

@@ -7,13 +7,14 @@ import retrofit2.http.*
 import sdk.sahha.android.common.Constants.APP_ID_HEADER
 import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
+import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.DemographicDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.source.SahhaDemographic
@@ -42,7 +43,7 @@ interface SahhaApi {
         @Body refreshToken: RefreshTokenSendDto
     ): Response<TokenData>
 
-    @POST("profile/movement/log")
+    @POST("profile/activity/log")
     suspend fun postStepData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<StepDto>
@@ -57,7 +58,7 @@ interface SahhaApi {
     @POST("profile/heart/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body heartRateData: List<HeartRateDto>
+        @Body heartRateData: List<HealthDataDto>
     ): Response<ResponseBody>
 
     @POST("profile/blood/log")
@@ -76,6 +77,78 @@ interface SahhaApi {
     suspend fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<PhoneUsageSendDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/energy/log") // TODO PLACEHOLDER
+    suspend fun postActiveCaloriesBurned(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body activeCaloriesBurnedData: List<HealthDataDto?>
+    ): Response<ResponseBody>
+
+    @POST("profile/energy/log") // TODO PLACEHOLDER
+    suspend fun postTotalCaloriesBurned(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body totalCaloriesBurnedData: List<HealthDataDto?>
+    ): Response<ResponseBody>
+
+    @POST("profile/energy/log") // TODO PLACEHOLDER
+    suspend fun postBasalMetabolicRate(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body basalMetabolicRateData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/oxygen/log") // TODO PLACEHOLDER
+    suspend fun postOxygenSaturation(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body oxygenSaturationData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/oxygen/log") // TODO PLACEHOLDER
+    suspend fun postVo2Max(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body vo2MaxData: List<Vo2MaxDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/oxygen/log") // TODO PLACEHOLDER
+    suspend fun postRespiratoryRate(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body respiratoryRate: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postBodyFat(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bodyFatData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postBodyWaterMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body bodyWaterMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postLeanBodyMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body leanBodyMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postBoneMass(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body boneMassData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postHeight(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body heightData: List<HealthDataDto>
+    ): Response<ResponseBody>
+
+    @POST("profile/body/log") // TODO PLACEHOLDER
+    suspend fun postWeight(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body weightData: List<HealthDataDto>
     ): Response<ResponseBody>
 
     @POST("profile/analyze")

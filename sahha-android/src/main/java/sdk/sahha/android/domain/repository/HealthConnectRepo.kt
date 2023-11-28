@@ -3,16 +3,21 @@ package sdk.sahha.android.domain.repository
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
@@ -30,9 +35,9 @@ interface HealthConnectRepo {
 
     suspend fun <T> postData(
         data: List<T>,
-        chunkLimit: Int,
+        chunkLimit: Int = Constants.DEFAULT_POST_LIMIT,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit,
+        clearData: suspend (List<T>) -> Unit = {},
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
@@ -113,6 +118,36 @@ interface HealthConnectRepo {
 
     suspend fun postRestingHeartRateData(
         restingHeartRateData: List<RestingHeartRateRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postActiveEnergyBurned(
+        activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postTotalEnergyBurned(
+        totalCaloriesBurnedData: List<TotalCaloriesBurnedRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postOxygenSaturation(
+        oxygenSaturationData: List<OxygenSaturationRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postVo2MaxData(
+        vo2MaxData: List<Vo2MaxRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postAggregateActiveCaloriesBurned(
+        activeCalBurnedData: List<AggregationResultGroupedByDuration>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postAggregateTotalCaloriesBurned(
+        totalCalBurnedData: List<AggregationResultGroupedByDuration>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 }

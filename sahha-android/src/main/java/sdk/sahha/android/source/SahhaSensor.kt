@@ -1,13 +1,15 @@
 package sdk.sahha.android.source
 
 import androidx.annotation.Keep
-import com.google.android.gms.common.annotation.KeepName
 
 @Keep
 enum class SahhaSensor {
     device,
     sleep,
-    pedometer,
+    activity,
     heart,
-    blood
+    blood,
+    oxygen,
+    energy,
+    body,
 }

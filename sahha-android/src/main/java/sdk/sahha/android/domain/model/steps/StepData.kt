@@ -29,7 +29,7 @@ data class StepData(
 fun StepData.toStepDto(): StepDto {
     return StepDto(
         dataType = getDataType(source),
-        count = count,
+        value = count,
         source = source,
         startDateTime = detectedAt,
         endDateTime = detectedAt,
@@ -41,11 +41,11 @@ fun StepData.toStepDto(): StepDto {
 private fun getDataType(source: String): String {
     return when (source) {
         Constants.STEP_COUNTER_DATA_SOURCE -> {
-            Constants.STEP_COUNTER_DATA_TYPE
+            Constants.DataTypes.STEP_COUNTER
         }
 
         Constants.STEP_DETECTOR_DATA_SOURCE -> {
-            Constants.STEP_DETECTOR_DATA_TYPE
+            Constants.DataTypes.STEP_DETECTOR
         }
 
         else -> "Unknown"
