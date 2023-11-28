@@ -61,9 +61,9 @@ internal object Constants {
         const val RESTING_HEART_RATE_MIN = "RestingHeartRateMin" // Not currently used
         const val RESTING_HEART_RATE_MAX = "RestingHeartRateMax" // Not currently used
         const val HEART_RATE_VARIABILITY = "HeartRateVariability"
-        const val ACTIVE_CALORIES_BURNED = "ActiveCaloriesBurned"
+        const val ACTIVE_ENERGY_BURNED = "ActiveEnergyBurned"
+        const val TOTAL_ENERGY_BURNED = "TotalEnergyBurned"
         const val OXYGEN_SATURATION = "OxygenSaturation"
-        const val TOTAL_CALORIES_BURNED = "TotalCaloriesBurned"
         const val VO2_MAX = "Vo2Max"
         const val BASAL_METABOLIC_RATE = "BasalMetabolicRate"
         const val BODY_FAT = "BodyFat"
@@ -81,6 +81,7 @@ internal object Constants {
         const val MMHG = "mmHg"
         const val MILLISECONDS = "milliseconds"
         const val CALORIES = "calories"
+        const val KILOCALORIES = "kilocalories"
         const val CELSIUS = "celsius"
         const val FLOORS = "floors"
         const val PERCENTAGE = "percentage"

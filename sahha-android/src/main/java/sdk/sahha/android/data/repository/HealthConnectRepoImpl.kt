@@ -495,7 +495,7 @@ class HealthConnectRepoImpl @Inject constructor(
                 samplesList.add(
                     HealthDataDto(
                         dataType = Constants.DataTypes.HEART_RATE,
-                        value = sample.beatsPerMinute,
+                        value = sample.beatsPerMinute.toDouble(),
                         unit = Constants.DataUnits.BEATS_PER_MIN,
                         source = record.metadata.dataOrigin.packageName,
                         startDateTime = sahhaTimeManager.instantToIsoTime(
@@ -636,7 +636,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun postActiveCaloriesBurned(
+    override suspend fun postActiveEnergyBurned(
         activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
@@ -659,7 +659,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun postTotalCaloriesBurned(
+    override suspend fun postTotalEnergyBurned(
         totalCaloriesBurnedData: List<TotalCaloriesBurnedRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {

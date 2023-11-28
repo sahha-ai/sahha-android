@@ -29,7 +29,7 @@ data class StepData(
 fun StepData.toStepDto(): StepDto {
     return StepDto(
         dataType = getDataType(source),
-        count = count,
+        value = count,
         source = source,
         startDateTime = detectedAt,
         endDateTime = detectedAt,

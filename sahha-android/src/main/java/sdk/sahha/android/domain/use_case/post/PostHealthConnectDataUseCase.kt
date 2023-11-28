@@ -37,7 +37,6 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.source.Sahha
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -241,24 +240,19 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     val recordType = ActiveCaloriesBurnedRecord::class
                     suspendCoroutine<Unit> { cont ->
                         ioScope.launch {
-                            postAggregateData(
-                                metrics = setOf(
-                                    ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL
-                                ),
-                                lastQuery = repo.getLastSuccessfulQuery(recordType),
-                            ) { records ->
-                                repo.postAggregateActiveCaloriesBurned(
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postActiveEnergyBurned(
                                     records,
                                 ) { error, successful ->
                                     processPostResponse(
                                         error, successful,
-                                        "Posted active calories burned successfully.",
+                                        "Posted active energy burned successfully.",
                                         records,
                                         recordType
                                     )
                                     cont.resume(Unit)
                                 }
-                            }
+                            } ?: cont.resume(Unit)
                         }
                     }
                 }
@@ -267,24 +261,19 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     val recordType = TotalCaloriesBurnedRecord::class
                     suspendCoroutine<Unit> { cont ->
                         ioScope.launch {
-                            postAggregateData(
-                                metrics = setOf(
-                                    TotalCaloriesBurnedRecord.ENERGY_TOTAL
-                                ),
-                                lastQuery = repo.getLastSuccessfulQuery(recordType),
-                            ) { records ->
-                                repo.postAggregateTotalCaloriesBurned(
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postTotalEnergyBurned(
                                     records,
                                 ) { error, successful ->
                                     processPostResponse(
                                         error, successful,
-                                        "Posted total calories burned successfully.",
+                                        "Posted total energy burned successfully.",
                                         records,
                                         recordType
                                     )
                                     cont.resume(Unit)
                                 }
-                            }
+                            } ?: cont.resume(Unit)
                         }
                     }
                 }

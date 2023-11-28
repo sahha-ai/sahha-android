@@ -5,7 +5,7 @@ import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
 data class Vo2MaxDto(
     val dataType: String,
-    val value: Long,
+    val value: Double,
     val source: String,
     val startDateTime: String,
     val endDateTime: String,

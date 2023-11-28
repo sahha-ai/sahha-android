@@ -7,7 +7,7 @@ import sdk.sahha.android.common.Constants
 data class BloodPressureDto(
     val dataType: String,
     val recordingMethod: String,
-    val count: Double,
+    val value: Double,
     val source: String,
     val deviceType: String,
     val startDateTime: String,

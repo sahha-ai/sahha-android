@@ -6,8 +6,6 @@ import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
-import androidx.health.connect.client.records.BodyTemperatureRecord
-import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -21,7 +19,6 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
-import sdk.sahha.android.domain.model.dto.HealthDataDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
@@ -124,12 +121,12 @@ interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun postActiveCaloriesBurned(
+    suspend fun postActiveEnergyBurned(
         activeCalBurnedData: List<ActiveCaloriesBurnedRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun postTotalCaloriesBurned(
+    suspend fun postTotalEnergyBurned(
         totalCaloriesBurnedData: List<TotalCaloriesBurnedRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )

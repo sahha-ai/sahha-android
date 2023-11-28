@@ -17,7 +17,7 @@ data class StepSession(
 
 fun StepSession.toStepDto(): StepDto {
     return StepDto(
-        count = count,
+        value = count,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
         dataType = Constants.DataTypes.SAHHA_STEP_SESSION,
