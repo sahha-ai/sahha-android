@@ -1,9 +1,10 @@
 package sdk.sahha.android.domain.model.dto
 
+import androidx.annotation.Keep
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
-
+@Keep
 data class HealthDataDto(
     val dataType: String,
     val value: Double,
