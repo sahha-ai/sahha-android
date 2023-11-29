@@ -7,9 +7,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
@@ -74,7 +74,7 @@ internal class SahhaInteractionManager @Inject constructor(
 
                 permission.startHcOrNativeDataCollection(application) { error, successful ->
                     if (permission.manager.shouldUseHealthConnect())
-                        scheduleInsightsAlarm(application, LocalTime.now().plusMinutes(1))
+                        scheduleInsightsAlarm(application)
                     callback?.invoke(error, successful)
                 }
             }
