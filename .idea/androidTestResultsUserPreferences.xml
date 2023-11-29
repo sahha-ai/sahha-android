@@ -232,6 +232,20 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1680703618">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Google Pixel 7a" value="120" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1644422397">
           <value>
             <AndroidTestResultsTableState>
@@ -255,6 +269,19 @@
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1618686694">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -415,6 +442,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1271085636">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Google Pixel 7a" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1244070007">
           <value>
             <AndroidTestResultsTableState>
@@ -438,6 +478,21 @@
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-1149267622">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Google Pixel 7a" value="120" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Pixel_7_API_29" value="120" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -627,6 +682,7 @@
                   <entry key="Duration" value="90" />
                   <entry key="Google Pixel 7a" value="120" />
                   <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Pixel_7_API_29" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -711,6 +767,21 @@
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-518095941">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Pixel_7_API_33" value="120" />
+                  <entry key="Status" value="80" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>
@@ -1042,6 +1113,7 @@
               <option name="preferredColumnWidths">
                 <map>
                   <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="samsung" value="120" />
@@ -1439,6 +1511,21 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1350646377">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Pixel_7_API_33" value="120" />
+                  <entry key="Status" value="80" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1422881970">
           <value>
             <AndroidTestResultsTableState>
@@ -1504,6 +1591,19 @@
                   <entry key="R9JR907GC0P" value="120" />
                   <entry key="Tests" value="360" />
                   <entry key="samsung&#10; SM-A037F" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1540581475">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Pixel_6_API_34" value="120" />
+                  <entry key="Tests" value="360" />
                 </map>
               </option>
             </AndroidTestResultsTableState>

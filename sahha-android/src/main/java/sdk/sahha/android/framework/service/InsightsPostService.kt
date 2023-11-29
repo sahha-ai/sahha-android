@@ -47,7 +47,7 @@ class InsightsPostService : Service() {
             Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this.applicationContext),
             ZonedDateTime.of(
                 LocalDate.now().plusDays(1),
-                LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
+                LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5),
                 ZonedDateTime.now().offset
             ).toInstant().toEpochMilli()
         )

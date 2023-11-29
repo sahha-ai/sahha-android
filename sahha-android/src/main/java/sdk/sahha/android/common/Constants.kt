@@ -44,27 +44,60 @@ internal object Constants {
     const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
 
     // Data Type
-    const val STEP_COUNTER_DATA_TYPE = "TotalSteps"
-    const val STEP_DETECTOR_DATA_TYPE = "SingleStep"
-    const val CUSTOM_STEP_SESSION_DATA_TYPE = "CustomStepSessions"
-    const val HEALTH_CONNECT_STEP_DATA_TYPE = "HealthConnectSteps"
-    const val HEALTH_CONNECT_BLOOD_GLUCOSE = "HealthConnectBloodGlucose"
-    const val HEALTH_CONNECT_BLOOD_PRESSURE_SYSTOLIC = "HealthConnectBloodPressureSystolic"
-    const val HEALTH_CONNECT_BLOOD_PRESSURE_DIASTOLIC = "HealthConnectBloodPressureDiastolic"
-    const val HEALTH_CONNECT_HEART_RATE = "HealthConnectHeartRate"
-    const val HEALTH_CONNECT_HEART_RATE_AVG = "HealthConnectHeartRateAvg"
-    const val HEALTH_CONNECT_HEART_RATE_MIN = "HealthConnectHeartRateMin"
-    const val HEALTH_CONNECT_HEART_RATE_MAX = "HealthConnectHeartRateMax"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE = "HealthConnectRestingHeartRate"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_AVG = "HealthConnectRestingHeartRateAvg"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MIN = "HealthConnectRestingHeartRateMin"
-    const val HEALTH_CONNECT_RESTING_HEART_RATE_MAX = "HealthConnectRestingHeartRateMax"
-    const val HEALTH_CONNECT_HEART_RATE_VARIABILITY_RMSSD = "HealthConnectHeartRateVariabilityRmssd"
+    object DataTypes {
+        const val STEP_COUNTER = "TotalSteps"
+        const val STEP_DETECTOR = "SingleStep"
+        const val SAHHA_STEP_SESSION = "CustomStepSessions"
+        const val STEP = "StepCount"
+        const val BLOOD_GLUCOSE = "BloodGlucose"
+        const val BLOOD_PRESSURE_SYSTOLIC = "BloodPressureSystolic"
+        const val BLOOD_PRESSURE_DIASTOLIC = "BloodPressureDiastolic"
+        const val HEART_RATE = "HeartRate"
+        const val HEART_RATE_AVG = "HeartRateAvg" // Not currently used
+        const val HEART_RATE_MIN = "HeartRateMin" // Not currently used
+        const val HEART_RATE_MAX = "HeartRateMax" // Not currently used
+        const val RESTING_HEART_RATE = "RestingHeartRate"
+        const val RESTING_HEART_RATE_AVG = "RestingHeartRateAvg" // Not currently used
+        const val RESTING_HEART_RATE_MIN = "RestingHeartRateMin" // Not currently used
+        const val RESTING_HEART_RATE_MAX = "RestingHeartRateMax" // Not currently used
+        const val HEART_RATE_VARIABILITY = "HeartRateVariability"
+        const val ACTIVE_ENERGY_BURNED = "ActiveEnergyBurned"
+        const val TOTAL_ENERGY_BURNED = "TotalEnergyBurned"
+        const val OXYGEN_SATURATION = "OxygenSaturation"
+        const val VO2_MAX = "Vo2Max"
+        const val BASAL_METABOLIC_RATE = "BasalMetabolicRate"
+        const val BODY_FAT = "BodyFat"
+        const val BODY_WATER_MASS = "BodyWaterMass"
+        const val LEAN_BODY_MASS = "LeanBodyMass"
+        const val HEIGHT = "Height"
+        const val WEIGHT = "Weight"
+        const val RESPIRATORY_RATE = "RespiratoryRate"
+        const val BONE_MASS = "BoneMass"
+    }
 
     // Data Units
-    const val HEALTH_CONNECT_UNIT_MMOL_PER_LITRE = "mmol/L"
-    const val HEALTH_CONNECT_UNIT_MMHG = "mmHg"
-    const val HEALTH_CONNECT_UNIT_MILLISECONDS = "milliseconds"
+    object DataUnits {
+        const val COUNT = "count"
+        const val MMOL_PER_LITRE = "mmol/L"
+        const val MMHG = "mmHg"
+        const val MILLISECOND = "millisecond"
+        const val CALORIE = "calorie"
+        const val KILOCALORIE = "kilocalorie"
+        const val CELSIUS = "celsius"
+        const val FLOOR = "floor"
+        const val PERCENTAGE = "percentage"
+        const val ML_PER_KG_PER_MIN = "mL/kg/min"
+        const val KCAL_PER_DAY = "kcal/day"
+        const val GRAM = "gram"
+        const val KILOGRAM = "kilogram"
+        const val INCH = "inch"
+        const val METRE = "metre"
+        const val BREATH_PER_MIN = "breath/min"
+        const val BEAT_PER_MIN = "bpm"
+        const val STEP_PER_MIN = "step/min"
+        const val MINUTE = "minute"
+        const val STEP = "step"
+    }
 
     // Sahha Error API parameters
     const val API_ERROR = "api"
@@ -93,9 +126,12 @@ internal object Constants {
     // Insights
     const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
     const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_REM_SLEEP = "TimeInREMSleepDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_LIGHT_SLEEP = "TimeInLightSleepDailyTotal"
+    const val INSIGHT_NAME_TIME_IN_DEEP_SLEEP = "TimeInDeepSleepDailyTotal"
     const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
-    const val UNIT_MINUTES = "minutes"
-    const val UNIT_STEPS = "steps"
+    const val INSIGHT_NAME_ACTIVE_ENERGY = "ActiveEnergyBurnedDailyTotal"
+    const val INSIGHT_NAME_TOTAL_ENERGY = "TotalEnergyBurnedDailyTotal"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
@@ -106,8 +142,8 @@ internal object Constants {
     const val SEVEN_DAYS_IN_MILLIS = 604800000L
 
     // Insights config
-    const val INSIGHTS_SLEEP_ALARM_HOUR = 18
-    const val INSIGHTS_STEPS_ALARM_HOUR = 0
+    const val INSIGHTS_ALARM_6PM = 18
+    const val INSIGHTS_ALARM_12AM = 0
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000

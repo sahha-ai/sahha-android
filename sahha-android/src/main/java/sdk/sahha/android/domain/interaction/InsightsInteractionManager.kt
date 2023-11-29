@@ -1,7 +1,9 @@
 package sdk.sahha.android.domain.interaction
 
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.TimeoutCancellationException
@@ -13,16 +15,21 @@ import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.data.mapper.toActiveEnergyInsight
+import sdk.sahha.android.data.mapper.toTotalEnergyInsight
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.internal_enum.InsightPermission
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaSensor
-import java.time.LocalDate
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -66,29 +73,44 @@ class InsightsInteractionManager @Inject constructor(
         val sensors = configRepo.getConfig().sensorArray
         insights.clear()
 
+        val now = ZonedDateTime.now()
+
         if (sensors.contains(SahhaSensor.sleep.ordinal)) {
             addSleepInsights(
                 LocalDateTime.of(
-                    LocalDate.now().minusDays(1),
-                    LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 0)
+                    now.minusDays(1).toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 0)
                 ),
                 LocalDateTime.of(
-                    LocalDate.now(),
-                    LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 0)
+                    now.toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 0)
                 )
             )
         }
 
-        if (sensors.contains(SahhaSensor.pedometer.ordinal)) {
+        if (sensors.contains(SahhaSensor.activity.ordinal)) {
             addStepsInsight(
                 LocalDateTime.of(
-                    LocalDate.now().minusDays(1),
-                    LocalTime.of(Constants.INSIGHTS_STEPS_ALARM_HOUR, 0)
+                    now.minusDays(1).toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
                 ),
                 LocalDateTime.of(
-                    LocalDate.now(),
-                    LocalTime.of(Constants.INSIGHTS_STEPS_ALARM_HOUR, 0)
+                    now.toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
                 )
+            )
+        }
+
+        if (sensors.contains(SahhaSensor.energy.ordinal)) {
+            addEnergyInsights(
+                LocalDateTime.of(
+                    now.minusDays(1).toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                ),
+                LocalDateTime.of(
+                    now.toLocalDate(),
+                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                ),
             )
         }
 
@@ -100,17 +122,21 @@ class InsightsInteractionManager @Inject constructor(
     }
 
     private suspend fun addSleepInsights(start: LocalDateTime, end: LocalDateTime) {
+        if (!insightsRepo.hasPermission(InsightPermission.sleep)) return
+
         val sleepRecords = healthConnectRepo.getRecords(
             SleepSessionRecord::class,
             TimeRangeFilter.between(start, end),
         )
 
         sleepRecords?.also { records ->
+            val summary = insightsRepo.getSleepStageSummary(records)
+
             insights.add(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_ASLEEP,
                     insightsRepo.getMinutesSlept(records),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -119,7 +145,40 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_BED,
                     insightsRepo.getMinutesInBed(records),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTE,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_REM_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(summary, SleepSessionRecord.STAGE_TYPE_REM),
+                    Constants.DataUnits.MINUTE,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_LIGHT_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_LIGHT
+                    ),
+                    Constants.DataUnits.MINUTE,
+                    timeManager.localDateTimeToISO(start),
+                    timeManager.localDateTimeToISO(end)
+                )
+            )
+            insights.add(
+                InsightData(
+                    Constants.INSIGHT_NAME_TIME_IN_DEEP_SLEEP,
+                    insightsRepo.getMinutesInSleepStage(
+                        summary,
+                        SleepSessionRecord.STAGE_TYPE_DEEP
+                    ),
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -128,6 +187,8 @@ class InsightsInteractionManager @Inject constructor(
     }
 
     private suspend fun addStepsInsight(start: LocalDateTime, end: LocalDateTime) {
+        if (!insightsRepo.hasPermission(InsightPermission.steps)) return
+
         val stepsRecords = healthConnectRepo.getRecords(
             StepsRecord::class,
             TimeRangeFilter.between(start, end),
@@ -138,11 +199,45 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_STEP_COUNT,
                     insightsRepo.getStepCount(records),
-                    Constants.UNIT_STEPS,
+                    Constants.DataUnits.COUNT,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
             )
+        }
+    }
+
+    private suspend fun addEnergyInsights(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        zoneOffset: ZoneOffset = ZonedDateTime.now().offset,
+        duration: Duration = Duration.ofDays(1)
+    ) {
+        if (!insightsRepo.hasPermission(InsightPermission.active_energy)) return
+        if (!insightsRepo.hasPermission(InsightPermission.total_energy)) return
+
+        val activeEnergy = healthConnectRepo.getAggregateRecordsByDuration(
+            metrics = setOf(
+                ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL,
+            ),
+            TimeRangeFilter.between(start.toInstant(zoneOffset), end.toInstant(zoneOffset)),
+            duration
+        )
+
+        val totalEnergy = healthConnectRepo.getAggregateRecordsByDuration(
+            metrics = setOf(
+                TotalCaloriesBurnedRecord.ENERGY_TOTAL,
+            ),
+            TimeRangeFilter.between(start.toInstant(zoneOffset), end.toInstant(zoneOffset)),
+            duration
+        )
+
+        activeEnergy?.forEach { record ->
+            insights.add(record.toActiveEnergyInsight())
+        }
+
+        totalEnergy?.forEach { record ->
+            insights.add(record.toTotalEnergyInsight())
         }
     }
 }

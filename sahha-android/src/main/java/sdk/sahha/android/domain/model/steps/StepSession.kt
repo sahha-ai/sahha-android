@@ -17,10 +17,10 @@ data class StepSession(
 
 fun StepSession.toStepDto(): StepDto {
     return StepDto(
-        count = count,
+        value = count,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        dataType = Constants.CUSTOM_STEP_SESSION_DATA_TYPE,
+        dataType = Constants.DataTypes.SAHHA_STEP_SESSION,
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
         modifiedDateTime = endDateTime

@@ -11,10 +11,10 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
@@ -128,22 +128,19 @@ class SensorInteractionManager @Inject constructor(
 
     internal suspend fun postWithMinimumDelay(callback: (error: String?, successful: Boolean) -> Unit) {
         var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
-        val postScope = CoroutineScope(Dispatchers.IO)
-        println("postWithMinimumDelay0001")
-        val query = postScope.launch {
+        val query = ioScope.launch {
             try {
-                println("postWithMinimumDelay0002")
                 withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
-                    println("postWithMinimumDelay0003")
                     result = awaitHealthConnectPost()
                 }
             } catch (e: TimeoutCancellationException) {
                 result = Pair(e.message, false)
-                Log.e(tag, "Task timed out after 30 seconds")
+                val minutesFromMillis = Constants.POST_TIMEOUT_LIMIT_MILLIS / 1000 / 60
+                Log.e(tag, "Task timed out after $minutesFromMillis minutes")
             }
         }
 
-        val minimumTime = postScope.launch {
+        val minimumTime = ioScope.launch {
             println("postWithMinimumDelay0004")
             delay(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
         }
@@ -159,9 +156,9 @@ class SensorInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
+            println("awaitHealthConnectPost")
             postHealthConnectDataUseCase { error, successful ->
                 if (cont.isActive) cont.resume(Pair(error, successful))
-                //this.cancel()
             }
         }
     }

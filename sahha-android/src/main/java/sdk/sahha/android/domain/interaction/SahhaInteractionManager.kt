@@ -7,9 +7,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
@@ -82,13 +82,14 @@ internal class SahhaInteractionManager @Inject constructor(
     }
 
     private fun scheduleInsightsAlarm(
-        context: Context
+        context: Context,
+        localTime: LocalTime = LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5)
     ) {
         val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
         val timestamp =
             ZonedDateTime.of(
                 LocalDate.now(),
-                LocalTime.of(Constants.INSIGHTS_SLEEP_ALARM_HOUR, 5),
+                localTime,
                 ZonedDateTime.now().offset
             )
 

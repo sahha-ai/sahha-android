@@ -1,8 +1,11 @@
 package sdk.sahha.android.data.repository
 
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -13,9 +16,9 @@ import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.internal_enum.InsightPermission
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.repository.InsightsRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -25,23 +28,39 @@ class InsightsRepoImpl @Inject constructor(
     private val sahhaTimeManager: SahhaTimeManager,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
+    private val client: HealthConnectClient?,
     @IoScope private val ioScope: CoroutineScope
 ) : InsightsRepo {
-    internal fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long> {
-        val summaryHashMap = hashMapOf<Int, Long>()
+    override fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Double> {
+        val summaryHashMap = hashMapOf<Int, Double>()
         sleepRecords.forEach { session ->
             session.stages.forEach { stage ->
                 val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
                 summaryHashMap[stage.stage] =
-                    summaryHashMap[stage.stage]?.let { it + duration } ?: duration
+                    summaryHashMap[stage.stage]?.let { it + duration }?.toDouble() ?: duration.toDouble()
             }
         }
         return summaryHashMap
     }
 
-    override fun getMinutesSlept(sleepRecords: List<SleepSessionRecord>): Long {
+    private fun getHcPermission(insightPermission: InsightPermission): String {
+        return when(insightPermission) {
+            InsightPermission.sleep -> HealthPermission.getReadPermission(SleepSessionRecord::class)
+            InsightPermission.steps -> HealthPermission.getReadPermission(StepsRecord::class)
+            InsightPermission.total_energy -> HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
+            InsightPermission.active_energy -> HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
+        }
+    }
+
+    override suspend fun hasPermission(insightPermission: InsightPermission): Boolean {
+        val granted = client?.permissionController?.getGrantedPermissions() ?: setOf()
+        val permission = getHcPermission(insightPermission)
+        return granted.contains(permission)
+    }
+
+    override fun getMinutesSlept(sleepRecords: List<SleepSessionRecord>): Double {
         val summary = getSleepStageSummary(sleepRecords)
-        var sleptDuration = 0L
+        var sleptDuration = 0.0
         summary.forEach {
             when (it.key) {
                 SleepSessionRecord.STAGE_TYPE_DEEP -> {
@@ -69,9 +88,9 @@ class InsightsRepoImpl @Inject constructor(
         return sleptDuration.toMinutes()
     }
 
-    override fun getMinutesInBed(sleepRecords: List<SleepSessionRecord>): Long {
+    override fun getMinutesInBed(sleepRecords: List<SleepSessionRecord>): Double {
         val summary = getSleepStageSummary(sleepRecords)
-        var inBedDuration = 0L
+        var inBedDuration = 0.0
         summary.forEach {
             when (it.key) {
                 SleepSessionRecord.STAGE_TYPE_DEEP -> {
@@ -107,8 +126,12 @@ class InsightsRepoImpl @Inject constructor(
         return inBedDuration.toMinutes()
     }
 
-    override fun getStepCount(stepsRecords: List<StepsRecord>): Long {
-        var count = 0L
+    override fun getMinutesInSleepStage(summary: HashMap<Int, Double>, sleepStage: Int): Double {
+        return summary[sleepStage]?.toMinutes() ?: 0.0
+    }
+  
+    override fun getStepCount(stepsRecords: List<StepsRecord>): Double {
+        var count = 0.0
         stepsRecords.forEach {
             count += it.count
         }
@@ -169,5 +192,9 @@ class InsightsRepoImpl @Inject constructor(
 }
 
 fun Long.toMinutes(): Long {
+    return this / 1000 / 60
+}
+
+fun Double.toMinutes(): Double {
     return this / 1000 / 60
 }
