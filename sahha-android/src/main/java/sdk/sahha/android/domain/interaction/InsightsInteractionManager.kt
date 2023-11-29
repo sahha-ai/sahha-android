@@ -136,7 +136,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_ASLEEP,
                     insightsRepo.getMinutesSlept(records),
-                    Constants.DataUnits.MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -145,7 +145,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_BED,
                     insightsRepo.getMinutesInBed(records),
-                    Constants.DataUnits.MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -154,7 +154,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_TIME_IN_REM_SLEEP,
                     insightsRepo.getMinutesInSleepStage(summary, SleepSessionRecord.STAGE_TYPE_REM),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -166,7 +166,7 @@ class InsightsInteractionManager @Inject constructor(
                         summary,
                         SleepSessionRecord.STAGE_TYPE_LIGHT
                     ),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -178,7 +178,7 @@ class InsightsInteractionManager @Inject constructor(
                         summary,
                         SleepSessionRecord.STAGE_TYPE_DEEP
                     ),
-                    Constants.UNIT_MINUTES,
+                    Constants.DataUnits.MINUTE,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )
@@ -199,7 +199,7 @@ class InsightsInteractionManager @Inject constructor(
                 InsightData(
                     Constants.INSIGHT_NAME_STEP_COUNT,
                     insightsRepo.getStepCount(records),
-                    Constants.DataUnits.STEPS,
+                    Constants.DataUnits.COUNT,
                     timeManager.localDateTimeToISO(start),
                     timeManager.localDateTimeToISO(end)
                 )

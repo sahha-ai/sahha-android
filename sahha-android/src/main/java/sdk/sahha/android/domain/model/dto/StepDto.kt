@@ -9,7 +9,7 @@ import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 data class StepDto(
     val dataType: String,
     val value: Int,
-    val unit: String = Constants.DataUnits.STEPS,
+    val unit: String = Constants.DataUnits.COUNT,
     val source: String,
     val startDateTime: String,
     val endDateTime: String,

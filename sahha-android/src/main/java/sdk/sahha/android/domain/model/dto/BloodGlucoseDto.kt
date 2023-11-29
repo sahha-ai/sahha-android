@@ -6,7 +6,7 @@ import sdk.sahha.android.common.Constants
 @Keep
 data class BloodGlucoseDto(
     val recordingMethod: String,
-    val value: Double,
+    val count: Double,
     val source: String,
     val deviceType: String,
     val startDateTime: String,

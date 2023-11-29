@@ -13,6 +13,7 @@ import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.HealthDataDto
+import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.*
@@ -58,7 +59,7 @@ interface SahhaApi {
     @POST("profile/heart/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body heartRateData: List<HealthDataDto>
+        @Body heartRateData: List<HeartRateDto>
     ): Response<ResponseBody>
 
     @POST("profile/blood/log")
