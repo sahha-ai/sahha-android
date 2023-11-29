@@ -70,6 +70,7 @@ import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
 import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.HealthDataDto
+import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
@@ -79,7 +80,6 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -219,7 +219,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getHeartRateDataResponse(heartRateData: List<HealthDataDto>): Response<ResponseBody> {
+    private suspend fun getHeartRateDataResponse(heartRateData: List<HeartRateDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postHeartRateData(
             TokenBearer(token),
@@ -489,14 +489,14 @@ class HealthConnectRepoImpl @Inject constructor(
         heartRateData: List<HeartRateRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val samplesList = mutableListOf<HealthDataDto>()
+        val samplesList = mutableListOf<HeartRateDto>()
         heartRateData.forEach { record ->
             record.samples.forEach { sample ->
                 samplesList.add(
-                    HealthDataDto(
+                    HeartRateDto(
                         dataType = Constants.DataTypes.HEART_RATE,
-                        value = sample.beatsPerMinute.toDouble(),
-                        unit = Constants.DataUnits.BEATS_PER_MIN,
+                        count = sample.beatsPerMinute.toDouble(),
+                        unit = Constants.DataUnits.BEAT_PER_MIN,
                         source = record.metadata.dataOrigin.packageName,
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             sample.time, record.startZoneOffset
@@ -517,7 +517,7 @@ class HealthConnectRepoImpl @Inject constructor(
             }
         }
 
-        val getResponse: suspend (List<HealthDataDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<HeartRateDto>) -> Response<ResponseBody> = { chunk ->
             getHeartRateDataResponse(chunk)
         }
 

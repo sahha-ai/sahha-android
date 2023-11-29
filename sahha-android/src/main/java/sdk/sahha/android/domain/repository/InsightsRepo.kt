@@ -6,7 +6,7 @@ import sdk.sahha.android.domain.internal_enum.InsightPermission
 import sdk.sahha.android.domain.model.insight.InsightData
 
 interface InsightsRepo {
-    fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Long>
+    fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Double>
     fun getMinutesSlept(
         sleepRecords: List<SleepSessionRecord>,
     ): Double
@@ -16,9 +16,9 @@ interface InsightsRepo {
     ): Double
 
     fun getMinutesInSleepStage(
-        summary: HashMap<Int, Long>,
+        summary: HashMap<Int, Double>,
         sleepStage: Int,
-    ): Long
+    ): Double
 
     fun getStepCount(
         stepsRecords: List<StepsRecord>,

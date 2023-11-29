@@ -74,7 +74,7 @@ internal class SahhaInteractionManager @Inject constructor(
 
                 permission.startHcOrNativeDataCollection(application) { error, successful ->
                     if (permission.manager.shouldUseHealthConnect())
-                        scheduleInsightsAlarm(application)
+                        scheduleInsightsAlarm(application, LocalTime.now().plusMinutes(1))
                     callback?.invoke(error, successful)
                 }
             }
