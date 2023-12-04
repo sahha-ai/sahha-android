@@ -144,26 +144,30 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
-    internal fun startHealthConnect(
+    internal fun startNativeAndHealthConnect(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         try {
             defaultScope.launch {
+                alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
                 Sahha.config = sahhaConfigRepo.getConfig()
-                notifications.startDataCollectionService { _, _ ->
-                    sensor.checkAndStartDevicePostWorker(callback)
-                    notifications.startForegroundService(HealthConnectPostService::class.java)
-                }
+                listOf(
+                    async { sensor.startDataCollection() },
+                    async { sensor.checkAndStartPostWorkers() },
+                    async { notifications.startForegroundService(HealthConnectPostService::class.java) }
+                ).joinAll()
+
+                callback?.invoke(null, true)
             }
         } catch (e: Exception) {
             callback?.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
-                "startHealthConnect"
+                "startNativeAndHealthConnect"
             )
         }
     }

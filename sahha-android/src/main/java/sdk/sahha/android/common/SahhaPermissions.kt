@@ -170,7 +170,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
         val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
 
-        if (granted.containsAll(hcPermissions)) {
+        if (granted.any()) {
             callback?.invoke(SahhaSensorStatus.requested)
             return
         }

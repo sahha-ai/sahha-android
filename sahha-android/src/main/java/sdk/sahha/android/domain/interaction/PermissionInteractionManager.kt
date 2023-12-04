@@ -37,8 +37,11 @@ class PermissionInteractionManager @Inject constructor(
         defaultScope.launch {
             val nativeStatus = awaitNativeSensorRequest(context)
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
+            println("native:\t\t$nativeStatus")
+            println("health:\t\t$healthConnectStatus")
 
             val status = processStatuses(nativeStatus, healthConnectStatus)
+            println("combined:\t$status")
             startTasks(
                 context,
                 Sahha.di.sahhaInteractionManager,
@@ -77,9 +80,7 @@ class PermissionInteractionManager @Inject constructor(
     ) {
         sim.startNative(context) { error, success ->
             if (success)
-                manager.getNativeSensorStatus(context) { status ->
-                    callback?.invoke(null, status)
-                }
+                callback?.invoke(null, status)
 
             error?.also { e -> callback?.invoke(e, status) }
         }
@@ -91,16 +92,9 @@ class PermissionInteractionManager @Inject constructor(
         status: Enum<SahhaSensorStatus>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ) {
-        sim.startNative(context) { error, success ->
+        sim.startNativeAndHealthConnect(context) { error, success ->
             if (success)
-                sim.startHealthConnect(context) { hcError, hcSuccess ->
-                    if (hcSuccess)
-                        manager.getHealthConnectSensorStatus { status ->
-                            callback?.invoke(null, status)
-                        }
-
-                    hcError?.also { e -> callback?.invoke(e, status) }
-                }
+                callback?.invoke(null, status)
 
             error?.also { e -> callback?.invoke(e, status) }
         }
@@ -128,9 +122,9 @@ class PermissionInteractionManager @Inject constructor(
 
         return when {
             pending -> SahhaSensorStatus.pending
-            disabled -> SahhaSensorStatus.disabled
             partialNative -> SahhaSensorStatus.partiallyRequested
             requested -> SahhaSensorStatus.requested
+            disabled -> SahhaSensorStatus.disabled
             else -> SahhaSensorStatus.unavailable
         }
     }
@@ -153,8 +147,10 @@ class PermissionInteractionManager @Inject constructor(
                 return@suspendCoroutine
             }
 
-            manager.requestHealthConnectSensors(context) { _, status ->
-                cont.resume(status)
+            manager.requestHealthConnectSensors(context) { _, _ ->
+                manager.getHealthConnectSensorStatus { status ->
+                    cont.resume(status)
+                }
             }
         }
     }
@@ -199,12 +195,7 @@ class PermissionInteractionManager @Inject constructor(
                 else SahhaSensorStatus.unavailable
 
             val status = processStatuses(nativeStatus, healthConnectStatus)
-            startTasks(
-                context,
-                Sahha.di.sahhaInteractionManager,
-                status,
-                callback
-            )
+            callback(null, status)
         }
     }
 
@@ -214,14 +205,8 @@ class PermissionInteractionManager @Inject constructor(
     ) {
         val status = awaitStatus(context)
         stopWorkersAndSetConfig()
-        when (status) {
-            SahhaSensorStatus.requested -> {
-                startTasks(context, Sahha.di.sahhaInteractionManager, status) { error, status ->
-                    error?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
-                }
-            }
-
-            else -> callback?.invoke(null, true)
+        startTasks(context, Sahha.di.sahhaInteractionManager, status) { error, _ ->
+            error?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
         }
     }
 

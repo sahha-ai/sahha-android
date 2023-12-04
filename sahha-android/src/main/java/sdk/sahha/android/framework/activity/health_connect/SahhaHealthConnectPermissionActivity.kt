@@ -22,8 +22,10 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
-            status = if (granted.containsAll(granted)) SahhaSensorStatus.requested
-            else SahhaSensorStatus.disabled
+            status = when (granted.containsAll(granted)) {
+                true -> SahhaSensorStatus.requested
+                false -> SahhaSensorStatus.disabled
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
