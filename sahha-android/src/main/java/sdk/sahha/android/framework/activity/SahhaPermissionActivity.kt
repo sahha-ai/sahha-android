@@ -46,7 +46,7 @@ internal class SahhaPermissionActivity @Inject constructor(
     }
 
     private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaSensorStatus> {
-        if (enabled) return SahhaSensorStatus.enabled
+        if (enabled) return SahhaSensorStatus.requested
         else return SahhaSensorStatus.disabled
     }
 }

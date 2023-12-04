@@ -103,7 +103,7 @@ class SensorRepoImpl @Inject constructor(
         Sahha.getSensorStatus(
             context,
         ) { _, status ->
-            if (status == SahhaSensorStatus.enabled) {
+            if (status == SahhaSensorStatus.requested) {
                 val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
                 val workRequest: PeriodicWorkRequest =
                     getSleepWorkRequest(checkedIntervalMinutes, workerTag)
@@ -133,7 +133,7 @@ class SensorRepoImpl @Inject constructor(
                     )
                 }
 
-                if (status == SahhaSensorStatus.enabled) {
+                if (status == SahhaSensorStatus.requested) {
                     checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
                         startSleepPostWorker(
                             Constants.WORKER_REPEAT_INTERVAL_MINUTES,

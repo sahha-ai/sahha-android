@@ -22,7 +22,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
-            status = if (granted.containsAll(granted)) SahhaSensorStatus.enabled
+            status = if (granted.containsAll(granted)) SahhaSensorStatus.requested
             else SahhaSensorStatus.disabled
         }
 
@@ -51,7 +51,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
         val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(hcPermissions)) {
-            status = SahhaSensorStatus.enabled
+            status = SahhaSensorStatus.requested
             enabledStatus()
             return
         }
@@ -61,7 +61,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private fun enabledStatus() {
-        if (status == SahhaSensorStatus.enabled) {
+        if (status == SahhaSensorStatus.requested) {
             Sahha.di.sahhaNotificationManager.startForegroundService(HealthConnectPostService::class.java)
         }
 

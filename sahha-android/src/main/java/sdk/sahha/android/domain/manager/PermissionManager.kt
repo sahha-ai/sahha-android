@@ -16,19 +16,16 @@ interface PermissionManager {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
 
-    fun enableSensors(
-        context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
-    )
-
-    fun getSensorStatus(
-        context: Context,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
-    )
-
-    var statusPending: Boolean
     suspend fun getHcPermissions(): Set<String>
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
     fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean
+    fun requestNativeSensors(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
+    fun requestHealthConnectSensors(
+        context: Context,
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    )
+
+    fun getNativeSensorStatus(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
+    fun getHealthConnectSensorStatus(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
 }

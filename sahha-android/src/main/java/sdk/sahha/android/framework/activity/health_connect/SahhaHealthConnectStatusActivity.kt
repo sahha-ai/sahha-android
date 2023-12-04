@@ -29,7 +29,7 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(hcPermissions)) {
             permissionHandler.activityCallback.statusCallback
-                ?.invoke(null, SahhaSensorStatus.enabled)
+                ?.invoke(null, SahhaSensorStatus.requested)
             finish()
             return
         }

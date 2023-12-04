@@ -7,5 +7,6 @@ enum class SahhaSensorStatus {
     pending,
     unavailable,
     disabled,
-    enabled
+    requested,
+    partiallyRequested
 }

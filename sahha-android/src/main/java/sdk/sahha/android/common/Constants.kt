@@ -73,6 +73,7 @@ internal object Constants {
         const val WEIGHT = "Weight"
         const val RESPIRATORY_RATE = "RespiratoryRate"
         const val BONE_MASS = "BoneMass"
+        const val DEVICE_LOCK = "DeviceLock"
     }
 
     // Data Units
@@ -94,9 +95,9 @@ internal object Constants {
         const val METRE = "metre"
         const val BREATH_PER_MIN = "breath/min"
         const val BEAT_PER_MIN = "bpm"
-        const val STEP_PER_MIN = "step/min"
+        const val STEP_PER_MIN = "step/min" // May be used in future - could be changed to count/min
         const val MINUTE = "minute"
-        const val STEP = "step"
+        const val STEP = "step" // No longer used
     }
 
     // Sahha Error API parameters
