@@ -6,6 +6,7 @@ import retrofit2.Response
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor

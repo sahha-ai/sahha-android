@@ -35,7 +35,7 @@ class SleepReceiver : BroadcastReceiver() {
             SahhaReconfigure(context)
             // First check activity permissions
             if (SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled) {
-                notifyPermissionsIssue(context)
+//                notifyPermissionsIssue(context)
                 return@launch
             }
 

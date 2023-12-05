@@ -33,6 +33,8 @@ import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.toSleepSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toStepDto
@@ -668,7 +670,7 @@ class SensorRepoImpl @Inject constructor(
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
-            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
+            sleepData.map { it.toSleepSendDto() }
         )
     }
 
