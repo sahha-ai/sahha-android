@@ -92,6 +92,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
             }
         }
+
         finish()
     }
 }
@@ -166,10 +167,10 @@ internal object SahhaPermissions : BroadcastReceiver() {
         healthConnectClient: HealthConnectClient,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val permissions = Sahha.di.permissionManager.getHcPermissions()
 
-        if (granted.containsAll(hcPermissions)) {
+        if (granted.containsAll(permissions)) {
             callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
@@ -236,17 +237,9 @@ internal object SahhaPermissions : BroadcastReceiver() {
         }
 
         return when (context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)) {
-            PackageManager.PERMISSION_GRANTED -> {
-                SahhaSensorStatus.enabled
-            }
-
-            PackageManager.PERMISSION_DENIED -> {
-                SahhaSensorStatus.disabled
-            }
-
-            else -> {
-                SahhaSensorStatus.unavailable
-            }
+            PackageManager.PERMISSION_GRANTED -> SahhaSensorStatus.enabled
+            PackageManager.PERMISSION_DENIED -> SahhaSensorStatus.disabled
+            else -> SahhaSensorStatus.unavailable
         }
     }
 
@@ -255,7 +248,11 @@ internal object SahhaPermissions : BroadcastReceiver() {
         val intentFilter = getPermissionIntentFilter()
         val intent = getPermissionIntent(context, activityClass)
 
-        context.registerReceiver(this, intentFilter)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(this, intentFilter, Context.RECEIVER_EXPORTED)
+        } else context.registerReceiver(this, intentFilter)
+
         context.startActivity(intent)
     }
 

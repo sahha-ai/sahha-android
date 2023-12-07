@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 
@@ -28,7 +29,10 @@ class HealthConnectPostService : Service() {
             Sahha.di
                 .sahhaInteractionManager
                 .sensor
-                .postWithMinimumDelay { error, _ ->
+                .postWithMinimumDelay { error, successful ->
+                    Session.healthConnectPostCallback?.invoke(error, successful)
+                    Session.healthConnectPostCallback = null
+
                     error?.also { e ->
                         Sahha.di.sahhaErrorLogger.application(
                             e, tag, "onStartCommand"

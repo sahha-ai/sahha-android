@@ -14,9 +14,9 @@ import com.sahha.android.model.SleepQueueHistory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -33,11 +33,9 @@ class SleepReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         ioScope.launch {
             SahhaReconfigure(context)
-            // First check activity permissions
-            if (SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled) {
-                notifyPermissionsIssue(context)
-                return@launch
-            }
+            val permissionIsDisabled =
+                SahhaPermissions.activityRecognitionGranted(context) == SahhaSensorStatus.disabled
+            if (permissionIsDisabled) return@launch
 
             // Sleep data is found
             checkSleepData(intent)

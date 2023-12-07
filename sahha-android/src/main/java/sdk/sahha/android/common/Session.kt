@@ -13,6 +13,8 @@ import java.time.ZoneOffset
 object Session {
     var hcQueryInProgress = false
 
+    internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
+
     internal fun shouldBeDevEnvironment(
         context: Context,
         environment: Enum<SahhaEnvironment>

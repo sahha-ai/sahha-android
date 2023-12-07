@@ -4,7 +4,6 @@ import android.content.Context
 import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
@@ -15,6 +14,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
@@ -36,6 +36,7 @@ import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -68,14 +69,18 @@ class SensorInteractionManager @Inject constructor(
     fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        ioScope.launch {
-            if (permissionManager.shouldUseHealthConnect()) {
-                notificationManager.startForegroundService(HealthConnectPostService::class.java)
-                callback.invoke(null, true)
-                return@launch
-            }
+        permissionManager.getHealthConnectSensorStatus { status ->
+            ioScope.launch {
+                if (status == SahhaSensorStatus.enabled) {
+                    Session.healthConnectPostCallback = null
+                    Session.healthConnectPostCallback = callback
 
-            postAllSensorDataUseCase(callback)
+                    notificationManager.startForegroundService(HealthConnectPostService::class.java)
+                    return@launch
+                }
+
+                postAllSensorDataUseCase(callback)
+            }
         }
     }
 
@@ -98,10 +103,9 @@ class SensorInteractionManager @Inject constructor(
         }
     }
 
-    internal fun checkAndStartPostWorkers() {
+    internal fun checkAndStartPostWorkers(context: Context) {
         if (!Sahha.config.postSensorDataManually) {
-            startPostWorkersUseCase()
-            startDataCollection()
+            startPostWorkersUseCase(context)
         }
     }
 
@@ -111,9 +115,12 @@ class SensorInteractionManager @Inject constructor(
         healthConnectRepo.startDevicePostWorker(callback)
     }
 
-    internal fun startDataCollection(callback: ((error: String?, success: Boolean) -> Unit)? = null) {
+    internal fun startDataCollection(
+        context: Context,
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
+    ) {
         if (Sahha.config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-            startCollectingSleepDataUseCase()
+            startCollectingSleepDataUseCase(context)
         }
 
         // Pedometer/device checkers are in the service
@@ -141,11 +148,9 @@ class SensorInteractionManager @Inject constructor(
         }
 
         val minimumTime = ioScope.launch {
-            println("postWithMinimumDelay0004")
             delay(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
         }
 
-        println("postWithMinimumDelay0005")
         val minimumTimeOrQuery = listOf(query, minimumTime)
         minimumTimeOrQuery.joinAll()
         if (query.isActive) query.cancel()

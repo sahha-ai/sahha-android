@@ -11,14 +11,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.common.Constants
-import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
+import sdk.sahha.android.source.SahhaSensorStatus
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DataCollectionService : Service() {
@@ -72,8 +73,12 @@ class DataCollectionService : Service() {
     private suspend fun startDataCollectors(context: Context) {
         checkAndStartCollectingScreenLockData()
 
-        if (!Sahha.di.permissionManager.shouldUseHealthConnect())
-            checkAndStartCollectingPedometerData()
+        Sahha.di.permissionManager.getNativeSensorStatus(context) { status ->
+            scope.launch {
+                if (status == SahhaSensorStatus.enabled)
+                    checkAndStartCollectingPedometerData()
+            }
+        }
     }
 
     private suspend fun startForegroundNotification() {

@@ -33,6 +33,8 @@ import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.toSleepSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toStepDto
@@ -100,55 +102,18 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
-        Sahha.getSensorStatus(
-            context,
-        ) { _, status ->
-            if (status == SahhaSensorStatus.enabled) {
-                val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
-                val workRequest: PeriodicWorkRequest =
-                    getSleepWorkRequest(checkedIntervalMinutes, workerTag)
-                startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
-            }
-        }
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest: PeriodicWorkRequest =
+            getSleepWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
 
-    private fun checkAndStartWorker(
+    override fun checkAndStartWorker(
         config: SahhaConfiguration,
         sensorId: Int,
         startWorker: () -> Unit
     ) {
         if (config.sensorArray.contains(sensorId)) startWorker()
-    }
-
-    override fun startPostWorkersAsync() {
-        ioScope.launch {
-            val config = sahhaConfigRepo.getConfig()
-            Sahha.getSensorStatus(
-                context,
-            ) { _, status ->
-                checkAndStartWorker(config, SahhaSensor.device.ordinal) {
-                    startDevicePostWorker(
-                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                        DEVICE_POST_WORKER_TAG
-                    )
-                }
-
-                if (status == SahhaSensorStatus.enabled) {
-                    checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
-                        startSleepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                            SLEEP_POST_WORKER_TAG
-                        )
-                    }
-                    checkAndStartWorker(config, SahhaSensor.activity.ordinal) {
-                        startStepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                            STEP_POST_WORKER_TAG
-                        )
-                    }
-                }
-            }
-        }
     }
 
     override fun stopWorkerByTag(workerTag: String) {
@@ -668,7 +633,7 @@ class SensorRepoImpl @Inject constructor(
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
-            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
+            sleepData.map { it.toSleepSendDto() }
         )
     }
 
