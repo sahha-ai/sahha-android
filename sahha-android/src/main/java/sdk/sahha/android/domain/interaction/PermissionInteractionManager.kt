@@ -38,11 +38,8 @@ class PermissionInteractionManager @Inject constructor(
         defaultScope.launch {
             val nativeStatus = awaitNativeSensorRequest(context)
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
-            println("native:\t\t$nativeStatus")
-            println("health:\t\t$healthConnectStatus")
 
             val status = processStatuses(nativeStatus, healthConnectStatus)
-            println("combined:\t$status")
             startTasks(
                 context,
                 Sahha.di.sahhaInteractionManager,
@@ -170,11 +167,12 @@ class PermissionInteractionManager @Inject constructor(
         val partialNative =
             nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
         val requested = nativeEnabled && healthConnectEnabled
+        val onlyNativeAvailableAndEnabled = nativeEnabled && !manager.shouldUseHealthConnect()
 
         return when {
             pending -> InternalSensorStatus.pending
             partialNative -> InternalSensorStatus.partial
-            nativeEnabled && !manager.shouldUseHealthConnect() -> InternalSensorStatus.enabled
+            onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
             requested -> InternalSensorStatus.enabled
             disabled -> InternalSensorStatus.disabled
             else -> InternalSensorStatus.unavailable
@@ -195,7 +193,7 @@ class PermissionInteractionManager @Inject constructor(
                 return@suspendCoroutine
             }
             if (nativeDisabled) {
-                cont.resume(SahhaSensorStatus.unavailable)
+                cont.resume(SahhaSensorStatus.disabled)
                 return@suspendCoroutine
             }
 

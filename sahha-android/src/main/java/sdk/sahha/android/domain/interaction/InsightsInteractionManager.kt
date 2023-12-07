@@ -68,7 +68,7 @@ class InsightsInteractionManager @Inject constructor(
         jobs.joinAll()
     }
 
-    suspend fun postInsightsData(callback: (suspend (error: String?, successful: Boolean) -> Unit)) {
+    private suspend fun postInsightsData(callback: (suspend (error: String?, successful: Boolean) -> Unit)) {
         val token = authRepo.getToken() ?: ""
         val sensors = configRepo.getConfig().sensorArray
         insights.clear()
@@ -76,7 +76,7 @@ class InsightsInteractionManager @Inject constructor(
         val now = ZonedDateTime.now()
 
         if (sensors.contains(SahhaSensor.sleep.ordinal)) {
-            addSleepInsights(
+            checkAndAddSleepInsights(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
                     LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 0)
@@ -89,7 +89,7 @@ class InsightsInteractionManager @Inject constructor(
         }
 
         if (sensors.contains(SahhaSensor.activity.ordinal)) {
-            addStepsInsight(
+            checkAndAddStepsInsight(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
                     LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
@@ -102,7 +102,7 @@ class InsightsInteractionManager @Inject constructor(
         }
 
         if (sensors.contains(SahhaSensor.energy.ordinal)) {
-            addEnergyInsights(
+            checkAndAddEnergyInsights(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
                     LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
@@ -121,7 +121,7 @@ class InsightsInteractionManager @Inject constructor(
         insightsRepo.postInsights(token = token, insights = insights, callback = callback)
     }
 
-    private suspend fun addSleepInsights(start: LocalDateTime, end: LocalDateTime) {
+    private suspend fun checkAndAddSleepInsights(start: LocalDateTime, end: LocalDateTime) {
         if (!insightsRepo.hasPermission(InsightPermission.sleep)) return
 
         val sleepRecords = healthConnectRepo.getRecords(
@@ -186,7 +186,7 @@ class InsightsInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun addStepsInsight(start: LocalDateTime, end: LocalDateTime) {
+    private suspend fun checkAndAddStepsInsight(start: LocalDateTime, end: LocalDateTime) {
         if (!insightsRepo.hasPermission(InsightPermission.steps)) return
 
         val stepsRecords = healthConnectRepo.getRecords(
@@ -207,7 +207,7 @@ class InsightsInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun addEnergyInsights(
+    private suspend fun checkAndAddEnergyInsights(
         start: LocalDateTime,
         end: LocalDateTime,
         zoneOffset: ZoneOffset = ZonedDateTime.now().offset,

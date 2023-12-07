@@ -237,17 +237,9 @@ internal object SahhaPermissions : BroadcastReceiver() {
         }
 
         return when (context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)) {
-            PackageManager.PERMISSION_GRANTED -> {
-                SahhaSensorStatus.enabled
-            }
-
-            PackageManager.PERMISSION_DENIED -> {
-                SahhaSensorStatus.disabled
-            }
-
-            else -> {
-                SahhaSensorStatus.unavailable
-            }
+            PackageManager.PERMISSION_GRANTED -> SahhaSensorStatus.enabled
+            PackageManager.PERMISSION_DENIED -> SahhaSensorStatus.disabled
+            else -> SahhaSensorStatus.unavailable
         }
     }
 

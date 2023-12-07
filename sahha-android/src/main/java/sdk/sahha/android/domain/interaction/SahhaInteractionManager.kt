@@ -23,7 +23,6 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
-import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalTime
@@ -75,10 +74,7 @@ internal class SahhaInteractionManager @Inject constructor(
 
                 permission.startHcOrNativeDataCollection(application) { error, successful ->
                     if (permission.manager.shouldUseHealthConnect())
-                        permission.manager.getHealthConnectSensorStatus { status ->
-                            if (status == SahhaSensorStatus.enabled)
-                                scheduleInsightsAlarm(application)
-                        }
+                        scheduleInsightsAlarm(application)
 
                     callback?.invoke(error, successful)
                 }
