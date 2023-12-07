@@ -144,7 +144,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
     }
 
     private fun onPermissionEnabled() {
-        permissionCallback?.invoke(SahhaSensorStatus.requested)
+        permissionCallback?.invoke(SahhaSensorStatus.enabled)
         permissionCallback = null
     }
 
@@ -168,9 +168,10 @@ internal object SahhaPermissions : BroadcastReceiver() {
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val permissions = Sahha.di.permissionManager.getHcPermissions()
 
-        if (granted.any()) {
-            callback?.invoke(SahhaSensorStatus.requested)
+        if (granted.containsAll(permissions)) {
+            callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
 
@@ -203,7 +204,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
 
         when (context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)) {
             PackageManager.PERMISSION_GRANTED -> {
-                callback?.invoke(SahhaSensorStatus.requested)
+                callback?.invoke(SahhaSensorStatus.enabled)
             }
 
             PackageManager.PERMISSION_DENIED -> {
@@ -237,7 +238,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
 
         return when (context.checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)) {
             PackageManager.PERMISSION_GRANTED -> {
-                SahhaSensorStatus.requested
+                SahhaSensorStatus.enabled
             }
 
             PackageManager.PERMISSION_DENIED -> {

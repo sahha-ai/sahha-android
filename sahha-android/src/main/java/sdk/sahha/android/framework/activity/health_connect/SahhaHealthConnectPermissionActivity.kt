@@ -11,6 +11,8 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
 class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
+    private lateinit var permissions: Set<String>
+
     private var initialLaunch = true
     private var status = SahhaSensorStatus.pending
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
@@ -22,8 +24,8 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
-            status = when (granted.containsAll(granted)) {
-                true -> SahhaSensorStatus.requested
+            status = when (granted.containsAll(permissions)) {
+                true -> SahhaSensorStatus.enabled
                 false -> SahhaSensorStatus.disabled
             }
         }
@@ -33,6 +35,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
+                permissions = Sahha.di.permissionManager.getHcPermissions()
                 checkPermissionsAndRun(client)
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
@@ -50,20 +53,19 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
-        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(hcPermissions)) {
-            status = SahhaSensorStatus.requested
+        if (granted.containsAll(permissions)) {
+            status = SahhaSensorStatus.enabled
             enabledStatus()
             return
         }
 
         // Else
-        requestPermissions.launch(hcPermissions)
+        requestPermissions.launch(permissions)
     }
 
     private fun enabledStatus() {
-        if (status == SahhaSensorStatus.requested) {
+        if (status == SahhaSensorStatus.enabled) {
             Sahha.di.sahhaNotificationManager.startForegroundService(HealthConnectPostService::class.java)
         }
 

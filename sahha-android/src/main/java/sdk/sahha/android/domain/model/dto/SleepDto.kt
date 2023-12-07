@@ -36,15 +36,14 @@ data class SleepDto(
 
 fun SleepDto.toSleepSendDto(): SleepSendDto {
     return SleepSendDto(
-        source,
-        durationInMinutes,
-        sleepStage,
-        startDateTime,
-        endDateTime,
-        RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
-        Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
-        Sahha.di.timeManager.nowInISO(),
-        Build.MANUFACTURER,
-        Build.MODEL
+        source = source,
+        durationInMinutes = durationInMinutes,
+        sleepStage = sleepStage,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+        deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
+        deviceManufacturer = Build.MANUFACTURER,
+        deviceModel = Build.MODEL
     )
 }

@@ -3,8 +3,9 @@ package sdk.sahha.android.domain.interaction
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
+import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -54,22 +55,71 @@ class PermissionInteractionManager @Inject constructor(
     private fun startTasks(
         context: Context,
         sim: SahhaInteractionManager,
-        status: Enum<SahhaSensorStatus>,
+        status: Enum<InternalSensorStatus>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ) {
-        when (status) {
-            SahhaSensorStatus.partiallyRequested -> startNativeTasks(context, sim, status, callback)
-            SahhaSensorStatus.requested -> startNativeAndHealthConnectTasks(
-                context,
-                sim,
-                status,
-                callback
-            )
+        when (manager.shouldUseHealthConnect()) {
+            true -> {
+                when (status) {
+                    InternalSensorStatus.partial -> startNativeAndHealthConnectTasks(
+                        context,
+                        sim,
+                        status.toSahhaSensorStatus(),
+                        callback
+                    )
 
-            SahhaSensorStatus.disabled -> callback?.invoke(null, SahhaSensorStatus.disabled)
-            SahhaSensorStatus.unavailable -> callback?.invoke(null, SahhaSensorStatus.unavailable)
-            else -> callback?.invoke(null, SahhaSensorStatus.pending)
+                    InternalSensorStatus.enabled -> startNativeAndHealthConnectTasks(
+                        context,
+                        sim,
+                        status.toSahhaSensorStatus(),
+                        callback
+                    )
+
+                    InternalSensorStatus.disabled -> callback?.invoke(
+                        null,
+                        SahhaSensorStatus.disabled
+                    )
+
+                    InternalSensorStatus.unavailable -> callback?.invoke(
+                        null,
+                        SahhaSensorStatus.unavailable
+                    )
+
+                    else -> callback?.invoke(null, SahhaSensorStatus.pending)
+                }
+            }
+
+            false -> {
+                when (status) {
+                    InternalSensorStatus.partial -> startNativeTasks(
+                        context,
+                        sim,
+                        status.toSahhaSensorStatus(),
+                        callback
+                    )
+
+                    InternalSensorStatus.enabled -> startNativeTasks(
+                        context,
+                        sim,
+                        status.toSahhaSensorStatus(),
+                        callback
+                    )
+
+                    InternalSensorStatus.disabled -> callback?.invoke(
+                        null,
+                        SahhaSensorStatus.disabled
+                    )
+
+                    InternalSensorStatus.unavailable -> callback?.invoke(
+                        null,
+                        SahhaSensorStatus.unavailable
+                    )
+
+                    else -> callback?.invoke(null, SahhaSensorStatus.pending)
+                }
+            }
         }
+
     }
 
     private fun startNativeTasks(
@@ -103,7 +153,7 @@ class PermissionInteractionManager @Inject constructor(
     private fun processStatuses(
         nativeStatus: Enum<SahhaSensorStatus>,
         healthConnectStatus: Enum<SahhaSensorStatus>
-    ): Enum<SahhaSensorStatus> {
+    ): Enum<InternalSensorStatus> {
         val nativeDisabled =
             nativeStatus == SahhaSensorStatus.disabled
                     || nativeStatus == SahhaSensorStatus.unavailable
@@ -111,21 +161,23 @@ class PermissionInteractionManager @Inject constructor(
         val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
                 || healthConnectStatus == SahhaSensorStatus.unavailable
                 || healthConnectStatus == SahhaSensorStatus.pending
-        val nativeEnabled = nativeStatus == SahhaSensorStatus.requested
-        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.requested
+        val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
+        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
         val pending =
             nativeStatus == SahhaSensorStatus.pending || healthConnectStatus == SahhaSensorStatus.pending
         val disabled = nativeDisabled && healthConnectDisabled
-        val partialNative = nativeEnabled && healthConnectDisabled
+        val partialNative =
+            nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
         val requested = nativeEnabled && healthConnectEnabled
 
         return when {
-            pending -> SahhaSensorStatus.pending
-            partialNative -> SahhaSensorStatus.partiallyRequested
-            requested -> SahhaSensorStatus.requested
-            disabled -> SahhaSensorStatus.disabled
-            else -> SahhaSensorStatus.unavailable
+            pending -> InternalSensorStatus.pending
+            partialNative -> InternalSensorStatus.partial
+            nativeEnabled && !manager.shouldUseHealthConnect() -> InternalSensorStatus.enabled
+            requested -> InternalSensorStatus.enabled
+            disabled -> InternalSensorStatus.disabled
+            else -> InternalSensorStatus.unavailable
         }
     }
 
@@ -195,7 +247,7 @@ class PermissionInteractionManager @Inject constructor(
                 else SahhaSensorStatus.unavailable
 
             val status = processStatuses(nativeStatus, healthConnectStatus)
-            callback(null, status)
+            callback(null, status.toSahhaSensorStatus())
         }
     }
 
@@ -203,9 +255,15 @@ class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        val status = awaitStatus(context)
+        val nativeStatus = awaitNativeSensorStatus(context)
+        val healthConnectStatus = awaitHealthConnectSensorStatus(context)
+        val status = processStatuses(nativeStatus, healthConnectStatus)
         stopWorkersAndSetConfig()
-        startTasks(context, Sahha.di.sahhaInteractionManager, status) { error, _ ->
+        startTasks(
+            context,
+            Sahha.di.sahhaInteractionManager,
+            status // Already processed from internal status
+        ) { error, _ ->
             error?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
         }
     }
@@ -214,12 +272,4 @@ class PermissionInteractionManager @Inject constructor(
         sensorRepo.stopAllWorkers()
         Sahha.config = configRepo.getConfig()
     }
-
-    private suspend fun awaitStatus(context: Context): Enum<SahhaSensorStatus> =
-        suspendCancellableCoroutine { cont ->
-            getSensorStatus(context) { _, status ->
-                if (cont.isActive)
-                    cont.resume(status)
-            }
-        }
 }

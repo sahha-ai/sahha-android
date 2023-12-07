@@ -32,7 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaConverterUtility
@@ -56,6 +59,7 @@ private const val APP_SECRET = "my_app_secret"
 private const val EXTERNAL_ID = "my_external_id"
 
 class MainActivity : ComponentActivity() {
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -112,7 +116,9 @@ class MainActivity : ComponentActivity() {
                     Sahha.getSensorStatus(
                         this@MainActivity
                     ) { error, sensorStatus ->
-                        permissionStatus = error ?: sensorStatus.name
+                        mainScope.launch {
+                            permissionStatus = error ?: sensorStatus.name
+                        }
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
+import android.health.connect.HealthConnectManager
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
@@ -159,6 +160,18 @@ class PermissionManagerImpl @Inject constructor(
         context.startActivity(openSettingsIntent)
     }
 
+    override fun openHealthConnectSettings(context: Context) {
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+        } else {
+            Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+        }.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        context.startActivity(intent)
+    }
+
     override fun activate(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
@@ -188,7 +201,7 @@ class PermissionManagerImpl @Inject constructor(
     }
 
     private fun convertToActivityStatus(enabled: Boolean): Enum<SahhaSensorStatus> {
-        return if (enabled) SahhaSensorStatus.requested
+        return if (enabled) SahhaSensorStatus.enabled
         else SahhaSensorStatus.disabled
     }
 
@@ -206,21 +219,6 @@ class PermissionManagerImpl @Inject constructor(
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         } ?: callback(SahhaErrors.noHealthConnectApp, SahhaSensorStatus.unavailable)
-    }
-
-    private fun checkAndEnable(
-        context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
-    ) {
-        if (shouldUseHealthConnect()) {
-            requestHealthConnectSensors(context, callback)
-            return
-        }
-
-        // Else use native sensors
-        requestNativeSensors(context) { status ->
-            callback(null, status)
-        }
     }
 
     override fun getHealthConnectSensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {

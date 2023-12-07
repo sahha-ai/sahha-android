@@ -75,7 +75,7 @@ class DataCollectionService : Service() {
 
         Sahha.di.permissionManager.getNativeSensorStatus(context) { status ->
             scope.launch {
-                if (status == SahhaSensorStatus.requested)
+                if (status == SahhaSensorStatus.enabled)
                     checkAndStartCollectingPedometerData()
             }
         }
