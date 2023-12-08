@@ -248,10 +248,9 @@ internal object SahhaPermissions : BroadcastReceiver() {
         val intentFilter = getPermissionIntentFilter()
         val intent = getPermissionIntent(context, activityClass)
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             context.registerReceiver(this, intentFilter, Context.RECEIVER_EXPORTED)
-        } else context.registerReceiver(this, intentFilter)
+        else context.registerReceiver(this, intentFilter)
 
         context.startActivity(intent)
     }
