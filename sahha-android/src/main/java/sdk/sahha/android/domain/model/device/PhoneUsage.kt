@@ -25,7 +25,7 @@ fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLogDto {
         value = if (isLocked) 1.0 else 0.0,
         unit = Constants.DataUnits.BOOLEAN,
         additionalProperties = hashMapOf(
-            "isScreenOn" to if (isScreenOn) 1.0 else 0.0
+            "isScreenOn" to if (isScreenOn) "1" else "0"
         ),
         startDateTime = createdAt,
         endDateTime = createdAt

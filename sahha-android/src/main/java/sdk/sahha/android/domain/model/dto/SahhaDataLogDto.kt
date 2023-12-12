@@ -15,6 +15,6 @@ data class SahhaDataLogDto(
     val unit: String,
     val recordingMethod: String = RecordingMethodsHealthConnect.RECORDING_METHOD_UNKNOWN.name,
     val deviceType: String = Constants.UNKNOWN,
-    val additionalProperties: HashMap<String, Any>? = null,
-    val childLogs: List<Any>? = null
+    val additionalProperties: HashMap<String, String>? = null,
+    val childLogs: List<SahhaDataLogDto>? = null
 )
