@@ -518,7 +518,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
                                         val chunked = chunk.map { it.toSahhaDataLogDto() }
-                                        api.postRespiratoryRate(
+                                        api.postBoneMass(
                                             TokenBearer(token),
                                             chunked
                                         )
