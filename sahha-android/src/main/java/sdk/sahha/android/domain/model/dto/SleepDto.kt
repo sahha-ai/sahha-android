@@ -1,12 +1,10 @@
 package sdk.sahha.android.domain.model.dto
 
-import android.os.Build
 import androidx.health.connect.client.records.metadata.Device
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.source.Sahha
 
 @Entity
@@ -34,16 +32,19 @@ data class SleepDto(
     )
 }
 
-fun SleepDto.toSleepSendDto(): SleepSendDto {
-    return SleepSendDto(
+fun SleepDto.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.SLEEP,
+        dataType = Constants.DataTypes.SLEEP,
         source = source,
-        durationInMinutes = durationInMinutes,
-        sleepStage = sleepStage,
+        value = durationInMinutes.toDouble(),
+        unit = Constants.DataUnits.MINUTE,
+        additionalProperties = hashMapOf(
+            "sleepStage" to sleepStage
+        ),
         startDateTime = startDateTime,
         endDateTime = endDateTime,
         recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
-        deviceManufacturer = Build.MANUFACTURER,
-        deviceModel = Build.MODEL
     )
 }

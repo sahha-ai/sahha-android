@@ -54,7 +54,7 @@ interface SensorRepo {
     )
 
     suspend fun postAllSensorData(
-        callback: ((error: String?, successful: Boolean) -> Unit)
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
     )
 
     suspend fun saveStepSession(

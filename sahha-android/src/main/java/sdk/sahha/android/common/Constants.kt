@@ -2,7 +2,6 @@ package sdk.sahha.android.common
 
 internal object Constants {
     const val UNKNOWN = "UNKNOWN"
-    const val AWAKE_IN_OR_OUT_OF_BED = "awake_in_or_out_of_bed"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
@@ -45,59 +44,70 @@ internal object Constants {
 
     // Data Type
     object DataTypes {
-        const val STEP_COUNTER = "TotalSteps"
-        const val STEP_DETECTOR = "SingleStep"
-        const val SAHHA_STEP_SESSION = "CustomStepSessions"
-        const val STEP = "StepCount"
-        const val BLOOD_GLUCOSE = "BloodGlucose"
-        const val BLOOD_PRESSURE_SYSTOLIC = "BloodPressureSystolic"
-        const val BLOOD_PRESSURE_DIASTOLIC = "BloodPressureDiastolic"
-        const val HEART_RATE = "HeartRate"
-        const val HEART_RATE_AVG = "HeartRateAvg" // Not currently used
-        const val HEART_RATE_MIN = "HeartRateMin" // Not currently used
-        const val HEART_RATE_MAX = "HeartRateMax" // Not currently used
-        const val RESTING_HEART_RATE = "RestingHeartRate"
-        const val RESTING_HEART_RATE_AVG = "RestingHeartRateAvg" // Not currently used
-        const val RESTING_HEART_RATE_MIN = "RestingHeartRateMin" // Not currently used
-        const val RESTING_HEART_RATE_MAX = "RestingHeartRateMax" // Not currently used
-        const val HEART_RATE_VARIABILITY = "HeartRateVariability"
-        const val ACTIVE_ENERGY_BURNED = "ActiveEnergyBurned"
-        const val TOTAL_ENERGY_BURNED = "TotalEnergyBurned"
-        const val OXYGEN_SATURATION = "OxygenSaturation"
-        const val VO2_MAX = "Vo2Max"
-        const val BASAL_METABOLIC_RATE = "BasalMetabolicRate"
-        const val BODY_FAT = "BodyFat"
-        const val BODY_WATER_MASS = "BodyWaterMass"
-        const val LEAN_BODY_MASS = "LeanBodyMass"
-        const val HEIGHT = "Height"
-        const val WEIGHT = "Weight"
-        const val RESPIRATORY_RATE = "RespiratoryRate"
-        const val BONE_MASS = "BoneMass"
-        const val DEVICE_LOCK = "DeviceLock"
+        const val STEP_COUNTER = "total_steps"
+        const val STEP_DETECTOR = "single_step"
+        const val SAHHA_STEP_SESSION = "custom_step_sessions"
+        const val STEP = "step_count"
+        const val SLEEP = "sleep"
+        const val BLOOD_GLUCOSE = "blood_glucose"
+        const val BLOOD_PRESSURE_SYSTOLIC = "blood_pressure_systolic"
+        const val BLOOD_PRESSURE_DIASTOLIC = "blood_pressure_diastolic"
+        const val HEART_RATE = "heart_rate"
+        const val HEART_RATE_AVG = "heart_rate_avg" // Not currently used
+        const val HEART_RATE_MIN = "heart_rate_min" // Not currently used
+        const val HEART_RATE_MAX = "heart_rate_max" // Not currently used
+        const val RESTING_HEART_RATE = "resting_heart_rate"
+        const val RESTING_HEART_RATE_AVG = "resting_heart_rate_avg" // Not currently used
+        const val RESTING_HEART_RATE_MIN = "resting_heart_rate_min" // Not currently used
+        const val RESTING_HEART_RATE_MAX = "resting_heart_rate_max" // Not currently used
+        const val HEART_RATE_VARIABILITY_RMSSD = "heart_rate_variability_rmssd"
+        const val ACTIVE_ENERGY_BURNED = "active_energy_burned"
+        const val TOTAL_ENERGY_BURNED = "total_energy_burned"
+        const val OXYGEN_SATURATION = "oxygen_saturation"
+        const val VO2_MAX = "vo2_max"
+        const val BASAL_METABOLIC_RATE = "basal_metabolic_rate"
+        const val BODY_FAT = "body_fat"
+        const val BODY_WATER_MASS = "body_water_mass"
+        const val LEAN_BODY_MASS = "lean_body_mass"
+        const val HEIGHT = "height"
+        const val WEIGHT = "weight"
+        const val RESPIRATORY_RATE = "respiratory_rate"
+        const val BONE_MASS = "bone_mass"
+        const val DEVICE_LOCK = "device_lock"
     }
 
     // Data Units
     object DataUnits {
+        const val BOOLEAN = "boolean"
         const val COUNT = "count"
         const val MMOL_PER_LITRE = "mmol/L"
+        const val MG_PER_DL = "mg/dL"
         const val MMHG = "mmHg"
-        const val MILLISECOND = "millisecond"
-        const val CALORIE = "calorie"
-        const val KILOCALORIE = "kilocalorie"
-        const val CELSIUS = "celsius"
-        const val FLOOR = "floor"
-        const val PERCENTAGE = "percentage"
+        const val MILLISECOND = "ms"
+        const val KILOCALORIE = "kcal"
+        const val CELSIUS = "C"
+        const val PERCENTAGE = "percent"
         const val ML_PER_KG_PER_MIN = "mL/kg/min"
         const val KCAL_PER_DAY = "kcal/day"
-        const val GRAM = "gram"
-        const val KILOGRAM = "kilogram"
+        const val KILOGRAM = "kg"
         const val INCH = "inch"
-        const val METRE = "metre"
+        const val METRE = "m"
         const val BREATH_PER_MIN = "breath/min"
         const val BEAT_PER_MIN = "bpm"
         const val STEP_PER_MIN = "step/min" // May be used in future - could be changed to count/min
         const val MINUTE = "minute"
         const val STEP = "step" // No longer used
+    }
+
+    object DataLogs {
+        const val DEVICE = "DeviceLog"
+        const val ACTIVITY = "ActivityLog"
+        const val SLEEP = "SleepLog"
+        const val BLOOD = "BloodLog"
+        const val HEART = "HeartLog"
+        const val ENERGY = "EnergyLog"
+        const val OXYGEN = "OxygenLog"
+        const val BODY = "BodyLog"
     }
 
     // Sahha Error API parameters
@@ -112,7 +122,9 @@ internal object Constants {
     const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
 
     // Sleep stage
-    const val SLEEP_STAGE_SLEEPING = "sleeping"
+    const val SLEEP_STAGE_UNKNOWN = "sleep_stage_unknown"
+    const val SLEEP_STAGE_AWAKE_IN_OR_OUT_OF_BED = "sleep_stage_awake_in_or_out_of_bed"
+    const val SLEEP_STAGE_SLEEPING = "sleep_stage_sleeping"
 
     // Device types
     const val DEVICE_TYPE_WATCH = "WATCH"

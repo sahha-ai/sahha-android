@@ -4,6 +4,8 @@ import androidx.health.connect.client.records.metadata.Device
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.source.Sahha
 
@@ -26,15 +28,17 @@ data class StepData(
     )
 }
 
-fun StepData.toStepDto(): StepDto {
-    return StepDto(
+fun StepData.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ACTIVITY,
         dataType = getDataType(source),
-        value = count,
+        value = count.toDouble(),
+        unit = Constants.DataUnits.COUNT,
         source = source,
         startDateTime = detectedAt,
         endDateTime = detectedAt,
-        modifiedDateTime = detectedAt,
-        deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE)
+        deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
+        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
     )
 }
 

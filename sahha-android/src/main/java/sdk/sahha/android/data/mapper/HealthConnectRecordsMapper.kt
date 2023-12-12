@@ -21,12 +21,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
-import sdk.sahha.android.domain.model.dto.BloodPressureDto
-import sdk.sahha.android.domain.model.dto.HealthDataDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
-import sdk.sahha.android.domain.model.dto.Vo2MaxDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
@@ -34,6 +29,7 @@ import sdk.sahha.android.source.Sahha
 private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
 
+// Converted to SahhaDataLogDto later
 fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
     return StepsHealthConnect(
         metaId = metadata.id,
@@ -53,52 +49,54 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
     )
 }
 
-fun SleepSessionRecord.toSleepSendDto(): SleepSendDto {
-    return SleepSendDto(
-        sleepStage = mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING),
+fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.SLEEP,
+        additionalProperties = hashMapOf(
+            "sleepStage" to (mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING)
+                ?: Constants.SLEEP_STAGE_SLEEPING)
+        ),
+        dataType = Constants.DataTypes.SLEEP,
         source = metadata.dataOrigin.packageName,
-        durationInMinutes = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toInt(),
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        unit = Constants.DataUnits.MINUTE,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime,
-            endZoneOffset
-        ),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun BloodGlucoseRecord.toBloodGlucoseDto(): BloodGlucoseDto {
-    return BloodGlucoseDto(
-        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = level.inMillimolesPerLiter,
+fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BLOOD,
+        dataType = Constants.DataTypes.BLOOD_GLUCOSE,
+        value = level.inMillimolesPerLiter,
         source = metadata.dataOrigin.packageName,
-        deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
         endDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime, zoneOffset
+        unit = Constants.DataUnits.MMOL_PER_LITRE,
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "relationToMeal" to (mapper.relationToMeal(relationToMeal) ?: Constants.UNKNOWN),
+            "mealType" to (mapper.mealType(mealType) ?: Constants.UNKNOWN),
+            "specimenSource" to (mapper.specimenSource(specimenSource) ?: Constants.UNKNOWN)
         ),
-        mealType = mapper.mealType(mealType) ?: Constants.UNKNOWN,
-        relationToMeal = mapper.relationToMeal(relationToMeal) ?: Constants.UNKNOWN,
-        specimenSource = mapper.specimenSource(specimenSource) ?: Constants.UNKNOWN,
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun BloodPressureRecord.toBloodPressureDiastolicDto(): BloodPressureDto {
-    return BloodPressureDto(
+fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_DIASTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = diastolic.inMillimetersOfMercury,
+        value = diastolic.inMillimetersOfMercury,
+        unit = Constants.DataUnits.MMHG,
         source = metadata.dataOrigin.packageName,
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
@@ -107,21 +105,22 @@ fun BloodPressureRecord.toBloodPressureDiastolicDto(): BloodPressureDto {
         endDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime, zoneOffset
+        additionalProperties = hashMapOf(
+            "bodyPosition" to (mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN),
+            "measurementLocation" to (mapper.measurementLocation(measurementLocation)
+                ?: Constants.UNKNOWN),
         ),
-        bodyPosition = mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN,
-        measurementLocation = mapper.measurementLocation(measurementLocation) ?: Constants.UNKNOWN,
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
-    )
+
+        )
 }
 
-fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
-    return BloodPressureDto(
+fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_SYSTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = systolic.inMillimetersOfMercury,
+        value = systolic.inMillimetersOfMercury,
+        unit = Constants.DataUnits.MMHG,
         source = metadata.dataOrigin.packageName,
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
@@ -130,21 +129,20 @@ fun BloodPressureRecord.toBloodPressureSystolicDto(): BloodPressureDto {
         endDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime, zoneOffset
+        additionalProperties = hashMapOf(
+            "bodyPosition" to (mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN),
+            "measurementLocation" to (mapper.measurementLocation(measurementLocation)
+                ?: Constants.UNKNOWN)
         ),
-        bodyPosition = mapper.bodyPosition(bodyPosition) ?: Constants.UNKNOWN,
-        measurementLocation = mapper.measurementLocation(measurementLocation) ?: Constants.UNKNOWN,
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
-    return HeartRateDto(
+fun RestingHeartRateRecord.toSahhaLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.RESTING_HEART_RATE,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        count = beatsPerMinute.toDouble(),
+        value = beatsPerMinute.toDouble(),
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = metadata.dataOrigin.packageName,
         deviceType = mapper.devices(metadata.device?.type),
@@ -154,16 +152,12 @@ fun RestingHeartRateRecord.toHeartRateDto(): HeartRateDto {
         endDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
-        modifiedDateTime = timeManager.instantToIsoTime(
-            metadata.lastModifiedTime, zoneOffset
-        ),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto {
-    return HealthDataDto(
+fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ENERGY,
         dataType = Constants.DataTypes.ACTIVE_ENERGY_BURNED,
         value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
         unit = Constants.DataUnits.KILOCALORIE,
@@ -173,8 +167,9 @@ fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): HealthDataDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): HealthDataDto {
-    return HealthDataDto(
+fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ENERGY,
         dataType = Constants.DataTypes.TOTAL_ENERGY_BURNED,
         value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
             ?: 0.0,
@@ -205,10 +200,11 @@ fun AggregationResultGroupedByDuration.toTotalEnergyInsight(): InsightData {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateAvg(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.HEART_RATE_AVG,
-        count = result[HeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0,
+        value = result[HeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map { it.packageName }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
@@ -216,10 +212,11 @@ fun AggregationResultGroupedByDuration.toHeartRateAvgDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateMin(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.HEART_RATE_MIN,
-        count = result[HeartRateRecord.BPM_MIN]?.toDouble() ?: 0.0,
+        value = result[HeartRateRecord.BPM_MIN]?.toDouble() ?: 0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
@@ -229,10 +226,11 @@ fun AggregationResultGroupedByDuration.toHeartRateMinDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toHeartRateMax(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.HEART_RATE_MAX,
-        count = result[HeartRateRecord.BPM_MAX]?.toDouble() ?: -0.0,
+        value = result[HeartRateRecord.BPM_MAX]?.toDouble() ?: -0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
@@ -242,10 +240,11 @@ fun AggregationResultGroupedByDuration.toHeartRateMaxDto(): HeartRateDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateAvg(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.RESTING_HEART_RATE_AVG,
-        count = result[RestingHeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0,
+        value = result[RestingHeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
@@ -255,10 +254,11 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateAvgDto(): HeartRateDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateMin(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.RESTING_HEART_RATE_MIN,
-        count = result[RestingHeartRateRecord.BPM_MIN]?.toDouble() ?: 0.0,
+        value = result[RestingHeartRateRecord.BPM_MIN]?.toDouble() ?: 0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
@@ -268,10 +268,11 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMinDto(): HeartRateDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HeartRateDto {
-    return HeartRateDto(
+fun AggregationResultGroupedByDuration.toRestingHeartRateMax(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
         dataType = Constants.DataTypes.RESTING_HEART_RATE_MAX,
-        count = result[RestingHeartRateRecord.BPM_MAX]?.toDouble() ?: 0.0,
+        value = result[RestingHeartRateRecord.BPM_MAX]?.toDouble() ?: 0.0,
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = result.dataOrigins.map {
             it.packageName
@@ -281,24 +282,23 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMaxDto(): HeartRateDto 
     )
 }
 
-fun HeartRateVariabilityRmssdRecord.toHeartRateDto(): HeartRateDto {
-    return HeartRateDto(
-        dataType = Constants.DataTypes.HEART_RATE_VARIABILITY,
-        count = this.heartRateVariabilityMillis,
+fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.HEART,
+        dataType = Constants.DataTypes.HEART_RATE_VARIABILITY_RMSSD,
+        value = this.heartRateVariabilityMillis,
         unit = Constants.DataUnits.MILLISECOND,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthDataDto {
-    return HealthDataDto(
+fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ENERGY,
         dataType = Constants.DataTypes.ACTIVE_ENERGY_BURNED,
         value = energy.inKilocalories,
         unit = Constants.DataUnits.KILOCALORIE,
@@ -307,14 +307,12 @@ fun ActiveCaloriesBurnedRecord.toActiveCaloriesBurned(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun TotalCaloriesBurnedRecord.toTotalCaloriesBurned(): HealthDataDto {
-    return HealthDataDto(
+fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ENERGY,
         dataType = Constants.DataTypes.TOTAL_ENERGY_BURNED,
         value = energy.inKilocalories,
         unit = Constants.DataUnits.KILOCALORIE,
@@ -323,14 +321,12 @@ fun TotalCaloriesBurnedRecord.toTotalCaloriesBurned(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun OxygenSaturationRecord.toOxygenSaturation(): HealthDataDto {
-    return HealthDataDto(
+fun OxygenSaturationRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.OXYGEN,
         dataType = Constants.DataTypes.OXYGEN_SATURATION,
         value = percentage.value,
         unit = Constants.DataUnits.PERCENTAGE,
@@ -339,14 +335,12 @@ fun OxygenSaturationRecord.toOxygenSaturation(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun BasalMetabolicRateRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun BasalMetabolicRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ENERGY,
         dataType = Constants.DataTypes.BASAL_METABOLIC_RATE,
         value = this.basalMetabolicRate.inKilocaloriesPerDay,
         unit = Constants.DataUnits.KCAL_PER_DAY,
@@ -355,14 +349,12 @@ fun BasalMetabolicRateRecord.toHealthDataDto(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun BodyFatRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun BodyFatRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.BODY_FAT,
         value = percentage.value,
         unit = Constants.DataUnits.PERCENTAGE,
@@ -371,46 +363,54 @@ fun BodyFatRecord.toHealthDataDto(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun BodyWaterMassRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun BodyWaterMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.BODY_WATER_MASS,
-        value = mass.inGrams,
-        unit = Constants.DataUnits.GRAM,
+        value = mass.inKilograms,
+        unit = Constants.DataUnits.KILOGRAM,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun LeanBodyMassRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun LeanBodyMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.LEAN_BODY_MASS,
-        value = mass.inGrams,
-        unit = Constants.DataUnits.GRAM,
+        value = mass.inKilograms,
+        unit = Constants.DataUnits.KILOGRAM,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun HeightRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun BoneMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
+        dataType = Constants.DataTypes.BONE_MASS,
+        value = mass.inKilograms,
+        unit = Constants.DataUnits.KILOGRAM,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+fun HeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.HEIGHT,
         value = height.inMeters,
         unit = Constants.DataUnits.METRE,
@@ -419,14 +419,12 @@ fun HeightRecord.toHealthDataDto(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun WeightRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun WeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.WEIGHT,
         value = weight.inKilograms,
         unit = Constants.DataUnits.KILOGRAM,
@@ -435,31 +433,30 @@ fun WeightRecord.toHealthDataDto(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }
 
-fun Vo2MaxRecord.toVo2Max(): Vo2MaxDto {
-    return Vo2MaxDto(
+fun Vo2MaxRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.OXYGEN,
         dataType = Constants.DataTypes.VO2_MAX,
         value = vo2MillilitersPerMinuteKilogram,
         unit = Constants.DataUnits.ML_PER_KG_PER_MIN,
-        measurementMethod = mapper.measurementMethod(measurementMethod) ?: Constants.UNKNOWN,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
+        additionalProperties = hashMapOf(
+            "measurementMethod" to (mapper.measurementMethod(measurementMethod)
+                ?: Constants.UNKNOWN),
+        )
     )
 }
 
-fun RespiratoryRateRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
+fun RespiratoryRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.OXYGEN,
         dataType = Constants.DataTypes.RESPIRATORY_RATE,
         value = rate,
         unit = Constants.DataUnits.BREATH_PER_MIN,
@@ -468,24 +465,5 @@ fun RespiratoryRateRecord.toHealthDataDto(): HealthDataDto {
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
-    )
-}
-
-fun BoneMassRecord.toHealthDataDto(): HealthDataDto {
-    return HealthDataDto(
-        dataType = Constants.DataTypes.BONE_MASS,
-        value = mass.inGrams,
-        unit = Constants.DataUnits.GRAM,
-        source = metadata.dataOrigin.packageName,
-        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
-        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
-        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        deviceType = mapper.devices(metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
-        deviceManufacturer = metadata.device?.manufacturer ?: Constants.UNKNOWN,
-        deviceModel = metadata.device?.model ?: Constants.UNKNOWN
     )
 }

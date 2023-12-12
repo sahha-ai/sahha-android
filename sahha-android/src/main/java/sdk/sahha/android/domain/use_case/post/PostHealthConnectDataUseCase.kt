@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.mapper.toHealthDataDto
+import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
@@ -321,7 +321,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBasalMetabolicRate(
                                             TokenBearer(token),
                                             chunked
@@ -349,7 +349,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBodyFat(
                                             TokenBearer(token),
                                             chunked
@@ -377,7 +377,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBodyWaterMass(
                                             TokenBearer(token),
                                             chunked
@@ -405,7 +405,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postLeanBodyMass(
                                             TokenBearer(token),
                                             chunked
@@ -433,7 +433,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postHeight(
                                             TokenBearer(token),
                                             chunked
@@ -461,7 +461,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postWeight(
                                             TokenBearer(token),
                                             chunked
@@ -489,7 +489,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postRespiratoryRate(
                                             TokenBearer(token),
                                             chunked
@@ -517,7 +517,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postRespiratoryRate(
                                             TokenBearer(token),
                                             chunked

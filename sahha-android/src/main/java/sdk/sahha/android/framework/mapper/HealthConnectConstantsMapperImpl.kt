@@ -1,5 +1,6 @@
 package sdk.sahha.android.framework.mapper
 
+import android.annotation.SuppressLint
 import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -14,12 +15,15 @@ import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 
 class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
     override fun sleepStages(constantInt: Int): String? {
+        val sleepStagePrefix = "sleep_stage_"
+
         return when (constantInt) {
-            SleepSessionRecord.STAGE_TYPE_AWAKE -> Constants.AWAKE_IN_OR_OUT_OF_BED
-            else -> SleepSessionRecord.STAGE_TYPE_INT_TO_STRING_MAP[constantInt]
+            SleepSessionRecord.STAGE_TYPE_AWAKE -> Constants.SLEEP_STAGE_AWAKE_IN_OR_OUT_OF_BED
+            else -> sleepStagePrefix + SleepSessionRecord.STAGE_TYPE_INT_TO_STRING_MAP[constantInt]
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun devices(constantInt: Int?): String {
         return when (constantInt) {
             Device.TYPE_WATCH -> DeviceTypes.WATCH
@@ -43,6 +47,7 @@ class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     override fun mealType(constantInt: Int): String? {
         return MealType.MEAL_TYPE_INT_TO_STRING_MAP[constantInt]
     }
