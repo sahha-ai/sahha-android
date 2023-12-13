@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -463,6 +464,20 @@ fun RespiratoryRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+fun FloorsClimbedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.FLOOR_COUNT,
+        value = floors,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
     )

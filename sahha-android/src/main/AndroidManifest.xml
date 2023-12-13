@@ -29,8 +29,9 @@
     <!-- Sleep -->
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
-    <!-- Movement -->
+    <!-- Activity -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
 
     <!-- Oxygen -->
     <uses-permission android:name="android.permission.health.READ_VO2_MAX" />

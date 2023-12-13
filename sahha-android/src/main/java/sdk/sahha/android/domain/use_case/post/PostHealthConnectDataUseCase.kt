@@ -11,6 +11,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -27,6 +28,8 @@ import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import retrofit2.Response
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
@@ -34,6 +37,7 @@ import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
@@ -527,6 +531,34 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     processPostResponse(
                                         error, successful,
                                         "Posted bone mass successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(FloorsClimbedRecord::class) -> {
+                    val recordType = FloorsClimbedRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted floors climbed successfully.",
                                         records, recordType
                                     )
                                     cont.resume(Unit)
