@@ -18,6 +18,12 @@
           <timeTargetWasSelectedWithDropDown value="2023-12-06T20:24:02.797141Z" />
         </State>
       </entry>
+      <entry key="bloodPressureError()">
+        <State />
+      </entry>
+      <entry key="errorLogging()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>

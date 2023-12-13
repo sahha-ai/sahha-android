@@ -119,11 +119,30 @@ object SahhaConverterUtility {
         return null
     }
 
+    fun requestBodyToJsonArray(request: RequestBody?): JSONArray? {
+        request?.also {
+            val buffer = Buffer()
+            it.writeTo(buffer)
+            val rbString = buffer.readUtf8()
+            return JSONArray(rbString)
+        }
+        return null
+    }
+
     fun requestBodyToString(request: RequestBody?): String? {
         return try {
             val json = requestBodyToJson(request)
             val filteredJson = hideSensitiveData(json, arrayOf("profileToken", "refreshToken"))
             filteredJson.toString()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun requestBodyArrayToString(request: RequestBody?): String? {
+        return try {
+            val array = requestBodyToJsonArray(request)
+            array.toString()
         } catch (e: Exception) {
             null
         }
@@ -190,23 +209,28 @@ object SahhaConverterUtility {
             .toJson(records)
     }
 
-    internal fun <T> convertToJsonString(record: T?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
-                Instant::class.java,
-                JsonSerializer<Instant> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .registerTypeAdapter(
-                ZoneOffset::class.java,
-                JsonSerializer<ZoneOffset> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(record)
+    internal fun <T> convertToJsonString(anyObject: T?): String {
+        return try {
+            GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(
+                    Instant::class.java,
+                    JsonSerializer<Instant> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .registerTypeAdapter(
+                    ZoneOffset::class.java,
+                    JsonSerializer<ZoneOffset> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+                .create()
+                .toJson(anyObject)
+        } catch (e: Exception) {
+            println(e.stackTraceToString())
+            e.message ?: "Something went wrong"
+        }
     }
 }

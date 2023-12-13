@@ -97,6 +97,17 @@ class SahhaErrorLogger(
         }
     }
 
+    fun apiFromJsonArray(
+        response: Response<*>,
+    ) {
+        mainScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogPropertiesJsonArray(response)
+            postErrorLog(sahhaErrorLog)
+        }
+    }
+
     fun application(
         message: String,
         path: String,
@@ -164,6 +175,25 @@ class SahhaErrorLogger(
         sahhaErrorLog.errorCode = response.code()
         sahhaErrorLog.errorMessage = response.message()
         sahhaErrorLog.errorBody = readErrorBody(response.errorBody())
+    }
+
+    private fun setApiLogPropertiesJsonArray(
+        response: Response<*>,
+    ) {
+        sahhaErrorLog.errorSource = API_ERROR
+        response.raw().request.also { req ->
+            sahhaErrorLog.codeBody =
+                SahhaConverterUtility.requestBodyArrayToString(req.body) ?: SahhaErrors.noCodeBody
+            sahhaErrorLog.codeMethod = req.method
+            sahhaErrorLog.codePath = req.url.encodedPath
+        }
+
+        sahhaErrorLog.errorLocation = getErrorLocation(response.errorBody())
+        sahhaErrorLog.errorCode = response.code()
+        sahhaErrorLog.errorMessage = response.message()
+        sahhaErrorLog.errorBody = readErrorBody(response.errorBody())
+
+        println(sahhaErrorLog)
     }
 
     @JvmName("setApiLogPropertiesDemographicDto")
