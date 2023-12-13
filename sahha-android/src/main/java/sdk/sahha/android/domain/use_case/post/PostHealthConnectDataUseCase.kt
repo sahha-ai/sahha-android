@@ -37,6 +37,7 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -554,11 +555,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
         if (successful) {
             saveQuery(recordType, true)
             Log.i(tag, successfulLog)
+            results.add(true)
+            return
         }
 
-        results.add(successful)
+        results.add(false)
         error?.also { e -> errors.add(e) }
-        checkAndLogError(error, "queryAndPostHealthConnectData", records.toString())
+        checkAndLogError(
+            error,
+            "queryAndPostHealthConnectData",
+            SahhaConverterUtility.convertToJsonString(records, false)
+        )
     }
 
     private fun checkIsAllTrue(results: List<Boolean>): Boolean {

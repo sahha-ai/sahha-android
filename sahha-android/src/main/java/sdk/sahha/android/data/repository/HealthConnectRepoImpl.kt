@@ -80,6 +80,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -786,7 +787,7 @@ class HealthConnectRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response)
+            sahhaErrorLogger.apiFromJsonArray(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
