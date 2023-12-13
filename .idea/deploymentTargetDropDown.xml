@@ -11,6 +11,12 @@
       <entry key="errorLogging()">
         <State />
       </entry>
+      <entry key="bloodPressureError()">
+        <State />
+      </entry>
+      <entry key="errorLogging()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>
