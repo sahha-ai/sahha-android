@@ -75,6 +75,8 @@ internal object Constants {
         const val BONE_MASS = "bone_mass"
         const val DEVICE_LOCK = "device_lock"
         const val FLOOR_COUNT = "floor_count"
+        const val BODY_TEMPERATURE = "body_temperature"
+        const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
     }
 
     // Data Units
@@ -86,7 +88,7 @@ internal object Constants {
         const val MMHG = "mmHg"
         const val MILLISECOND = "ms"
         const val KILOCALORIE = "kcal"
-        const val CELSIUS = "C"
+        const val CELSIUS = "degC"
         const val PERCENTAGE = "percent"
         const val ML_PER_KG_PER_MIN = "mL/kg/min"
         const val KCAL_PER_DAY = "kcal/day"
@@ -101,14 +103,16 @@ internal object Constants {
     }
 
     object DataLogs {
-        const val DEVICE = "DeviceLog"
-        const val ACTIVITY = "ActivityLog"
-        const val SLEEP = "SleepLog"
-        const val BLOOD = "BloodLog"
-        const val HEART = "HeartLog"
-        const val ENERGY = "EnergyLog"
-        const val OXYGEN = "OxygenLog"
-        const val BODY = "BodyLog"
+        const val DEVICE = "device"
+        const val ACTIVITY = "activity"
+        const val SLEEP = "sleep"
+        const val BLOOD = "blood"
+        const val HEART = "heart"
+        const val ENERGY = "energy"
+        const val OXYGEN = "oxygen"
+        const val BODY = "body"
+        const val TEMPERATURE = "temperature"
+        const val EXERCISE = "exercise"
     }
 
     // Sahha Error API parameters

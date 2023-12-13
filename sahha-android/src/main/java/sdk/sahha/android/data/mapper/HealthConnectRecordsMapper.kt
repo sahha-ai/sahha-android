@@ -2,10 +2,12 @@ package sdk.sahha.android.data.mapper
 
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
@@ -480,5 +482,41 @@ fun FloorsClimbedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+fun BodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.TEMPERATURE,
+        dataType = Constants.DataTypes.BODY_TEMPERATURE,
+        value = temperature.inCelsius,
+        unit = Constants.DataUnits.CELSIUS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
+                ?: Constants.UNKNOWN)
+        )
+    )
+}
+
+fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.TEMPERATURE,
+        dataType = Constants.DataTypes.BASAL_BODY_TEMPERATURE,
+        value = temperature.inCelsius,
+        unit = Constants.DataUnits.CELSIUS,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
+                ?: Constants.UNKNOWN)
+        )
     )
 }

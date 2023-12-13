@@ -5,10 +5,12 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
@@ -559,6 +561,62 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     processPostResponse(
                                         error, successful,
                                         "Posted floors climbed successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BodyTemperatureRecord::class) -> {
+                    val recordType = BodyTemperatureRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted body temperature successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class) -> {
+                    val recordType = BasalBodyTemperatureRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted basal body temperature successfully.",
                                         records, recordType
                                     )
                                     cont.resume(Unit)

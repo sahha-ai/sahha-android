@@ -17,10 +17,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
@@ -119,6 +121,11 @@ class PermissionManagerImpl @Inject constructor(
             permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.temperature.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
         }
 
         return permissions

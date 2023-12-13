@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyTemperatureMeasurementLocation
 import androidx.health.connect.client.records.MealType
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -66,6 +67,11 @@ class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
 
     override fun measurementLocation(constantInt: Int): String? {
         return BloodPressureRecord.MEASUREMENT_LOCATION_INT_TO_STRING_MAP[constantInt]
+    }
+
+    @SuppressLint("RestrictedApi")
+    override fun bodyTempMeasurementLocation(constantInt: Int): String? {
+        return BodyTemperatureMeasurementLocation.MEASUREMENT_LOCATION_INT_TO_STRING_MAP[constantInt]
     }
 
     override fun measurementMethod(constantInt: Int): String? {
