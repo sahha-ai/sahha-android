@@ -189,24 +189,26 @@ object SahhaConverterUtility {
         return null
     }
 
-    internal fun <T> convertToJsonString(records: List<T>?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
+    internal fun <T> convertToJsonString(
+        records: List<T>?,
+        usePrettyPrinting: Boolean = true
+    ): String {
+        return GsonBuilder().apply {
+            if (usePrettyPrinting) setPrettyPrinting()
+            registerTypeAdapter(
                 Instant::class.java,
                 JsonSerializer<Instant> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .registerTypeAdapter(
+            registerTypeAdapter(
                 ZoneOffset::class.java,
                 JsonSerializer<ZoneOffset> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(records)
+            setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+        }.create().toJson(records)
     }
 
     internal fun <T> convertToJsonString(anyObject: T?): String {

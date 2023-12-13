@@ -564,7 +564,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
         checkAndLogError(
             error,
             "queryAndPostHealthConnectData",
-            SahhaConverterUtility.convertToJsonString(records)
+            SahhaConverterUtility.convertToJsonString(records, false)
         )
     }
 

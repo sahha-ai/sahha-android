@@ -192,8 +192,6 @@ class SahhaErrorLogger(
         sahhaErrorLog.errorCode = response.code()
         sahhaErrorLog.errorMessage = response.message()
         sahhaErrorLog.errorBody = readErrorBody(response.errorBody())
-
-        println(sahhaErrorLog)
     }
 
     @JvmName("setApiLogPropertiesDemographicDto")
