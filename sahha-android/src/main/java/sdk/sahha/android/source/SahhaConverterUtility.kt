@@ -119,6 +119,16 @@ object SahhaConverterUtility {
         return null
     }
 
+    fun requestBodyToJsonArray(request: RequestBody?): JSONArray? {
+        request?.also {
+            val buffer = Buffer()
+            it.writeTo(buffer)
+            val rbString = buffer.readUtf8()
+            return JSONArray(rbString)
+        }
+        return null
+    }
+
     fun requestBodyToString(request: RequestBody?): String? {
         return try {
             val json = requestBodyToJson(request)
@@ -126,6 +136,31 @@ object SahhaConverterUtility {
             filteredJson.toString()
         } catch (e: Exception) {
             null
+        }
+    }
+
+    fun requestBodyArrayToString(request: RequestBody?): String? {
+        return try {
+            val array = requestBodyToJsonArray(request)
+            array.toString()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
+        return stepData.map { it.toStepDto() }
+    }
+
+    internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
+        return sleepData.map {
+            it.toSleepSendDto()
+        }
+    }
+
+    internal fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
+        return usageData.map {
+            it.toPhoneUsageSendDto()
         }
     }
 
@@ -154,43 +189,50 @@ object SahhaConverterUtility {
         return null
     }
 
-    internal fun <T> convertToJsonString(records: List<T>?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
+    internal fun <T> convertToJsonString(
+        records: List<T>?,
+        usePrettyPrinting: Boolean = true
+    ): String {
+        return GsonBuilder().apply {
+            if (usePrettyPrinting) setPrettyPrinting()
+            registerTypeAdapter(
                 Instant::class.java,
                 JsonSerializer<Instant> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .registerTypeAdapter(
+            registerTypeAdapter(
                 ZoneOffset::class.java,
                 JsonSerializer<ZoneOffset> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(records)
+            setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+        }.create().toJson(records)
     }
 
-    internal fun <T> convertToJsonString(record: T?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
-                Instant::class.java,
-                JsonSerializer<Instant> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .registerTypeAdapter(
-                ZoneOffset::class.java,
-                JsonSerializer<ZoneOffset> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(record)
+    internal fun <T> convertToJsonString(anyObject: T?): String {
+        return try {
+            GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(
+                    Instant::class.java,
+                    JsonSerializer<Instant> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .registerTypeAdapter(
+                    ZoneOffset::class.java,
+                    JsonSerializer<ZoneOffset> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+                .create()
+                .toJson(anyObject)
+        } catch (e: Exception) {
+            println(e.stackTraceToString())
+            e.message ?: "Something went wrong"
+        }
     }
 }

@@ -493,7 +493,7 @@ class SensorRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response)
+            sahhaErrorLogger.apiFromJsonArray(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
