@@ -74,6 +74,7 @@ internal object Constants {
         const val RESPIRATORY_RATE = "respiratory_rate"
         const val BONE_MASS = "bone_mass"
         const val DEVICE_LOCK = "device_lock"
+        const val FLOOR_COUNT = "floor_count"
     }
 
     // Data Units

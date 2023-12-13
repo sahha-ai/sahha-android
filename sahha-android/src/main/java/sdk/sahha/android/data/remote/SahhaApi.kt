@@ -9,18 +9,11 @@ import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
-import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
-import sdk.sahha.android.domain.model.dto.BloodPressureDto
 import sdk.sahha.android.domain.model.dto.DemographicDto
-import sdk.sahha.android.domain.model.dto.HealthDataDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
 import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
-import sdk.sahha.android.domain.model.dto.StepDto
-import sdk.sahha.android.domain.model.dto.Vo2MaxDto
 import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.source.SahhaDemographic
-
 interface SahhaApi {
     @POST("oauth/profile/token")
     suspend fun postProfileIdForToken(
@@ -153,6 +146,14 @@ interface SahhaApi {
         @Body weightData: List<SahhaDataLogDto>
     ): Response<ResponseBody>
 
+    @POST("profile/health/log")
+    suspend fun postSahhaDataLogs(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body sahhaDataLogs: List<SahhaDataLogDto>
+    ): Response<ResponseBody>
+
+
+
     @POST("profile/analyze")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
@@ -193,3 +194,4 @@ interface SahhaApi {
         @Body insights: List<InsightData>
     ): Response<ResponseBody>
 }
+
