@@ -77,6 +77,7 @@ internal object Constants {
         const val FLOOR_COUNT = "floor_count"
         const val BODY_TEMPERATURE = "body_temperature"
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
+        const val EXERCISE_SESSION = "exercise_session"
     }
 
     // Data Units
@@ -112,7 +113,7 @@ internal object Constants {
         const val OXYGEN = "oxygen"
         const val BODY = "body"
         const val TEMPERATURE = "temperature"
-        const val EXERCISE = "exercise"
+//        const val EXERCISE = "exercise"
     }
 
     // Sahha Error API parameters

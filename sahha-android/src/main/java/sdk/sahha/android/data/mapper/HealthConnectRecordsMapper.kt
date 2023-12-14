@@ -10,6 +10,8 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.ExerciseRouteResult
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
@@ -517,6 +519,26 @@ fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
         additionalProperties = hashMapOf(
             "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
+        )
+    )
+}
+
+fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.EXERCISE_SESSION,
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        unit = Constants.DataUnits.MINUTE,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "exerciseType" to (mapper.exerciseTypes(exerciseType) ?: Constants.UNKNOWN),
+        ),
+        childLogs = listOf(
+            // TODO
         )
     )
 }

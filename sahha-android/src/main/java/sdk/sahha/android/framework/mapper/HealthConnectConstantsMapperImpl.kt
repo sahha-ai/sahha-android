@@ -5,6 +5,7 @@ import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureMeasurementLocation
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.MealType
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -76,5 +77,9 @@ class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
 
     override fun measurementMethod(constantInt: Int): String? {
         return Vo2MaxRecord.MEASUREMENT_METHOD_INT_TO_STRING_MAP[constantInt]
+    }
+
+    override fun exerciseTypes(constantInt: Int): String? {
+        return ExerciseSessionRecord.EXERCISE_TYPE_INT_TO_STRING_MAP[constantInt]
     }
 }
