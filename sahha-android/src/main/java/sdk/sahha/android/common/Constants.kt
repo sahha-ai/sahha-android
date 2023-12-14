@@ -28,7 +28,7 @@ internal object Constants {
     const val DEFAULT_INITIAL_ALARM_DELAY_SECS = 10L
 
     // Post limits
-    const val DEFAULT_POST_LIMIT = 468
+    const val DEFAULT_POST_LIMIT = 468 // 128 kb
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
     const val STEP_SESSION_POST_LIMIT = 40
