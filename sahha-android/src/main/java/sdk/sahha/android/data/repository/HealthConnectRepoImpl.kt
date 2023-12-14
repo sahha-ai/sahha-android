@@ -65,7 +65,6 @@ import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
@@ -73,7 +72,6 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -450,11 +448,8 @@ class HealthConnectRepoImpl @Inject constructor(
                         value = durationInMinutes,
                         unit = Constants.DataUnits.MINUTE,
                         source = session.metadata.dataOrigin.packageName,
-                        dataType = Constants.DataTypes.SLEEP,
-                        additionalProperties = hashMapOf(
-                            "sleepStage" to (mapper.sleepStages(s.stage)
-                                ?: Constants.SLEEP_STAGE_UNKNOWN),
-                        ),
+                        dataType = (mapper.sleepStages(s.stage)
+                            ?: Constants.SLEEP_STAGE_UNKNOWN),
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             s.startTime, session.startZoneOffset
                         ),
@@ -1020,7 +1015,8 @@ class HealthConnectRepoImpl @Inject constructor(
                         dataType = Constants.DataTypes.SLEEP,
                         source = session.metadata.dataOrigin.packageName,
                         additionalProperties = hashMapOf(
-                            "sleepStage" to (mapper.sleepStages(it.key) ?: Constants.SLEEP_STAGE_UNKNOWN),
+                            "sleepStage" to (mapper.sleepStages(it.key)
+                                ?: Constants.SLEEP_STAGE_UNKNOWN),
                         ),
                         value = (it.value / 1000 / 60).toDouble(),
                         unit = Constants.DataUnits.MINUTE,

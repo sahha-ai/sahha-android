@@ -148,22 +148,6 @@ object SahhaConverterUtility {
         }
     }
 
-    internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        return stepData.map { it.toStepDto() }
-    }
-
-    internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
-        return sleepData.map {
-            it.toSleepSendDto()
-        }
-    }
-
-    internal fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
-        return usageData.map {
-            it.toPhoneUsageSendDto()
-        }
-    }
-
     internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationDto {
         return deviceInfo.toDeviceInformationSendDto()
     }
