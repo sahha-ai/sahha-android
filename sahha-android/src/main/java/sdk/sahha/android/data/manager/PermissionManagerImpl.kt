@@ -25,6 +25,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
@@ -89,6 +90,7 @@ class PermissionManagerImpl @Inject constructor(
         if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
             permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
+            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {

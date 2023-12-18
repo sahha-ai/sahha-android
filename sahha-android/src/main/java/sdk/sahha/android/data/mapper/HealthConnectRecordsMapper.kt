@@ -10,7 +10,8 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
-import androidx.health.connect.client.records.ExerciseRouteResult
+import androidx.health.connect.client.records.ExerciseLap
+import androidx.health.connect.client.records.ExerciseSegment
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -30,6 +31,7 @@ import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
+import java.time.ZoneOffset
 
 private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
@@ -521,21 +523,82 @@ fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
 }
 
 fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+    val exerciseType = (mapper.exerciseTypes(exerciseType) ?: Constants.UNKNOWN)
+    val source = metadata.dataOrigin.packageName
+    val startZoneOffset = this.startZoneOffset
+    val endZoneOffset = this.endZoneOffset
+    val recordingMethod = mapper.recordingMethod(metadata.recordingMethod)
+    val deviceType = mapper.devices(metadata.device?.type)
+
+    val laps = this.laps.map {
+        it.toSahhaDataLogDto(
+            exerciseType, source, startZoneOffset, endZoneOffset, recordingMethod, deviceType
+        )
+    }
+
+    val segments = this.segments.map {
+        it.toSahhaDataLogDto(
+            exerciseType, source, startZoneOffset, endZoneOffset, recordingMethod, deviceType
+        )
+    }
+
     return SahhaDataLogDto(
         logType = Constants.DataLogs.ACTIVITY,
         dataType = Constants.DataTypes.EXERCISE_SESSION,
         value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
         unit = Constants.DataUnits.MINUTE,
-        source = metadata.dataOrigin.packageName,
+        source = source,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
-        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
-        deviceType = mapper.devices(metadata.device?.type),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
         additionalProperties = hashMapOf(
-            "exerciseType" to (mapper.exerciseTypes(exerciseType) ?: Constants.UNKNOWN),
+            "exerciseType" to exerciseType,
         ),
-        childLogs = listOf(
-            // TODO
-        )
+        childLogs = laps + segments
+    )
+}
+
+fun ExerciseLap.toSahhaDataLogDto(
+    exerciseType: String,
+    source: String,
+    startZoneOffset: ZoneOffset?,
+    endZoneOffset: ZoneOffset?,
+    recordingMethod: String,
+    deviceType: String
+): SahhaDataLogDto {
+    val dataType = exerciseType + "_lap"
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = dataType,
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        unit = Constants.DataUnits.SECOND,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
+    )
+}
+
+fun ExerciseSegment.toSahhaDataLogDto(
+    exerciseType: String,
+    source: String,
+    startZoneOffset: ZoneOffset?,
+    endZoneOffset: ZoneOffset?,
+    recordingMethod: String,
+    deviceType: String
+): SahhaDataLogDto {
+    val dataType = exerciseType + "_segment"
+    return SahhaDataLogDto(
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = dataType,
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        unit = Constants.DataUnits.SECOND,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
     )
 }

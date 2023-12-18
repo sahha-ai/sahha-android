@@ -102,6 +102,7 @@ internal object Constants {
         const val BEAT_PER_MIN = "bpm"
         const val STEP_PER_MIN = "step/min" // May be used in future - could be changed to count/min
         const val MINUTE = "minute"
+        const val SECOND = "second"
         const val STEP = "step" // No longer used
     }
 

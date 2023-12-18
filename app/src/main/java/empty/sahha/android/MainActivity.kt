@@ -236,17 +236,6 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    manualPost = ""
-                                    Sahha.postSensorData { error, success ->
-                                        if (success) manualPost = "Successful" else manualPost =
-                                            error ?: "Failed"
-                                    }
-                                }) {
-                                    Text("Manual Post All")
-                                }
-                                Text(manualPost)
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
                                     analyzeResponse = ""
 
                                     val now = Date()
