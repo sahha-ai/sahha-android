@@ -31,8 +31,6 @@ import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
-import retrofit2.Response
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
@@ -40,7 +38,6 @@ import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
@@ -334,6 +331,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -361,6 +365,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postBodyFat(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -390,6 +401,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -417,6 +435,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postLeanBodyMass(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -446,6 +471,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -473,6 +505,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postWeight(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -502,6 +541,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -529,6 +575,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postBoneMass(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -558,6 +611,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.endTime.atZone(last.endZoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -585,6 +645,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postSahhaDataLogs(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -614,6 +681,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                             TokenBearer(token),
                                             chunked
                                         )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
                                     }
                                 ) { error, successful ->
                                     processPostResponse(
@@ -641,6 +715,13 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                         api.postSahhaDataLogs(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.endTime.atZone(last.endZoneOffset)
                                         )
                                     }
                                 ) { error, successful ->

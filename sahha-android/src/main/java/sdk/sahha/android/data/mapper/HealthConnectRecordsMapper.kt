@@ -57,11 +57,8 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
 fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         logType = Constants.DataLogs.SLEEP,
-        additionalProperties = hashMapOf(
-            "sleepStage" to (mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING)
-                ?: Constants.SLEEP_STAGE_SLEEPING)
-        ),
-        dataType = Constants.DataTypes.SLEEP,
+        dataType = (mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING)
+            ?: Constants.SLEEP_STAGE_UNKNOWN),
         source = metadata.dataOrigin.packageName,
         value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
         unit = Constants.DataUnits.MINUTE,

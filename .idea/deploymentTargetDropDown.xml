@@ -8,13 +8,13 @@
       <entry key="app">
         <State />
       </entry>
-      <entry key="errorLogging()">
-        <State />
-      </entry>
       <entry key="bloodPressureError()">
         <State />
       </entry>
       <entry key="errorLogging()">
+        <State />
+      </entry>
+      <entry key="postProgress_resumesAfterFailure()">
         <State />
       </entry>
     </value>

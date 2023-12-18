@@ -65,7 +65,6 @@ import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
@@ -347,7 +346,13 @@ class HealthConnectRepoImpl @Inject constructor(
             heartRateVariabilityRmssdData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    HeartRateVariabilityRmssdRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -365,7 +370,13 @@ class HealthConnectRepoImpl @Inject constructor(
             bloodGlucoseData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    BloodGlucoseRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -410,7 +421,13 @@ class HealthConnectRepoImpl @Inject constructor(
                     bloodPressureData,
                     Constants.DEFAULT_POST_LIMIT,
                     getDiastolicResponse,
-                    {},
+                    { chunk ->
+                        val last = chunk.last()
+                        saveLastSuccessfulQuery(
+                            BloodPressureRecord::class,
+                            last.time.atZone(last.zoneOffset)
+                        )
+                    },
                 ) { error, success ->
                     error?.also { errors.add(it) }
                     successes.add(success)
@@ -450,11 +467,8 @@ class HealthConnectRepoImpl @Inject constructor(
                         value = durationInMinutes,
                         unit = Constants.DataUnits.MINUTE,
                         source = session.metadata.dataOrigin.packageName,
-                        dataType = Constants.DataTypes.SLEEP,
-                        additionalProperties = hashMapOf(
-                            "sleepStage" to (mapper.sleepStages(s.stage)
-                                ?: Constants.SLEEP_STAGE_UNKNOWN),
-                        ),
+                        dataType = (mapper.sleepStages(s.stage)
+                            ?: Constants.SLEEP_STAGE_UNKNOWN),
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             s.startTime, session.startZoneOffset
                         ),
@@ -477,7 +491,13 @@ class HealthConnectRepoImpl @Inject constructor(
             sessionsAndStages,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    SleepSessionRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -517,7 +537,13 @@ class HealthConnectRepoImpl @Inject constructor(
             samplesList,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    HeartRateRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -536,7 +562,13 @@ class HealthConnectRepoImpl @Inject constructor(
             restingHeartRateData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    RestingHeartRateRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -554,7 +586,13 @@ class HealthConnectRepoImpl @Inject constructor(
             stepData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    StepsRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -623,7 +661,13 @@ class HealthConnectRepoImpl @Inject constructor(
             oxygenSaturationData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    OxygenSaturationRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -646,7 +690,13 @@ class HealthConnectRepoImpl @Inject constructor(
             activeCalBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    ActiveCaloriesBurnedRecord::class,
+                    last.endTime.atZone(last.endZoneOffset)
+                )
+            },
             callback
         )
     }
@@ -669,7 +719,13 @@ class HealthConnectRepoImpl @Inject constructor(
             totalCaloriesBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    TotalCaloriesBurnedRecord::class,
+                    last.endTime.atZone(last.endZoneOffset)
+                )
+            },
             callback
         )
     }
@@ -692,7 +748,13 @@ class HealthConnectRepoImpl @Inject constructor(
             vo2MaxData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    Vo2MaxRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -701,7 +763,7 @@ class HealthConnectRepoImpl @Inject constructor(
         data: List<T>,
         chunkLimit: Int,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit,
+        updateLastQueried: suspend (List<T>) -> Unit,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
@@ -714,7 +776,7 @@ class HealthConnectRepoImpl @Inject constructor(
                 data,
                 chunkLimit,
                 { chunk ->
-                    sendChunk(chunk, getResponse, clearData)
+                    sendChunk(chunk, getResponse, updateLastQueried)
                 }
             ) { error, successful ->
                 callback?.invoke(error, successful)
@@ -727,7 +789,7 @@ class HealthConnectRepoImpl @Inject constructor(
     private suspend fun <T> sendChunk(
         chunk: List<T>,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit,
+        updateLastQueried: suspend (List<T>) -> Unit,
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
@@ -735,7 +797,8 @@ class HealthConnectRepoImpl @Inject constructor(
                 Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
                 handleResponse(response, { getResponse(chunk) }, null) {
-                    clearData(chunk)
+                    // When successful
+                    updateLastQueried(chunk)
                     cont.resume(true)
                 }
             }
@@ -1020,7 +1083,8 @@ class HealthConnectRepoImpl @Inject constructor(
                         dataType = Constants.DataTypes.SLEEP,
                         source = session.metadata.dataOrigin.packageName,
                         additionalProperties = hashMapOf(
-                            "sleepStage" to (mapper.sleepStages(it.key) ?: Constants.SLEEP_STAGE_UNKNOWN),
+                            "sleepStage" to (mapper.sleepStages(it.key)
+                                ?: Constants.SLEEP_STAGE_UNKNOWN),
                         ),
                         value = (it.value / 1000 / 60).toDouble(),
                         unit = Constants.DataUnits.MINUTE,
