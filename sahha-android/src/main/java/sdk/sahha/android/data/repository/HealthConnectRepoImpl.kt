@@ -41,6 +41,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.MovementDao
@@ -81,6 +82,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZonedDateTime
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -463,6 +465,8 @@ class HealthConnectRepoImpl @Inject constructor(
                     ((s.endTime.toEpochMilli() - s.startTime.toEpochMilli()) / 1000 / 60).toDouble()
                 sleepStages.add(
                     SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
+                        parentId = session.metadata.id,
                         logType = Constants.DataLogs.SLEEP,
                         value = durationInMinutes,
                         unit = Constants.DataUnits.MINUTE,
@@ -511,6 +515,8 @@ class HealthConnectRepoImpl @Inject constructor(
             record.samples.forEach { sample ->
                 samplesList.add(
                     SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
+                        parentId = record.metadata.id,
                         logType = Constants.DataLogs.HEART,
                         dataType = Constants.DataTypes.HEART_RATE,
                         value = sample.beatsPerMinute.toDouble(),
@@ -1079,6 +1085,7 @@ class HealthConnectRepoImpl @Inject constructor(
             summaryHashMap.forEach {
                 sleepStageSummary.add(
                     SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
                         logType = Constants.DataLogs.SLEEP,
                         dataType = Constants.DataTypes.SLEEP,
                         source = session.metadata.dataOrigin.packageName,

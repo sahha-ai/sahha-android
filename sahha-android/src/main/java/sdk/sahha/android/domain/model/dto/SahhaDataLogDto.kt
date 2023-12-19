@@ -6,6 +6,7 @@ import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
 @Keep
 data class SahhaDataLogDto(
+    val id: String,
     val logType: String,
     val dataType: String,
     val value: Double,
@@ -16,5 +17,5 @@ data class SahhaDataLogDto(
     val recordingMethod: String = RecordingMethodsHealthConnect.RECORDING_METHOD_UNKNOWN.name,
     val deviceType: String = Constants.UNKNOWN,
     val additionalProperties: HashMap<String, String>? = null,
-    val childLogs: List<SahhaDataLogDto>? = null
+    val parentId: String? = null,
 )

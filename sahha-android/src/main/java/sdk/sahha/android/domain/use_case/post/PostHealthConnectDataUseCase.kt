@@ -38,6 +38,8 @@ import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
@@ -59,6 +61,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val api: SahhaApi,
+    private val mapper: HealthConnectConstantsMapper,
     @IoScope private val ioScope: CoroutineScope
 ) {
     private val results = mutableListOf<Boolean>()
@@ -703,38 +706,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
                 }
 
                 HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
-                    val recordType = ExerciseSessionRecord::class
-                    suspendCoroutine { cont ->
-                        ioScope.launch {
-                            repo.getNewRecords(recordType)?.also { records ->
-                                repo.postData(
-                                    data = records,
-                                    getResponse = { chunk ->
-                                        val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
-                                        api.postSahhaDataLogs(
-                                            TokenBearer(token),
-                                            chunked
-                                        )
-                                    },
-                                    updateLastQueried = { chunk ->
-                                        val last = chunk.last()
-                                        repo.saveLastSuccessfulQuery(
-                                            recordType,
-                                            last.endTime.atZone(last.endZoneOffset)
-                                        )
-                                    }
-                                ) { error, successful ->
-                                    processPostResponse(
-                                        error, successful,
-                                        "Posted exercise sessions successfully.",
-                                        records, recordType
-                                    )
-                                    cont.resume(Unit)
-                                }
-                            } ?: cont.resume(Unit)
-                        }
-                    }
+                    postExerciseData()
                 }
             }
         }
@@ -743,6 +715,41 @@ class PostHealthConnectDataUseCase @Inject constructor(
         if (checkIsAllTrue(results))
             callback(null, true)
         else callback(sumErrors(errors), false)
+    }
+
+    private suspend fun postExerciseData() {
+        val recordType = ExerciseSessionRecord::class
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.getNewRecords(recordType)?.also { records ->
+                    repo.postData(
+                        data = records,
+                        getResponse = { chunk ->
+                            val token = authRepo.getToken() ?: ""
+                            val chunked = chunk.map { it.toSahhaDataLogDto() }
+                            api.postSahhaDataLogs(
+                                TokenBearer(token),
+                                chunked
+                            )
+                        },
+                        updateLastQueried = { chunk ->
+                            val last = chunk.last()
+                            repo.saveLastSuccessfulQuery(
+                                recordType,
+                                last.endTime.atZone(last.endZoneOffset)
+                            )
+                        }
+                    ) { error, successful ->
+                        processPostResponse(
+                            error, successful,
+                            "Posted exercise sessions successfully.",
+                            records, recordType
+                        )
+                        cont.resume(Unit)
+                    }
+                } ?: cont.resume(Unit)
+            }
+        }
     }
 
     internal suspend fun <R : Record, A> processPostResponse(
@@ -759,6 +766,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
             return
         }
 
+        Session.hcQueryInProgress = false
         results.add(false)
         error?.also { e -> errors.add(e) }
         checkAndLogError(

@@ -23,6 +23,7 @@ data class StepsHealthConnect(
 
 fun StepsHealthConnect.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
+        id = metaId,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
         value = count.toDouble(),
