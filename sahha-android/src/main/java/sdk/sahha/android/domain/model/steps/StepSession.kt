@@ -7,17 +7,19 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.source.Sahha
+import java.util.UUID
 
 @Entity
 data class StepSession(
     val count: Int,
     val startDateTime: String,
     val endDateTime: String,
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
 
 fun StepSession.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
+        id = id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = Constants.DataTypes.SAHHA_STEP_SESSION,
         value = count.toDouble(),

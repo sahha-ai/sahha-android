@@ -90,7 +90,7 @@ class PermissionManagerImpl @Inject constructor(
         if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
             permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
-            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
+//            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {

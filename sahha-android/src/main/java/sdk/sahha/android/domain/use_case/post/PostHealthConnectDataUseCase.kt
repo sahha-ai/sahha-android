@@ -705,9 +705,9 @@ class PostHealthConnectDataUseCase @Inject constructor(
                     }
                 }
 
-                HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
-                    postExerciseData()
-                }
+//                HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
+//                    postExerciseData()
+//                }
             }
         }
 
