@@ -589,7 +589,7 @@ fun ExerciseLap.toSahhaDataLogDto(
 
     val dataType = exerciseType + "_lap"
     return SahhaDataLogDto(
-        id = UUID.randomUUID().toString(),
+        id = UUID.fromString(exercise.metadata.id).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
@@ -615,7 +615,7 @@ fun ExerciseSegment.toSahhaDataLogDto(
 
     val dataType = exerciseType + "_segment"
     return SahhaDataLogDto(
-        id = UUID.randomUUID().toString(),
+        id = UUID.fromString(exercise.metadata.id).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,

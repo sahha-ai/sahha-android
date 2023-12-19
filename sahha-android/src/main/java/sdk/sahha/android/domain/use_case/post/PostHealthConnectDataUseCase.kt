@@ -719,35 +719,107 @@ class PostHealthConnectDataUseCase @Inject constructor(
 
     private suspend fun postExerciseData() {
         val recordType = ExerciseSessionRecord::class
+
+        repo.getNewRecords(recordType)?.also { records ->
+            postExerciseSegments(recordType, records)
+            postExerciseLaps(recordType, records)
+            postExerciseSessions(recordType, records)
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseSessions(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
         suspendCoroutine { cont ->
             ioScope.launch {
-                repo.getNewRecords(recordType)?.also { records ->
-                    repo.postData(
-                        data = records,
-                        getResponse = { chunk ->
-                            val token = authRepo.getToken() ?: ""
-                            val chunked = chunk.map { it.toSahhaDataLogDto() }
-                            api.postSahhaDataLogs(
-                                TokenBearer(token),
-                                chunked
-                            )
-                        },
-                        updateLastQueried = { chunk ->
-                            val last = chunk.last()
-                            repo.saveLastSuccessfulQuery(
-                                recordType,
-                                last.endTime.atZone(last.endZoneOffset)
-                            )
-                        }
-                    ) { error, successful ->
-                        processPostResponse(
-                            error, successful,
-                            "Posted exercise sessions successfully.",
-                            records, recordType
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            chunked
                         )
-                        cont.resume(Unit)
+                    },
+                    updateLastQueried = { chunk ->
+                        val last = chunk.last()
+                        repo.saveLastSuccessfulQuery(
+                            recordType,
+                            last.endTime.atZone(last.endZoneOffset)
+                        )
                     }
-                } ?: cont.resume(Unit)
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseSegments(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        var segments = listOf<SahhaDataLogDto>()
+                        chunk.forEach { record ->
+                            segments += record.segments.map { it.toSahhaDataLogDto(record) }
+                        }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            segments
+                        )
+                    },
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseLaps(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        var laps = listOf<SahhaDataLogDto>()
+                        chunk.forEach { record ->
+                            laps += record.laps.map { it.toSahhaDataLogDto(record) }
+                        }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            laps
+                        )
+                    },
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
             }
         }
     }
