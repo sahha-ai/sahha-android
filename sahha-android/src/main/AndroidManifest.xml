@@ -29,8 +29,9 @@
     <!-- Sleep -->
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
-    <!-- Movement -->
+    <!-- Activity -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
 
     <!-- Oxygen -->
     <uses-permission android:name="android.permission.health.READ_VO2_MAX" />
@@ -38,6 +39,7 @@
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
 
     <!-- Exercise -->
+<!--    <uses-permission android:name="android.permission.health.READ_EXERCISE" />-->
 
     <!-- Energy -->
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
@@ -51,6 +53,10 @@
     <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
     <uses-permission android:name="android.permission.health.READ_HEIGHT" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+
+    <!-- Temperature -->
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_BODY_TEMPERATURE" />
 
     <!-- Alarms -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />

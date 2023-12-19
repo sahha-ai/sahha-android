@@ -41,24 +41,22 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.mapper.toActiveCaloriesBurned
-import sdk.sahha.android.data.mapper.toBloodGlucoseDto
-import sdk.sahha.android.data.mapper.toBloodPressureDiastolicDto
-import sdk.sahha.android.data.mapper.toBloodPressureSystolicDto
-import sdk.sahha.android.data.mapper.toHeartRateAvgDto
-import sdk.sahha.android.data.mapper.toHeartRateDto
-import sdk.sahha.android.data.mapper.toHeartRateMaxDto
-import sdk.sahha.android.data.mapper.toHeartRateMinDto
-import sdk.sahha.android.data.mapper.toOxygenSaturation
-import sdk.sahha.android.data.mapper.toRestingHeartRateAvgDto
-import sdk.sahha.android.data.mapper.toRestingHeartRateMaxDto
-import sdk.sahha.android.data.mapper.toRestingHeartRateMinDto
-import sdk.sahha.android.data.mapper.toSleepSendDto
+import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
+import sdk.sahha.android.data.mapper.toBloodPressureSystolic
+import sdk.sahha.android.data.mapper.toHeartRateAvg
+import sdk.sahha.android.data.mapper.toHeartRateMax
+import sdk.sahha.android.data.mapper.toHeartRateMin
+import sdk.sahha.android.data.mapper.toRestingHeartRateAvg
+import sdk.sahha.android.data.mapper.toRestingHeartRateMax
+import sdk.sahha.android.data.mapper.toRestingHeartRateMin
+import sdk.sahha.android.data.mapper.toSahhaDataLogDto
+import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toTotalCaloriesBurned
-import sdk.sahha.android.data.mapper.toVo2Max
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
@@ -67,15 +65,10 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
-import sdk.sahha.android.domain.model.dto.BloodGlucoseDto
-import sdk.sahha.android.domain.model.dto.BloodPressureDto
-import sdk.sahha.android.domain.model.dto.HealthDataDto
-import sdk.sahha.android.domain.model.dto.HeartRateDto
-import sdk.sahha.android.domain.model.dto.StepDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
-import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -89,6 +82,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZonedDateTime
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -204,15 +198,15 @@ class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
-    private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
-        return api.postStepData(
+        return api.postStepDataLog(
             TokenBearer(token),
             stepData
         )
     }
 
-    private suspend fun getSleepSessionResponse(sleepSessionData: List<SleepSendDto>): Response<ResponseBody> {
+    private suspend fun getSleepSessionResponse(sleepSessionData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
@@ -220,7 +214,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getHeartRateDataResponse(heartRateData: List<HeartRateDto>): Response<ResponseBody> {
+    private suspend fun getHeartRateDataResponse(heartRateData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postHeartRateData(
             TokenBearer(token),
@@ -228,7 +222,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getBloodGlucoseResponse(bloodGlucoseData: List<BloodGlucoseDto>): Response<ResponseBody> {
+    private suspend fun getBloodGlucoseResponse(bloodGlucoseData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postBloodGlucoseData(
             TokenBearer(token),
@@ -236,7 +230,7 @@ class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getBloodPressureResponse(bloodPressureData: List<BloodPressureDto>): Response<ResponseBody> {
+    private suspend fun getBloodPressureResponse(bloodPressureData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postBloodPressureData(
             TokenBearer(token),
@@ -253,8 +247,8 @@ class HealthConnectRepoImpl @Inject constructor(
         -> Response<ResponseBody> = { chunk ->
             val avg = chunk.map {
                 when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateAvgDto()
-                    else -> it.toHeartRateAvgDto()
+                    RestingHeartRateRecord::class -> it.toRestingHeartRateAvg()
+                    else -> it.toHeartRateAvg()
                 }
             }
             getHeartRateDataResponse(avg)
@@ -264,8 +258,8 @@ class HealthConnectRepoImpl @Inject constructor(
         -> Response<ResponseBody> = { chunk ->
             val min = chunk.map {
                 when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateMinDto()
-                    else -> it.toHeartRateMinDto()
+                    RestingHeartRateRecord::class -> it.toRestingHeartRateMin()
+                    else -> it.toHeartRateMin()
                 }
             }
             getHeartRateDataResponse(min)
@@ -275,8 +269,8 @@ class HealthConnectRepoImpl @Inject constructor(
         -> Response<ResponseBody> = { chunk ->
             val max = chunk.map {
                 when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateMaxDto()
-                    else -> it.toHeartRateMaxDto()
+                    RestingHeartRateRecord::class -> it.toRestingHeartRateMax()
+                    else -> it.toHeartRateMax()
                 }
             }
             getHeartRateDataResponse(max)
@@ -346,7 +340,7 @@ class HealthConnectRepoImpl @Inject constructor(
     ) {
         val getResponse: suspend (List<HeartRateVariabilityRmssdRecord>) -> Response<ResponseBody> =
             { chunk ->
-                val heartRateVariabilityRmssd = chunk.map { it.toHeartRateDto() }
+                val heartRateVariabilityRmssd = chunk.map { it.toSahhaDataLogDto() }
                 getHeartRateDataResponse(heartRateVariabilityRmssd)
             }
 
@@ -354,7 +348,13 @@ class HealthConnectRepoImpl @Inject constructor(
             heartRateVariabilityRmssdData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    HeartRateVariabilityRmssdRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -364,7 +364,7 @@ class HealthConnectRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<BloodGlucoseRecord>) -> Response<ResponseBody> = { chunk ->
-            val bloodGlucose = chunk.map { it.toBloodGlucoseDto() }
+            val bloodGlucose = chunk.map { it.toSahhaDataLogDto() }
             getBloodGlucoseResponse(bloodGlucose)
         }
 
@@ -372,7 +372,13 @@ class HealthConnectRepoImpl @Inject constructor(
             bloodGlucoseData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    BloodGlucoseRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -383,13 +389,13 @@ class HealthConnectRepoImpl @Inject constructor(
     ) {
         val getSystolicResponse: suspend (List<BloodPressureRecord>) -> Response<ResponseBody> =
             { chunk ->
-                val systolic = chunk.map { it.toBloodPressureSystolicDto() }
+                val systolic = chunk.map { it.toBloodPressureSystolic() }
                 getBloodPressureResponse(systolic)
             }
 
         val getDiastolicResponse: suspend (List<BloodPressureRecord>) -> Response<ResponseBody> =
             { chunk ->
-                val diastolic = chunk.map { it.toBloodPressureDiastolicDto() }
+                val diastolic = chunk.map { it.toBloodPressureDiastolic() }
                 getBloodPressureResponse(diastolic)
             }
 
@@ -417,7 +423,13 @@ class HealthConnectRepoImpl @Inject constructor(
                     bloodPressureData,
                     Constants.DEFAULT_POST_LIMIT,
                     getDiastolicResponse,
-                    {},
+                    { chunk ->
+                        val last = chunk.last()
+                        saveLastSuccessfulQuery(
+                            BloodPressureRecord::class,
+                            last.time.atZone(last.zoneOffset)
+                        )
+                    },
                 ) { error, success ->
                     error?.also { errors.add(it) }
                     successes.add(success)
@@ -435,8 +447,8 @@ class HealthConnectRepoImpl @Inject constructor(
                 tag,
                 "postBloodPressureData",
                 bloodPressureData.map {
-                    it.toBloodPressureSystolicDto()
-                    it.toBloodPressureDiastolicDto()
+                    it.toBloodPressureSystolic()
+                    it.toBloodPressureDiastolic()
                 }.toString()
             )
     }
@@ -445,35 +457,37 @@ class HealthConnectRepoImpl @Inject constructor(
         sleepSessionData: List<SleepSessionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val sleepStages = mutableListOf<SleepSendDto>()
-        val sleepSessions = sleepSessionData.map { it.toSleepSendDto() }
+        val sleepStages = mutableListOf<SahhaDataLogDto>()
+        val sleepSessions = sleepSessionData.map { it.toSahhaDataLogDto() }
         sleepSessionData.forEach { session ->
             session.stages.forEach { s ->
+                val durationInMinutes =
+                    ((s.endTime.toEpochMilli() - s.startTime.toEpochMilli()) / 1000 / 60).toDouble()
                 sleepStages.add(
-                    SleepSendDto(
+                    SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
+                        parentId = session.metadata.id,
+                        logType = Constants.DataLogs.SLEEP,
+                        value = durationInMinutes,
+                        unit = Constants.DataUnits.MINUTE,
                         source = session.metadata.dataOrigin.packageName,
-                        sleepStage = mapper.sleepStages(s.stage),
+                        dataType = (mapper.sleepStages(s.stage)
+                            ?: Constants.SLEEP_STAGE_UNKNOWN),
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             s.startTime, session.startZoneOffset
                         ),
                         endDateTime = sahhaTimeManager.instantToIsoTime(
                             s.endTime, session.endZoneOffset
                         ),
-                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
-                            session.metadata.lastModifiedTime, session.endZoneOffset
-                        ),
                         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
                         deviceType = mapper.devices(session.metadata.device?.type),
-                        deviceManufacturer = session.metadata.device?.manufacturer
-                            ?: Constants.UNKNOWN,
-                        deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
                     )
                 )
             }
         }
         val sessionsAndStages = sleepSessions + sleepStages
 
-        val getResponse: suspend (List<SleepSendDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<SahhaDataLogDto>) -> Response<ResponseBody> = { chunk ->
             getSleepSessionResponse(chunk)
         }
 
@@ -481,7 +495,13 @@ class HealthConnectRepoImpl @Inject constructor(
             sessionsAndStages,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    SleepSessionRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -490,13 +510,16 @@ class HealthConnectRepoImpl @Inject constructor(
         heartRateData: List<HeartRateRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val samplesList = mutableListOf<HeartRateDto>()
+        val samplesList = mutableListOf<SahhaDataLogDto>()
         heartRateData.forEach { record ->
             record.samples.forEach { sample ->
                 samplesList.add(
-                    HeartRateDto(
+                    SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
+                        parentId = record.metadata.id,
+                        logType = Constants.DataLogs.HEART,
                         dataType = Constants.DataTypes.HEART_RATE,
-                        count = sample.beatsPerMinute.toDouble(),
+                        value = sample.beatsPerMinute.toDouble(),
                         unit = Constants.DataUnits.BEAT_PER_MIN,
                         source = record.metadata.dataOrigin.packageName,
                         startDateTime = sahhaTimeManager.instantToIsoTime(
@@ -505,20 +528,14 @@ class HealthConnectRepoImpl @Inject constructor(
                         endDateTime = sahhaTimeManager.instantToIsoTime(
                             sample.time, record.endZoneOffset
                         ),
-                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
-                            record.metadata.lastModifiedTime, record.endZoneOffset
-                        ),
                         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
                         deviceType = mapper.devices(record.metadata.device?.type),
-                        deviceManufacturer = record.metadata.device?.manufacturer
-                            ?: Constants.UNKNOWN,
-                        deviceModel = record.metadata.device?.model ?: Constants.UNKNOWN,
                     )
                 )
             }
         }
 
-        val getResponse: suspend (List<HeartRateDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<SahhaDataLogDto>) -> Response<ResponseBody> = { chunk ->
             getHeartRateDataResponse(chunk)
         }
 
@@ -526,7 +543,13 @@ class HealthConnectRepoImpl @Inject constructor(
             samplesList,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    HeartRateRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -537,7 +560,7 @@ class HealthConnectRepoImpl @Inject constructor(
     ) {
         val getResponse: suspend (List<RestingHeartRateRecord>) -> Response<ResponseBody> =
             { chunk ->
-                val restingRates = chunk.map { it.toHeartRateDto() }
+                val restingRates = chunk.map { it.toSahhaLogDto() }
                 getHeartRateDataResponse(restingRates)
             }
 
@@ -545,7 +568,13 @@ class HealthConnectRepoImpl @Inject constructor(
             restingHeartRateData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    RestingHeartRateRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -555,7 +584,7 @@ class HealthConnectRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepsHealthConnect>) -> Response<ResponseBody> = { chunk ->
-            val steps = chunk.map { it.toStepDto() }
+            val steps = chunk.map { it.toSahhaDataLogDto() }
             getStepResponse(steps)
         }
 
@@ -563,7 +592,13 @@ class HealthConnectRepoImpl @Inject constructor(
             stepData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    StepsRecord::class,
+                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                )
+            },
             callback
         )
     }
@@ -621,7 +656,7 @@ class HealthConnectRepoImpl @Inject constructor(
         val getResponse: suspend (List<OxygenSaturationRecord>) -> Response<ResponseBody> =
             { chunk ->
                 val token = authRepo.getToken() ?: ""
-                val oxygenSaturation = chunk.map { it.toOxygenSaturation() }
+                val oxygenSaturation = chunk.map { it.toSahhaDataLogDto() }
                 api.postOxygenSaturation(
                     TokenBearer(token),
                     oxygenSaturation
@@ -632,7 +667,13 @@ class HealthConnectRepoImpl @Inject constructor(
             oxygenSaturationData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    OxygenSaturationRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -644,7 +685,7 @@ class HealthConnectRepoImpl @Inject constructor(
         val getResponse: suspend (List<ActiveCaloriesBurnedRecord>) -> Response<ResponseBody> =
             { chunk ->
                 val token = authRepo.getToken() ?: ""
-                val totalCaloriesBurned = chunk.map { it.toActiveCaloriesBurned() }
+                val totalCaloriesBurned = chunk.map { it.toSahhaDataLogDto() }
                 api.postActiveCaloriesBurned(
                     TokenBearer(token),
                     totalCaloriesBurned
@@ -655,7 +696,13 @@ class HealthConnectRepoImpl @Inject constructor(
             activeCalBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    ActiveCaloriesBurnedRecord::class,
+                    last.endTime.atZone(last.endZoneOffset)
+                )
+            },
             callback
         )
     }
@@ -667,7 +714,7 @@ class HealthConnectRepoImpl @Inject constructor(
         val getResponse: suspend (List<TotalCaloriesBurnedRecord>) -> Response<ResponseBody> =
             { chunk ->
                 val token = authRepo.getToken() ?: ""
-                val totalCaloriesBurned = chunk.map { it.toTotalCaloriesBurned() }
+                val totalCaloriesBurned = chunk.map { it.toSahhaDataLogDto() }
                 api.postTotalCaloriesBurned(
                     TokenBearer(token),
                     totalCaloriesBurned
@@ -678,7 +725,13 @@ class HealthConnectRepoImpl @Inject constructor(
             totalCaloriesBurnedData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    TotalCaloriesBurnedRecord::class,
+                    last.endTime.atZone(last.endZoneOffset)
+                )
+            },
             callback
         )
     }
@@ -690,7 +743,7 @@ class HealthConnectRepoImpl @Inject constructor(
         val getResponse: suspend (List<Vo2MaxRecord>) -> Response<ResponseBody> =
             { chunk ->
                 val token = authRepo.getToken() ?: ""
-                val vo2Max = chunk.map { it.toVo2Max() }
+                val vo2Max = chunk.map { it.toSahhaDataLogDto() }
                 api.postVo2Max(
                     TokenBearer(token),
                     vo2Max
@@ -701,7 +754,13 @@ class HealthConnectRepoImpl @Inject constructor(
             vo2MaxData,
             Constants.DEFAULT_POST_LIMIT,
             getResponse,
-            {},
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    Vo2MaxRecord::class,
+                    last.time.atZone(last.zoneOffset)
+                )
+            },
             callback
         )
     }
@@ -710,7 +769,7 @@ class HealthConnectRepoImpl @Inject constructor(
         data: List<T>,
         chunkLimit: Int,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit,
+        updateLastQueried: suspend (List<T>) -> Unit,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
@@ -723,7 +782,7 @@ class HealthConnectRepoImpl @Inject constructor(
                 data,
                 chunkLimit,
                 { chunk ->
-                    sendChunk(chunk, getResponse, clearData)
+                    sendChunk(chunk, getResponse, updateLastQueried)
                 }
             ) { error, successful ->
                 callback?.invoke(error, successful)
@@ -736,7 +795,7 @@ class HealthConnectRepoImpl @Inject constructor(
     private suspend fun <T> sendChunk(
         chunk: List<T>,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit,
+        updateLastQueried: suspend (List<T>) -> Unit,
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
@@ -744,7 +803,8 @@ class HealthConnectRepoImpl @Inject constructor(
                 Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
                 handleResponse(response, { getResponse(chunk) }, null) {
-                    clearData(chunk)
+                    // When successful
+                    updateLastQueried(chunk)
                     cont.resume(true)
                 }
             }
@@ -1013,8 +1073,8 @@ class HealthConnectRepoImpl @Inject constructor(
         chunk: List<SleepSessionRecord>
     ): Response<ResponseBody> {
         val summaryHashMap = hashMapOf<Int, Long>()
-        val sleepStageSummary = mutableListOf<SleepSendDto>()
-        val sleepSessions = chunk.map { it.toSleepSendDto() }
+        val sleepStageSummary = mutableListOf<SahhaDataLogDto>()
+        val sleepSessions = chunk.map { it.toSahhaDataLogDto() }
         chunk.forEach { session ->
             session.stages.forEach { stage ->
                 val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
@@ -1024,24 +1084,25 @@ class HealthConnectRepoImpl @Inject constructor(
 
             summaryHashMap.forEach {
                 sleepStageSummary.add(
-                    SleepSendDto(
+                    SahhaDataLogDto(
+                        id = UUID.randomUUID().toString(),
+                        logType = Constants.DataLogs.SLEEP,
+                        dataType = Constants.DataTypes.SLEEP,
                         source = session.metadata.dataOrigin.packageName,
-                        sleepStage = mapper.sleepStages(it.key),
-                        durationInMinutes = (it.value / 1000 / 60).toInt(),
+                        additionalProperties = hashMapOf(
+                            "sleepStage" to (mapper.sleepStages(it.key)
+                                ?: Constants.SLEEP_STAGE_UNKNOWN),
+                        ),
+                        value = (it.value / 1000 / 60).toDouble(),
+                        unit = Constants.DataUnits.MINUTE,
                         startDateTime = sahhaTimeManager.instantToIsoTime(
                             session.startTime, session.startZoneOffset
                         ),
                         endDateTime = sahhaTimeManager.instantToIsoTime(
                             session.endTime, session.endZoneOffset
                         ),
-                        modifiedDateTime = sahhaTimeManager.instantToIsoTime(
-                            session.metadata.lastModifiedTime, session.endZoneOffset
-                        ),
                         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
                         deviceType = mapper.devices(session.metadata.device?.type),
-                        deviceManufacturer = session.metadata.device?.manufacturer
-                            ?: Constants.UNKNOWN,
-                        deviceModel = session.metadata.device?.model ?: Constants.UNKNOWN,
                     )
                 )
             }

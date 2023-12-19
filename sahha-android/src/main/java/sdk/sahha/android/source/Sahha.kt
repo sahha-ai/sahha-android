@@ -109,12 +109,13 @@ object Sahha {
         sim.userData.postDemographic(sahhaDemographic, callback)
     }
 
-    fun postSensorData(
-        callback: ((error: String?, success: Boolean) -> Unit)
-    ) {
-        if(!isAuthenticated) callback(SahhaErrors.noToken, false)
-        sim.sensor.postSensorData(callback)
-    }
+    // Moving away from manually posting data
+//    fun postSensorData(
+//        callback: ((error: String?, success: Boolean) -> Unit)
+//    ) {
+//        if(!isAuthenticated) callback(SahhaErrors.noToken, false)
+//        sim.sensor.postSensorData(callback)
+//    }
 
     fun openAppSettings(context: Context) {
         sim.permission.openAppSettings(context)

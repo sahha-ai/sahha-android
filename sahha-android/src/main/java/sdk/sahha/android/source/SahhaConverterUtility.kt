@@ -14,7 +14,7 @@ import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
 import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
+import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -22,11 +22,11 @@ import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
-import sdk.sahha.android.domain.model.dto.toSleepSendDto
+import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -145,22 +145,6 @@ object SahhaConverterUtility {
             array.toString()
         } catch (e: Exception) {
             null
-        }
-    }
-
-    internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        return stepData.map { it.toStepDto() }
-    }
-
-    internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
-        return sleepData.map {
-            it.toSleepSendDto()
-        }
-    }
-
-    internal fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
-        return usageData.map {
-            it.toPhoneUsageSendDto()
         }
     }
 

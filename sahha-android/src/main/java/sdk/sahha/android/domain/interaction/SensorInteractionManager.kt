@@ -63,7 +63,7 @@ class SensorInteractionManager @Inject constructor(
     internal val startCollectingStepCounterData: StartCollectingStepCounterData,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
-    internal val sahhaErrorLogger: SahhaErrorLogger
+    internal val sahhaErrorLogger: SahhaErrorLogger,
 ) {
 
     fun postSensorData(
@@ -71,13 +71,19 @@ class SensorInteractionManager @Inject constructor(
     ) {
         permissionManager.getHealthConnectSensorStatus { status ->
             ioScope.launch {
-                if (status == SahhaSensorStatus.enabled) {
+                val statusEnabled = status == SahhaSensorStatus.enabled
+                val statusDisabled = status == SahhaSensorStatus.disabled
+
+                if (statusEnabled) {
                     Session.healthConnectPostCallback = null
                     Session.healthConnectPostCallback = callback
 
                     notificationManager.startForegroundService(HealthConnectPostService::class.java)
+                    postAllSensorDataUseCase()
                     return@launch
                 }
+                if (statusDisabled)
+                    notificationManager.startForegroundService(HealthConnectPostService::class.java)
 
                 postAllSensorDataUseCase(callback)
             }

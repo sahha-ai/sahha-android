@@ -17,12 +17,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -85,6 +89,8 @@ class PermissionManagerImpl @Inject constructor(
 
         if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
+            permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
+//            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
@@ -117,6 +123,11 @@ class PermissionManagerImpl @Inject constructor(
             permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.temperature.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
         }
 
         return permissions

@@ -13,10 +13,10 @@ class PostAllSensorDataUseCase @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger
 ) {
     suspend operator fun invoke(
-        callback: ((error: String?, success: Boolean) -> Unit)
+        callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
         if (!authManager.checkIsAuthenticated()) {
-            callback(SahhaErrors.noToken, false)
+            callback?.invoke(SahhaErrors.noToken, false)
             sahhaErrorLogger.application(
                 SahhaErrors.noToken,
                 tag,
