@@ -154,18 +154,18 @@ interface SahhaApi {
 
 
 
-    @POST("profile/analyze")
+    @POST("profile/analysis")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
     ): Call<ResponseBody>
 
-    @POST("profile/analyze")
+    @POST("profile/analysis")
     fun analyzeProfile(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body analyzeRequest: AnalyzeRequest
     ): Call<ResponseBody>
 
-    @POST("profile/analyze")
+    @POST("profile/analysis")
     suspend fun analyzeProfileResponse(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body analyzeRequest: AnalyzeRequest
