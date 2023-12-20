@@ -146,14 +146,14 @@ internal object Constants {
     const val DEVICE_TYPE_SMART_DISPLAY = "SMART_DISPLAY"
 
     // Insights
-    const val INSIGHT_NAME_TIME_ASLEEP = "TimeAsleepDailyTotal"
-    const val INSIGHT_NAME_TIME_IN_BED = "TimeInBedDailyTotal"
-    const val INSIGHT_NAME_TIME_IN_REM_SLEEP = "TimeInREMSleepDailyTotal"
-    const val INSIGHT_NAME_TIME_IN_LIGHT_SLEEP = "TimeInLightSleepDailyTotal"
-    const val INSIGHT_NAME_TIME_IN_DEEP_SLEEP = "TimeInDeepSleepDailyTotal"
-    const val INSIGHT_NAME_STEP_COUNT = "StepCountDailyTotal"
-    const val INSIGHT_NAME_ACTIVE_ENERGY = "ActiveEnergyBurnedDailyTotal"
-    const val INSIGHT_NAME_TOTAL_ENERGY = "TotalEnergyBurnedDailyTotal"
+    const val INSIGHT_NAME_TIME_ASLEEP = "time_asleep_daily_total"
+    const val INSIGHT_NAME_TIME_IN_BED = "time_in_bed_daily_total"
+    const val INSIGHT_NAME_TIME_IN_REM_SLEEP = "time_in_rem_sleep_daily_total"
+    const val INSIGHT_NAME_TIME_IN_LIGHT_SLEEP = "time_in_light_sleep_daily_total"
+    const val INSIGHT_NAME_TIME_IN_DEEP_SLEEP = "time_in_deep_sleep_daily_total"
+    const val INSIGHT_NAME_STEP_COUNT = "step_count_daily_total"
+    const val INSIGHT_NAME_ACTIVE_ENERGY = "active_energy_burned_daily_total"
+    const val INSIGHT_NAME_TOTAL_ENERGY = "total_energy_burned_daily_total"
 
     // Known values
     const val AVG_STEP_DISTANCE_MALE = 0.78
