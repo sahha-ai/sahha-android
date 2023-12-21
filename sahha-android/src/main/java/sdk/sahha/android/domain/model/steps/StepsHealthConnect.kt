@@ -2,6 +2,8 @@ package sdk.sahha.android.domain.model.steps
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import sdk.sahha.android.common.Constants
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.StepDto
 
 @Entity
@@ -19,17 +21,17 @@ data class StepsHealthConnect(
     val deviceModel: String,
 )
 
-fun StepsHealthConnect.toStepDto(): StepDto {
-    return StepDto(
+fun StepsHealthConnect.toSahhaDataLogDto(): SahhaDataLogDto {
+    return SahhaDataLogDto(
+        id = metaId,
+        logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
-        recordingMethod = recordingMethod,
-        value = count,
+        value = count.toDouble(),
         source = source,
-        deviceType = deviceType,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        modifiedDateTime = modifiedDateTime,
-        deviceManufacturer = deviceManufacturer,
-        deviceModel = deviceModel,
+        unit = Constants.DataUnits.COUNT,
+        recordingMethod = recordingMethod,
+        deviceType = deviceType
     )
 }

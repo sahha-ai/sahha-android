@@ -10,4 +10,7 @@ interface HealthConnectConstantsMapper {
     fun measurementLocation(constantInt: Int): String?
     fun sleepStages(constantInt: Int): String?
     fun measurementMethod(constantInt: Int): String?
+    fun bodyTempMeasurementLocation(constantInt: Int): String?
+    fun exerciseTypes(constantInt: Int): String?
+    fun exerciseSegments(constantInt: Int): String?
 }

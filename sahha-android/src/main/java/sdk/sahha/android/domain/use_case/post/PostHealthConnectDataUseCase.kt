@@ -5,12 +5,16 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
@@ -30,13 +34,16 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.mapper.toHealthDataDto
+import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -54,6 +61,7 @@ class PostHealthConnectDataUseCase @Inject constructor(
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val api: SahhaApi,
+    private val mapper: HealthConnectConstantsMapper,
     @IoScope private val ioScope: CoroutineScope
 ) {
     private val results = mutableListOf<Boolean>()
@@ -321,10 +329,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBasalMetabolicRate(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -349,10 +364,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBodyFat(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -377,10 +399,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postBodyWaterMass(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -405,10 +434,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postLeanBodyMass(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -433,10 +469,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postHeight(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -461,10 +504,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postWeight(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -489,10 +539,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
                                         api.postRespiratoryRate(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -517,10 +574,17 @@ class PostHealthConnectDataUseCase @Inject constructor(
                                     data = records,
                                     getResponse = { chunk ->
                                         val token = authRepo.getToken() ?: ""
-                                        val chunked = chunk.map { it.toHealthDataDto() }
-                                        api.postRespiratoryRate(
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postBoneMass(
                                             TokenBearer(token),
                                             chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
                                         )
                                     }
                                 ) { error, successful ->
@@ -535,6 +599,115 @@ class PostHealthConnectDataUseCase @Inject constructor(
                         }
                     }
                 }
+
+                HealthPermission.getReadPermission(FloorsClimbedRecord::class) -> {
+                    val recordType = FloorsClimbedRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.endTime.atZone(last.endZoneOffset)
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted floors climbed successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BodyTemperatureRecord::class) -> {
+                    val recordType = BodyTemperatureRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted body temperature successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class) -> {
+                    val recordType = BasalBodyTemperatureRecord::class
+                    suspendCoroutine { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postData(
+                                    data = records,
+                                    getResponse = { chunk ->
+                                        val token = authRepo.getToken() ?: ""
+                                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                                        api.postSahhaDataLogs(
+                                            TokenBearer(token),
+                                            chunked
+                                        )
+                                    },
+                                    updateLastQueried = { chunk ->
+                                        val last = chunk.last()
+                                        repo.saveLastSuccessfulQuery(
+                                            recordType,
+                                            last.time.atZone(last.zoneOffset)
+                                        )
+                                    }
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted basal body temperature successfully.",
+                                        records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+//                HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
+//                    postExerciseData()
+//                }
             }
         }
 
@@ -542,6 +715,113 @@ class PostHealthConnectDataUseCase @Inject constructor(
         if (checkIsAllTrue(results))
             callback(null, true)
         else callback(sumErrors(errors), false)
+    }
+
+    private suspend fun postExerciseData() {
+        val recordType = ExerciseSessionRecord::class
+
+        repo.getNewRecords(recordType)?.also { records ->
+            postExerciseSegments(recordType, records)
+            postExerciseLaps(recordType, records)
+            postExerciseSessions(recordType, records)
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseSessions(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        val chunked = chunk.map { it.toSahhaDataLogDto() }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            chunked
+                        )
+                    },
+                    updateLastQueried = { chunk ->
+                        val last = chunk.last()
+                        repo.saveLastSuccessfulQuery(
+                            recordType,
+                            last.endTime.atZone(last.endZoneOffset)
+                        )
+                    }
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseSegments(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        var segments = listOf<SahhaDataLogDto>()
+                        chunk.forEach { record ->
+                            segments += record.segments.map { it.toSahhaDataLogDto(record) }
+                        }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            segments
+                        )
+                    },
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
+            }
+        }
+    }
+
+    private suspend fun <T : Record> postExerciseLaps(
+        recordType: KClass<T>,
+        records: List<ExerciseSessionRecord>
+    ) {
+        suspendCoroutine { cont ->
+            ioScope.launch {
+                repo.postData(
+                    data = records,
+                    getResponse = { chunk ->
+                        val token = authRepo.getToken() ?: ""
+                        var laps = listOf<SahhaDataLogDto>()
+                        chunk.forEach { record ->
+                            laps += record.laps.map { it.toSahhaDataLogDto(record) }
+                        }
+                        api.postSahhaDataLogs(
+                            TokenBearer(token),
+                            laps
+                        )
+                    },
+                ) { error, successful ->
+                    processPostResponse(
+                        error, successful,
+                        "Posted exercise sessions successfully.",
+                        records, recordType
+                    )
+                    cont.resume(Unit)
+                }
+            }
+        }
     }
 
     internal suspend fun <R : Record, A> processPostResponse(
@@ -554,11 +834,18 @@ class PostHealthConnectDataUseCase @Inject constructor(
         if (successful) {
             saveQuery(recordType, true)
             Log.i(tag, successfulLog)
+            results.add(true)
+            return
         }
 
-        results.add(successful)
+        Session.hcQueryInProgress = false
+        results.add(false)
         error?.also { e -> errors.add(e) }
-        checkAndLogError(error, "queryAndPostHealthConnectData", records.toString())
+        checkAndLogError(
+            error,
+            "queryAndPostHealthConnectData",
+            SahhaConverterUtility.convertToJsonString(records, false)
+        )
     }
 
     private fun checkIsAllTrue(results: List<Boolean>): Boolean {

@@ -37,7 +37,7 @@ interface HealthConnectRepo {
         data: List<T>,
         chunkLimit: Int = Constants.DEFAULT_POST_LIMIT,
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
-        clearData: suspend (List<T>) -> Unit = {},
+        updateLastQueried: suspend (List<T>) -> Unit = {},
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 

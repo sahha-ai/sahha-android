@@ -11,6 +11,8 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
 class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
+    private lateinit var permissions: Set<String>
+
     private var initialLaunch = true
     private var status = SahhaSensorStatus.pending
     private val permissionHandler by lazy { Sahha.di.permissionHandler }
@@ -22,8 +24,10 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
     private val requestPermissions =
         registerForActivityResult(requestPermissionActivityContract) { granted ->
-            status = if (granted.containsAll(granted)) SahhaSensorStatus.enabled
-            else SahhaSensorStatus.disabled
+            status = when (granted.containsAll(permissions)) {
+                true -> SahhaSensorStatus.enabled
+                false -> SahhaSensorStatus.disabled
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +35,7 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
+                permissions = Sahha.di.permissionManager.getHcPermissions()
                 checkPermissionsAndRun(client)
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
@@ -48,16 +53,15 @@ class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
-        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(hcPermissions)) {
+        if (granted.containsAll(permissions)) {
             status = SahhaSensorStatus.enabled
             enabledStatus()
             return
         }
 
         // Else
-        requestPermissions.launch(hcPermissions)
+        requestPermissions.launch(permissions)
     }
 
     private fun enabledStatus() {

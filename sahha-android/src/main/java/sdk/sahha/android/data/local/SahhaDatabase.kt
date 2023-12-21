@@ -23,7 +23,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 8,
+    version = 9,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,

@@ -129,12 +129,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideDeviceInfoRepo(
-        authRepo: AuthRepo,
+        configDao: ConfigurationDao,
         api: SahhaApi,
         sahhaErrorLogger: SahhaErrorLogger
     ): DeviceInfoRepo {
         return DeviceInfoRepoImpl(
-            authRepo,
+            configDao,
             api,
             sahhaErrorLogger
         )

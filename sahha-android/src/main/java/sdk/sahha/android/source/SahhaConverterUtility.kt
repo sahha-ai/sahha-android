@@ -14,7 +14,7 @@ import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
 import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.device.toPhoneUsageSendDto
+import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.model.dto.SleepDto
@@ -22,11 +22,11 @@ import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
 import sdk.sahha.android.domain.model.dto.send.SleepSendDto
-import sdk.sahha.android.domain.model.dto.toSleepSendDto
+import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
 import java.time.Instant
 import java.time.ZoneOffset
 
@@ -119,6 +119,16 @@ object SahhaConverterUtility {
         return null
     }
 
+    fun requestBodyToJsonArray(request: RequestBody?): JSONArray? {
+        request?.also {
+            val buffer = Buffer()
+            it.writeTo(buffer)
+            val rbString = buffer.readUtf8()
+            return JSONArray(rbString)
+        }
+        return null
+    }
+
     fun requestBodyToString(request: RequestBody?): String? {
         return try {
             val json = requestBodyToJson(request)
@@ -129,19 +139,12 @@ object SahhaConverterUtility {
         }
     }
 
-    internal fun stepDataToStepDto(stepData: List<StepData>): List<StepDto> {
-        return stepData.map { it.toStepDto() }
-    }
-
-    internal fun sleepDtoToSleepSendDto(sleepData: List<SleepDto>): List<SleepSendDto> {
-        return sleepData.map {
-            it.toSleepSendDto()
-        }
-    }
-
-    internal fun phoneUsageToPhoneUsageSendDto(usageData: List<PhoneUsage>): List<PhoneUsageSendDto> {
-        return usageData.map {
-            it.toPhoneUsageSendDto()
+    fun requestBodyArrayToString(request: RequestBody?): String? {
+        return try {
+            val array = requestBodyToJsonArray(request)
+            array.toString()
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -170,43 +173,50 @@ object SahhaConverterUtility {
         return null
     }
 
-    internal fun <T> convertToJsonString(records: List<T>?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
+    internal fun <T> convertToJsonString(
+        records: List<T>?,
+        usePrettyPrinting: Boolean = true
+    ): String {
+        return GsonBuilder().apply {
+            if (usePrettyPrinting) setPrettyPrinting()
+            registerTypeAdapter(
                 Instant::class.java,
                 JsonSerializer<Instant> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .registerTypeAdapter(
+            registerTypeAdapter(
                 ZoneOffset::class.java,
                 JsonSerializer<ZoneOffset> { src, _, _ ->
                     JsonPrimitive(src.toString())
                 }
             )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(records)
+            setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+        }.create().toJson(records)
     }
 
-    internal fun <T> convertToJsonString(record: T?): String {
-        return GsonBuilder()
-            .setPrettyPrinting()
-            .registerTypeAdapter(
-                Instant::class.java,
-                JsonSerializer<Instant> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .registerTypeAdapter(
-                ZoneOffset::class.java,
-                JsonSerializer<ZoneOffset> { src, _, _ ->
-                    JsonPrimitive(src.toString())
-                }
-            )
-            .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
-            .create()
-            .toJson(record)
+    internal fun <T> convertToJsonString(anyObject: T?): String {
+        return try {
+            GsonBuilder()
+                .setPrettyPrinting()
+                .registerTypeAdapter(
+                    Instant::class.java,
+                    JsonSerializer<Instant> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .registerTypeAdapter(
+                    ZoneOffset::class.java,
+                    JsonSerializer<ZoneOffset> { src, _, _ ->
+                        JsonPrimitive(src.toString())
+                    }
+                )
+                .setDateFormat(DateFormat.TIMEZONE_ISO_FIELD)
+                .create()
+                .toJson(anyObject)
+        } catch (e: Exception) {
+            println(e.stackTraceToString())
+            e.message ?: "Something went wrong"
+        }
     }
 }

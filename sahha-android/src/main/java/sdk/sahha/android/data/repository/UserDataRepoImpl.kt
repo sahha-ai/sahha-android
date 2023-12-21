@@ -37,7 +37,7 @@ class UserDataRepoImpl(
             val response = getDetectedAnalysisCall(dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
-                callback?.also { it(SahhaErrors.attemptingTokenRefresh, null) }
+                callback?.invoke(SahhaErrors.attemptingTokenRefresh, null)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                     getAnalysis(dates, callback)
                 }

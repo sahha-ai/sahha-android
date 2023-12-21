@@ -31,11 +31,13 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
+import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.SleepDto
-import sdk.sahha.android.domain.model.dto.StepDto
+import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
-import sdk.sahha.android.domain.model.steps.toStepDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -100,55 +102,18 @@ class SensorRepoImpl @Inject constructor(
     }
 
     override fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String) {
-        Sahha.getSensorStatus(
-            context,
-        ) { _, status ->
-            if (status == SahhaSensorStatus.enabled) {
-                val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
-                val workRequest: PeriodicWorkRequest =
-                    getSleepWorkRequest(checkedIntervalMinutes, workerTag)
-                startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
-            }
-        }
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest: PeriodicWorkRequest =
+            getSleepWorkRequest(checkedIntervalMinutes, workerTag)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
 
-    private fun checkAndStartWorker(
+    override fun checkAndStartWorker(
         config: SahhaConfiguration,
         sensorId: Int,
         startWorker: () -> Unit
     ) {
         if (config.sensorArray.contains(sensorId)) startWorker()
-    }
-
-    override fun startPostWorkersAsync() {
-        ioScope.launch {
-            val config = sahhaConfigRepo.getConfig()
-            Sahha.getSensorStatus(
-                context,
-            ) { _, status ->
-                checkAndStartWorker(config, SahhaSensor.device.ordinal) {
-                    startDevicePostWorker(
-                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                        DEVICE_POST_WORKER_TAG
-                    )
-                }
-
-                if (status == SahhaSensorStatus.enabled) {
-                    checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
-                        startSleepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                            SLEEP_POST_WORKER_TAG
-                        )
-                    }
-                    checkAndStartWorker(config, SahhaSensor.activity.ordinal) {
-                        startStepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                            STEP_POST_WORKER_TAG
-                        )
-                    }
-                }
-            }
-        }
     }
 
     override fun stopWorkerByTag(workerTag: String) {
@@ -322,8 +287,8 @@ class SensorRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepData>) -> Response<ResponseBody> = { chunk ->
-            val stepDtoData = SahhaConverterUtility.stepDataToStepDto(getFilteredStepData(chunk))
-            getStepResponse(stepDtoData)
+            val sahhaDataLogs = getFilteredStepData(chunk).map { it.toSahhaDataLogDto() }
+            getStepResponse(sahhaDataLogs)
         }
         postData(
             stepData,
@@ -340,8 +305,8 @@ class SensorRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepSession>) -> Response<ResponseBody> = { chunk ->
-            val stepDtoData = chunk.map { it.toStepDto() }
-            getStepResponse(stepDtoData)
+            val sahhaDataLogs = chunk.map { it.toSahhaDataLogDto() }
+            getStepResponse(sahhaDataLogs)
         }
         postData(
             stepSessions,
@@ -452,12 +417,12 @@ class SensorRepoImpl @Inject constructor(
 
 
     override suspend fun postAllSensorData(
-        callback: ((error: String?, successful: Boolean) -> Unit)
+        callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         try {
             postSensorData(callback)
         } catch (e: Exception) {
-            callback(e.message, false)
+            callback?.invoke(e.message, false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
@@ -528,7 +493,7 @@ class SensorRepoImpl @Inject constructor(
                 )
             }
 
-            sahhaErrorLogger.api(response)
+            sahhaErrorLogger.apiFromJsonArray(response)
         } catch (e: Exception) {
             callback?.also {
                 it(e.message, false)
@@ -544,7 +509,7 @@ class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun postSensorData(
-        callback: ((error: String?, successful: Boolean) -> Unit)
+        callback: ((error: String?, successful: Boolean) -> Unit)?
     ) {
         var errorSummary = ""
         var successfulResults = mutableListOf<Boolean>()
@@ -573,15 +538,15 @@ class SensorRepoImpl @Inject constructor(
             mutex.unlock()
 
             if (successfulResults.contains(false)) {
-                callback(errorSummary, false)
+                callback?.invoke(errorSummary, false)
                 return
             }
         } else {
             // Mutex is locked, so a posting is already in progress
-            callback(SahhaErrors.postingInProgress, false)
+            callback?.invoke(SahhaErrors.postingInProgress, false)
         }
 
-        callback(null, true)
+        callback?.invoke(null, true)
     }
 
     private suspend fun postSensorDataForType(
@@ -656,9 +621,9 @@ class SensorRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getStepResponse(stepData: List<StepDto>): Response<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<SahhaDataLogDto>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
-        return api.postStepData(
+        return api.postStepDataLog(
             TokenBearer(token),
             stepData
         )
@@ -668,7 +633,7 @@ class SensorRepoImpl @Inject constructor(
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
-            SahhaConverterUtility.sleepDtoToSleepSendDto(sleepData)
+            sleepData.map { it.toSahhaDataLogDto() }
         )
     }
 
@@ -676,7 +641,7 @@ class SensorRepoImpl @Inject constructor(
         val token = authRepo.getToken() ?: ""
         return api.postDeviceActivityRange(
             TokenBearer(token),
-            SahhaConverterUtility.phoneUsageToPhoneUsageSendDto(phoneLockData)
+            phoneLockData.map { it.toSahhaDataLogDto() }
         )
     }
 

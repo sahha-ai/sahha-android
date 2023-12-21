@@ -4,15 +4,16 @@ import android.content.Context
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
 
 interface SensorRepo {
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
-    fun startPostWorkersAsync()
     fun startSleepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startStepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
@@ -53,7 +54,7 @@ interface SensorRepo {
     )
 
     suspend fun postAllSensorData(
-        callback: ((error: String?, successful: Boolean) -> Unit)
+        callback: ((error: String?, successful: Boolean) -> Unit)? = null
     )
 
     suspend fun saveStepSession(
@@ -89,4 +90,6 @@ interface SensorRepo {
         data: String,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+
+    fun checkAndStartWorker(config: SahhaConfiguration, sensorId: Int, startWorker: () -> Unit)
 }

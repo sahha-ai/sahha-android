@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
+import android.health.connect.HealthConnectManager
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
@@ -64,7 +65,6 @@ class PermissionManagerImpl @Inject constructor(
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger
 ) : PermissionManager {
-    override var statusPending = true
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
 
@@ -89,6 +89,8 @@ class PermissionManagerImpl @Inject constructor(
 
         if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
+            permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
+//            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
@@ -121,6 +123,11 @@ class PermissionManagerImpl @Inject constructor(
             permissions.add(HealthPermission.getReadPermission(BoneMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyWaterMassRecord::class))
             permissions.add(HealthPermission.getReadPermission(BodyFatRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.temperature.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
+            permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
         }
 
         return permissions
@@ -164,6 +171,18 @@ class PermissionManagerImpl @Inject constructor(
         context.startActivity(openSettingsIntent)
     }
 
+    override fun openHealthConnectSettings(context: Context) {
+        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+        } else {
+            Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+        }.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        context.startActivity(intent)
+    }
+
     override fun activate(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
@@ -197,69 +216,28 @@ class PermissionManagerImpl @Inject constructor(
         else SahhaSensorStatus.disabled
     }
 
-    override fun enableSensors(
+    override fun requestNativeSensors(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit) {
+        SahhaPermissions.enableSensor(context, callback)
+    }
+
+    override fun requestHealthConnectSensors(
         context: Context,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
-        checkAndEnable(
-            context
-        ) { _, _ ->
-            if (shouldUseHealthConnect()) {
-                sim.startHealthConnect(context) { _, _ ->
-                    getSensorStatus(context, callback)
-                }
-                return@checkAndEnable
-            }
-
-            // Else start native sensors
-            sim.startNative(context) { _, _ ->
-                getSensorStatus(context, callback)
-            }
-        }
+        healthConnectClient?.also {
+            permissionHandler.activityCallback.statusCallback = callback
+            val intent = Intent(context, SahhaHealthConnectPermissionActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } ?: callback(SahhaErrors.noHealthConnectApp, SahhaSensorStatus.unavailable)
     }
 
-    private fun checkAndEnable(
-        context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
-    ) {
-        if (shouldUseHealthConnect()) {
-            healthConnectClient?.also {
-                permissionHandler.activityCallback.statusCallback = callback
-                val intent = Intent(context, SahhaHealthConnectPermissionActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } ?: callback(SahhaErrors.somethingWentWrong, SahhaSensorStatus.unavailable)
-            return
-        }
-
-        // Else use native sensors
-        SahhaPermissions.enableSensor(context) { status ->
-            callback(null, status)
-        }
+    override fun getHealthConnectSensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+        SahhaPermissions.getSensorStatusHealthConnect(callback)
     }
 
-    override fun getSensorStatus(
-        context: Context,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
-    ) {
-        if (shouldUseHealthConnect()) {
-            SahhaPermissions.getSensorStatusHealthConnect {
-                enabledTasks(context, it)
-                callback(null, it)
-            }
-            return
-        }
-
-        // Else Native
-        SahhaPermissions.getSensorStatus(context) {
-            callback(null, it)
-        }
-    }
-
-    private fun enabledTasks(context: Context, status: Enum<SahhaSensorStatus>) {
-        when (status) {
-            SahhaSensorStatus.enabled -> sim.startHealthConnect(context)
-        }
+    override fun getNativeSensorStatus(context: Context, callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+        SahhaPermissions.getSensorStatus(context, callback)
     }
 
     // Potentially usable in the future

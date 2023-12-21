@@ -109,7 +109,8 @@ object Sahha {
         sim.userData.postDemographic(sahhaDemographic, callback)
     }
 
-    fun postSensorData(
+    // Moving away from manually posting data
+    internal fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         if(!isAuthenticated) callback(SahhaErrors.noToken, false)
