@@ -14,6 +14,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.InsightPermission
@@ -145,7 +146,7 @@ class InsightsRepoImpl @Inject constructor(
         refreshedToken: Boolean,
         callback: suspend (error: String?, successful: Boolean) -> Unit
     ) {
-        val response = api.postInsightsData(token, insights)
+        val response = api.postInsightsData(TokenBearer(token), insights)
         val code = response.code()
 
         try {
@@ -158,9 +159,10 @@ class InsightsRepoImpl @Inject constructor(
                                     newToken ?: token,
                                     insights,
                                     true,
-                                    callback
-                                )
-                                cont.resume(Unit)
+                                ) { error, successful ->
+                                    callback(error, successful)
+                                    cont.resume(Unit)
+                                }
                             }
                         }
                     }
