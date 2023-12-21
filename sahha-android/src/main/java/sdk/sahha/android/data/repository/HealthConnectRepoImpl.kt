@@ -819,6 +819,8 @@ class HealthConnectRepoImpl @Inject constructor(
     ) {
         try {
             if (ResponseCode.isUnauthorized(response.code())) {
+                if(Session.tokenRefreshAttempted) return
+
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
                     val retryResponse = retryLogic()
@@ -828,6 +830,7 @@ class HealthConnectRepoImpl @Inject constructor(
                         callback,
                         successfulLogic
                     )
+                    Session.tokenRefreshAttempted = true
                 }
                 return
             }

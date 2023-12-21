@@ -8,6 +8,7 @@ import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -73,7 +74,7 @@ class DeviceInfoRepoImpl(
     private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.putDeviceInformation(
-            token,
+            TokenBearer(token),
             SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)
         )
     }

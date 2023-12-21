@@ -18,16 +18,13 @@ import java.util.*
 class SahhaTimeManager {
     val zoneOffset: ZoneOffset get() = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
-    private val formatterPattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
-    private val simpleDateFormat =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            SimpleDateFormat(formatterPattern, Locale.getDefault())
-        } else SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZZ", Locale.getDefault())
+    private val formatterPattern = "yyyy-MM-dd'T'HH:mm:ss.SSXXX"
+    private val simpleDateFormat = SimpleDateFormat(formatterPattern, Locale.getDefault())
 
     fun nowInISO(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
-            val nowInISO = now.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val nowInISO = now.format(DateTimeFormatter.ofPattern(formatterPattern))
             return correctFormatting(nowInISO)
         } else {
             val now = Date()
@@ -40,7 +37,7 @@ class SahhaTimeManager {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val last24Hours =
                 ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone().minusHours(24)
-            val last24HoursISO = last24Hours.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val last24HoursISO = last24Hours.format(DateTimeFormatter.ofPattern(formatterPattern))
             return correctFormatting(last24HoursISO)
         } else {
             val last24Hours = Date().time - ONE_DAY_IN_MILLIS
@@ -62,7 +59,7 @@ class SahhaTimeManager {
     fun localDateTimeToISO(localDateTime: LocalDateTime): String {
         val iso =
             localDateTime.atZone(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+                .format(DateTimeFormatter.ofPattern(formatterPattern))
         return correctFormatting(iso)
     }
 
@@ -104,14 +101,14 @@ class SahhaTimeManager {
         val epochMillis = epochTimeMinutes * 1000 * 60
         val instant = Instant.ofEpochMilli(epochMillis)
         val zdt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault())
-        return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return zdt.format(DateTimeFormatter.ofPattern(formatterPattern))
     }
 
     fun epochMillisToISO(epochTimeMS: Long): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val instant = Instant.ofEpochMilli(epochTimeMS)
             val zdt = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).withFixedOffsetZone()
-            return zdt.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            return zdt.format(DateTimeFormatter.ofPattern(formatterPattern))
         } else {
             return correctFormatting(simpleDateFormat.format(epochTimeMS))
         }
@@ -119,7 +116,7 @@ class SahhaTimeManager {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun ISOToDate(iso: String): ZonedDateTime {
-        return ZonedDateTime.parse(iso, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return ZonedDateTime.parse(iso, DateTimeFormatter.ofPattern(formatterPattern))
             .withFixedOffsetZone()
     }
 
@@ -149,8 +146,8 @@ class SahhaTimeManager {
         offset: ZoneOffset? = null
     ): String {
         return offset?.let {
-            instant.atOffset(it).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        } ?: instant.atZone(ZonedDateTime.now().offset).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            instant.atOffset(it).format(DateTimeFormatter.ofPattern(formatterPattern))
+        } ?: instant.atZone(ZonedDateTime.now().offset).format(DateTimeFormatter.ofPattern(formatterPattern))
     }
 
     fun calculateDurationFromInstant(start: Instant, end: Instant): Int {

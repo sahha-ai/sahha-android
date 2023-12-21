@@ -73,13 +73,13 @@ class SaveTokensUseCase @Inject constructor(
             null -> callback(SahhaErrors.noToken, false)
             else -> repository.saveEncryptedTokens(
                 tokens.profileToken,
-                tokens.refreshToken
+                tokens.refreshToken,
             ) { error, success ->
                 if (success) {
+                    callback(null, true)
                     ioScope.launch {
                         userData.processAndPutDeviceInfo(
                             context, true,
-                            callback
                         )
                     }
                     return@saveEncryptedTokens

@@ -23,13 +23,10 @@ fun SleepDto.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = id,
         logType = Constants.DataLogs.SLEEP,
-        dataType = Constants.DataTypes.SLEEP,
+        dataType = sleepStage,
         source = source,
         value = durationInMinutes.toDouble(),
         unit = Constants.DataUnits.MINUTE,
-        additionalProperties = hashMapOf(
-            "sleepStage" to sleepStage
-        ),
         startDateTime = startDateTime,
         endDateTime = endDateTime,
         recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,

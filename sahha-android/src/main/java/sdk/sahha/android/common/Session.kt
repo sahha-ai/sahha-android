@@ -12,6 +12,7 @@ import java.time.ZoneOffset
 
 object Session {
     var hcQueryInProgress = false
+    var tokenRefreshAttempted = false
 
     internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
 
