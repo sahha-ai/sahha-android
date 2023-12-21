@@ -52,10 +52,11 @@ class SaveTokensUseCase @Inject constructor(
             refreshToken,
         ) { error, success ->
             if (success) {
+                callback(null, true)
                 ioScope.launch {
                     userData.processAndPutDeviceInfo(
-                        context, true,
-                        callback
+                        context = context,
+                        isAuthenticating = true,
                     )
                 }
                 return@saveEncryptedTokens
@@ -79,7 +80,8 @@ class SaveTokensUseCase @Inject constructor(
                     callback(null, true)
                     ioScope.launch {
                         userData.processAndPutDeviceInfo(
-                            context, true,
+                            context = context,
+                            isAuthenticating = true,
                         )
                     }
                     return@saveEncryptedTokens

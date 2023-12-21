@@ -4,9 +4,12 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
@@ -14,7 +17,7 @@ import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.source.SahhaDemographic
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
 import javax.inject.Inject
 
 private const val tag = "UserDataInteractionManager"
@@ -22,6 +25,7 @@ private const val tag = "UserDataInteractionManager"
 class UserDataInteractionManager @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
+    private val authRepo: AuthRepo,
     private val deviceInfoRepo: DeviceInfoRepo,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val analyzeProfileUseCase: AnalyzeProfileUseCase,
@@ -74,11 +78,11 @@ class UserDataInteractionManager @Inject constructor(
 
     internal suspend fun processAndPutDeviceInfo(
         context: Context,
+        lastDeviceInfo: DeviceInformation? = runBlocking { deviceInfoRepo.getDeviceInformation() },
         isAuthenticating: Boolean = false,
         callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     ) {
         try {
-            val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it))
                     saveAndPutDeviceInfo(context, callback)
@@ -114,7 +118,10 @@ class UserDataInteractionManager @Inject constructor(
             appId = packageName
         )
         sahhaConfigRepo.saveDeviceInformation(currentDeviceInfo)
-        deviceInfoRepo.putDeviceInformation(currentDeviceInfo, callback)
+
+        authRepo.getToken()?.also { token ->
+            deviceInfoRepo.putDeviceInformation(token, currentDeviceInfo, callback)
+        } ?: callback?.invoke(SahhaErrors.noToken, false)
     }
 
     private suspend fun deviceInfoIsEqual(

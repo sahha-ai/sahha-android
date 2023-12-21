@@ -9,6 +9,7 @@ import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.TokenBearer
+import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -18,7 +19,7 @@ import sdk.sahha.android.source.SahhaConverterUtility
 private const val tag = "DeviceInfoRepoImpl"
 
 class DeviceInfoRepoImpl(
-    private val authRepo: AuthRepo,
+    private val configDao: ConfigurationDao,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger
 ) : DeviceInfoRepo {
@@ -38,11 +39,16 @@ class DeviceInfoRepoImpl(
         return BuildConfig.SDK_VERSION_NAME
     }
 
+    override suspend fun getDeviceInformation(): DeviceInformation? {
+        return configDao.getDeviceInformation()
+    }
+
     override suspend fun putDeviceInformation(
+        token: String,
         deviceInformation: DeviceInformation,
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
-        val response = putDeviceInformationResponse(deviceInformation)
+        val response = putDeviceInformationResponse(token, deviceInformation)
         try {
             if (ResponseCode.isSuccessful(response.code())) {
                 callback?.invoke(null, true)
@@ -71,8 +77,7 @@ class DeviceInfoRepoImpl(
         }
     }
 
-    private suspend fun putDeviceInformationResponse(deviceInformation: DeviceInformation): Response<ResponseBody> {
-        val token = authRepo.getToken() ?: ""
+    private suspend fun putDeviceInformationResponse(token: String, deviceInformation: DeviceInformation): Response<ResponseBody> {
         return api.putDeviceInformation(
             TokenBearer(token),
             SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)
