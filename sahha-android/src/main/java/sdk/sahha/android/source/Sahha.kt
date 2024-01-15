@@ -2,7 +2,12 @@ package sdk.sahha.android.source
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.annotation.Keep
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.AppComponent
@@ -12,6 +17,8 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
 import java.util.*
+
+private const val tag = "Sahha"
 
 @Keep
 object Sahha {
@@ -55,6 +62,11 @@ object Sahha {
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
+        if(!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, false)
+            return
+        }
+
         sim.auth.authenticate(appId, appSecret, externalId, callback)
     }
 
@@ -63,13 +75,25 @@ object Sahha {
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
+        if(!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, false)
+            return
+        }
+
         sim.auth.authenticate(profileToken, refreshToken, callback)
     }
 
     fun deauthenticate(
         callback: (suspend (error: String?, success: Boolean) -> Unit)
     ) {
-        di.ioScope.launch {
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        scope.launch {
+            if(!sahhaIsConfigured()) {
+                callback(SahhaErrors.sahhaNotConfigured, false)
+                return@launch
+            }
+
             sim.auth.deauthenticate(callback)
         }
     }
@@ -78,6 +102,11 @@ object Sahha {
     fun analyze(
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
         sim.userData.analyze(callback)
     }
 
@@ -87,6 +116,11 @@ object Sahha {
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
         sim.userData.analyze(dates, callback)
     }
 
@@ -95,10 +129,20 @@ object Sahha {
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
         sim.userData.analyze(dates, callback)
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
         sim.userData.getDemographic(callback)
     }
 
@@ -106,18 +150,20 @@ object Sahha {
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, false)
+            return
+        }
+
         sim.userData.postDemographic(sahhaDemographic, callback)
     }
 
-    // Moving away from manually posting data
-    internal fun postSensorData(
-        callback: ((error: String?, success: Boolean) -> Unit)
-    ) {
-        if(!isAuthenticated) callback(SahhaErrors.noToken, false)
-        sim.sensor.postSensorData(callback)
-    }
-
     fun openAppSettings(context: Context) {
+        if(!sahhaIsConfigured()) {
+            Log.w(tag, SahhaErrors.sahhaNotConfigured)
+            return
+        }
+
         sim.permission.openAppSettings(context)
     }
 
@@ -125,6 +171,11 @@ object Sahha {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
+        if(!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, SahhaSensorStatus.pending)
+            return
+        }
+
         sim.permission.enableSensors(context, callback)
     }
 
@@ -132,6 +183,11 @@ object Sahha {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
+        if(!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, SahhaSensorStatus.pending)
+            return
+        }
+
         sim.permission.getSensorStatus(context, callback)
     }
 
@@ -143,17 +199,16 @@ object Sahha {
         body: String? = null,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
+        if(!sahhaIsConfigured()) {
+            callback?.invoke(SahhaErrors.sahhaNotConfigured, false)
+            return
+        }
+
         sim.postAppError(framework, message, path, method, body, callback)
     }
 
-    internal fun getSensorData(
-        sensor: SahhaSensor,
-        callback: ((error: String?, success: String?) -> Unit)
-    ) {
-        sim.sensor.getSensorData(sensor, callback)
-    }
-
-    internal fun enableNotificationsAsync(context: Context) {
-        sim.requestNotificationPermission(context)
+    private fun sahhaIsConfigured(): Boolean {
+        if(!diInitialized()) return false
+        return simInitialized()
     }
 }
