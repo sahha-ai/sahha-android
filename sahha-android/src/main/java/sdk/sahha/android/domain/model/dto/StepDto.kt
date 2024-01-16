@@ -14,7 +14,7 @@ data class StepDto(
     val startDateTime: String,
     val endDateTime: String,
     val recordingMethod: String = RecordingMethodsHealthConnect.RECORDING_METHOD_UNKNOWN.name,
-    val deviceType: String = DeviceTypes.UNKNOWN,
+    val deviceType: String = Constants.UNKNOWN,
     val modifiedDateTime: String,
     val deviceManufacturer: String? = null,
     val deviceModel: String? = null,

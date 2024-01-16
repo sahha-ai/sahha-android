@@ -17,9 +17,6 @@
       <entry key="deAuthenticate_beforeConfigure_returnsCallbackError()">
         <State />
       </entry>
-      <entry key="getSensorStatus_beforeConfigure_returnsCallbackError()">
-        <State />
-      </entry>
     </value>
   </component>
 </project>

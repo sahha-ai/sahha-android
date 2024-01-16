@@ -25,18 +25,17 @@ class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
         }
     }
 
-    @SuppressLint("RestrictedApi")
     override fun devices(constantInt: Int?): String {
         return when (constantInt) {
-            Device.TYPE_WATCH -> DeviceTypes.WATCH
-            Device.TYPE_PHONE -> DeviceTypes.PHONE
-            Device.TYPE_SCALE -> DeviceTypes.SCALE
-            Device.TYPE_RING -> DeviceTypes.RING
-            Device.TYPE_HEAD_MOUNTED -> DeviceTypes.HEAD_MOUNTED
-            Device.TYPE_FITNESS_BAND -> DeviceTypes.FITNESS_BAND
-            Device.TYPE_CHEST_STRAP -> DeviceTypes.CHEST_STRAP
-            Device.TYPE_SMART_DISPLAY -> DeviceTypes.SMART_DISPLAY
-            else -> DeviceTypes.UNKNOWN
+            Device.TYPE_WATCH -> "WATCH"
+            Device.TYPE_PHONE -> "PHONE"
+            Device.TYPE_SCALE -> "SCALE"
+            Device.TYPE_RING -> "RING"
+            Device.TYPE_HEAD_MOUNTED -> "HEAD_MOUNTED"
+            Device.TYPE_FITNESS_BAND -> "FITNESS_BAND"
+            Device.TYPE_CHEST_STRAP -> "CHEST_STRAP"
+            Device.TYPE_SMART_DISPLAY -> "SMART_DISPLAY"
+            else -> Constants.UNKNOWN
         }
     }
 
