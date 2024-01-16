@@ -2,19 +2,22 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="PreSahhaConfigureTest">
+        <State />
+      </entry>
+      <entry key="PreSahhaConfigureTest (1)">
+        <State />
+      </entry>
       <entry key="Tests in 'sdk.sahha.android.suite'">
         <State />
       </entry>
       <entry key="app">
         <State />
       </entry>
-      <entry key="bloodPressureError()">
+      <entry key="deAuthenticate_beforeConfigure_returnsCallbackError()">
         <State />
       </entry>
-      <entry key="errorLogging()">
-        <State />
-      </entry>
-      <entry key="postProgress_resumesAfterFailure()">
+      <entry key="getSensorStatus_beforeConfigure_returnsCallbackError()">
         <State />
       </entry>
     </value>
