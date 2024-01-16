@@ -10,6 +10,7 @@ internal object SahhaErrors {
     const val typeDecode = "decoding"
     const val typeResponse = "response"
 
+    const val sahhaNotConfigured = "Error: The SDK must be configured before calling this method."
     const val attemptingTokenRefresh = "Error: Invalid token, attempting to refresh token..."
     const val invalidToken = "Error: The token was invalid"
     const val sensorInvalid = "Error: Sensor not valid"

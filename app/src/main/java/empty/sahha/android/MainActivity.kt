@@ -35,19 +35,15 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import java.util.Date
 import kotlin.random.Random
 
@@ -76,7 +72,7 @@ class MainActivity : ComponentActivity() {
 //
 //            )
         )
-
+        
         Sahha.configure(
             application,
             config,
@@ -184,7 +180,7 @@ class MainActivity : ComponentActivity() {
                                     })
                                 )
                                 OutlinedTextField(
-                                    value =  appSecret,
+                                    value = appSecret,
                                     singleLine = true,
                                     onValueChange = {
                                         appSecret = it
@@ -197,7 +193,7 @@ class MainActivity : ComponentActivity() {
                                     })
                                 )
                                 OutlinedTextField(
-                                    value =  externalId,
+                                    value = externalId,
                                     singleLine = true,
                                     onValueChange = {
                                         externalId = it
@@ -223,7 +219,8 @@ class MainActivity : ComponentActivity() {
                                         appSecret,
                                         externalId
                                     ) { error, success ->
-                                        authStatus = if (success) "Successful" else error ?: "Failed"
+                                        authStatus =
+                                            if (success) "Successful" else error ?: "Failed"
                                     }
                                 }) {
                                     Text("Authenticate")
@@ -318,11 +315,17 @@ class MainActivity : ComponentActivity() {
                                         SahhaDemographic(
                                             age = LocalDate.now().year - birthDate,
                                             gender = gendersList[rnd.nextInt(gendersList.size)],
-                                            incomeRange = incomeRangeList[rnd.nextInt(incomeRangeList.size)],
+                                            incomeRange = incomeRangeList[rnd.nextInt(
+                                                incomeRangeList.size
+                                            )],
                                             education = educationList[rnd.nextInt(educationList.size)],
-                                            relationship = relationshipList[rnd.nextInt(relationshipList.size)],
+                                            relationship = relationshipList[rnd.nextInt(
+                                                relationshipList.size
+                                            )],
                                             locale = localeList[rnd.nextInt(localeList.size)],
-                                            livingArrangement = livingArrangementList[rnd.nextInt(livingArrangementList.size)],
+                                            livingArrangement = livingArrangementList[rnd.nextInt(
+                                                livingArrangementList.size
+                                            )],
                                             birthDate = "${birthDate}-01-01"
                                         )
                                     ) { error, success ->
