@@ -256,7 +256,7 @@ class PermissionInteractionManager @Inject constructor(
         val nativeStatus = awaitNativeSensorStatus(context)
         val healthConnectStatus = awaitHealthConnectSensorStatus(context)
         val status = processStatuses(nativeStatus, healthConnectStatus)
-        stopWorkersAndSetConfig()
+        stopWorkers()
         startTasks(
             context,
             Sahha.di.sahhaInteractionManager,
@@ -266,8 +266,7 @@ class PermissionInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun stopWorkersAndSetConfig() {
+    private fun stopWorkers() {
         sensorRepo.stopAllWorkers()
-//        Sahha.config = configRepo.getConfig()
     }
 }
