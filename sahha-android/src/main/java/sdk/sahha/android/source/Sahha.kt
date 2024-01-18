@@ -24,7 +24,7 @@ private const val tag = "Sahha"
 object Sahha {
     internal lateinit var sim: SahhaInteractionManager
     internal lateinit var di: AppComponent
-    internal lateinit var config: SahhaConfiguration
+//    internal lateinit var config: SahhaConfiguration
     internal val notificationManager by lazy { di.sahhaNotificationManager }
 
     val isAuthenticated: Boolean

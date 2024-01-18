@@ -19,6 +19,7 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
@@ -47,6 +48,7 @@ class SensorInteractionManager @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
+    private val configRepo: SahhaConfigRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
     private val sensorManager: SensorManager,
@@ -65,7 +67,6 @@ class SensorInteractionManager @Inject constructor(
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
     internal val sahhaErrorLogger: SahhaErrorLogger,
 ) {
-
     fun postSensorData(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
@@ -109,8 +110,8 @@ class SensorInteractionManager @Inject constructor(
         }
     }
 
-    internal fun checkAndStartPostWorkers(context: Context) {
-        if (!Sahha.config.postSensorDataManually) {
+    internal suspend fun checkAndStartPostWorkers(context: Context) {
+        if (!configRepo.getConfig().postSensorDataManually) {
             startPostWorkersUseCase(context)
         }
     }
@@ -121,11 +122,11 @@ class SensorInteractionManager @Inject constructor(
         healthConnectRepo.startDevicePostWorker(callback)
     }
 
-    internal fun startDataCollection(
+    internal suspend fun startDataCollection(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        if (Sahha.config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+        if (configRepo.getConfig().sensorArray.contains(SahhaSensor.sleep.ordinal)) {
             startCollectingSleepDataUseCase(context)
         }
 

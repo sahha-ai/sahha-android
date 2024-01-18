@@ -392,8 +392,8 @@ class SensorRepoImpl @Inject constructor(
                         if(cont.isActive) cont.resume(true)
                     }
                 } catch (e: Exception) {
-                    if(cont.isActive) cont.resume(false)
                     Log.w(tag, e.message, e)
+                    if(cont.isActive) cont.resume(false)
                 }
             }
         }

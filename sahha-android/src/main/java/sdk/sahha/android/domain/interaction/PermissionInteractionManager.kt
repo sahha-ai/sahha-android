@@ -268,6 +268,6 @@ class PermissionInteractionManager @Inject constructor(
 
     private suspend fun stopWorkersAndSetConfig() {
         sensorRepo.stopAllWorkers()
-        Sahha.config = configRepo.getConfig()
+//        Sahha.config = configRepo.getConfig()
     }
 }

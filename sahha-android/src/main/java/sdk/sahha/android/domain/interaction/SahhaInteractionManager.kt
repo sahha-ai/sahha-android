@@ -60,7 +60,7 @@ internal class SahhaInteractionManager @Inject constructor(
             }
 
             defaultScope.launch {
-                Sahha.config = sahhaConfigRepo.getConfig()
+//                Sahha.config = sahhaConfigRepo.getConfig()
 
                 listOf(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
@@ -124,7 +124,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
-                Sahha.config = sahhaConfigRepo.getConfig()
+//                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
@@ -151,7 +151,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
-                Sahha.config = sahhaConfigRepo.getConfig()
+//                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
