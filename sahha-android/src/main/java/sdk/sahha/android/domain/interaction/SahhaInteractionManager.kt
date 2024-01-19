@@ -19,7 +19,6 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.framework.service.HealthConnectPostService
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
@@ -60,8 +59,6 @@ internal class SahhaInteractionManager @Inject constructor(
             }
 
             defaultScope.launch {
-                Sahha.config = sahhaConfigRepo.getConfig()
-
                 listOf(
                     async { saveNotificationConfig(sahhaSettings.notificationSettings) },
                 ).joinAll()
@@ -124,7 +121,6 @@ internal class SahhaInteractionManager @Inject constructor(
                 alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
-                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
@@ -151,7 +147,6 @@ internal class SahhaInteractionManager @Inject constructor(
                 alarms.stopAllAlarms(context)
                 sensorRepo.stopAllWorkers()
                 sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
-                Sahha.config = sahhaConfigRepo.getConfig()
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
