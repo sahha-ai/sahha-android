@@ -79,7 +79,7 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
-    private fun scheduleInsightsAlarm(
+    fun scheduleInsightsAlarm(
         context: Context,
         localTime: LocalTime = LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5)
     ) {
