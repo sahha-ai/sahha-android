@@ -3,6 +3,8 @@ package sdk.sahha.android.data.repository
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.currentRecomposeScope
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
@@ -32,7 +34,10 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.supervisorScope
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.Constants
@@ -73,7 +78,6 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -799,13 +803,17 @@ class HealthConnectRepoImpl @Inject constructor(
     ): Boolean {
         return suspendCoroutine { cont ->
             ioScope.launch {
-                val response = getResponse(chunk)
-                Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+                try {
+                    val response = getResponse(chunk)
+                    Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
 
-                handleResponse(response, { getResponse(chunk) }, null) {
-                    // When successful
-                    updateLastQueried(chunk)
-                    cont.resume(true)
+                    handleResponse(response, { getResponse(chunk) }, null) {
+                        // When successful
+                        updateLastQueried(chunk)
+                        cont.resume(true)
+                    }
+                } catch (e: Exception) {
+                    Log.e(tag, e.message, e)
                 }
             }
         }
@@ -819,7 +827,7 @@ class HealthConnectRepoImpl @Inject constructor(
     ) {
         try {
             if (ResponseCode.isUnauthorized(response.code())) {
-                if(Session.tokenRefreshAttempted) return
+                if (Session.tokenRefreshAttempted) return
 
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
@@ -1030,7 +1038,8 @@ class HealthConnectRepoImpl @Inject constructor(
         )
         if (records.isNullOrEmpty()) return null
 
-        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = currentMidnight
+        successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
+            currentMidnight
         return records
     }
 
