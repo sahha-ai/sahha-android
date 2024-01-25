@@ -8,10 +8,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
+import com.google.android.gms.common.util.SharedPreferencesUtils
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
@@ -23,14 +25,19 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import sdk.sahha.android.BuildConfig
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
-import sdk.sahha.android.data.local.dao.*
+import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.DeviceUsageDao
+import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
+import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.local.dao.SecurityDao
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
@@ -57,16 +64,17 @@ import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.domain.use_case.background.*
-import sdk.sahha.android.domain.use_case.post.*
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
+import java.security.KeyStore
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
+
+private const val tag = "AppModule"
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
@@ -161,6 +169,16 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
+        return try {
+            createEncryptedSharedPreferences(context)
+        } catch (e: Exception) {
+            Log.e(tag, e.message, e)
+            context.deleteSharedPreferences("encrypted_prefs")
+            createEncryptedSharedPreferences(context)
+        }
+    }
+
+    private fun createEncryptedSharedPreferences(context: Context): SharedPreferences {
         val masterKeyAlias =
             MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)

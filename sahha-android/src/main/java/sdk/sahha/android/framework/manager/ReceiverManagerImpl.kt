@@ -64,10 +64,8 @@ class ReceiverManagerImpl(
             if (isBelowAndroid8) {
                 callback?.also { it(SahhaErrors.androidVersionTooLow(8), false) }
                 return
-            } else if (isAndroid12AndAbove) {
-                getPendingIntentWithMutableFlag()
             } else {
-                getPendingIntent()
+                getPendingIntentWithMutableFlag()
             }
     }
 
@@ -98,15 +96,6 @@ class ReceiverManagerImpl(
             Constants.ACTIVITY_RECOGNITION_RECEIVER,
             activityRecognitionIntent,
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
-        )
-    }
-
-    private fun getPendingIntent(): PendingIntent {
-        return PendingIntent.getBroadcast(
-            context,
-            Constants.ACTIVITY_RECOGNITION_RECEIVER,
-            activityRecognitionIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT
         )
     }
 

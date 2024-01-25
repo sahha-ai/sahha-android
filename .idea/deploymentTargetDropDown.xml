@@ -14,9 +14,6 @@
       <entry key="app">
         <State />
       </entry>
-      <entry key="deAuthenticate_beforeConfigure_returnsCallbackError()">
-        <State />
-      </entry>
     </value>
   </component>
 </project>
