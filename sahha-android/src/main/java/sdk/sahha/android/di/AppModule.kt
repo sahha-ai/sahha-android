@@ -8,10 +8,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.os.PowerManager
+import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
+import com.google.android.gms.common.util.SharedPreferencesUtils
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
@@ -67,9 +69,12 @@ import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
+import java.security.KeyStore
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
+
+private const val tag = "AppModule"
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
@@ -164,6 +169,16 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideEncryptedSharedPreferences(context: Context): SharedPreferences {
+        return try {
+            createEncryptedSharedPreferences(context)
+        } catch (e: Exception) {
+            Log.e(tag, e.message, e)
+            context.deleteSharedPreferences("encrypted_prefs")
+            createEncryptedSharedPreferences(context)
+        }
+    }
+
+    private fun createEncryptedSharedPreferences(context: Context): SharedPreferences {
         val masterKeyAlias =
             MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
