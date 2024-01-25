@@ -48,20 +48,11 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
     }
 
     private fun getSleepPendingIntent(sleepIntent: Intent): PendingIntent {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return PendingIntent.getBroadcast(
-                context,
-                SLEEP_DATA_REQUEST,
-                sleepIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
-        }
-
         return PendingIntent.getBroadcast(
             context,
             SLEEP_DATA_REQUEST,
             sleepIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
         )
     }
 }

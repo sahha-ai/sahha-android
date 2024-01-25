@@ -9,7 +9,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.15.5"
+def gVersionName = "0.15.6"
 
 android {
     compileSdk 34
@@ -42,11 +42,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
     testOptions {
         // Used for Unit testing Android dependent elements in /test folder
@@ -55,14 +55,15 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion compose_version
     }
     packagingOptions {
-        pickFirst 'mockito-extensions/org.mockito.plugins.MockMaker'
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            pickFirsts += ['mockito-extensions/org.mockito.plugins.MockMaker']
         }
     }
     namespace 'sdk.sahha.android'
