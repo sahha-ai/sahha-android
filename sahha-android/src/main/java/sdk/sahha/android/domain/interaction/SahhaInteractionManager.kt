@@ -1,7 +1,9 @@
 package sdk.sahha.android.domain.interaction
 
 import android.app.Application
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
@@ -18,12 +20,14 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
+import sdk.sahha.android.framework.receiver.BackgroundTaskRestarterReceiver
 import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -69,19 +73,14 @@ internal class SahhaInteractionManager @Inject constructor(
                     SahhaNotificationPermissionActivity::class.java,
                 )
 
-                permission.startHcOrNativeDataCollection(application) { error, successful ->
-                    if (permission.manager.shouldUseHealthConnect())
-                        scheduleInsightsAlarm(application)
-
-                    callback?.invoke(error, successful)
-                }
+                permission.startHcOrNativeDataCollection(application, callback)
             }
         }
     }
 
     fun scheduleInsightsAlarm(
         context: Context,
-        localTime: LocalTime = LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5)
+        localTime: LocalTime = LocalTime.of(Constants.ALARM_6PM, 5)
     ) {
         val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
         val timestamp =
@@ -92,6 +91,31 @@ internal class SahhaInteractionManager @Inject constructor(
             )
 
         alarms.setAlarm(insightsPendingIntent, timestamp.toInstant().toEpochMilli())
+    }
+
+    fun scheduleBackgroundTaskRestarter(
+        context: Context,
+        nextAlarmTime: LocalDateTime =
+            LocalDateTime.of(
+                LocalDate.now().plusDays(1),
+                LocalTime.of(Constants.ALARM_12AM, 0),
+            )
+    ) {
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            Constants.RESTARTER_RECEIVER,
+            Intent(context, BackgroundTaskRestarterReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val nextAlarmTimeEpochMillis = ZonedDateTime.of(
+            nextAlarmTime,
+            ZonedDateTime.now().offset
+        ).toInstant().toEpochMilli()
+
+        alarms.setAlarm(
+            pendingIntent = pendingIntent,
+            setTimeEpochMillis = nextAlarmTimeEpochMillis
+        )
     }
 
     internal fun requestNotificationPermission(
@@ -124,6 +148,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
+                    async { scheduleBackgroundTaskRestarter(context) }
                 ).joinAll()
 
                 callback?.invoke(null, true)
@@ -150,7 +175,9 @@ internal class SahhaInteractionManager @Inject constructor(
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
-                    async { notifications.startForegroundService(HealthConnectPostService::class.java) }
+                    async { notifications.startForegroundService(HealthConnectPostService::class.java) },
+                    async { scheduleInsightsAlarm(context) },
+                    async { scheduleBackgroundTaskRestarter(context) }
                 ).joinAll()
 
                 callback?.invoke(null, true)

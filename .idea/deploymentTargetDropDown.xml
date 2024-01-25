@@ -12,10 +12,20 @@
         <State />
       </entry>
       <entry key="app">
-        <State />
-      </entry>
-      <entry key="deAuthenticate_beforeConfigure_returnsCallbackError()">
-        <State />
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_6_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-01-25T21:46:25.916619Z" />
+        </State>
       </entry>
     </value>
   </component>

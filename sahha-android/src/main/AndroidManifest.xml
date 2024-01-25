@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <!-- Health Connect -->
     <!-- Heart -->
@@ -39,7 +39,7 @@
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
 
     <!-- Exercise -->
-<!--    <uses-permission android:name="android.permission.health.READ_EXERCISE" />-->
+    <!--    <uses-permission android:name="android.permission.health.READ_EXERCISE" />-->
 
     <!-- Energy -->
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
@@ -111,8 +111,8 @@
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
-            android:targetActivity=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity"
-            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
@@ -134,6 +134,12 @@
         <receiver
             android:name=".framework.receiver.InsightsQueryReceiver"
             android:attributionTags="com.sahha.android:insights_receiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
+            android:name=".framework.receiver.BackgroundTaskRestarterReceiver"
+            android:attributionTags="com.sahha.android:bg_task_restarter_receiver"
             android:enabled="true"
             android:exported="false" />
 

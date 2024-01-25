@@ -18,10 +18,7 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             defaultScope.launch {
                 SahhaReconfigure(context)
-                Sahha.sim.permission.startHcOrNativeDataCollection(context.applicationContext) { _, _ ->
-                    if (Sahha.sim.permission.manager.shouldUseHealthConnect())
-                        Sahha.sim.scheduleInsightsAlarm(context.applicationContext)
-                }
+                Sahha.sim.permission.startHcOrNativeDataCollection(context.applicationContext)
             }
         }
     }
