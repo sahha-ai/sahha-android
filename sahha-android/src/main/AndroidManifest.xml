@@ -137,6 +137,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <receiver
+            android:name=".framework.receiver.BackgroundTaskRestarterReceiver"
+            android:attributionTags="com.sahha.android:bg_task_restarter_receiver"
+            android:enabled="true"
+            android:exported="false" />
+
 
         <receiver
             android:name=".framework.receiver.SleepReceiver"

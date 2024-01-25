@@ -79,11 +79,11 @@ class InsightsInteractionManager @Inject constructor(
             checkAndAddSleepInsights(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 0)
+                    LocalTime.of(Constants.ALARM_6PM, 0)
                 ),
                 LocalDateTime.of(
                     now.toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 0)
+                    LocalTime.of(Constants.ALARM_6PM, 0)
                 )
             )
         }
@@ -92,11 +92,11 @@ class InsightsInteractionManager @Inject constructor(
             checkAndAddStepsInsight(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                    LocalTime.of(Constants.ALARM_12AM, 0)
                 ),
                 LocalDateTime.of(
                     now.toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                    LocalTime.of(Constants.ALARM_12AM, 0)
                 )
             )
         }
@@ -105,11 +105,11 @@ class InsightsInteractionManager @Inject constructor(
             checkAndAddEnergyInsights(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                    LocalTime.of(Constants.ALARM_12AM, 0)
                 ),
                 LocalDateTime.of(
                     now.toLocalDate(),
-                    LocalTime.of(Constants.INSIGHTS_ALARM_12AM, 0)
+                    LocalTime.of(Constants.ALARM_12AM, 0)
                 ),
             )
         }
