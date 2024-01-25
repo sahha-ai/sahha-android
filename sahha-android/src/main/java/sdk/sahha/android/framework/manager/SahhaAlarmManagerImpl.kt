@@ -38,7 +38,7 @@ class SahhaAlarmManagerImpl @Inject constructor(
     }
 
     override fun setAlarm(pendingIntent: PendingIntent, setTimeEpochMillis: Long) {
-        Log.i(tag, "Alarm set: ${Sahha.di.timeManager.epochMillisToISO(setTimeEpochMillis)}")
+        Log.i(tag, "Background task set: ${Sahha.di.timeManager.epochMillisToISO(setTimeEpochMillis)}")
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             setTimeEpochMillis,
