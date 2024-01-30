@@ -19,6 +19,7 @@ import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaFramework
 
 private const val tag = "SahhaErrorLogger"

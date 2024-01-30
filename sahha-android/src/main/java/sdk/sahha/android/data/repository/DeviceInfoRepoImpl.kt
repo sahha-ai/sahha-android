@@ -12,7 +12,7 @@ import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
-import sdk.sahha.android.common.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaConverterUtility
 
 private const val tag = "DeviceInfoRepoImpl"
 

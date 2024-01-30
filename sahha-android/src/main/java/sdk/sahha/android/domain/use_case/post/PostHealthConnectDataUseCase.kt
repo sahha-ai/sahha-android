@@ -43,7 +43,7 @@ import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.common.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime

@@ -18,7 +18,7 @@ import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.dto.toSahhaDemographic
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.common.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 
 private const val tag = "UserDataRepoImpl"

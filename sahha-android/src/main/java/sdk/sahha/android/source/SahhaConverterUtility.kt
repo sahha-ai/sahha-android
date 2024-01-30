@@ -1,4 +1,4 @@
-package sdk.sahha.android.common
+package sdk.sahha.android.source
 
 import android.content.Context
 import android.icu.text.DateFormat
@@ -18,14 +18,13 @@ import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
-import sdk.sahha.android.source.Sahha
 import java.time.Instant
 import java.time.ZoneOffset
 
 private const val tag = "SahhaConverterUtility"
 
 @Keep
-internal object SahhaConverterUtility {
+object SahhaConverterUtility {
     private val timeManager by lazy { Sahha.di.timeManager }
 
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {
