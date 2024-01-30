@@ -34,7 +34,6 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import sdk.sahha.android.framework.activity.SahhaPermissionActivity_Factory
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
@@ -71,7 +70,7 @@ class MainActivity : ComponentActivity() {
 //
 //            )
         )
-        
+
         Sahha.configure(
             application,
             config,

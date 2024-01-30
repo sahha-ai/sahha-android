@@ -6,17 +6,14 @@ import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
-import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
 
 private const val tag = "Sahha"
 
@@ -61,7 +58,7 @@ object Sahha {
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback(SahhaErrors.sahhaNotConfigured, false)
             return
         }
@@ -74,7 +71,7 @@ object Sahha {
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback(SahhaErrors.sahhaNotConfigured, false)
             return
         }
@@ -88,7 +85,7 @@ object Sahha {
         val scope = CoroutineScope(Dispatchers.IO)
 
         scope.launch {
-            if(!sahhaIsConfigured()) {
+            if (!sahhaIsConfigured()) {
                 callback(SahhaErrors.sahhaNotConfigured, false)
                 return@launch
             }
@@ -101,7 +98,7 @@ object Sahha {
     fun analyze(
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
             return
         }
@@ -115,7 +112,7 @@ object Sahha {
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
             return
         }
@@ -128,7 +125,7 @@ object Sahha {
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
             return
         }
@@ -137,7 +134,7 @@ object Sahha {
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
             return
         }
@@ -149,7 +146,7 @@ object Sahha {
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, false)
             return
         }
@@ -158,7 +155,7 @@ object Sahha {
     }
 
     fun openAppSettings(context: Context) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             Log.w(tag, SahhaErrors.sahhaNotConfigured)
             return
         }
@@ -170,7 +167,7 @@ object Sahha {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback(SahhaErrors.sahhaNotConfigured, SahhaSensorStatus.pending)
             return
         }
@@ -182,7 +179,7 @@ object Sahha {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback(SahhaErrors.sahhaNotConfigured, SahhaSensorStatus.pending)
             return
         }
@@ -198,7 +195,7 @@ object Sahha {
         body: String? = null,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        if(!sahhaIsConfigured()) {
+        if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, false)
             return
         }
@@ -207,7 +204,7 @@ object Sahha {
     }
 
     private fun sahhaIsConfigured(): Boolean {
-        if(!diInitialized()) return false
+        if (!diInitialized()) return false
         return simInitialized()
     }
 }
