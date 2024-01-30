@@ -23,7 +23,7 @@ import sdk.sahha.android.source.SahhaDemographic
 
 private const val tag = "UserDataRepoImpl"
 
-class UserDataRepoImpl(
+internal class UserDataRepoImpl(
     private val ioScope: CoroutineScope,
     private val authRepo: AuthRepo,
     private val api: SahhaApi,

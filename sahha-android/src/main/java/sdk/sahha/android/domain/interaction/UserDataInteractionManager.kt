@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 private const val tag = "UserDataInteractionManager"
 
-class UserDataInteractionManager @Inject constructor(
+internal class UserDataInteractionManager @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
     private val authRepo: AuthRepo,

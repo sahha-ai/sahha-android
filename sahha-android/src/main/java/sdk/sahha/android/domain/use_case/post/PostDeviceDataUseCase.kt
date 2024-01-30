@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 
-class PostDeviceDataUseCase @Inject constructor(
+internal class PostDeviceDataUseCase @Inject constructor(
     private val repository: SensorRepo,
 ) {
     suspend operator fun invoke(

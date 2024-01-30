@@ -4,7 +4,7 @@ import androidx.room.*
 import sdk.sahha.android.domain.model.device.PhoneUsage
 
 @Dao
-interface DeviceUsageDao {
+internal interface DeviceUsageDao {
     // Phone Usage
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveUsage(usage: PhoneUsage)

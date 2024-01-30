@@ -24,7 +24,7 @@ import sdk.sahha.android.source.SahhaFramework
 
 private const val tag = "SahhaErrorLogger"
 
-class SahhaErrorLogger(
+internal class SahhaErrorLogger(
     private val context: Context,
     private val sahhaErrorApi: SahhaErrorApi,
     private val mainScope: CoroutineScope,

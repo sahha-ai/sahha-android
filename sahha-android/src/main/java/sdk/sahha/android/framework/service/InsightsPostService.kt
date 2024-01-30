@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 
 private const val tag = "InsightsPostService"
 
-class InsightsPostService : Service() {
+internal class InsightsPostService : Service() {
     private val scope by lazy { CoroutineScope(Dispatchers.IO) }
     private val insights by lazy { Sahha.sim.insights }
     override fun onBind(intent: Intent?): IBinder? {
@@ -47,7 +47,7 @@ class InsightsPostService : Service() {
             Sahha.di.sahhaAlarmManager.getInsightsQueryPendingIntent(this.applicationContext),
             ZonedDateTime.of(
                 LocalDate.now().plusDays(1),
-                LocalTime.of(Constants.INSIGHTS_ALARM_6PM, 5),
+                LocalTime.of(Constants.ALARM_6PM, 5),
                 ZonedDateTime.now().offset
             ).toInstant().toEpochMilli()
         )

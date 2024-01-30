@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
 
-class GetSensorDataUseCase @Inject constructor (private val repository: SensorRepo) {
+internal class GetSensorDataUseCase @Inject constructor (private val repository: SensorRepo) {
     suspend operator fun invoke(
         sensor: SahhaSensor,
         callback: ((error: String?, success: String?) -> Unit)

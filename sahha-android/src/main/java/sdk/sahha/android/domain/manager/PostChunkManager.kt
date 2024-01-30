@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.manager
 
-interface PostChunkManager {
+internal interface PostChunkManager {
     var postedChunkCount: Int
     suspend fun <T> postAllChunks(
         allData: List<T>,

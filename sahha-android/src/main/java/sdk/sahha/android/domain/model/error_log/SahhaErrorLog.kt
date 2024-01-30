@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.error_log
 import androidx.annotation.Keep
 
 @Keep
-data class SahhaErrorLog(
+internal data class SahhaErrorLog(
     var sdkId: String?,
     var sdkVersion: String?,
     var appId: String?,

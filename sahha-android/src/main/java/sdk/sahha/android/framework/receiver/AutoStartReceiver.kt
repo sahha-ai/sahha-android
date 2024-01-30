@@ -5,13 +5,11 @@ import android.content.Context
 import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensorStatus
 
-class AutoStartReceiver : BroadcastReceiver() {
+internal class AutoStartReceiver : BroadcastReceiver() {
     private val defaultScope = CoroutineScope(Default)
     override fun onReceive(context: Context, intent: Intent) {
         if (
@@ -20,9 +18,7 @@ class AutoStartReceiver : BroadcastReceiver() {
         ) {
             defaultScope.launch {
                 SahhaReconfigure(context)
-                Sahha.sim.permission.startHcOrNativeDataCollection(
-                    context.applicationContext,
-                )
+                Sahha.sim.permission.startHcOrNativeDataCollection(context.applicationContext)
             }
         }
     }

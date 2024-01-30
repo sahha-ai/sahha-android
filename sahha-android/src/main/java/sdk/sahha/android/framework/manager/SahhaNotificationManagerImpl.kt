@@ -26,7 +26,7 @@ import sdk.sahha.android.source.Sahha
 
 private val tag = "SahhaNotificationManagerImpl"
 
-class SahhaNotificationManagerImpl(
+internal class SahhaNotificationManagerImpl(
     private val context: Context,
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val notificationManager: NotificationManager,

@@ -12,7 +12,7 @@ import sdk.sahha.android.source.Sahha
 
 private const val tag = "TimeZoneChangedReceiver"
 
-class TimeZoneChangedReceiver : BroadcastReceiver() {
+internal class TimeZoneChangedReceiver : BroadcastReceiver() {
     private val ioScope by lazy { CoroutineScope(IO) }
 
     override fun onReceive(context: Context, intent: Intent) {

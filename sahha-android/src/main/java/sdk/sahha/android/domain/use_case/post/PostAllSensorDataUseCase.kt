@@ -7,7 +7,7 @@ import sdk.sahha.android.domain.interaction.AuthInteractionManager
 import javax.inject.Inject
 
 private const val tag = "PostAllSensorDataUseCase"
-class PostAllSensorDataUseCase @Inject constructor(
+internal class PostAllSensorDataUseCase @Inject constructor(
     private val repository: SensorRepo,
     private val authManager: AuthInteractionManager,
     private val sahhaErrorLogger: SahhaErrorLogger

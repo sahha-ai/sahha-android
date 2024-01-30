@@ -12,7 +12,7 @@ import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 
 @Dao
-interface MovementDao {
+internal interface MovementDao {
     // Steps
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveStepData(stepData: StepData)

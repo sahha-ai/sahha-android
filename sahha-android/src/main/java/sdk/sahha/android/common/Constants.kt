@@ -163,9 +163,9 @@ internal object Constants {
     const val ONE_DAY_IN_MILLIS = 86400000L
     const val SEVEN_DAYS_IN_MILLIS = 604800000L
 
-    // Insights config
-    const val INSIGHTS_ALARM_6PM = 18
-    const val INSIGHTS_ALARM_12AM = 0
+    // Alarm config
+    const val ALARM_6PM = 18
+    const val ALARM_12AM = 0
 
     // Notifications
     const val NOTIFICATION_DATA_COLLECTION = 1000
@@ -181,5 +181,6 @@ internal object Constants {
     const val SLEEP_DATA_REQUEST = 2002
     const val HEALTH_CONNECT_QUERY_RECEIVER = 3000
     const val INSIGHTS_QUERY_RECEIVER = 3001
+    const val RESTARTER_RECEIVER = 3002
     const val NOTIFICATION_REQUEST_CODE = 4000
 }

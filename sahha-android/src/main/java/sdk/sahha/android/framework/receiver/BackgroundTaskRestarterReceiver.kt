@@ -9,20 +9,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.framework.service.InsightsPostService
 import sdk.sahha.android.source.Sahha
 
-private const val tag = "InsightsQueryReceiver"
+private const val tag = "BackgroundTaskRestarterReceiver"
 
-internal class InsightsQueryReceiver : BroadcastReceiver() {
+internal class BackgroundTaskRestarterReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
-    private val nm by lazy { Sahha.di.sahhaNotificationManager }
-
     override fun onReceive(context: Context, intent: Intent) {
         scope.launch {
             try {
                 SahhaReconfigure(context)
-                nm.startForegroundService(InsightsPostService::class.java)
+                Sahha.sim.permission.startHcOrNativeDataCollection(context.applicationContext)
             } catch (e: Exception) {
                 Log.e(tag, e.message, e)
                 Sahha.di.sahhaErrorLogger
@@ -35,4 +32,5 @@ internal class InsightsQueryReceiver : BroadcastReceiver() {
             }
         }
     }
+
 }

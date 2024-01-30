@@ -10,7 +10,7 @@ import com.sahha.android.model.SleepQueueHistory
 import sdk.sahha.android.domain.model.dto.SleepDto
 
 @Dao
-interface SleepDao {
+internal interface SleepDao {
     // Sleep Dto
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun saveSleepDto(sleep: SleepDto)

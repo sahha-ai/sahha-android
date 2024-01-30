@@ -12,7 +12,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.Sahha
 
-class StepDetectorListener : SensorEventListener2 {
+internal class StepDetectorListener : SensorEventListener2 {
     internal val steps = mutableListOf<Long>()
     internal var sessionJob: Job? = null
     private var timestampEpoch = 0L

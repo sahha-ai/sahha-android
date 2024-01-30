@@ -11,7 +11,7 @@ import java.util.*
 import javax.inject.Inject
 
 private const val tag = "AnalyzeProfileUseCase"
-class AnalyzeProfileUseCase @Inject constructor (
+internal class AnalyzeProfileUseCase @Inject constructor (
     private val repository: UserDataRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
     private val sahhaErrorLogger: SahhaErrorLogger? = null

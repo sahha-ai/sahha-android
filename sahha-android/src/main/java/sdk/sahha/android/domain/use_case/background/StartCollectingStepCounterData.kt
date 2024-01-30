@@ -5,7 +5,7 @@ import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 
-class StartCollectingStepCounterData @Inject constructor (
+internal class StartCollectingStepCounterData @Inject constructor (
     private val repository: SensorRepo
 ) {
     suspend operator fun invoke(

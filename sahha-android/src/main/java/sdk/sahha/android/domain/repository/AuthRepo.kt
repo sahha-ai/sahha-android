@@ -4,7 +4,7 @@ import retrofit2.Response
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.model.auth.TokenData
 
-interface AuthRepo {
+internal interface AuthRepo {
     fun getToken(): String?
     fun getRefreshToken(): String?
     fun saveEncryptedTokens(

@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Keep
-class SahhaTimeManager {
+internal class SahhaTimeManager {
     val zoneOffset: ZoneOffset get() = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
     private val formatterPattern = "yyyy-MM-dd'T'HH:mm:ss.SSZZZZZ"

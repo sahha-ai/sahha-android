@@ -15,7 +15,7 @@ import kotlin.coroutines.resume
 
 private const val tag = "DevicePostWorker"
 
-class DevicePostWorker(private val context: Context, workerParameters: WorkerParameters) :
+internal class DevicePostWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     private val scope = CoroutineScope(Dispatchers.IO)
     override suspend fun doWork(): Result {

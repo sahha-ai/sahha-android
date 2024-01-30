@@ -11,7 +11,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.use_case.SaveTokensUseCase
 import javax.inject.Inject
 
-class AuthInteractionManager @Inject constructor(
+internal class AuthInteractionManager @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
     private val authRepo: AuthRepo,
     private val securityDao: SecurityDao,

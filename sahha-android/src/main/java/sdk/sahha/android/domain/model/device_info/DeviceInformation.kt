@@ -9,7 +9,7 @@ import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.source.Sahha
 
 @Entity
-data class DeviceInformation(
+internal data class DeviceInformation(
     @PrimaryKey val id: Int = 1,
     val sdkId: String,
     val sdkVersion: String = BuildConfig.SDK_VERSION_NAME,
@@ -21,7 +21,7 @@ data class DeviceInformation(
     val timeZone: String = Sahha.di.timeManager.getTimezone()
 )
 
-fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDto {
+internal fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDto {
     return DeviceInformationDto(
         sdkId,
         sdkVersion,

@@ -25,7 +25,7 @@ import kotlin.coroutines.resume
 
 private const val tag = "InsightsRepoImpl"
 
-class InsightsRepoImpl @Inject constructor(
+internal class InsightsRepoImpl @Inject constructor(
     private val sahhaTimeManager: SahhaTimeManager,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,

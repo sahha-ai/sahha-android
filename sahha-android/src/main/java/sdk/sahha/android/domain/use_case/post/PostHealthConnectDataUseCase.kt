@@ -56,7 +56,7 @@ import kotlin.reflect.KClass
 
 private const val tag = "PostHealthConnectDataUseCase"
 
-class PostHealthConnectDataUseCase @Inject constructor(
+internal class PostHealthConnectDataUseCase @Inject constructor(
     private val authRepo: AuthRepo,
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,

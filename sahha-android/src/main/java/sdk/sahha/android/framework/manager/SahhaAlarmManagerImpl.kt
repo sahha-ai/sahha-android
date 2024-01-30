@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 private const val tag = "SahhaAlarmManagerImpl"
 
-class SahhaAlarmManagerImpl @Inject constructor(
+internal class SahhaAlarmManagerImpl @Inject constructor(
     private val alarmManager: AlarmManager
 ) : SahhaAlarmManager {
     override fun getHealthConnectQueryPendingIntent(context: Context): PendingIntent {
@@ -38,7 +38,7 @@ class SahhaAlarmManagerImpl @Inject constructor(
     }
 
     override fun setAlarm(pendingIntent: PendingIntent, setTimeEpochMillis: Long) {
-        Log.i(tag, "Alarm set: ${Sahha.di.timeManager.epochMillisToISO(setTimeEpochMillis)}")
+        Log.i(tag, "Background task set: ${Sahha.di.timeManager.epochMillisToISO(setTimeEpochMillis)}")
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             setTimeEpochMillis,

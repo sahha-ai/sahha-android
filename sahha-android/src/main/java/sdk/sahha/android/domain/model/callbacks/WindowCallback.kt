@@ -9,7 +9,7 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.source.SahhaSensorStatus
 
-class WindowCallback(
+internal class WindowCallback(
     private val context: Context,
     private var localCallback: Window.Callback,
     private val activityCallback: ActivityCallback

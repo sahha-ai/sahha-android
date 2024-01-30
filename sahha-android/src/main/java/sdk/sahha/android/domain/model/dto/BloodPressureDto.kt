@@ -4,7 +4,7 @@ import androidx.annotation.Keep
 import sdk.sahha.android.common.Constants
 
 @Keep
-data class BloodPressureDto(
+internal data class BloodPressureDto(
     val dataType: String,
     val recordingMethod: String,
     val count: Double,

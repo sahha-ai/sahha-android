@@ -49,7 +49,7 @@ import kotlin.coroutines.resume
 private const val tag = "SensorRepoImpl"
 
 @SuppressLint("NewApi")
-class SensorRepoImpl @Inject constructor(
+internal class SensorRepoImpl @Inject constructor(
     private val context: Context,
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,

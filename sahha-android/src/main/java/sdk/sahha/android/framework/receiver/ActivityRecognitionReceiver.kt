@@ -20,7 +20,7 @@ import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.O)
-class ActivityRecognitionReceiver : BroadcastReceiver() {
+internal class ActivityRecognitionReceiver : BroadcastReceiver() {
     private val tag by lazy { "ActivityRecognitionReceiver" }
 
     private lateinit var activities: Array<DetectedActivity?>

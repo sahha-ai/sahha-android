@@ -16,7 +16,7 @@ import sdk.sahha.android.common.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.framework.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
+internal class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
 
     private val tag by lazy { "SleepCollectionWorker" }
@@ -48,20 +48,11 @@ class SleepCollectionWorker(private val context: Context, workerParameters: Work
     }
 
     private fun getSleepPendingIntent(sleepIntent: Intent): PendingIntent {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return PendingIntent.getBroadcast(
-                context,
-                SLEEP_DATA_REQUEST,
-                sleepIntent,
-                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
-        }
-
         return PendingIntent.getBroadcast(
             context,
             SLEEP_DATA_REQUEST,
             sleepIntent,
-            PendingIntent.FLAG_CANCEL_CURRENT
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
         )
     }
 }

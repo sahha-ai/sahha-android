@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.mapper
 
-interface HealthConnectConstantsMapper {
+internal interface HealthConnectConstantsMapper {
     fun devices(constantInt: Int?): String
     fun recordingMethod(constantInt: Int): String
     fun mealType(constantInt: Int): String?

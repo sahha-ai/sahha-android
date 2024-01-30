@@ -58,7 +58,7 @@ import javax.inject.Inject
 
 private val tag = "PermissionManagerImpl"
 
-class PermissionManagerImpl @Inject constructor(
+internal class PermissionManagerImpl @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
     private val configRepo: SahhaConfigRepo,
     private val permissionHandler: PermissionHandler,

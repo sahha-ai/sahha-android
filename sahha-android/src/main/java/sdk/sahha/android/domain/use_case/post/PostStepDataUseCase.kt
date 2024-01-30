@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 
-class PostStepDataUseCase @Inject constructor(
+internal class PostStepDataUseCase @Inject constructor(
     private val repository: SensorRepo,
 ) {
     suspend operator fun invoke(

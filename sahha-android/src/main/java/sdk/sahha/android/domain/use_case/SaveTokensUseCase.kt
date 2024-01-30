@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 private const val tag = "SaveTokensUseCase"
 
-class SaveTokensUseCase @Inject constructor(
+internal class SaveTokensUseCase @Inject constructor(
     private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: AuthRepo,

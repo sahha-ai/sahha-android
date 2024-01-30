@@ -43,7 +43,7 @@ import kotlin.coroutines.resume
 
 private const val tag = "SensorInteractionManager"
 
-class SensorInteractionManager @Inject constructor(
+internal class SensorInteractionManager @Inject constructor(
     private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
