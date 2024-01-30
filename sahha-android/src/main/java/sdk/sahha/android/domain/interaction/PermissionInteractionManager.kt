@@ -151,18 +151,16 @@ internal class PermissionInteractionManager @Inject constructor(
         nativeStatus: Enum<SahhaSensorStatus>,
         healthConnectStatus: Enum<SahhaSensorStatus>
     ): Enum<InternalSensorStatus> {
-        val nativeDisabled =
-            nativeStatus == SahhaSensorStatus.disabled
-                    || nativeStatus == SahhaSensorStatus.unavailable
-                    || nativeStatus == SahhaSensorStatus.pending
+        val nativeUnavailable = nativeStatus == SahhaSensorStatus.unavailable
+        val nativePending = nativeStatus == SahhaSensorStatus.pending
+        val nativeDisabled = nativeStatus == SahhaSensorStatus.disabled
         val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
                 || healthConnectStatus == SahhaSensorStatus.unavailable
                 || healthConnectStatus == SahhaSensorStatus.pending
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
         val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
-        val pending =
-            nativeStatus == SahhaSensorStatus.pending || healthConnectStatus == SahhaSensorStatus.pending
+        val pending = nativePending || healthConnectStatus == SahhaSensorStatus.pending
         val disabled = nativeDisabled && healthConnectDisabled
         val partialNative =
             nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
@@ -175,6 +173,7 @@ internal class PermissionInteractionManager @Inject constructor(
             onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
             requested -> InternalSensorStatus.enabled
             disabled -> InternalSensorStatus.disabled
+            nativeUnavailable -> InternalSensorStatus.unavailable
             else -> InternalSensorStatus.unavailable
         }
     }
