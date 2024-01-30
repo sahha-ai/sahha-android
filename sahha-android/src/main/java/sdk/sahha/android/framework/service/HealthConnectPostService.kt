@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 
 private const val tag = "HealthConnectPostService"
 
-class HealthConnectPostService : Service() {
+internal class HealthConnectPostService : Service() {
     private val defaultScope by lazy { CoroutineScope(Dispatchers.Default) }
     override fun onBind(intent: Intent?): IBinder? {
         return null

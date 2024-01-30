@@ -8,7 +8,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.appcompat.app.AppCompatActivity
 import sdk.sahha.android.source.SahhaSensorStatus
 
-interface PermissionManager {
+internal interface PermissionManager {
     fun setPermissionLogic(activity: ComponentActivity)
     fun openAppSettings(context: Context)
     fun activate(

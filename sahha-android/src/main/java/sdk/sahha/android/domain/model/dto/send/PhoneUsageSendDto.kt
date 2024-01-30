@@ -5,7 +5,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
 @Keep
-data class PhoneUsageSendDto(
+internal data class PhoneUsageSendDto(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
     val eventTimeStamp: String,

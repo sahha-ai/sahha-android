@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.use_case.background
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import javax.inject.Inject
 
-class StartDataCollectionServiceUseCase @Inject constructor (
+internal class StartDataCollectionServiceUseCase @Inject constructor (
     private val manager: SahhaNotificationManager
 ) {
     operator fun invoke(

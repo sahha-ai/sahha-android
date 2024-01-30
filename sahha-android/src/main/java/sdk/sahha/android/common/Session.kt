@@ -10,7 +10,7 @@ import sdk.sahha.android.source.SahhaEnvironment
 import java.time.Instant
 import java.time.ZoneOffset
 
-object Session {
+internal object Session {
     var hcQueryInProgress = false
     var tokenRefreshAttempted = false
 

@@ -43,7 +43,7 @@ import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.source.SahhaConverterUtility
+import sdk.sahha.android.common.SahhaConverterUtility
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -56,7 +56,7 @@ import kotlin.reflect.KClass
 
 private const val tag = "PostHealthConnectDataUseCase"
 
-class PostHealthConnectDataUseCase @Inject constructor(
+internal class PostHealthConnectDataUseCase @Inject constructor(
     private val authRepo: AuthRepo,
     private val repo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,

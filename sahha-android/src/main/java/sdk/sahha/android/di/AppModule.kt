@@ -13,7 +13,6 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
-import com.google.android.gms.common.util.SharedPreferencesUtils
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.CoroutineScope
@@ -69,7 +68,6 @@ import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
-import java.security.KeyStore
 import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton

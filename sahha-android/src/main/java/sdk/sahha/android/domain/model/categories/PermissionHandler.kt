@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-data class PermissionHandler @Inject constructor(
+internal data class PermissionHandler @Inject constructor(
     val activityCallback: ActivityCallback,
     var sensorStatus: Enum<SahhaSensorStatus> = SahhaSensorStatus.pending
 )

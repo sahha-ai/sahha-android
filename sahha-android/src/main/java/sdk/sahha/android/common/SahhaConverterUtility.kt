@@ -1,4 +1,4 @@
-package sdk.sahha.android.source
+package sdk.sahha.android.common
 
 import android.content.Context
 import android.icu.text.DateFormat
@@ -13,27 +13,19 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
-import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
-import sdk.sahha.android.domain.model.dto.SleepDto
-import sdk.sahha.android.domain.model.dto.StepDto
 import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
-import sdk.sahha.android.domain.model.dto.send.PhoneUsageSendDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
-import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
-import sdk.sahha.android.domain.model.steps.StepData
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
+import sdk.sahha.android.source.Sahha
 import java.time.Instant
 import java.time.ZoneOffset
 
 private const val tag = "SahhaConverterUtility"
 
 @Keep
-object SahhaConverterUtility {
+internal object SahhaConverterUtility {
     private val timeManager by lazy { Sahha.di.timeManager }
 
     fun hashMapToRequestBody(rbContent: HashMap<String, String>): RequestBody {

@@ -12,7 +12,7 @@ import javax.crypto.SecretKey
 
 
 // Credit to JosiasSena Github user
-class Encryptor (
+internal class Encryptor (
     private val securityDao: SecurityDao
 ) {
     private lateinit var encryption: ByteArray

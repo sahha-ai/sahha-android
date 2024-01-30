@@ -5,7 +5,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
 @Keep
-data class SahhaDataLogDto(
+internal data class SahhaDataLogDto(
     val id: String,
     val logType: String,
     val dataType: String,

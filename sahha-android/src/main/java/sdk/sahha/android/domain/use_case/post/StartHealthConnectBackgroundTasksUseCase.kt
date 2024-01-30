@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.use_case.post
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import javax.inject.Inject
 
-class StartHealthConnectBackgroundTasksUseCase @Inject constructor(
+internal class StartHealthConnectBackgroundTasksUseCase @Inject constructor(
     private val repository: HealthConnectRepo
 ) {
     operator fun invoke(

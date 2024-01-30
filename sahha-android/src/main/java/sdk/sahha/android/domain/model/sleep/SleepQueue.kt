@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class SleepQueue(
+internal data class SleepQueue(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val sleepDurationMinutes: Long,
     val sleepDurationMillis: Long,

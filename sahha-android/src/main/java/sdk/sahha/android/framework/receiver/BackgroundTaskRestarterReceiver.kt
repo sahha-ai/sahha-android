@@ -13,7 +13,7 @@ import sdk.sahha.android.source.Sahha
 
 private const val tag = "BackgroundTaskRestarterReceiver"
 
-class BackgroundTaskRestarterReceiver : BroadcastReceiver() {
+internal class BackgroundTaskRestarterReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
     override fun onReceive(context: Context, intent: Intent) {
         scope.launch {

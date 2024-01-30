@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 private const val tag = "SahhaAlarmManagerImpl"
 
-class SahhaAlarmManagerImpl @Inject constructor(
+internal class SahhaAlarmManagerImpl @Inject constructor(
     private val alarmManager: AlarmManager
 ) : SahhaAlarmManager {
     override fun getHealthConnectQueryPendingIntent(context: Context): PendingIntent {

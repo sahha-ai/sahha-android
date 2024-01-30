@@ -27,7 +27,7 @@ import java.time.Period
 import java.time.ZonedDateTime
 import kotlin.reflect.KClass
 
-interface HealthConnectRepo {
+internal interface HealthConnectRepo {
     val permissions: Set<String>
     val successfulQueryTimestamps: HashMap<String, ZonedDateTime>
     fun getHealthConnectCompatibleApps(): Set<CompatibleApps>

@@ -7,7 +7,7 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import javax.inject.Inject
 
-class SahhaConfigRepoImpl @Inject constructor(
+internal class SahhaConfigRepoImpl @Inject constructor(
     private val dao: ConfigurationDao
 ) : SahhaConfigRepo {
     override suspend fun saveConfig(config: SahhaConfiguration) {

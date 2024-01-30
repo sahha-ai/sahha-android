@@ -16,7 +16,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 
 private const val tag = "AuthRepoImpl"
 
-class AuthRepoImpl(
+internal class AuthRepoImpl(
     private val api: SahhaApi,
     private val encryptedSharedPreferences: SharedPreferences,
 ) : AuthRepo {

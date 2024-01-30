@@ -16,7 +16,7 @@ import sdk.sahha.android.common.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.framework.receiver.SleepReceiver
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
+internal class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
 
     private val tag by lazy { "SleepCollectionWorker" }

@@ -7,7 +7,7 @@ import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.StepDto
 
 @Entity
-data class StepsHealthConnect(
+internal data class StepsHealthConnect(
     @PrimaryKey val metaId: String,
     val dataType: String,
     val count: Int,
@@ -21,7 +21,7 @@ data class StepsHealthConnect(
     val deviceModel: String,
 )
 
-fun StepsHealthConnect.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun StepsHealthConnect.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metaId,
         logType = Constants.DataLogs.ACTIVITY,

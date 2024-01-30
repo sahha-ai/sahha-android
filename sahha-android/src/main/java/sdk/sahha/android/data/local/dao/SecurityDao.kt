@@ -8,7 +8,7 @@ import sdk.sahha.android.domain.model.security.EncryptUtility
 
 @Dao
 @Deprecated("Now using EncryptedSharedPreferences instead. This is only used for migration purposes.")
-interface SecurityDao {
+internal interface SecurityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveEncryptUtility(encryptUtility: EncryptUtility)
 

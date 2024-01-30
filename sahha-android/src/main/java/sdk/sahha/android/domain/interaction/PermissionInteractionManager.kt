@@ -19,7 +19,7 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "PermissionInteractionManager"
 
-class PermissionInteractionManager @Inject constructor(
+internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
     private val activityCallback: ActivityCallback,

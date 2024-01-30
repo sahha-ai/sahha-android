@@ -8,14 +8,14 @@ import java.util.UUID
 
 
 @Entity
-data class PhoneUsage(
+internal data class PhoneUsage(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
     val createdAt: String,
     @PrimaryKey val id: String = UUID.randomUUID().toString()
 )
 
-fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = id,
         logType = Constants.DataLogs.DEVICE,

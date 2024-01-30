@@ -10,7 +10,7 @@ import sdk.sahha.android.framework.service.HealthConnectPostService
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
-class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
+internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     private lateinit var permissions: Set<String>
 
     private var initialLaunch = true

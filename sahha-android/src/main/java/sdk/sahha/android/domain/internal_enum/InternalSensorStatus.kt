@@ -2,7 +2,7 @@ package sdk.sahha.android.domain.internal_enum
 
 import sdk.sahha.android.source.SahhaSensorStatus
 
-enum class InternalSensorStatus {
+internal enum class InternalSensorStatus {
     pending,
     unavailable,
     disabled,
@@ -10,7 +10,7 @@ enum class InternalSensorStatus {
     partial
 }
 
-fun Enum<InternalSensorStatus>.toSahhaSensorStatus(): Enum<SahhaSensorStatus> {
+internal fun Enum<InternalSensorStatus>.toSahhaSensorStatus(): Enum<SahhaSensorStatus> {
     return when (this) {
         InternalSensorStatus.pending -> SahhaSensorStatus.pending
         InternalSensorStatus.unavailable -> SahhaSensorStatus.unavailable

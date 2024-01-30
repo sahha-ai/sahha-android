@@ -13,7 +13,7 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val tag = "SleepPostWorker"
 
-class SleepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
+internal class SleepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)

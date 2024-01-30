@@ -8,7 +8,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 
 @Entity
-data class SahhaConfiguration(
+internal data class SahhaConfiguration(
     @PrimaryKey val id: Int,
     val environment: Int,
     val framework: String,
@@ -29,7 +29,7 @@ data class SahhaConfiguration(
     )
 }
 
-fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
+internal fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
     return SahhaSettings(
         environment = SahhaEnvironment.values()[environment],
         framework = SahhaFramework.valueOf(framework),
@@ -39,7 +39,7 @@ fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
     )
 }
 
-fun SahhaConfiguration.toSetOfSensors(): Set<SahhaSensor> {
+internal fun SahhaConfiguration.toSetOfSensors(): Set<SahhaSensor> {
     return sensorArray.mapTo(mutableSetOf()) {
         SahhaSensor.values()[it]
     }

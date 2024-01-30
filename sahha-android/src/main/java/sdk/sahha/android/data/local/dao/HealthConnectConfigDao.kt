@@ -8,7 +8,7 @@ import androidx.room.Query
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 
 @Dao
-interface HealthConnectConfigDao {
+internal interface HealthConnectConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveQuery(query: HealthConnectQuery)
 

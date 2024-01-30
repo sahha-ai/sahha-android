@@ -34,7 +34,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class InsightsInteractionManager @Inject constructor(
+internal class InsightsInteractionManager @Inject constructor(
     private val authRepo: AuthRepo,
     private val insightsRepo: InsightsRepo,
     private val healthConnectRepo: HealthConnectRepo,

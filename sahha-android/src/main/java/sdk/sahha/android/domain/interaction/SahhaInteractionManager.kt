@@ -4,6 +4,7 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
@@ -68,10 +69,11 @@ internal class SahhaInteractionManager @Inject constructor(
                 ).joinAll()
 
                 awaitProcessAndPutDeviceInfo(application)
-                permission.manager.launchPermissionActivity(
-                    application,
-                    SahhaNotificationPermissionActivity::class.java,
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                    permission.manager.launchPermissionActivity(
+                        application,
+                        SahhaNotificationPermissionActivity::class.java,
+                    )
 
                 permission.startHcOrNativeDataCollection(application, callback)
             }

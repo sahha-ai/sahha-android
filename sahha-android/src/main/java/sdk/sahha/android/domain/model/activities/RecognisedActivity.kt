@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class RecognisedActivity(
+internal data class RecognisedActivity(
   @PrimaryKey(autoGenerate = true) val id: Int,
   val movementType: Int,
   val confidence: Int,

@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class PreviousActivity(
+internal data class PreviousActivity(
   @PrimaryKey val id: Int = 1,
   val activity: Int,
   val confidence: Int

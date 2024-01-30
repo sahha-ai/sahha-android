@@ -5,7 +5,7 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 
 private const val tag = "PostChunkManagerImpl"
 
-class PostChunkManagerImpl : PostChunkManager {
+internal class PostChunkManagerImpl : PostChunkManager {
     override var postedChunkCount = 0
     override suspend fun <T> postAllChunks(
         allData: List<T>,
