@@ -11,7 +11,7 @@ import sdk.sahha.android.domain.model.config.toSahhaSettings
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSettings
 
-object SahhaReconfigure {
+internal object SahhaReconfigure {
     suspend operator fun invoke(
         context: Context,
     ) {

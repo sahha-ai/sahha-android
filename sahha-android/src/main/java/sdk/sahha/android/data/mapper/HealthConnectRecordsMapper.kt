@@ -38,7 +38,7 @@ private val mapper = Sahha.di.healthConnectConstantsMapper
 private val timeManager = Sahha.di.timeManager
 
 // Converted to SahhaDataLogDto later
-fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
+internal fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
     return StepsHealthConnect(
         metaId = metadata.id,
         dataType = Constants.DataTypes.STEP,
@@ -57,7 +57,7 @@ fun StepsRecord.toStepsHealthConnect(): StepsHealthConnect {
     )
 }
 
-fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.SLEEP,
@@ -73,7 +73,7 @@ fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BLOOD,
@@ -97,7 +97,7 @@ fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLogDto {
+internal fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BLOOD,
@@ -122,7 +122,7 @@ fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLogDto {
         )
 }
 
-fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLogDto {
+internal fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BLOOD,
@@ -146,7 +146,7 @@ fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLogDto {
     )
 }
 
-fun RestingHeartRateRecord.toSahhaLogDto(): SahhaDataLogDto {
+internal fun RestingHeartRateRecord.toSahhaLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.HEART,
@@ -165,7 +165,7 @@ fun RestingHeartRateRecord.toSahhaLogDto(): SahhaDataLogDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.ENERGY,
@@ -178,7 +178,7 @@ fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(): SahhaDataLogDto
     )
 }
 
-fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.ENERGY,
@@ -192,7 +192,7 @@ fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(): SahhaDataLogDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toActiveEnergyInsight(): InsightData {
+internal fun AggregationResultGroupedByDuration.toActiveEnergyInsight(): InsightData {
     return InsightData(
         name = Constants.INSIGHT_NAME_ACTIVE_ENERGY,
         value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
@@ -202,7 +202,7 @@ fun AggregationResultGroupedByDuration.toActiveEnergyInsight(): InsightData {
     )
 }
 
-fun AggregationResultGroupedByDuration.toTotalEnergyInsight(): InsightData {
+internal fun AggregationResultGroupedByDuration.toTotalEnergyInsight(): InsightData {
     return InsightData(
         name = Constants.INSIGHT_NAME_TOTAL_ENERGY,
         value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0,
@@ -212,7 +212,7 @@ fun AggregationResultGroupedByDuration.toTotalEnergyInsight(): InsightData {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateAvg(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toHeartRateAvg(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -225,7 +225,7 @@ fun AggregationResultGroupedByDuration.toHeartRateAvg(): SahhaDataLogDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMin(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toHeartRateMin(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -240,7 +240,7 @@ fun AggregationResultGroupedByDuration.toHeartRateMin(): SahhaDataLogDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toHeartRateMax(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toHeartRateMax(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -255,7 +255,7 @@ fun AggregationResultGroupedByDuration.toHeartRateMax(): SahhaDataLogDto {
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateAvg(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toRestingHeartRateAvg(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -270,7 +270,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateAvg(): SahhaDataLogDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMin(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toRestingHeartRateMin(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -285,7 +285,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMin(): SahhaDataLogDto 
     )
 }
 
-fun AggregationResultGroupedByDuration.toRestingHeartRateMax(): SahhaDataLogDto {
+internal fun AggregationResultGroupedByDuration.toRestingHeartRateMax(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.HEART,
@@ -300,7 +300,7 @@ fun AggregationResultGroupedByDuration.toRestingHeartRateMax(): SahhaDataLogDto 
     )
 }
 
-fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.HEART,
@@ -315,7 +315,7 @@ fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.ENERGY,
@@ -330,7 +330,7 @@ fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.ENERGY,
@@ -345,7 +345,7 @@ fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun OxygenSaturationRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun OxygenSaturationRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.OXYGEN,
@@ -360,7 +360,7 @@ fun OxygenSaturationRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BasalMetabolicRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BasalMetabolicRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.ENERGY,
@@ -375,7 +375,7 @@ fun BasalMetabolicRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BodyFatRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BodyFatRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -390,7 +390,7 @@ fun BodyFatRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BodyWaterMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BodyWaterMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -405,7 +405,7 @@ fun BodyWaterMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun LeanBodyMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun LeanBodyMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -420,7 +420,7 @@ fun LeanBodyMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BoneMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BoneMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -435,7 +435,7 @@ fun BoneMassRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun HeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun HeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -450,7 +450,7 @@ fun HeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun WeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun WeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
@@ -465,7 +465,7 @@ fun WeightRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun Vo2MaxRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun Vo2MaxRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.OXYGEN,
@@ -484,7 +484,7 @@ fun Vo2MaxRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun RespiratoryRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun RespiratoryRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.OXYGEN,
@@ -499,7 +499,7 @@ fun RespiratoryRateRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun FloorsClimbedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun FloorsClimbedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
@@ -514,7 +514,7 @@ fun FloorsClimbedRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.TEMPERATURE,
@@ -533,7 +533,7 @@ fun BodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = metadata.id,
         logType = Constants.DataLogs.TEMPERATURE,
@@ -552,7 +552,7 @@ fun BasalBodyTemperatureRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     val exerciseType = (mapper.exerciseTypes(exerciseType) ?: Constants.UNKNOWN)
     val source = metadata.dataOrigin.packageName
     val startZoneOffset = this.startZoneOffset
@@ -577,7 +577,7 @@ fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLogDto {
     )
 }
 
-fun ExerciseLap.toSahhaDataLogDto(
+internal fun ExerciseLap.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord
 ): SahhaDataLogDto {
     val exerciseType = (mapper.exerciseTypes(exercise.exerciseType) ?: Constants.UNKNOWN)
@@ -603,7 +603,7 @@ fun ExerciseLap.toSahhaDataLogDto(
     )
 }
 
-fun ExerciseSegment.toSahhaDataLogDto(
+internal fun ExerciseSegment.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord
 ): SahhaDataLogDto {
     val exerciseType = (mapper.exerciseTypes(exercise.exerciseType) ?: Constants.UNKNOWN)

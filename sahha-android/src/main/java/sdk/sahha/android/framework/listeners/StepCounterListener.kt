@@ -8,7 +8,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.source.Sahha
 
-class StepCounterListener : SensorEventListener2 {
+internal class StepCounterListener : SensorEventListener2 {
     override fun onSensorChanged(sensorEvent: SensorEvent?) {
         sensorEvent?.also { event ->
             Sahha.di.ioScope.launch {

@@ -1,6 +1,5 @@
 package empty.sahha.android
 
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,7 +34,7 @@ import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.framework.activity.SahhaPermissionActivity_Factory
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
@@ -155,13 +154,6 @@ class MainActivity : ComponentActivity() {
                                     Text("Configure")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
-                                    lifecycleScope.launch {
-                                        SahhaReconfigure(application)
-                                    }
-                                }) {
-                                    Text("Reconfigure")
-                                }
                                 ErrorLogView()
                                 DeauthenticateView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -254,17 +246,13 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
 
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        Sahha.analyze(
-                                            dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
-                                        ) { error, success ->
-                                            error?.also { analyzeResponseLocalDateTime = it }
-                                            success?.also {
-                                                analyzeResponseLocalDateTime = it
-                                            }
+                                    Sahha.analyze(
+                                        dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
+                                    ) { error, success ->
+                                        error?.also { analyzeResponseLocalDateTime = it }
+                                        success?.also {
+                                            analyzeResponseLocalDateTime = it
                                         }
-                                    } else {
-                                        analyzeResponseLocalDateTime = "Version too low"
                                     }
                                 }) {
                                     Text("Analyze")

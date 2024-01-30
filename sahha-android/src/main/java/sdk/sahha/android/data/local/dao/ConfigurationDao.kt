@@ -9,7 +9,7 @@ import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Dao
-interface ConfigurationDao {
+internal interface ConfigurationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveConfig(config: SahhaConfiguration)
 

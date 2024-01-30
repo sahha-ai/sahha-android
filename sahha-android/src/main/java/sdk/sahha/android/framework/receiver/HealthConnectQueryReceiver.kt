@@ -14,7 +14,7 @@ import sdk.sahha.android.source.Sahha
 
 private const val tag = "SahhaAlarmReceiver"
 
-class HealthConnectQueryReceiver : BroadcastReceiver() {
+internal class HealthConnectQueryReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
     private val nm by lazy { Sahha.di.sahhaNotificationManager }
 

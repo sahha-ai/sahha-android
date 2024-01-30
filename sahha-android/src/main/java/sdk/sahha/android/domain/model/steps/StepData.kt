@@ -11,14 +11,14 @@ import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
 @Entity
-data class StepData(
+internal data class StepData(
     val source: String,
     val count: Int,
     val detectedAt: String,
     @PrimaryKey val id: String = UUID.randomUUID().toString()
 )
 
-fun StepData.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun StepData.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = id,
         logType = Constants.DataLogs.ACTIVITY,

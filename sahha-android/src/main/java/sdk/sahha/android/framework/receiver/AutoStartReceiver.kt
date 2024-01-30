@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 
-class AutoStartReceiver : BroadcastReceiver() {
+internal class AutoStartReceiver : BroadcastReceiver() {
     private val defaultScope = CoroutineScope(Default)
     override fun onReceive(context: Context, intent: Intent) {
         if (

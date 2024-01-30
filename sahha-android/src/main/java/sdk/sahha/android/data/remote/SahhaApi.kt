@@ -14,7 +14,7 @@ import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.send.*
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.source.SahhaDemographic
-interface SahhaApi {
+internal interface SahhaApi {
     @POST("oauth/profile/token")
     suspend fun postProfileIdForToken(
         @Body profileId: String

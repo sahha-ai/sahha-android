@@ -1,6 +1,5 @@
 package sdk.sahha.android.data.repository
 
-import android.content.Context
 import android.os.Build
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -12,13 +11,12 @@ import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
-import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
-import sdk.sahha.android.source.SahhaConverterUtility
+import sdk.sahha.android.common.SahhaConverterUtility
 
 private const val tag = "DeviceInfoRepoImpl"
 
-class DeviceInfoRepoImpl(
+internal class DeviceInfoRepoImpl(
     private val configDao: ConfigurationDao,
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger

@@ -7,7 +7,7 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-class StartCollectingSleepDataUseCase @Inject constructor(
+internal class StartCollectingSleepDataUseCase @Inject constructor(
     private val repository: SensorRepo,
     private val permissionManager: PermissionManager
 ) {

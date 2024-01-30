@@ -22,7 +22,7 @@ import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
 @RequiresApi(Build.VERSION_CODES.Q)
-class SleepReceiver : BroadcastReceiver() {
+internal class SleepReceiver : BroadcastReceiver() {
     private val tag = "SleepReceiver"
 
     private var start: Long = 0L

@@ -15,7 +15,7 @@ import java.time.ZonedDateTime
 
 private const val tag = "InsightsPostService"
 
-class InsightsPostService : Service() {
+internal class InsightsPostService : Service() {
     private val scope by lazy { CoroutineScope(Dispatchers.IO) }
     private val insights by lazy { Sahha.sim.insights }
     override fun onBind(intent: Intent?): IBinder? {

@@ -8,7 +8,7 @@ import retrofit2.http.POST
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.error_log.SahhaErrorLog
 
-interface SahhaErrorApi {
+internal interface SahhaErrorApi {
     @POST("error")
     suspend fun postErrorLog(
         @Header(Constants.AUTHORIZATION_HEADER) profileToken: String?,

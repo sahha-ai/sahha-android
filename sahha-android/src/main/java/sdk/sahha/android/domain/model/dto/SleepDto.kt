@@ -9,7 +9,7 @@ import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
 @Entity
-data class SleepDto(
+internal data class SleepDto(
     val durationInMinutes: Int,
     val startDateTime: String,
     val endDateTime: String,
@@ -19,7 +19,7 @@ data class SleepDto(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
 
-fun SleepDto.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = id,
         logType = Constants.DataLogs.SLEEP,

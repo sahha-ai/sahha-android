@@ -12,7 +12,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-class StartPostWorkersUseCase @Inject constructor(
+internal class StartPostWorkersUseCase @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
     private val sensorRepo: SensorRepo,
     private val configRepo: SahhaConfigRepo,

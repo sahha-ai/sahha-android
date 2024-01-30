@@ -15,7 +15,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 
-class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
+internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
     override fun sleepStages(constantInt: Int): String? {
         val sleepStagePrefix = "sleep_stage_"
 

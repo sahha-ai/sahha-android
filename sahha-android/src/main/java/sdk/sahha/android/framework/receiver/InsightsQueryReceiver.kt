@@ -14,7 +14,7 @@ import sdk.sahha.android.source.Sahha
 
 private const val tag = "InsightsQueryReceiver"
 
-class InsightsQueryReceiver : BroadcastReceiver() {
+internal class InsightsQueryReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
     private val nm by lazy { Sahha.di.sahhaNotificationManager }
 

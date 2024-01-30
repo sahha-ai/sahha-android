@@ -22,7 +22,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 @RequiresApi(Build.VERSION_CODES.O)
-class DataCollectionService : Service() {
+internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 

@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 @Deprecated("Now using Android's encryption tool instead. This is only used for migration purposes.")
-data class EncryptUtility(
+internal data class EncryptUtility(
     @PrimaryKey val alias: String,
     val iv: ByteArray,
     val encryptedData: ByteArray

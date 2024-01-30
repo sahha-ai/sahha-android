@@ -9,7 +9,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 // Credit to JosiasSena Github user
-class Decryptor (
+internal class Decryptor (
     private val securityDao: SecurityDao
 ) {
     private val keyStore by lazy { KeyStore.getInstance(ANDROID_KEY_STORE) }

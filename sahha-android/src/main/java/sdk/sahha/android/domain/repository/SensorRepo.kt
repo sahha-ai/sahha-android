@@ -12,7 +12,7 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
 
-interface SensorRepo {
+internal interface SensorRepo {
     fun startSleepWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startSleepPostWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startDevicePostWorker(repeatIntervalMinutes: Long, workerTag: String)

@@ -11,7 +11,7 @@ import kotlin.coroutines.resume
 
 private const val tag = "StepPostWorker"
 
-class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
+internal class StepPostWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {

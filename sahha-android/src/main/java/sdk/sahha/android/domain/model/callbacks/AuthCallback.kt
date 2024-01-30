@@ -1,5 +1,5 @@
 package sdk.sahha.android.domain.model.callbacks
 
-class AuthCallback {
+internal class AuthCallback {
     var authenticate: ((value: String) -> Unit)? = null
 }

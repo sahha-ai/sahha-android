@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 @Entity
-data class DeviceUsage(
+internal data class DeviceUsage(
     @PrimaryKey(autoGenerate = true) val id: Int,
     val createdAtEpoch: Long,
     val isLocked: Boolean,

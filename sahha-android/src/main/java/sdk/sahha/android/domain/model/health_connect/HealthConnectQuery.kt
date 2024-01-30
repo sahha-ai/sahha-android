@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class HealthConnectQuery(
+internal data class HealthConnectQuery(
     @PrimaryKey val id: String,
     val lastSuccessfulTimeStampEpochMillis: Long,
 )

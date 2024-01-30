@@ -5,7 +5,7 @@ import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-class OpenAppSettingsUseCase @Inject constructor(
+internal class OpenAppSettingsUseCase @Inject constructor(
     private val manager: PermissionManager,
 ) {
     operator fun invoke(context: Context) {

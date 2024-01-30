@@ -5,7 +5,7 @@ import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 
-class StartCollectingPhoneScreenLockDataUseCase @Inject constructor (
+internal class StartCollectingPhoneScreenLockDataUseCase @Inject constructor (
     private val manager: ReceiverManager
 ) {
     operator fun invoke(

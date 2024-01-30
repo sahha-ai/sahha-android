@@ -7,7 +7,7 @@ import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
 // Converter for Room Database to handle JSON
-class Converter {
+internal class Converter {
     @TypeConverter
     fun fromJsonString(value: String?): ArrayList<Int?>? {
         val listType: Type = object : TypeToken<ArrayList<Int?>?>() {}.type

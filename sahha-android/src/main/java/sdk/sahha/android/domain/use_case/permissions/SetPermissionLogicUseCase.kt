@@ -4,7 +4,7 @@ import androidx.activity.ComponentActivity
 import sdk.sahha.android.domain.manager.PermissionManager
 import javax.inject.Inject
 
-class SetPermissionLogicUseCase @Inject constructor (
+internal class SetPermissionLogicUseCase @Inject constructor (
     private val repository: PermissionManager
 ) {
     operator fun invoke(activity: ComponentActivity) {

@@ -15,7 +15,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.framework.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.manager.ReceiverManager
 
-class ReceiverManagerImpl(
+internal class ReceiverManagerImpl(
     private val context: Context,
     private val mainScope: CoroutineScope
 ): ReceiverManager {

@@ -5,7 +5,7 @@ import androidx.health.connect.client.records.StepsRecord
 import sdk.sahha.android.domain.internal_enum.InsightPermission
 import sdk.sahha.android.domain.model.insight.InsightData
 
-interface InsightsRepo {
+internal interface InsightsRepo {
     fun getSleepStageSummary(sleepRecords: List<SleepSessionRecord>): HashMap<Int, Double>
     fun getMinutesSlept(
         sleepRecords: List<SleepSessionRecord>,

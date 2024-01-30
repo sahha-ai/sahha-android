@@ -6,7 +6,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 
 @Keep
-data class StepDto(
+internal data class StepDto(
     val dataType: String,
     val value: Int,
     val unit: String = Constants.DataUnits.COUNT,

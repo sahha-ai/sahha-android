@@ -95,7 +95,7 @@ import kotlin.reflect.KClass
 
 private val tag = "HealthConnectRepoImpl"
 
-class HealthConnectRepoImpl @Inject constructor(
+internal class HealthConnectRepoImpl @Inject constructor(
     private val context: Context,
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,

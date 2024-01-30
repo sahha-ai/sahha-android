@@ -6,7 +6,7 @@ import sdk.sahha.android.source.SahhaDemographic
 
 @Keep
 @Entity
-data class DemographicDto(
+internal data class DemographicDto(
     val age: Int?,
     val gender: String?,
     val country: String?,
@@ -22,7 +22,7 @@ data class DemographicDto(
     val birthDate: String?
 )
 
-fun DemographicDto.toSahhaDemographic(): SahhaDemographic {
+internal fun DemographicDto.toSahhaDemographic(): SahhaDemographic {
     return SahhaDemographic(
         age,
         gender,

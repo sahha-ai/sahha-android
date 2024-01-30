@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.repository.SensorRepo
 import javax.inject.Inject
 
-class PostSleepDataUseCase @Inject constructor(
+internal class PostSleepDataUseCase @Inject constructor(
     private val repository: SensorRepo,
 ) {
     suspend operator fun invoke(

@@ -4,7 +4,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import sdk.sahha.android.R
 
-interface SahhaNotificationManager {
+internal interface SahhaNotificationManager {
     var notification: Notification
     fun setSahhaNotification(_notification: Notification)
     fun startDataCollectionService(

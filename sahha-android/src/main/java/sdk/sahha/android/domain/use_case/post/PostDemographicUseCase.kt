@@ -4,7 +4,7 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.source.SahhaDemographic
 import javax.inject.Inject
 
-class PostDemographicUseCase @Inject constructor (
+internal class PostDemographicUseCase @Inject constructor (
     private val repository: UserDataRepo
 ) {
     suspend operator fun invoke(

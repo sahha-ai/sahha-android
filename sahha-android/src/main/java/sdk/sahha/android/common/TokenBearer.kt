@@ -1,6 +1,6 @@
 package sdk.sahha.android.common
 
-object TokenBearer {
+internal object TokenBearer {
     operator fun invoke(token: String): String {
         return "Profile $token"
     }
