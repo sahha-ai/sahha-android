@@ -17,6 +17,7 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -44,13 +45,13 @@ import kotlin.coroutines.resume
 private const val tag = "SensorInteractionManager"
 
 internal class SensorInteractionManager @Inject constructor(
-    private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
     private val configRepo: SahhaConfigRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
+    private val alarms: SahhaAlarmManager,
     private val sensorManager: SensorManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
@@ -89,6 +90,12 @@ internal class SensorInteractionManager @Inject constructor(
                 postAllSensorDataUseCase(callback)
             }
         }
+    }
+
+    internal fun stopAllBackgroundTasks(context: Context) {
+        alarms.stopAllAlarms(context)
+        repository.stopAllWorkers()
+        unregisterExistingReceiversAndListeners(context.applicationContext)
     }
 
     internal fun unregisterExistingReceiversAndListeners(context: Context) {

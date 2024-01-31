@@ -8,4 +8,8 @@ internal object ResponseCode {
     fun isUnauthorized(code: Int): Boolean {
         return code == 401
     }
+
+    fun accountRemoved(code: Int): Boolean {
+        return code == 410
+    }
 }

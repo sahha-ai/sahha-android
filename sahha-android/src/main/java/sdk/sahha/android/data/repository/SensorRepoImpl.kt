@@ -448,16 +448,25 @@ internal class SensorRepoImpl @Inject constructor(
         callback?.invoke(null, jsonString)
     }
 
-    private suspend fun handleResponse(
+    internal suspend fun handleResponse(
         response: Response<ResponseBody>,
         retryLogic: suspend (() -> Response<ResponseBody>),
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?,
         successfulLogic: (suspend () -> Unit)? = null
     ) {
         try {
-            if (ResponseCode.isUnauthorized(response.code())) {
+            val code = response.code()
+
+            if (ResponseCode.accountRemoved(code)) {
+                Log.w(tag, "Account does not exist, stopping all tasks")
+                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
+                Sahha.sim.sensor.stopAllBackgroundTasks(context)
+                return
+            }
+            
+            if (ResponseCode.isUnauthorized(code)) {
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
-                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                SahhaResponseHandler.checkTokenExpired(code) {
                     val retryResponse = retryLogic()
                     handleResponse(
                         retryResponse,
@@ -478,7 +487,7 @@ internal class SensorRepoImpl @Inject constructor(
                 return
             }
 
-            if (ResponseCode.isSuccessful(response.code())) {
+            if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.also {
                     it(null, true)
@@ -488,7 +497,7 @@ internal class SensorRepoImpl @Inject constructor(
 
             callback?.also {
                 it(
-                    "${response.code()}: ${response.message()}",
+                    "${code}: ${response.message()}",
                     false
                 )
             }
