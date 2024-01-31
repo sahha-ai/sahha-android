@@ -2,12 +2,6 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PreSahhaConfigureTest">
-        <State />
-      </entry>
-      <entry key="PreSahhaConfigureTest (1)">
-        <State />
-      </entry>
       <entry key="Tests in 'sdk.sahha.android.suite'">
         <State />
       </entry>
