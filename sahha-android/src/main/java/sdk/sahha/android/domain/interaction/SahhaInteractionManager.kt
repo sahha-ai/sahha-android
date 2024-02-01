@@ -144,9 +144,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             defaultScope.launch {
-                alarms.stopAllAlarms(context)
-                sensorRepo.stopAllWorkers()
-                sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
+                sensor.stopAllBackgroundTasks(context)
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
@@ -171,9 +169,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             defaultScope.launch {
-                alarms.stopAllAlarms(context)
-                sensorRepo.stopAllWorkers()
-                sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
+                sensor.stopAllBackgroundTasks(context)
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },

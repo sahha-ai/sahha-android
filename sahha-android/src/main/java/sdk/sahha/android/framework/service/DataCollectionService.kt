@@ -29,6 +29,8 @@ internal class DataCollectionService : Service() {
     private val scope by lazy { CoroutineScope(Dispatchers.Default) }
     private val sensors by lazy { Sahha.sim.sensor }
 
+    private var killswitched = false
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -41,6 +43,7 @@ internal class DataCollectionService : Service() {
 
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
+                checkAndKillService(intent)
                 startTimeZoneChangedReceiver()
                 startDataCollectors(this@DataCollectionService)
 
@@ -55,11 +58,28 @@ internal class DataCollectionService : Service() {
     }
 
     override fun onDestroy() {
-//        if (scope.isActive) scope.cancel()
         sensors.unregisterExistingReceiversAndListeners(this)
+
+        if (killswitched) {
+            println("Turning off main service")
+            return
+        }
+
         startForegroundService(
-            Intent(this@DataCollectionService.applicationContext, DataCollectionService::class.java)
+            Intent(
+                this@DataCollectionService.applicationContext,
+                DataCollectionService::class.java
+            )
         )
+    }
+
+    private fun checkAndKillService(intent: Intent?) {
+        intent?.also {
+            if (it.action == Constants.ACTION_KILL_SERVICE) {
+                killswitched = true
+                stopService()
+            }
+        }
     }
 
     private fun checkAndRestartService(intent: Intent?) {

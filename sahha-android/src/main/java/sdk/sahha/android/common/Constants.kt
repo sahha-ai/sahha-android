@@ -5,6 +5,7 @@ internal object Constants {
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
+    const val ACTION_KILL_SERVICE = "custom.intent.action.KILL_SERVICE"
 
     // Configs
     const val TRANSFORMATION = "AES/GCM/NoPadding"
