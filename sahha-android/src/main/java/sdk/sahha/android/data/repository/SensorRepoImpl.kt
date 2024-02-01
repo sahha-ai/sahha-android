@@ -459,8 +459,12 @@ internal class SensorRepoImpl @Inject constructor(
 
             if (ResponseCode.accountRemoved(code)) {
                 Log.w(tag, "Account does not exist, stopping all tasks")
-                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
+                Sahha.sim.auth.deauthenticate { error, successful ->
+                    error?.also { Log.w(tag, it) }
+                    if (successful) Log.w(tag, "Successfully de-authenticated")
+                }
                 Sahha.sim.sensor.stopAllBackgroundTasks(context)
+                Sahha.sim.sensor.killMainService(context)
                 return
             }
             

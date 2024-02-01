@@ -828,6 +828,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 Log.w(tag, "Account does not exist, stopping all tasks")
                 Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
                 Sahha.sim.sensor.stopAllBackgroundTasks(context)
+                Sahha.sim.sensor.killMainService(context)
                 return
             }
 

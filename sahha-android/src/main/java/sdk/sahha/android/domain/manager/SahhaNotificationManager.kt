@@ -2,6 +2,8 @@ package sdk.sahha.android.domain.manager
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
 import sdk.sahha.android.R
 
 internal interface SahhaNotificationManager {
@@ -32,4 +34,9 @@ internal interface SahhaNotificationManager {
     ): Notification
 
     fun <T> startForegroundService(serviceClass: Class<T>)
+    fun <T> startForegroundService(
+        context: Context,
+        serviceClass: Class<T>,
+        intent: Intent = Intent(context.applicationContext, serviceClass)
+    )
 }
