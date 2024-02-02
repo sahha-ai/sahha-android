@@ -499,7 +499,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     SleepSessionRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
@@ -547,7 +547,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     HeartRateRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
@@ -596,7 +596,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     StepsRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
