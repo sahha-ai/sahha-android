@@ -1,10 +1,10 @@
 package sdk.sahha.android.common
 
+import android.icu.util.ULocale
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.health.connect.client.time.TimeRangeFilter
-import sdk.sahha.android.common.Constants.ONE_DAY_IN_MILLIS
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
@@ -25,14 +25,14 @@ internal class SahhaTimeManager {
     fun nowInISO(): String {
         val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
         val nowInISO = now.format(dateTimeFormatter)
-        return correctFormatting(nowInISO)
+        return (nowInISO)
     }
 
     fun last24HoursInISO(): String {
         val last24Hours =
             ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone().minusHours(24)
         val last24HoursISO = last24Hours.format(dateTimeFormatter)
-        return correctFormatting(last24HoursISO)
+        return (last24HoursISO)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -49,25 +49,19 @@ internal class SahhaTimeManager {
         val iso =
             localDateTime.atZone(ZoneId.systemDefault())
                 .format(dateTimeFormatter)
-        return correctFormatting(iso)
+        return (iso)
     }
 
+    fun localDateTimeToISO(localDateTime: LocalDateTime, zoneId: ZoneId? = ZoneId.systemDefault()): String {
+        val iso =
+            localDateTime.atZone(zoneId)
+                .format(dateTimeFormatter)
+        return (iso)
+    }
+
+    @Deprecated("Date is outdated and formatting from it produces incorrect format")
     fun dateToISO(date: Date): String {
-        return correctFormatting(simpleDateFormat.format(date))
-    }
-
-    // Extra check for when there was a duplicate 'z' bug
-    private fun correctFormatting(isoTime: String): String {
-        if (isoTime[isoTime.lastIndex] == 'Z' && isoTime[isoTime.lastIndex - 1] == 'Z') {
-            return isoTime.substring(0, isoTime.length - 1)
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            if (isoTime[isoTime.lastIndex - 2] != ':')
-                return StringBuilder(isoTime).insert(isoTime.lastIndex - 1, ':').toString()
-        }
-
-        return isoTime
+        return (simpleDateFormat.format(date))
     }
 
     fun nowInEpoch(): Long {
@@ -95,8 +89,7 @@ internal class SahhaTimeManager {
         return zdt.format(dateTimeFormatter)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun ISOToDate(iso: String): ZonedDateTime {
+    fun ISOToZonedDateTime(iso: String): ZonedDateTime {
         return ZonedDateTime.parse(iso, dateTimeFormatter)
             .withFixedOffsetZone()
     }
