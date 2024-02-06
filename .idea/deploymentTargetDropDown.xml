@@ -2,6 +2,9 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="InsightsTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -10,12 +13,12 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_6_API_34.avd" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_28.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-01-25T21:46:25.916619Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-02-04T22:33:39.077116Z" />
         </State>
       </entry>
       <entry key="cultureConversion()">
@@ -34,11 +37,24 @@
           <timeTargetWasSelectedWithDropDown value="2024-02-01T23:02:29.317275Z" />
         </State>
       </entry>
-      <entry key="killswitch()">
+      <entry key="insights()">
         <State />
       </entry>
-      <entry key="killswitch() (1)">
-        <State />
+      <entry key="insightsWeek()">
+        <State>
+          <runningDeviceTargetSelectedWithDropDown>
+            <Target>
+              <type value="RUNNING_DEVICE_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="SERIAL_NUMBER" />
+                  <value value="36131JEHN06350" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-02-04T23:42:16.456671Z" />
+        </State>
       </entry>
     </value>
   </component>
