@@ -78,6 +78,13 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val deviceOnly = runBlocking {
+            val sensors = Sahha.di.sahhaConfigRepo.getConfig().sensorArray
+
+            sensors.contains(SahhaSensor.device.ordinal)
+                    && sensors.count() == 1
+        }
+
         val sharedPrefs = getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE)
         if (!sharedPrefs.contains(RATIONALE_KEY)) {
             sendBroadcast(Intent(PERMISSION_PENDING))
@@ -90,6 +97,8 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
+            } else if(deviceOnly) {
+                sendBroadcast(Intent(PERMISSION_ENABLED))
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
             }
@@ -205,11 +214,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-        if (deviceOnly) {
-            callback?.invoke(SahhaSensorStatus.pending)
-            return
-        }
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return
@@ -236,7 +240,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         if (deviceOnly) {
-            callback?.invoke(SahhaSensorStatus.pending)
+            callback?.invoke(SahhaSensorStatus.enabled)
             return
         }
 

@@ -51,16 +51,6 @@ internal class PermissionInteractionManager @Inject constructor(
                 return@launch
             }
 
-            if (onlyDeviceEnabled) {
-                startTasks(
-                    context,
-                    Sahha.di.sahhaInteractionManager,
-                    InternalSensorStatus.pending,
-                    callback
-                )
-                return@launch
-            }
-
             val nativeStatus = awaitNativeSensorRequest(context)
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
 
