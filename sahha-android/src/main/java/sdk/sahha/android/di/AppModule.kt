@@ -170,7 +170,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return try {
             createEncryptedSharedPreferences(context)
         } catch (e: Exception) {
-            Log.e(tag, e.message, e)
+            Log.w(tag, e.message, e)
             context.deleteSharedPreferences("encrypted_prefs")
             createEncryptedSharedPreferences(context)
         }

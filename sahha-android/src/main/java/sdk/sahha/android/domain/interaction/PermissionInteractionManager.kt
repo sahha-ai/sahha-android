@@ -3,6 +3,8 @@ package sdk.sahha.android.domain.interaction
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
@@ -12,6 +14,7 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -36,6 +39,12 @@ internal class PermissionInteractionManager @Inject constructor(
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         defaultScope.launch {
+            val sensorSetEmpty = configRepo.getConfig().sensorArray.isEmpty()
+            if (sensorSetEmpty) {
+                callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
+                return@launch
+            }
+
             val nativeStatus = awaitNativeSensorRequest(context)
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
 
@@ -160,7 +169,6 @@ internal class PermissionInteractionManager @Inject constructor(
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
         val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
-        val pending = nativePending || healthConnectStatus == SahhaSensorStatus.pending
         val disabled = nativeDisabled && healthConnectDisabled
         val partialNative =
             nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
@@ -168,13 +176,13 @@ internal class PermissionInteractionManager @Inject constructor(
         val onlyNativeAvailableAndEnabled = nativeEnabled && !manager.shouldUseHealthConnect()
 
         return when {
-            pending -> InternalSensorStatus.pending
+            nativePending -> InternalSensorStatus.pending
             partialNative -> InternalSensorStatus.partial
             onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
             requested -> InternalSensorStatus.enabled
             disabled -> InternalSensorStatus.disabled
             nativeUnavailable -> InternalSensorStatus.unavailable
-            else -> InternalSensorStatus.unavailable
+            else -> InternalSensorStatus.pending
         }
     }
 

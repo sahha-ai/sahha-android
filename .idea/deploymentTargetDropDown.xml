@@ -2,6 +2,9 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="InsightsTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -33,12 +36,6 @@
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-02-01T23:02:29.317275Z" />
         </State>
-      </entry>
-      <entry key="killswitch()">
-        <State />
-      </entry>
-      <entry key="killswitch() (1)">
-        <State />
       </entry>
     </value>
   </component>

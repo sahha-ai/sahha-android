@@ -29,6 +29,7 @@ internal object SahhaErrors {
     const val failedToPostAllData = "Error: Failed to post all data, please try again"
     const val noInsightsData = "Error: There were no insights"
     const val noHealthConnectApp = "Error: The Health Connect app was not found"
+    const val dataTypesUnspecified = "Error: Health data types not specified"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."
