@@ -7,6 +7,7 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
@@ -47,9 +48,7 @@ object Sahha {
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
-        di.defaultScope.launch {
-            sim.configure(application, sahhaSettings, callback)
-        }
+        sim.configure(application, sahhaSettings, callback)
     }
 
     fun authenticate(
