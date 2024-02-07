@@ -48,7 +48,9 @@ object Sahha {
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
-        sim.configure(application, sahhaSettings, callback)
+        di.defaultScope.launch {
+            sim.configure(application, sahhaSettings, callback)
+        }
     }
 
     fun authenticate(

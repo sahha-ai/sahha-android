@@ -52,21 +52,20 @@ internal class SahhaInteractionManager @Inject constructor(
     private val sensorRepo: SensorRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
-    internal fun configure(
+    internal suspend fun configure(
         application: Application,
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         try {
-            runBlocking { saveConfiguration(sahhaSettings) }
-//            auth.migrateDataIfNeeded { error, success ->
-//                if (!success) {
-//                    callback?.invoke(error, false)
-//                    return@migrateDataIfNeeded
-//                }
-            continueConfigurationAsync(application, sahhaSettings, callback)
-
-//            }
+            saveConfiguration(sahhaSettings)
+            auth.migrateDataIfNeeded { error, success ->
+                if (!success) {
+                    callback?.invoke(error, false)
+                    return@migrateDataIfNeeded
+                }
+                continueConfigurationAsync(application, sahhaSettings, callback)
+            }
         } catch (e: Exception) {
             Log.w(tag, e.message, e)
             continueConfigurationAsync(application, sahhaSettings, callback)

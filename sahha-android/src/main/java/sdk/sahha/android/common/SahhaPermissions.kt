@@ -13,7 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.health.connect.client.HealthConnectClient
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
@@ -100,6 +102,12 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
 internal object SahhaPermissions : BroadcastReceiver() {
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
     private val mainScope by lazy { Sahha.di.mainScope }
+    private val deviceOnly get() = runBlocking {
+        val sensors = Sahha.di.sahhaConfigRepo.getConfig().sensorArray
+
+        sensors.contains(SahhaSensor.device.ordinal)
+                && sensors.count() == 1
+    }
 
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 
@@ -197,6 +205,11 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
+        if (deviceOnly) {
+            callback?.invoke(SahhaSensorStatus.pending)
+            return
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return
@@ -222,6 +235,11 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
+        if (deviceOnly) {
+            callback?.invoke(SahhaSensorStatus.pending)
+            return
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return

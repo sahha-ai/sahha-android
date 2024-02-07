@@ -32,6 +32,7 @@ internal class PermissionInteractionManager @Inject constructor(
 ) {
     private val onlyDeviceEnabled get() = runBlocking {
         val sensors = configRepo.getConfig().sensorArray
+
         sensors.contains(SahhaSensor.device.ordinal)
                 && sensors.count() == 1
     }
@@ -51,7 +52,12 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             if (onlyDeviceEnabled) {
-                callback(null, SahhaSensorStatus.pending)
+                startTasks(
+                    context,
+                    Sahha.di.sahhaInteractionManager,
+                    InternalSensorStatus.pending,
+                    callback
+                )
                 return@launch
             }
 
@@ -102,7 +108,7 @@ internal class PermissionInteractionManager @Inject constructor(
                     )
 
                     else -> {
-                        if (onlyDeviceEnabled) startNativeTasks(
+                        if (onlyDeviceEnabled && status == InternalSensorStatus.pending) startNativeTasks(
                             context,
                             sim,
                             status.toSahhaSensorStatus(),
@@ -139,7 +145,7 @@ internal class PermissionInteractionManager @Inject constructor(
                     )
 
                     else -> {
-                        if (onlyDeviceEnabled) startNativeTasks(
+                        if (onlyDeviceEnabled && status == InternalSensorStatus.pending) startNativeTasks(
                             context,
                             sim,
                             status.toSahhaSensorStatus(),
@@ -193,7 +199,6 @@ internal class PermissionInteractionManager @Inject constructor(
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
         val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
-        val pending = nativePending
         val disabled = nativeDisabled && healthConnectDisabled
         val partialNative =
             nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
@@ -201,7 +206,7 @@ internal class PermissionInteractionManager @Inject constructor(
         val onlyNativeAvailableAndEnabled = nativeEnabled && !manager.shouldUseHealthConnect()
 
         return when {
-            pending -> InternalSensorStatus.pending
+            nativePending -> InternalSensorStatus.pending
             partialNative -> InternalSensorStatus.partial
             onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
             requested -> InternalSensorStatus.enabled
@@ -287,7 +292,6 @@ internal class PermissionInteractionManager @Inject constructor(
     ) {
         val nativeStatus = awaitNativeSensorStatus(context)
         val healthConnectStatus = awaitHealthConnectSensorStatus(context)
-        println("$nativeStatus, $healthConnectStatus")
         val status = processStatuses(nativeStatus, healthConnectStatus)
         stopWorkers()
         startTasks(
