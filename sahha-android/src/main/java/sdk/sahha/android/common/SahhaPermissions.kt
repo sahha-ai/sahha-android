@@ -78,13 +78,6 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val deviceOnly = runBlocking {
-            val sensors = Sahha.di.sahhaConfigRepo.getConfig().sensorArray
-
-            sensors.contains(SahhaSensor.device.ordinal)
-                    && sensors.count() == 1
-        }
-
         val sharedPrefs = getSharedPreferences(PREFERENCE_KEY, Context.MODE_PRIVATE)
         if (!sharedPrefs.contains(RATIONALE_KEY)) {
             sendBroadcast(Intent(PERMISSION_PENDING))
@@ -97,7 +90,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
-            } else if(deviceOnly) {
+            } else if(Session.onlyDeviceSensorEnabled) {
                 sendBroadcast(Intent(PERMISSION_ENABLED))
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
@@ -111,12 +104,6 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
 internal object SahhaPermissions : BroadcastReceiver() {
     private val healthConnectClient by lazy { Sahha.di.healthConnectClient }
     private val mainScope by lazy { Sahha.di.mainScope }
-    private val deviceOnly get() = runBlocking {
-        val sensors = Sahha.di.sahhaConfigRepo.getConfig().sensorArray
-
-        sensors.contains(SahhaSensor.device.ordinal)
-                && sensors.count() == 1
-    }
 
     var permissionCallback: ((Enum<SahhaSensorStatus>) -> Unit)? = null
 
@@ -239,7 +226,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-        if (deviceOnly) {
+        if (Session.onlyDeviceSensorEnabled) {
             callback?.invoke(SahhaSensorStatus.enabled)
             return
         }

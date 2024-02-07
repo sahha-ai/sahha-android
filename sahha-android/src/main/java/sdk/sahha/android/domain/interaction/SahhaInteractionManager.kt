@@ -15,6 +15,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
@@ -59,6 +60,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             saveConfiguration(sahhaSettings)
+            cacheConfiguration(sahhaSettings)
             auth.migrateDataIfNeeded { error, success ->
                 if (!success) {
                     callback?.invoke(error, false)
@@ -70,6 +72,10 @@ internal class SahhaInteractionManager @Inject constructor(
             Log.w(tag, e.message, e)
             continueConfigurationAsync(application, sahhaSettings, callback)
         }
+    }
+
+    private fun cacheConfiguration(sahhaSettings: SahhaSettings) {
+        Session.settings = sahhaSettings
     }
 
     private fun continueConfigurationAsync(

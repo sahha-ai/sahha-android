@@ -30,12 +30,6 @@ internal class PermissionInteractionManager @Inject constructor(
     private val sensorRepo: SensorRepo,
     @DefaultScope private val defaultScope: CoroutineScope,
 ) {
-    private val onlyDeviceEnabled get() = runBlocking {
-        val sensors = configRepo.getConfig().sensorArray
-
-        sensors.contains(SahhaSensor.device.ordinal)
-                && sensors.count() == 1
-    }
     fun openAppSettings(context: Context) {
         openAppSettingsUseCase(context)
     }
@@ -97,14 +91,7 @@ internal class PermissionInteractionManager @Inject constructor(
                         SahhaSensorStatus.unavailable
                     )
 
-                    else -> {
-                        if (onlyDeviceEnabled && status == InternalSensorStatus.pending) startNativeTasks(
-                            context,
-                            sim,
-                            status.toSahhaSensorStatus(),
-                            callback
-                        ) else callback?.invoke(null, SahhaSensorStatus.pending)
-                    }
+                    else -> callback?.invoke(null, SahhaSensorStatus.pending)
                 }
             }
 
@@ -134,14 +121,7 @@ internal class PermissionInteractionManager @Inject constructor(
                         SahhaSensorStatus.unavailable
                     )
 
-                    else -> {
-                        if (onlyDeviceEnabled && status == InternalSensorStatus.pending) startNativeTasks(
-                            context,
-                            sim,
-                            status.toSahhaSensorStatus(),
-                            callback
-                        ) else callback?.invoke(null, SahhaSensorStatus.pending)
-                    }
+                    else -> callback?.invoke(null, SahhaSensorStatus.pending)
                 }
             }
         }

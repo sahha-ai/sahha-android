@@ -7,7 +7,6 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
