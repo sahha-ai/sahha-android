@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
+import android.content.Intent
 import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +18,7 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -34,8 +36,8 @@ import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
+import sdk.sahha.android.framework.service.DataCollectionService
 import sdk.sahha.android.framework.service.HealthConnectPostService
-import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
@@ -44,13 +46,13 @@ import kotlin.coroutines.resume
 private const val tag = "SensorInteractionManager"
 
 internal class SensorInteractionManager @Inject constructor(
-    private val context: Context,
     @IoScope private val ioScope: CoroutineScope,
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
     private val configRepo: SahhaConfigRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
+    private val alarms: SahhaAlarmManager,
     private val sensorManager: SensorManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
@@ -89,6 +91,22 @@ internal class SensorInteractionManager @Inject constructor(
                 postAllSensorDataUseCase(callback)
             }
         }
+    }
+
+    internal fun stopAllBackgroundTasks(context: Context) {
+        alarms.stopAllAlarms(context)
+        repository.stopAllWorkers()
+        unregisterExistingReceiversAndListeners(context.applicationContext)
+    }
+
+    internal fun killMainService(context: Context) {
+        notificationManager.startForegroundService(
+            context,
+            DataCollectionService::class.java,
+            Intent(context.applicationContext, DataCollectionService::class.java).setAction(
+                Constants.ACTION_KILL_SERVICE
+            )
+        )
     }
 
     internal fun unregisterExistingReceiversAndListeners(context: Context) {

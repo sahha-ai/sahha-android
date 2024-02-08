@@ -5,14 +5,17 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
@@ -55,29 +58,49 @@ internal class SahhaInteractionManager @Inject constructor(
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        saveConfiguration(sahhaSettings)
-
-        auth.migrateDataIfNeeded { error, success ->
-            if (!success) {
-                callback?.invoke(error, false)
-                return@migrateDataIfNeeded
+        try {
+            saveConfiguration(sahhaSettings)
+            cacheConfiguration(sahhaSettings)
+            auth.migrateDataIfNeeded { error, success ->
+                if (!success) {
+                    callback?.invoke(error, false)
+                    return@migrateDataIfNeeded
+                }
+                continueConfigurationAsync(application, sahhaSettings, callback)
             }
-
-            defaultScope.launch {
-                listOf(
-                    async { saveNotificationConfig(sahhaSettings.notificationSettings) },
-                ).joinAll()
-
-                awaitProcessAndPutDeviceInfo(application)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                    permission.manager.launchPermissionActivity(
-                        application,
-                        SahhaNotificationPermissionActivity::class.java,
-                    )
-
-                permission.startHcOrNativeDataCollection(application, callback)
-            }
+        } catch (e: Exception) {
+            Log.w(tag, e.message, e)
+            continueConfigurationAsync(application, sahhaSettings, callback)
         }
+    }
+
+    private fun cacheConfiguration(sahhaSettings: SahhaSettings) {
+        Session.settings = sahhaSettings
+    }
+
+    private fun continueConfigurationAsync(
+        application: Application,
+        sahhaSettings: SahhaSettings,
+        callback: ((error: String?, success: Boolean) -> Unit)?
+    ) {
+        defaultScope.launch {
+            listOf(
+                async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+            ).joinAll()
+
+            awaitProcessAndPutDeviceInfo(application)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                requestNotificationPermission(application)
+
+            permission.startHcOrNativeDataCollection(application, callback)
+        }
+    }
+
+    private fun requestNotificationPermission(context: Context) {
+        permission.manager.launchPermissionActivity(
+            context,
+            SahhaNotificationPermissionActivity::class.java,
+        )
     }
 
     fun scheduleInsightsAlarm(
@@ -120,15 +143,6 @@ internal class SahhaInteractionManager @Inject constructor(
         )
     }
 
-    internal fun requestNotificationPermission(
-        context: Context
-    ) = mainScope.launch {
-        permission.manager.launchPermissionActivity(
-            context,
-            SahhaNotificationPermissionActivity::class.java
-        )
-    }
-
     private suspend fun awaitProcessAndPutDeviceInfo(context: Context) =
         suspendCancellableCoroutine { cont ->
             defaultScope.launch {
@@ -144,9 +158,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             defaultScope.launch {
-                alarms.stopAllAlarms(context)
-                sensorRepo.stopAllWorkers()
-                sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
+                sensor.stopAllBackgroundTasks(context)
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
@@ -171,9 +183,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             defaultScope.launch {
-                alarms.stopAllAlarms(context)
-                sensorRepo.stopAllWorkers()
-                sensor.unregisterExistingReceiversAndListeners(context.applicationContext)
+                sensor.stopAllBackgroundTasks(context)
                 listOf(
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },

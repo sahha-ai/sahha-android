@@ -3,8 +3,6 @@ package sdk.sahha.android.data.repository
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.currentRecomposeScope
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
@@ -34,10 +32,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.supervisorScope
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.Constants
@@ -78,6 +73,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -503,7 +499,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     SleepSessionRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
@@ -551,7 +547,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     HeartRateRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
@@ -600,7 +596,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 val last = chunk.last()
                 saveLastSuccessfulQuery(
                     StepsRecord::class,
-                    sahhaTimeManager.ISOToDate(last.endDateTime)
+                    sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
             callback
@@ -826,11 +822,21 @@ internal class HealthConnectRepoImpl @Inject constructor(
         successfulLogic: (suspend () -> Unit)? = null
     ) {
         try {
-            if (ResponseCode.isUnauthorized(response.code())) {
+            val code = response.code()
+
+            if (ResponseCode.accountRemoved(code)) {
+                Log.w(tag, "Account does not exist, stopping all tasks")
+                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
+                Sahha.sim.sensor.stopAllBackgroundTasks(context)
+                Sahha.sim.sensor.killMainService(context)
+                return
+            }
+
+            if (ResponseCode.isUnauthorized(code)) {
                 if (Session.tokenRefreshAttempted) return
 
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
-                SahhaResponseHandler.checkTokenExpired(response.code()) {
+                SahhaResponseHandler.checkTokenExpired(code) {
                     val retryResponse = retryLogic()
                     handleResponse(
                         retryResponse,
@@ -843,7 +849,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 return
             }
 
-            if (ResponseCode.isSuccessful(response.code())) {
+            if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.also {
                     it(null, true)
@@ -853,7 +859,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
             callback?.also {
                 it(
-                    "${response.code()}: ${response.message()}",
+                    "${code}: ${response.message()}",
                     false
                 )
             }
