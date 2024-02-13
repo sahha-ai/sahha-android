@@ -95,8 +95,8 @@ internal class InsightsInteractionManager @Inject constructor(
                     LocalTime.of(Constants.ALARM_12AM, 0)
                 ),
                 LocalDateTime.of(
-                    now.toLocalDate(),
-                    LocalTime.of(Constants.ALARM_12AM, 0)
+                    now.minusDays(1).toLocalDate(),
+                    LocalTime.of(23, 59, 59, 99)
                 )
             )
         }
