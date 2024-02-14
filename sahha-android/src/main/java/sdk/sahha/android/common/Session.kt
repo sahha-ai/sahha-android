@@ -18,7 +18,7 @@ internal object Session {
 
     internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
     internal var settings: SahhaSettings? = null
-    internal val onlyDeviceSensorEnabled by lazy {
+    internal val onlyDeviceSensorProvided by lazy {
         settings?.sensors?.contains(SahhaSensor.device) ?: false
                 && settings?.sensors?.count() == 1
     }
