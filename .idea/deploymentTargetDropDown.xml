@@ -37,6 +37,25 @@
           <timeTargetWasSelectedWithDropDown value="2024-02-14T01:28:17.075360Z" />
         </State>
       </entry>
+      <entry key="insights()">
+        <State />
+      </entry>
+      <entry key="insightsWeek()">
+        <State>
+          <runningDeviceTargetSelectedWithDropDown>
+            <Target>
+              <type value="RUNNING_DEVICE_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="SERIAL_NUMBER" />
+                  <value value="36131JEHN06350" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-02-04T23:42:16.456671Z" />
+        </State>
+      </entry>
     </value>
   </component>
 </project>

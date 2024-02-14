@@ -132,12 +132,17 @@ internal class InsightsRepoImpl @Inject constructor(
     }
   
     override fun getStepCount(stepsRecords: List<StepsRecord>): Double {
-        var count = 0.0
-        stepsRecords.forEach {
-            count += it.count
+        val packageToSteps = mutableMapOf<String, Long>()
+
+        for (record in stepsRecords) {
+            val count = record.count
+            val origin = record.metadata.dataOrigin.packageName
+            packageToSteps[origin] = (packageToSteps[origin] ?: 0) + count
         }
 
-        return count
+        val highestCount = packageToSteps.values.maxOrNull()
+
+        return highestCount?.toDouble() ?: 0.0
     }
 
     override suspend fun postInsights(
