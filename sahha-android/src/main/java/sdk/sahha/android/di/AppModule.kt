@@ -34,6 +34,7 @@ import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
+import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
@@ -371,6 +372,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
         configRepo: SahhaConfigRepo,
+        manualPermissionsDao: ManualPermissionsDao,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
         @MainScope mainScope: CoroutineScope,
@@ -378,6 +380,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return PermissionManagerImpl(
             mainScope,
             configRepo,
+            manualPermissionsDao,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger
@@ -424,6 +427,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideHealthConfigDao(db: SahhaDatabase): HealthConnectConfigDao {
         return db.healthConnectConfigDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideManualPermissionsDao(db: SahhaDatabase): ManualPermissionsDao {
+        return db.manualPermissionsDao()
     }
 
     @DefaultScope
