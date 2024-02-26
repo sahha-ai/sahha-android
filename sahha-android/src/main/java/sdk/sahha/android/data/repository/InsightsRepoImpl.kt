@@ -38,18 +38,24 @@ internal class InsightsRepoImpl @Inject constructor(
             session.stages.forEach { stage ->
                 val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
                 summaryHashMap[stage.stage] =
-                    summaryHashMap[stage.stage]?.let { it + duration }?.toDouble() ?: duration.toDouble()
+                    summaryHashMap[stage.stage]?.let { it + duration }?.toDouble()
+                        ?: duration.toDouble()
             }
         }
         return summaryHashMap
     }
 
     private fun getHcPermission(insightPermission: InsightPermission): String {
-        return when(insightPermission) {
+        return when (insightPermission) {
             InsightPermission.sleep -> HealthPermission.getReadPermission(SleepSessionRecord::class)
             InsightPermission.steps -> HealthPermission.getReadPermission(StepsRecord::class)
-            InsightPermission.total_energy -> HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
-            InsightPermission.active_energy -> HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
+            InsightPermission.total_energy -> HealthPermission.getReadPermission(
+                TotalCaloriesBurnedRecord::class
+            )
+
+            InsightPermission.active_energy -> HealthPermission.getReadPermission(
+                ActiveCaloriesBurnedRecord::class
+            )
         }
     }
 
@@ -130,7 +136,7 @@ internal class InsightsRepoImpl @Inject constructor(
     override fun getMinutesInSleepStage(summary: HashMap<Int, Double>, sleepStage: Int): Double {
         return summary[sleepStage]?.toMinutes() ?: 0.0
     }
-  
+
     override fun getStepCount(stepsRecords: List<StepsRecord>): Double {
         val packageToSteps = mutableMapOf<String, Long>()
 
@@ -166,7 +172,7 @@ internal class InsightsRepoImpl @Inject constructor(
                                     true,
                                 ) { error, successful ->
                                     callback(error, successful)
-                                    cont.resume(Unit)
+                                    if (cont.isActive) cont.resume(Unit)
                                 }
                             }
                         }

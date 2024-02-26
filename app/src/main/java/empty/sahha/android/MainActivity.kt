@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
 //                shortDescription = "This mainly handles native steps and screen locks"
             ),
 //            sensors = setOf(SahhaSensor.device)
-            sensors = setOf()
+//            sensors = setOf()
         )
 
         Sahha.configure(
