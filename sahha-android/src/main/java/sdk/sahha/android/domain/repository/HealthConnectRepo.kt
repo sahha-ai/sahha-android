@@ -150,4 +150,7 @@ internal interface HealthConnectRepo {
         totalCalBurnedData: List<AggregationResultGroupedByDuration>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
+
+    suspend fun saveCustomSuccessfulQuery(customId: String, timeStamp: ZonedDateTime)
+    suspend fun getLastCustomQuery(customId: String): HealthConnectQuery?
 }

@@ -1,12 +1,17 @@
-package sdk.sahha.android.domain.model.dto
+package sdk.sahha.android.domain.model.data_log
 
 import androidx.annotation.Keep
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
+import java.time.Instant
+import java.time.ZonedDateTime
 
 @Keep
-internal data class SahhaDataLogDto(
-    val id: String,
+@Entity
+internal data class SahhaDataLog(
+    @PrimaryKey val id: String,
     val logType: String,
     val dataType: String,
     val value: Double,

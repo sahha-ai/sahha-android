@@ -32,15 +32,16 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.framework.worker.post.BatchedDataPostWorker
 import sdk.sahha.android.source.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -207,6 +208,19 @@ internal class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag)
     }
 
+    override fun startBatchedDataPostWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val checkedIntervalMinutes = getCheckedIntervalMinutes(repeatIntervalMinutes)
+        val workRequest: PeriodicWorkRequest =
+            PeriodicWorkRequestBuilder<BatchedDataPostWorker>(
+                checkedIntervalMinutes,
+                TimeUnit.MINUTES
+            )
+                .addTag(workerTag)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .build()
+        startWorkManager(workRequest, workerTag)
+    }
+
     // Force default minimum value of 15 minutes
     private fun getCheckedIntervalMinutes(interval: Long): Long {
         return if (interval < 15) 15 else interval
@@ -287,7 +301,7 @@ internal class SensorRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepData>) -> Response<ResponseBody> = { chunk ->
-            val sahhaDataLogs = getFilteredStepData(chunk).map { it.toSahhaDataLogDto() }
+            val sahhaDataLogs = getFilteredStepData(chunk).map { it.toSahhaDataLogAsChildLog() }
             getStepResponse(sahhaDataLogs)
         }
         postData(
@@ -305,7 +319,7 @@ internal class SensorRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepSession>) -> Response<ResponseBody> = { chunk ->
-            val sahhaDataLogs = chunk.map { it.toSahhaDataLogDto() }
+            val sahhaDataLogs = chunk.map { it.toSahhaDataLogAsChildLog() }
             getStepResponse(sahhaDataLogs)
         }
         postData(
@@ -608,13 +622,13 @@ internal class SensorRepoImpl @Inject constructor(
     ): Pair<String, MutableList<Boolean>> {
         var updatedErrorSummary = errorSummary
         error?.also { updatedErrorSummary += "$it\n" }
-        reschedulWorker(SahhaSensor.sleep)
+        rescheduleWorker(SahhaSensor.sleep)
         successfulResults.add(successful)
         return Pair(updatedErrorSummary, successfulResults)
     }
 
 
-    private fun reschedulWorker(sensor: Enum<SahhaSensor>) {
+    private fun rescheduleWorker(sensor: Enum<SahhaSensor>) {
         sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
             stopWorkerByTag(workerTag)
             startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
@@ -634,7 +648,7 @@ internal class SensorRepoImpl @Inject constructor(
         deviceDao.clearUsages()
     }
 
-    private suspend fun getStepResponse(stepData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postStepDataLog(
             TokenBearer(token),

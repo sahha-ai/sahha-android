@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -185,6 +184,12 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
+                    async {
+                        sensorRepo.startBatchedDataPostWorker(
+                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            Constants.SAHHA_DATA_LOG_WORKER_TAG
+                        )
+                    },
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
                     async { notifications.startForegroundService(HealthConnectPostService::class.java) },

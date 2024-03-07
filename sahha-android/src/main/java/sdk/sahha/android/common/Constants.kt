@@ -7,6 +7,9 @@ internal object Constants {
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
     const val ACTION_KILL_SERVICE = "custom.intent.action.KILL_SERVICE"
 
+    // Query
+    const val CUSTOM_STEPS_QUERY_ID = "custom.healthconnect.steps.query"
+
     // Configs
     const val TRANSFORMATION = "AES/GCM/NoPadding"
     const val ANDROID_KEY_STORE = "AndroidKeyStore"
@@ -30,8 +33,8 @@ internal object Constants {
 
     // Post limits
     private const val DATA_LOG_SIZE_BYTES = 292 // bytes
-    private const val DATA_LOG_LIMIT_BYTES = 8 * 1024
-    const val DEFAULT_POST_LIMIT = (DATA_LOG_LIMIT_BYTES+ DATA_LOG_SIZE_BYTES) / DATA_LOG_SIZE_BYTES
+    const val DATA_LOG_LIMIT_BYTES = 16 * 1024
+    const val DEFAULT_POST_LIMIT = (DATA_LOG_LIMIT_BYTES + DATA_LOG_SIZE_BYTES) / DATA_LOG_SIZE_BYTES
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
     const val STEP_SESSION_POST_LIMIT = 40
@@ -44,6 +47,9 @@ internal object Constants {
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
     const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
+
+    // Package name
+    const val SAMSUNG_HEALTH_PACKAGE_NAME = "com.sec.android.app.shealth"
 
     // Data Type
     object DataTypes {
@@ -129,6 +135,7 @@ internal object Constants {
     const val SLEEP_POST_WORKER_TAG = "sleepPost"
     const val DEVICE_POST_WORKER_TAG = "devicePost"
     const val STEP_POST_WORKER_TAG = "stepPost"
+    const val SAHHA_DATA_LOG_WORKER_TAG = "sahhaDataLogPost"
     const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
 
     // Sleep stage
