@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.local
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -25,7 +26,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 11,
+    version = 10,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -45,7 +46,8 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         StepsHealthConnect::class,
         ManualPermission::class,
         SahhaDataLog::class
-    ]
+    ],
+    exportSchema = true
 )
 
 @TypeConverters(Converter::class)
