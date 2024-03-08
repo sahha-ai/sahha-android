@@ -9,7 +9,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.15.10"
+def gVersionName = "0.15.10-local01"
 
 android {
     compileSdk 34
@@ -32,6 +32,20 @@ android {
         buildConfigField("String", "SDK_VERSION_NAME", "\"$gVersionName\"")
         vectorDrawables {
             useSupportLibrary true
+        }
+    }
+
+    sourceSets {
+        main {
+            java {
+                exclude '/schemas/**'
+            }
+        }
+    }
+
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
 
