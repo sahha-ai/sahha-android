@@ -1057,9 +1057,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
         val now = ZonedDateTime.now()
         val records = getRecords(
             dataType,
-//            TimeRangeFilter.between(
-//                now.minusDays(7).toInstant(), now.toInstant()
-//            )
             TimeRangeFilter.before(now.toInstant())
         )
         if (records.isEmpty()) return null

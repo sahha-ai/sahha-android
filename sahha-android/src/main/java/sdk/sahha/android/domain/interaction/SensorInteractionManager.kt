@@ -190,10 +190,6 @@ internal class SensorInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
-            println("awaitHealthConnectPost")
-//            postHealthConnectDataUseCase { error, successful ->
-//                if (cont.isActive) cont.resume(Pair(error, successful))
-//            }
             batchDataLogs()
             if (cont.isActive) cont.resume(Pair(null, true))
         }
