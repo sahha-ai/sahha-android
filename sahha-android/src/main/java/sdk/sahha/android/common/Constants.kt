@@ -123,7 +123,7 @@ internal object Constants {
         const val OXYGEN = "oxygen"
         const val BODY = "body"
         const val TEMPERATURE = "temperature"
-//        const val EXERCISE = "exercise"
+        const val EXERCISE = "exercise"
     }
 
     // Sahha Error API parameters

@@ -2,6 +2,25 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="PreSahhaConfigureTest">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_32.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-03-08T04:25:00.994089Z" />
+        </State>
+      </entry>
+      <entry key="Tests in 'sdk.sahha.android.suite.batched'">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -10,15 +29,21 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_32.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-02-13T23:59:59.720617Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-08T04:24:31.431818Z" />
         </State>
       </entry>
-      <entry key="test()">
+      <entry key="chunkManager_sendsStepSessionsSuccessfully()">
+        <State />
+      </entry>
+      <entry key="exerciseSession_mapsCorrectly()">
+        <State />
+      </entry>
+      <entry key="posting150Logs_correctAmountOfChunks()">
         <State />
       </entry>
     </value>

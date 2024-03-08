@@ -604,8 +604,8 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
 
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.ACTIVITY,
-        dataType = Constants.DataTypes.EXERCISE_SESSION,
+        logType = Constants.DataLogs.EXERCISE,
+        dataType = "exercise_session_$exerciseType",
         value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
         unit = Constants.DataUnits.MINUTE,
         source = source,
@@ -613,25 +613,21 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
-        additionalProperties = hashMapOf(
-            "exerciseType" to exerciseType,
-        ),
     )
 }
 
 internal fun ExerciseLap.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord
 ): SahhaDataLog {
-    val exerciseType = (mapper.exerciseTypes(exercise.exerciseType) ?: Constants.UNKNOWN)
     val source = exercise.metadata.dataOrigin.packageName
     val startZoneOffset = exercise.startZoneOffset
     val endZoneOffset = exercise.endZoneOffset
     val recordingMethod = mapper.recordingMethod(exercise.metadata.recordingMethod)
     val deviceType = mapper.devices(exercise.metadata.device?.type)
 
-    val dataType = exerciseType + "_lap"
+    val dataType = "exercise_lap"
     return SahhaDataLog(
-        id = UUID.fromString(exercise.metadata.id).toString(),
+        id = UUID.randomUUID().toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
@@ -648,19 +644,18 @@ internal fun ExerciseLap.toSahhaDataLogDto(
 internal fun ExerciseSegment.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord
 ): SahhaDataLog {
-    val exerciseType = (mapper.exerciseTypes(exercise.exerciseType) ?: Constants.UNKNOWN)
     val source = exercise.metadata.dataOrigin.packageName
     val startZoneOffset = exercise.startZoneOffset
     val endZoneOffset = exercise.endZoneOffset
     val recordingMethod = mapper.recordingMethod(exercise.metadata.recordingMethod)
     val deviceType = mapper.devices(exercise.metadata.device?.type)
+    val segmentType = (mapper.exerciseSegments(segmentType) ?: Constants.UNKNOWN)
 
-    val dataType = exerciseType + "_segment"
     return SahhaDataLog(
-        id = UUID.fromString(exercise.metadata.id).toString(),
+        id = UUID.randomUUID().toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
-        dataType = dataType,
+        dataType = "segment_type_$segmentType",
         value = repetitions.toDouble(),
         unit = Constants.DataUnits.COUNT,
         source = source,
@@ -668,8 +663,5 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
-        additionalProperties = hashMapOf(
-            "segmentType" to (mapper.exerciseSegments(segmentType) ?: Constants.UNKNOWN)
-        )
     )
 }
