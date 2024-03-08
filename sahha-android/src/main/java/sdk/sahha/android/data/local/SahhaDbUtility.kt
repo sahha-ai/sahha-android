@@ -22,8 +22,7 @@ internal object SahhaDbUtility {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
-                MIGRATION_8_9,
-                MIGRATION_9_10
+                MIGRATION_8_10
             )
             .build()
     }
@@ -88,32 +87,32 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_8_9 = object : Migration(8, 9) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            with(database) {
-                execSQL("CREATE TABLE ManualPermission (sensorEnum INTEGER NOT NULL, statusEnum INTEGER NOT NULL, PRIMARY KEY (sensorEnum))")
-            }
-        }
-    }
-
-    internal val MIGRATION_9_10 = object : Migration(9, 10) {
+    internal val MIGRATION_8_10 = object : Migration(8, 10) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("""
-                CREATE TABLE SahhaDataLog (
-                    id TEXT NOT NULL PRIMARY KEY,
-                    logType TEXT NOT NULL,
-                    dataType TEXT NOT NULL,
-                    value REAL NOT NULL,
-                    source TEXT NOT NULL,
-                    startDateTime TEXT NOT NULL,
-                    endDateTime TEXT NOT NULL,
-                    unit TEXT NOT NULL,
-                    recordingMethod TEXT NOT NULL DEFAULT 'RECORDING_METHOD_UNKNOWN',
-                    deviceType TEXT NOT NULL DEFAULT 'UNKNOWN',
-                    additionalProperties TEXT,
-                    parentId TEXT
-                )""".trimIndent())
+                    CREATE TABLE ManualPermission (
+                        sensorEnum INTEGER NOT NULL,
+                        statusEnum INTEGER NOT NULL,
+                        PRIMARY KEY (sensorEnum)
+                    )
+                """.trimIndent())
+                execSQL("""
+                    CREATE TABLE SahhaDataLog (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        logType TEXT NOT NULL,
+                        dataType TEXT NOT NULL,
+                        value REAL NOT NULL,
+                        source TEXT NOT NULL,
+                        startDateTime TEXT NOT NULL,
+                        endDateTime TEXT NOT NULL,
+                        unit TEXT NOT NULL,
+                        recordingMethod TEXT NOT NULL DEFAULT 'RECORDING_METHOD_UNKNOWN',
+                        deviceType TEXT NOT NULL DEFAULT 'UNKNOWN',
+                        additionalProperties TEXT,
+                        parentId TEXT
+                    )
+                """.trimIndent())
             }
         }
     }
