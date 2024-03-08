@@ -24,8 +24,8 @@
     <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
     <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
 
-    <!-- Exercise --> <!-- TODO: Not ready yet -->
-<!--    <uses-permission android:name="android.permission.health.READ_EXERCISE" />-->
+    <!-- Exercise -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
 
     <!-- Energy -->
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />

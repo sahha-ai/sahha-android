@@ -39,7 +39,7 @@ import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
@@ -56,6 +56,7 @@ import kotlin.reflect.KClass
 
 private const val tag = "PostHealthConnectDataUseCase"
 
+@Deprecated("Refactored to use BatchDataLogs")
 internal class PostHealthConnectDataUseCase @Inject constructor(
     private val authRepo: AuthRepo,
     private val repo: HealthConnectRepo,
@@ -108,9 +109,9 @@ internal class PostHealthConnectDataUseCase @Inject constructor(
                                     // Modified time is different
                                     postData =
                                         saveLocalAndPrepDiffPost(
-                                            postData,
-                                            localMatch,
-                                            record
+                                            toPost = postData,
+                                            local = localMatch,
+                                            newRecord = record
                                         )
                                 }
 
@@ -772,7 +773,7 @@ internal class PostHealthConnectDataUseCase @Inject constructor(
                     data = records,
                     getResponse = { chunk ->
                         val token = authRepo.getToken() ?: ""
-                        var segments = listOf<SahhaDataLogDto>()
+                        var segments = listOf<SahhaDataLog>()
                         chunk.forEach { record ->
                             segments += record.segments.map { it.toSahhaDataLogDto(record) }
                         }
@@ -803,7 +804,7 @@ internal class PostHealthConnectDataUseCase @Inject constructor(
                     data = records,
                     getResponse = { chunk ->
                         val token = authRepo.getToken() ?: ""
-                        var laps = listOf<SahhaDataLogDto>()
+                        var laps = listOf<SahhaDataLog>()
                         chunk.forEach { record ->
                             laps += record.laps.map { it.toSahhaDataLogDto(record) }
                         }

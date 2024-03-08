@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -19,8 +20,8 @@ internal data class SleepDto(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
 
-internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLogDto {
-    return SahhaDataLogDto(
+internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
         id = id,
         logType = Constants.DataLogs.SLEEP,
         dataType = sleepStage,

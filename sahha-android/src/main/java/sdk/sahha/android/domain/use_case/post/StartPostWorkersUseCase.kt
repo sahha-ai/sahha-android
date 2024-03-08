@@ -6,6 +6,7 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaSensor

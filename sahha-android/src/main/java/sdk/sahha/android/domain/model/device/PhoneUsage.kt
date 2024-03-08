@@ -3,7 +3,7 @@ package sdk.sahha.android.domain.model.device
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import java.util.UUID
 
 
@@ -15,8 +15,8 @@ internal data class PhoneUsage(
     @PrimaryKey val id: String = UUID.randomUUID().toString()
 )
 
-internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLogDto {
-    return SahhaDataLogDto(
+internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
         id = id,
         logType = Constants.DataLogs.DEVICE,
         dataType = Constants.DataTypes.DEVICE_LOCK,
