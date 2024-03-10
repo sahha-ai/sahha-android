@@ -606,7 +606,7 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
         id = metadata.id,
         logType = Constants.DataLogs.EXERCISE,
         dataType = "exercise_session_$exerciseType",
-        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60),
         unit = Constants.DataUnits.MINUTE,
         source = source,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),

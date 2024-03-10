@@ -22,28 +22,12 @@
         <State />
       </entry>
       <entry key="app">
-        <State>
-          <targetSelectedWithDropDown>
-            <Target>
-              <type value="QUICK_BOOT_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_32.avd" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-08T04:24:31.431818Z" />
-        </State>
-      </entry>
-      <entry key="chunkManager_sendsStepSessionsSuccessfully()">
         <State />
       </entry>
       <entry key="exerciseSession_mapsCorrectly()">
         <State />
       </entry>
-      <entry key="posting150Logs_correctAmountOfChunks()">
+      <entry key="test_timestamps()">
         <State />
       </entry>
     </value>

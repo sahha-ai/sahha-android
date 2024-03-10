@@ -51,6 +51,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import kotlin.reflect.KClass
 
@@ -357,9 +358,14 @@ internal class BatchDataLogs @Inject constructor(
                 val queries = records.map { qr -> qr.toStepsHealthConnect() }
 
                 edgeCaseData =
-                    filterData(queries) { data -> data.source == Constants.SAMSUNG_HEALTH_PACKAGE_NAME }
+                    filterData(queries) { data ->
+                        isTotalDayTimestamps(data)
+                    }
+                println(edgeCaseData)
                 typicalData =
-                    filterData(queries) { data -> data.source != Constants.SAMSUNG_HEALTH_PACKAGE_NAME }
+                    filterData(queries) { data ->
+                        !isTotalDayTimestamps(data)
+                    }
 
                 // Handles edge cases like daily total steps from Samsung Health
                 batchData = processEdgeCase(
@@ -381,6 +387,15 @@ internal class BatchDataLogs @Inject constructor(
                 saveQuery(StepsRecord::class)
                 checkAndClearLastMidnightSteps()
             }
+    }
+
+    private fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {
+        val start = timeManager.ISOToZonedDateTime(data.startDateTime).toLocalTime()
+        val end = timeManager.ISOToZonedDateTime(data.endDateTime).toLocalTime()
+        val endOfDay = LocalTime.MIDNIGHT.minus(10, ChronoUnit.MILLIS)
+
+        return start == LocalTime.MIDNIGHT
+                && end == endOfDay
     }
 
     private fun filterData(
@@ -470,6 +485,7 @@ internal class BatchDataLogs @Inject constructor(
             getLastCustomQuery(Constants.CUSTOM_STEPS_QUERY_ID)?.lastSuccessfulTimeStampEpochMillis
         val lastSuccessfulCustomQuery =
             lastSuccessfulCustomQueryEpoch?.let { epoch -> timeManager.epochMillisToISO(epoch) }
+        val now = ZonedDateTime.now()
 
         toPost.add(
             local?.let { loc ->
