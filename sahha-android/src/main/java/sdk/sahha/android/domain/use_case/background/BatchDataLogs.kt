@@ -332,9 +332,11 @@ internal class BatchDataLogs @Inject constructor(
         batchJobs.forEach { job ->
             suspendCancellableCoroutine<Unit> { cont ->
                 syncJob.launch {
-                    job.join()
-                    println("Batch job complete")
-                    delay(100)
+                    try {
+                        job.join()
+                    } catch (e: Exception) {
+                        println(e.message)
+                    }
                     if (cont.isActive) cont.resume(Unit)
                 }
             }
