@@ -57,14 +57,14 @@ internal object SahhaErrors {
 
     fun wrapMultipleFunctionTryCatch(
         tag: String,
-        defaultErrorMsg: String? = "Something went wrong",
+        defaultErrorMsg: String = "Something went wrong",
         functionList: List<(() -> Unit)>
     ) {
         functionList.forEach {
             try {
                 it()
             } catch (e: Exception) {
-                Log.w(tag, e.message ?: defaultErrorMsg, e)
+                Log.w(tag, e.message ?: defaultErrorMsg)
             }
         }
     }

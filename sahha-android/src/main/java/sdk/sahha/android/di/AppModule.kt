@@ -31,9 +31,11 @@ import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
+import sdk.sahha.android.data.local.dao.BatchedDataDao
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
+import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
@@ -42,6 +44,7 @@ import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AuthRepoImpl
+import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.InsightsRepoImpl
@@ -57,6 +60,7 @@ import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
@@ -354,6 +358,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
+    fun provideBatchedDataRepository(
+        batchedDataDao: BatchedDataDao
+    ): BatchedDataRepo {
+        return BatchedDataRepoImpl(batchedDataDao)
+    }
+
+    @Singleton
+    @Provides
     fun providePermissionHandler(
         activityCallback: ActivityCallback
     ): PermissionHandler {
@@ -371,6 +383,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     fun providePermissionManager(
         permissionHandler: PermissionHandler,
         configRepo: SahhaConfigRepo,
+        manualPermissionsDao: ManualPermissionsDao,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
         @MainScope mainScope: CoroutineScope,
@@ -378,6 +391,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return PermissionManagerImpl(
             mainScope,
             configRepo,
+            manualPermissionsDao,
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger
@@ -394,6 +408,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideMovementDao(db: SahhaDatabase): MovementDao {
         return db.movementDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideBatchedDataDao(db: SahhaDatabase): BatchedDataDao {
+        return db.BatchedDataDao()
     }
 
     @Singleton
@@ -424,6 +444,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideHealthConfigDao(db: SahhaDatabase): HealthConnectConfigDao {
         return db.healthConnectConfigDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideManualPermissionsDao(db: SahhaDatabase): ManualPermissionsDao {
+        return db.manualPermissionsDao()
     }
 
     @DefaultScope

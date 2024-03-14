@@ -6,7 +6,9 @@ import android.content.pm.PackageInfo
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import retrofit2.Call
@@ -21,6 +23,7 @@ import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaFramework
+import kotlin.coroutines.resume
 
 private const val tag = "SahhaErrorLogger"
 
@@ -94,6 +97,21 @@ internal class SahhaErrorLogger(
             setStaticParameters()
             setApiLogProperties(response)
             postErrorLog(sahhaErrorLog)
+        }
+    }
+
+    private val defaultScope = CoroutineScope(Dispatchers.Default)
+    suspend fun <T> awaitApi(
+        response: Response<T>
+    ) = suspendCancellableCoroutine<Unit> { cont ->
+        defaultScope.launch {
+            sahhaErrorLog = getNewSahhaErrorLog()
+            setStaticParameters()
+            setApiLogProperties(response)
+            postErrorLog(sahhaErrorLog) { error, successful ->
+                println("$error, $successful")
+                if (cont.isActive) cont.resume(Unit)
+            }
         }
     }
 

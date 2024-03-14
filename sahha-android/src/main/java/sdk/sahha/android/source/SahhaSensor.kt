@@ -12,5 +12,6 @@ enum class SahhaSensor {
     oxygen,
     energy,
     body,
-    temperature
+    temperature,
+    exercise
 }

@@ -21,7 +21,8 @@ internal object SahhaDbUtility {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
-                MIGRATION_7_8
+                MIGRATION_7_8,
+                MIGRATION_9_10
             )
             .build()
     }
@@ -82,6 +83,36 @@ internal object SahhaDbUtility {
             with(database) {
                 execSQL("CREATE TABLE HealthConnectQuery (id TEXT NOT NULL, lastSuccessfulTimeStampEpochMillis INTEGER NOT NULL, PRIMARY KEY (id))")
                 execSQL("CREATE TABLE StepsHealthConnect (metaId TEXT NOT NULL, count INTEGER NOT NULL, dataType TEXT NOT NULL, source TEXT NOT NULL, startDateTime TEXT NOT NULL, endDateTime TEXT NOT NULL,  modifiedDateTime TEXT NOT NULL, recordingMethod TEXT NOT NULL, deviceType TEXT NOT NULL, deviceManufacturer TEXT NOT NULL, deviceModel TEXT NOT NULL, PRIMARY KEY (metaId))")
+            }
+        }
+    }
+
+    internal val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("""
+                    CREATE TABLE ManualPermission (
+                        sensorEnum INTEGER NOT NULL,
+                        statusEnum INTEGER NOT NULL,
+                        PRIMARY KEY (sensorEnum)
+                    )
+                """.trimIndent())
+                execSQL("""
+                    CREATE TABLE SahhaDataLog (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        logType TEXT NOT NULL,
+                        dataType TEXT NOT NULL,
+                        value REAL NOT NULL,
+                        source TEXT NOT NULL,
+                        startDateTime TEXT NOT NULL,
+                        endDateTime TEXT NOT NULL,
+                        unit TEXT NOT NULL,
+                        recordingMethod TEXT NOT NULL DEFAULT 'RECORDING_METHOD_UNKNOWN',
+                        deviceType TEXT NOT NULL DEFAULT 'UNKNOWN',
+                        additionalProperties TEXT,
+                        parentId TEXT
+                    )
+                """.trimIndent())
             }
         }
     }

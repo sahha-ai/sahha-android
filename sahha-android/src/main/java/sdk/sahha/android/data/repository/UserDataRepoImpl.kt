@@ -228,7 +228,7 @@ internal class UserDataRepoImpl(
 
     private suspend fun postDemographicResponse(sahhaDemographic: SahhaDemographic): Call<ResponseBody> {
         val token = authRepo.getToken() ?: ""
-        return api.putDemographic(TokenBearer(token), sahhaDemographic)
+        return api.patchDemographic(TokenBearer(token), sahhaDemographic)
     }
 
     private suspend fun getDetectedAnalysisCall(

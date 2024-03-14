@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -17,8 +17,8 @@ internal data class StepSession(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
 
-internal fun StepSession.toSahhaDataLogDto(): SahhaDataLogDto {
-    return SahhaDataLogDto(
+internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
+    return SahhaDataLog(
         id = id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = Constants.DataTypes.SAHHA_STEP_SESSION,

@@ -5,6 +5,8 @@ import android.icu.text.DateFormat
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaSensor
@@ -18,10 +20,12 @@ internal object Session {
 
     internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
     internal var settings: SahhaSettings? = null
-    internal val onlyDeviceSensorEnabled by lazy {
+    internal val onlyDeviceSensorProvided by lazy {
         settings?.sensors?.contains(SahhaSensor.device) ?: false
                 && settings?.sensors?.count() == 1
     }
+
+    internal var healthConnectServiceLaunched = false
 
 
     internal fun shouldBeDevEnvironment(

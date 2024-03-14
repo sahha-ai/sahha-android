@@ -33,6 +33,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.Constants
@@ -65,10 +66,10 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
-import sdk.sahha.android.domain.model.dto.SahhaDataLogDto
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogDto
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -198,7 +199,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             .build()
     }
 
-    private suspend fun getStepResponse(stepData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getStepResponse(stepData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postStepDataLog(
             TokenBearer(token),
@@ -206,7 +207,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getSleepSessionResponse(sleepSessionData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getSleepSessionResponse(sleepSessionData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postSleepDataRange(
             TokenBearer(token),
@@ -214,7 +215,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getHeartRateDataResponse(heartRateData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getHeartRateDataResponse(heartRateData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postHeartRateData(
             TokenBearer(token),
@@ -222,7 +223,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getBloodGlucoseResponse(bloodGlucoseData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getBloodGlucoseResponse(bloodGlucoseData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postBloodGlucoseData(
             TokenBearer(token),
@@ -230,7 +231,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getBloodPressureResponse(bloodPressureData: List<SahhaDataLogDto>): Response<ResponseBody> {
+    private suspend fun getBloodPressureResponse(bloodPressureData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postBloodPressureData(
             TokenBearer(token),
@@ -457,14 +458,14 @@ internal class HealthConnectRepoImpl @Inject constructor(
         sleepSessionData: List<SleepSessionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val sleepStages = mutableListOf<SahhaDataLogDto>()
+        val sleepStages = mutableListOf<SahhaDataLog>()
         val sleepSessions = sleepSessionData.map { it.toSahhaDataLogDto() }
         sleepSessionData.forEach { session ->
             session.stages.forEach { s ->
                 val durationInMinutes =
                     ((s.endTime.toEpochMilli() - s.startTime.toEpochMilli()) / 1000 / 60).toDouble()
                 sleepStages.add(
-                    SahhaDataLogDto(
+                    SahhaDataLog(
                         id = UUID.randomUUID().toString(),
                         parentId = session.metadata.id,
                         logType = Constants.DataLogs.SLEEP,
@@ -487,7 +488,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         }
         val sessionsAndStages = sleepSessions + sleepStages
 
-        val getResponse: suspend (List<SahhaDataLogDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<SahhaDataLog>) -> Response<ResponseBody> = { chunk ->
             getSleepSessionResponse(chunk)
         }
 
@@ -510,11 +511,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
         heartRateData: List<HeartRateRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
-        val samplesList = mutableListOf<SahhaDataLogDto>()
+        val samplesList = mutableListOf<SahhaDataLog>()
         heartRateData.forEach { record ->
             record.samples.forEach { sample ->
                 samplesList.add(
-                    SahhaDataLogDto(
+                    SahhaDataLog(
                         id = UUID.randomUUID().toString(),
                         parentId = record.metadata.id,
                         logType = Constants.DataLogs.HEART,
@@ -535,7 +536,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             }
         }
 
-        val getResponse: suspend (List<SahhaDataLogDto>) -> Response<ResponseBody> = { chunk ->
+        val getResponse: suspend (List<SahhaDataLog>) -> Response<ResponseBody> = { chunk ->
             getHeartRateDataResponse(chunk)
         }
 
@@ -584,7 +585,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
         val getResponse: suspend (List<StepsHealthConnect>) -> Response<ResponseBody> = { chunk ->
-            val steps = chunk.map { it.toSahhaDataLogDto() }
+            val steps = chunk.map { it.toSahhaDataLogAsChildLog() }
             getStepResponse(steps)
         }
 
@@ -797,7 +798,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         getResponse: suspend (List<T>) -> Response<ResponseBody>,
         updateLastQueried: suspend (List<T>) -> Unit,
     ): Boolean {
-        return suspendCoroutine { cont ->
+        return suspendCancellableCoroutine { cont ->
             ioScope.launch {
                 try {
                     val response = getResponse(chunk)
@@ -806,10 +807,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     handleResponse(response, { getResponse(chunk) }, null) {
                         // When successful
                         updateLastQueried(chunk)
-                        cont.resume(true)
+                        if (cont.isActive) cont.resume(true)
                     }
                 } catch (e: Exception) {
                     Log.e(tag, e.message, e)
+                    if (cont.isActive) cont.resume(false)
                 }
             }
         }
@@ -932,6 +934,23 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
+    override suspend fun saveCustomSuccessfulQuery(
+        customId: String,
+        timeStamp: ZonedDateTime
+    ) {
+        val epochMillis = timeStamp.toInstant().toEpochMilli()
+
+        healthConnectConfigDao.saveQuery(
+            HealthConnectQuery(customId, epochMillis)
+        )
+    }
+
+    override suspend fun getLastCustomQuery(
+        customId: String
+    ): HealthConnectQuery? {
+        return healthConnectConfigDao.getQueryOf(customId)
+    }
+
     override suspend fun clearQueries(queries: List<HealthConnectQuery>) {
         healthConnectConfigDao.clearQueries(queries)
     }
@@ -943,13 +962,34 @@ internal class HealthConnectRepoImpl @Inject constructor(
     override suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
         timeRangeFilter: TimeRangeFilter
-    ): List<T>? {
-        return client?.readRecords(
-            ReadRecordsRequest(
-                recordType = recordType,
-                timeRangeFilter = timeRangeFilter
+    ): List<T> {
+        try {
+            var records = listOf<T>()
+            var response = client?.readRecords(
+                ReadRecordsRequest(
+                    recordType = recordType,
+                    timeRangeFilter = timeRangeFilter
+                )
             )
-        )?.records
+
+            records += response?.records as List<T>
+
+            while (response?.pageToken != null) {
+                response = client?.readRecords(
+                    ReadRecordsRequest(
+                        recordType = recordType,
+                        timeRangeFilter = timeRangeFilter,
+                        pageToken = response.pageToken
+                    )
+                )
+                records += response?.records as List<T>
+            }
+
+            return records
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not query Health Connect data")
+            return emptyList()
+        }
     }
 
     // Placeholder - could potentially use
@@ -1022,11 +1062,9 @@ internal class HealthConnectRepoImpl @Inject constructor(
         val now = ZonedDateTime.now()
         val records = getRecords(
             dataType,
-            TimeRangeFilter.between(
-                now.minusDays(7).toInstant(), now.toInstant()
-            )
+            TimeRangeFilter.before(now.toInstant())
         )
-        if (records.isNullOrEmpty()) return null
+        if (records.isEmpty()) return null
 
         successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
         return records
@@ -1042,7 +1080,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             dataType,
             TimeRangeFilter.before(now.toLocalDateTime())
         )
-        if (records.isNullOrEmpty()) return null
+        if (records.isEmpty()) return null
 
         successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
             currentMidnight
@@ -1056,7 +1094,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             val records = getRecords(
                 dataType, TimeRangeFilter.after(timestamp.toInstant())
             )
-            if (records.isNullOrEmpty()) return@let null
+            if (records.isEmpty()) return@let null
 
             successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
                 ZonedDateTime.now()
@@ -1073,7 +1111,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             dataType,
             TimeRangeFilter.after(timestamp)
         )
-        if (records.isNullOrEmpty()) return null
+        if (records.isEmpty()) return null
 
         successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
         return records
@@ -1091,7 +1129,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         chunk: List<SleepSessionRecord>
     ): Response<ResponseBody> {
         val summaryHashMap = hashMapOf<Int, Long>()
-        val sleepStageSummary = mutableListOf<SahhaDataLogDto>()
+        val sleepStageSummary = mutableListOf<SahhaDataLog>()
         val sleepSessions = chunk.map { it.toSahhaDataLogDto() }
         chunk.forEach { session ->
             session.stages.forEach { stage ->
@@ -1102,7 +1140,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
             summaryHashMap.forEach {
                 sleepStageSummary.add(
-                    SahhaDataLogDto(
+                    SahhaDataLog(
                         id = UUID.randomUUID().toString(),
                         logType = Constants.DataLogs.SLEEP,
                         dataType = Constants.DataTypes.SLEEP,

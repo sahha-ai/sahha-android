@@ -13,9 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.health.connect.client.HealthConnectClient
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
@@ -90,7 +88,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
-            } else if(Session.onlyDeviceSensorEnabled) {
+            } else if(Session.onlyDeviceSensorProvided) {
                 sendBroadcast(Intent(PERMISSION_ENABLED))
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
@@ -226,11 +224,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         callback: ((Enum<SahhaSensorStatus>) -> Unit)?
     ) {
-        if (Session.onlyDeviceSensorEnabled) {
-            callback?.invoke(SahhaSensorStatus.enabled)
-            return
-        }
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             callback?.invoke(SahhaSensorStatus.unavailable)
             return

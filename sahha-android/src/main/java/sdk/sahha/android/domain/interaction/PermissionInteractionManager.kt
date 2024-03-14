@@ -3,8 +3,8 @@ package sdk.sahha.android.domain.interaction
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
@@ -14,7 +14,6 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.permissions.OpenAppSettingsUseCase
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -42,6 +41,20 @@ internal class PermissionInteractionManager @Inject constructor(
             val sensorSetEmpty = configRepo.getConfig().sensorArray.isEmpty()
             if (sensorSetEmpty) {
                 callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
+                return@launch
+            }
+
+            if (Session.onlyDeviceSensorProvided) {
+                manager.enableDeviceOnlySensor { status ->
+                    if (status == SahhaSensorStatus.enabled) {
+                        startNativeTasks(
+                            context,
+                            Sahha.di.sahhaInteractionManager,
+                            status
+                        )
+                        callback(null, status)
+                    }
+                }
                 return@launch
             }
 
@@ -245,6 +258,17 @@ internal class PermissionInteractionManager @Inject constructor(
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         defaultScope.launch {
+            val sensorSetEmpty = configRepo.getConfig().sensorArray.isEmpty()
+            if (sensorSetEmpty) {
+                callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
+                return@launch
+            }
+
+            if (Session.onlyDeviceSensorProvided) {
+                manager.getDeviceOnlySensorStatus { status -> callback(null, status) }
+                return@launch
+            }
+
             val nativeStatus = awaitNativeSensorStatus(context)
             val healthConnectStatus =
                 if (manager.shouldUseHealthConnect())
@@ -260,6 +284,20 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
+        if (Session.onlyDeviceSensorProvided) {
+            manager.getDeviceOnlySensorStatus { status ->
+                if (status == SahhaSensorStatus.enabled) {
+                    stopWorkers()
+                    startNativeTasks(
+                        context,
+                        Sahha.di.sahhaInteractionManager,
+                        status,
+                    ) { _, _ -> callback?.invoke(null, true) }
+                }
+            }
+            return
+        }
+
         val nativeStatus = awaitNativeSensorStatus(context)
         val healthConnectStatus = awaitHealthConnectSensorStatus(context)
         val status = processStatuses(nativeStatus, healthConnectStatus)

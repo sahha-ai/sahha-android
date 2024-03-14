@@ -24,12 +24,14 @@ import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
+import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepCounterData
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorData
 import sdk.sahha.android.domain.use_case.background.StartDataCollectionServiceUseCase
 import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
+import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostSleepDataUseCase
@@ -61,6 +63,8 @@ internal class SensorInteractionManager @Inject constructor(
     private val getSensorDataUseCase: GetSensorDataUseCase,
     private val startHealthConnectBackgroundTasksUseCase: StartHealthConnectBackgroundTasksUseCase,
     private val postHealthConnectDataUseCase: PostHealthConnectDataUseCase,
+    internal val batchDataLogs: BatchDataLogs,
+    internal val postBatchData: PostBatchData,
     internal val postSleepDataUseCase: PostSleepDataUseCase,
     internal val postDeviceDataUseCase: PostDeviceDataUseCase,
     internal val postStepDataUseCase: PostStepDataUseCase,
@@ -186,10 +190,8 @@ internal class SensorInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
-            println("awaitHealthConnectPost")
-            postHealthConnectDataUseCase { error, successful ->
-                if (cont.isActive) cont.resume(Pair(error, successful))
-            }
+            batchDataLogs()
+            if (cont.isActive) cont.resume(Pair(null, true))
         }
     }
 }

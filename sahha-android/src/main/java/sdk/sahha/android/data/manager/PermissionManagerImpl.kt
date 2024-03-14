@@ -45,9 +45,11 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
+import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.framework.activity.SahhaPermissionActivity
 import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
@@ -61,6 +63,7 @@ private val tag = "PermissionManagerImpl"
 internal class PermissionManagerImpl @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
     private val configRepo: SahhaConfigRepo,
+    private val manualPermissionsDao: ManualPermissionsDao,
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger
@@ -90,7 +93,6 @@ internal class PermissionManagerImpl @Inject constructor(
         if (enabledSensors.contains(SahhaSensor.activity.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(StepsRecord::class))
             permissions.add(HealthPermission.getReadPermission(FloorsClimbedRecord::class))
-//            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         if (enabledSensors.contains(SahhaSensor.heart.ordinal)) {
@@ -128,6 +130,10 @@ internal class PermissionManagerImpl @Inject constructor(
         if (enabledSensors.contains(SahhaSensor.temperature.ordinal)) {
             permissions.add(HealthPermission.getReadPermission(BodyTemperatureRecord::class))
             permissions.add(HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class))
+        }
+
+        if (enabledSensors.contains(SahhaSensor.exercise.ordinal)) {
+            permissions.add(HealthPermission.getReadPermission(ExerciseSessionRecord::class))
         }
 
         return permissions
@@ -216,7 +222,10 @@ internal class PermissionManagerImpl @Inject constructor(
         else SahhaSensorStatus.disabled
     }
 
-    override fun requestNativeSensors(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit) {
+    override fun requestNativeSensors(
+        context: Context,
+        callback: (status: Enum<SahhaSensorStatus>) -> Unit
+    ) {
         SahhaPermissions.enableSensor(context, callback)
     }
 
@@ -232,11 +241,30 @@ internal class PermissionManagerImpl @Inject constructor(
         } ?: callback(SahhaErrors.noHealthConnectApp, SahhaSensorStatus.unavailable)
     }
 
+    override suspend fun getDeviceOnlySensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+        val permission = manualPermissionsDao.getPermissionStatus(SahhaSensor.device.ordinal)
+        val status = SahhaSensorStatus.values().find { it.ordinal == permission?.statusEnum }
+        callback(status ?: SahhaSensorStatus.pending)
+    }
+
+    override suspend fun enableDeviceOnlySensor(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+        manualPermissionsDao.savePermission(
+            ManualPermission(
+                SahhaSensor.device.ordinal,
+                SahhaSensorStatus.enabled.ordinal
+            )
+        )
+        callback(SahhaSensorStatus.enabled)
+    }
+
     override fun getHealthConnectSensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
         SahhaPermissions.getSensorStatusHealthConnect(callback)
     }
 
-    override fun getNativeSensorStatus(context: Context, callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+    override fun getNativeSensorStatus(
+        context: Context,
+        callback: ((status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
         SahhaPermissions.getSensorStatus(context, callback)
     }
 

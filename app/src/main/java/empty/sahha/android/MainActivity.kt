@@ -67,6 +67,8 @@ class MainActivity : ComponentActivity() {
 //                title = "Foreground Service",
 //                shortDescription = "This mainly handles native steps and screen locks"
             ),
+//            sensors = setOf(SahhaSensor.device)
+//            sensors = setOf()
         )
 
         Sahha.configure(
@@ -109,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         this@MainActivity
                     ) { error, sensorStatus ->
                         mainScope.launch {
-                            permissionStatus = error ?: sensorStatus.name
+                            permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"
                         }
                     }
 
@@ -128,7 +130,8 @@ class MainActivity : ComponentActivity() {
                                     Sahha.enableSensors(
                                         this@MainActivity,
                                     ) { error, status ->
-                                        permissionStatus = error ?: status.name
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
                                     }
                                 }) {
                                     Text("Grant Permissions")

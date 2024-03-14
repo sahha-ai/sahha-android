@@ -92,4 +92,5 @@ internal interface SensorRepo {
     )
 
     fun checkAndStartWorker(config: SahhaConfiguration, sensorId: Int, startWorker: () -> Unit)
+    fun startBatchedDataPostWorker(repeatIntervalMinutes: Long, workerTag: String)
 }

@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.local
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -10,12 +11,14 @@ import sdk.sahha.android.data.local.dao.*
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.device.AppUsage
 import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
+import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
@@ -23,7 +26,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 9,
+    version = 10,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -41,7 +44,10 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         StepSession::class,
         HealthConnectQuery::class,
         StepsHealthConnect::class,
-    ]
+        ManualPermission::class,
+        SahhaDataLog::class
+    ],
+    exportSchema = true
 )
 
 @TypeConverters(Converter::class)
@@ -52,4 +58,6 @@ internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun deviceUsageDao(): DeviceUsageDao
     internal abstract fun configurationDao(): ConfigurationDao
     internal abstract fun healthConnectConfigDao(): HealthConnectConfigDao
+    internal abstract fun manualPermissionsDao(): ManualPermissionsDao
+    internal abstract fun BatchedDataDao(): BatchedDataDao
 }
