@@ -50,7 +50,7 @@ internal class DataCollectionService : Service() {
                 checkAndRestartService(intent)
             } catch (e: Exception) {
                 stopService()
-                Log.w(tag, e.message, e)
+                Log.w(tag, e.message ?: "Something went wrong")
             }
         }
 
@@ -141,7 +141,7 @@ internal class DataCollectionService : Service() {
         try {
             unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener")
         }
 
         if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {

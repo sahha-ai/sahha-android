@@ -811,7 +811,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(tag, e.message, e)
-                    if (cont.isActive)  cont.resume(false)
+                    if (cont.isActive) cont.resume(false)
                 }
             }
         }
@@ -963,28 +963,33 @@ internal class HealthConnectRepoImpl @Inject constructor(
         recordType: KClass<T>,
         timeRangeFilter: TimeRangeFilter
     ): List<T> {
-        var records = listOf<T>()
-        var response = client?.readRecords(
-            ReadRecordsRequest(
-                recordType = recordType,
-                timeRangeFilter = timeRangeFilter
-            )
-        )
-
-        records += response?.records as List<T>
-
-        while(response?.pageToken != null) {
-            response = client?.readRecords(
+        try {
+            var records = listOf<T>()
+            var response = client?.readRecords(
                 ReadRecordsRequest(
                     recordType = recordType,
-                    timeRangeFilter = timeRangeFilter,
-                    pageToken = response.pageToken
+                    timeRangeFilter = timeRangeFilter
                 )
             )
-            records += response?.records as List<T>
-        }
 
-        return records
+            records += response?.records as List<T>
+
+            while (response?.pageToken != null) {
+                response = client?.readRecords(
+                    ReadRecordsRequest(
+                        recordType = recordType,
+                        timeRangeFilter = timeRangeFilter,
+                        pageToken = response.pageToken
+                    )
+                )
+                records += response?.records as List<T>
+            }
+
+            return records
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not query Health Connect data")
+            return emptyList()
+        }
     }
 
     // Placeholder - could potentially use

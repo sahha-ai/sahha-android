@@ -28,7 +28,6 @@ import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -330,13 +329,9 @@ internal class BatchDataLogs @Inject constructor(
 //        batchJobs.joinAll()
 
         batchJobs.forEach { job ->
-            suspendCancellableCoroutine<Unit> { cont ->
+            suspendCancellableCoroutine { cont ->
                 syncJob.launch {
-                    try {
-                        job.join()
-                    } catch (e: Exception) {
-                        println(e.message)
-                    }
+                    job.join()
                     if (cont.isActive) cont.resume(Unit)
                 }
             }
