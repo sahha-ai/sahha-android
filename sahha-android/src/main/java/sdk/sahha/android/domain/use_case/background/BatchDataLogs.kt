@@ -70,7 +70,9 @@ internal class BatchDataLogs @Inject constructor(
         granted.forEach {
             when (it) {
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
-                    batchJobs += newBatchJob().launch { batchStepData() }
+                    batchJobs += newBatchJob().launch {
+                        batchStepData()
+                    }
                 }
 
                 HealthPermission.getReadPermission(SleepSessionRecord::class) -> {

@@ -2,11 +2,13 @@ package sdk.sahha.android.data.repository
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -23,6 +25,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
+import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
@@ -109,7 +112,8 @@ internal class HealthConnectRepoImpl @Inject constructor(
     private val healthConnectConfigDao: HealthConnectConfigDao,
     private val sahhaAlarmManager: SahhaAlarmManager,
     private val movementDao: MovementDao,
-    private val mapper: HealthConnectConstantsMapper
+    private val mapper: HealthConnectConstantsMapper,
+    private val sharedPrefs: SharedPreferences
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -992,32 +996,49 @@ internal class HealthConnectRepoImpl @Inject constructor(
         }
     }
 
-    // Placeholder - could potentially use
-//    suspend fun getChangedRecords(
-//        token: String?,
-//        recordTypes: Set<KClass<Record>>
-//    ): List<Record> {
-//        client ?: return listOf()
-//        var t = token ?: client.getChangesToken(
-//            ChangesTokenRequest(
-//                recordTypes = recordTypes,
-//            )
-//        )
-//
-//        val changed = mutableListOf<Record>()
-//        do {
-//            val response = client.getChanges(t)
-//            response.changes.forEach {
-//                when(it) {
-//                    is UpsertionChange -> {
-//                        changed.add(it.record)
-//                    }
-//                }
-//            }
-//            t = response.nextChangesToken
-//        } while (response.hasMore)
-//        return changed
-//    }
+    override suspend fun getChangedRecords(
+        recordTypes: Set<KClass<Record>>,
+        token: String?
+    ): List<Record> {
+        client ?: return emptyList()
+        var t = token ?: client.getChangesToken(
+            ChangesTokenRequest(
+                recordTypes = recordTypes,
+            )
+        )
+
+        val changed = mutableListOf<Record>()
+        do {
+            var response = client.getChanges(t)
+            if (response.changesTokenExpired) {
+                val newToken = client.getChangesToken(
+                    ChangesTokenRequest(
+                        recordTypes = recordTypes,
+                    )
+                )
+                response = client.getChanges(newToken)
+            }
+            response.changes.forEach {
+                when (it) {
+                    is UpsertionChange -> {
+                        changed.add(it.record)
+                    }
+                }
+            }
+            t = response.nextChangesToken
+        } while (response.hasMore)
+
+        storeNextChangesToken(t)
+        return changed
+    }
+
+    private fun storeNextChangesToken(token: String) {
+        sharedPrefs.edit().putString(Constants.CHANGES_TOKEN_PREF_KEY, token).apply()
+    }
+
+    override fun getExistingChangesToken(): String? {
+        return sharedPrefs.getString(Constants.CHANGES_TOKEN_PREF_KEY, null)
+    }
 
     override suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>? {
         return if (isFirstQuery(dataType)) runInitialQuery(dataType)
