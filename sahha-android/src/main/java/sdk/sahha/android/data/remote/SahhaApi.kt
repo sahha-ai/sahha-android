@@ -176,8 +176,8 @@ internal interface SahhaApi {
         @Header(AUTHORIZATION_HEADER) profileToken: String
     ): Call<DemographicDto>
 
-    @PUT("profile/demographic")
-    fun putDemographic(
+    @PATCH("profile/demographic")
+    fun patchDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body demographics: SahhaDemographic
     ): Call<ResponseBody>

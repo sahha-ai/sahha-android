@@ -28,9 +28,10 @@ import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.Session
@@ -53,6 +54,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import kotlin.coroutines.resume
 import kotlin.reflect.KClass
 
 internal class BatchDataLogs @Inject constructor(
@@ -61,6 +63,7 @@ internal class BatchDataLogs @Inject constructor(
     private val timeManager: SahhaTimeManager
 ) {
     private var batchJobs = emptyList<Job>()
+    private val syncJob = CoroutineScope(Dispatchers.Default + Job())
     suspend operator fun invoke() {
         if (Session.hcQueryInProgress) return
 
@@ -324,7 +327,16 @@ internal class BatchDataLogs @Inject constructor(
             }
         }
 
-        batchJobs.joinAll()
+//        batchJobs.joinAll()
+
+        batchJobs.forEach { job ->
+            suspendCancellableCoroutine<Unit> { cont ->
+                syncJob.launch {
+                    job.join()
+                    if (cont.isActive) cont.resume(Unit)
+                }
+            }
+        }
     }
 
     private suspend fun getLastCustomQuery(customId: String): HealthConnectQuery? {
@@ -361,7 +373,6 @@ internal class BatchDataLogs @Inject constructor(
                     filterData(queries) { data ->
                         isTotalDayTimestamps(data)
                     }
-                println(edgeCaseData)
                 typicalData =
                     filterData(queries) { data ->
                         !isTotalDayTimestamps(data)
