@@ -121,7 +121,7 @@ internal fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLog {
 
 internal fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLog {
     return SahhaDataLog(
-        id = metadata.id,
+        id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_DIASTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -140,13 +140,13 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLog {
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN),
         ),
-
-        )
+        parentId = metadata.id
+    )
 }
 
 internal fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLog {
     return SahhaDataLog(
-        id = metadata.id,
+        id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_SYSTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -165,6 +165,7 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLog {
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
         ),
+        parentId = metadata.id
     )
 }
 

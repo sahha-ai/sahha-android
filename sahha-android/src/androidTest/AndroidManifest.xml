@@ -43,4 +43,46 @@
     <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
     <uses-permission android:name="android.permission.health.READ_BASAL_BODY_TEMPERATURE" />
 
+    <!-- WRITE PERMISSIONS ONLY FOR TESTS -->
+    <!-- Heart -->
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.WRITE_RESTING_HEART_RATE" />
+
+    <!-- Blood -->
+    <uses-permission android:name="android.permission.health.WRITE_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.WRITE_BLOOD_PRESSURE" />
+
+    <!-- Sleep -->
+    <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
+
+    <!-- Activity -->
+    <uses-permission android:name="android.permission.health.WRITE_STEPS" />
+    <uses-permission android:name="android.permission.health.WRITE_FLOORS_CLIMBED" />
+
+    <!-- Oxygen -->
+    <uses-permission android:name="android.permission.health.WRITE_VO2_MAX" />
+    <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE" />
+
+    <!-- Exercise -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+
+    <!-- Energy -->
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
+
+    <!-- Body -->
+    <uses-permission android:name="android.permission.health.WRITE_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.WRITE_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_HEIGHT" />
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+
+    <!-- Temperature -->
+    <uses-permission android:name="android.permission.health.WRITE_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_BODY_TEMPERATURE" />
+
 </manifest>

@@ -159,9 +159,9 @@ internal class BatchDataLogs @Inject constructor(
                         val records = detectRecords(recordType)
                         records?.also { r ->
                             val diastolic =
-                                r.map { (it as BloodPressureRecord).toBloodPressureDiastolic() }
+                                r.map { dr -> (dr as BloodPressureRecord).toBloodPressureDiastolic() }
                             val systolic =
-                                r.map { (it as BloodPressureRecord).toBloodPressureSystolic() }
+                                r.map { sr -> (sr as BloodPressureRecord).toBloodPressureSystolic() }
                             batchRepo.saveBatchedData(diastolic + systolic)
                             saveQuery(recordType)
                         }
