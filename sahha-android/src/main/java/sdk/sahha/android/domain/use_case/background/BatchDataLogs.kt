@@ -72,7 +72,10 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
                     val recordType = StepsRecord::class
                     batchJobs += newBatchJob().launch {
-                        val records = healthConnectRepo.getChangedRecords(setOf(recordType))
+                        val records = healthConnectRepo.getChangedRecords(
+                            recordType,
+                            healthConnectRepo.getExistingChangesToken(recordType)
+                        )
                             ?: healthConnectRepo.getCurrentDayRecords(recordType)
                         records?.also { batchStepData(records = it) }
                     }
@@ -366,8 +369,8 @@ internal class BatchDataLogs @Inject constructor(
 
     private suspend fun <T : Record> detectRecords(recordType: KClass<T>) =
         healthConnectRepo.getChangedRecords(
-            setOf(recordType),
-            healthConnectRepo.getExistingChangesToken()
+            recordType,
+            healthConnectRepo.getExistingChangesToken(recordType)
         ) ?: healthConnectRepo.getNewRecords(recordType)
 
     private suspend fun getLastCustomQuery(customId: String): HealthConnectQuery? {

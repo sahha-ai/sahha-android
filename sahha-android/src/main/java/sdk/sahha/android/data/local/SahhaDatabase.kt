@@ -17,6 +17,7 @@ import sdk.sahha.android.domain.model.device.DeviceUsage
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.model.dto.SleepDto
+import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.model.security.EncryptUtility
@@ -26,7 +27,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 10,
+    version = 11,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -43,9 +44,10 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         DeviceInformation::class,
         StepSession::class,
         HealthConnectQuery::class,
+        HealthConnectChangeToken::class,
         StepsHealthConnect::class,
         ManualPermission::class,
-        SahhaDataLog::class
+        SahhaDataLog::class,
     ],
     exportSchema = true
 )
