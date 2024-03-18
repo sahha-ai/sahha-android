@@ -78,6 +78,7 @@ import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import java.time.Duration
 import java.time.Instant
@@ -997,39 +998,51 @@ internal class HealthConnectRepoImpl @Inject constructor(
     }
 
     override suspend fun getChangedRecords(
-        recordTypes: Set<KClass<Record>>,
+        recordTypes: Set<KClass<out Record>>,
         token: String?
-    ): List<Record> {
+    ): List<Record>? {
         client ?: return emptyList()
-        var t = token ?: client.getChangesToken(
-            ChangesTokenRequest(
-                recordTypes = recordTypes,
-            )
-        )
-
-        val changed = mutableListOf<Record>()
-        do {
-            var response = client.getChanges(t)
-            if (response.changesTokenExpired) {
-                val newToken = client.getChangesToken(
-                    ChangesTokenRequest(
-                        recordTypes = recordTypes,
-                    )
+        var t = token
+        val noTokenFound = t == null
+        if(noTokenFound) {
+            t = client.getChangesToken(
+                ChangesTokenRequest(
+                    recordTypes = recordTypes,
                 )
-                response = client.getChanges(newToken)
-            }
-            response.changes.forEach {
-                when (it) {
-                    is UpsertionChange -> {
-                        changed.add(it.record)
+            )
+            storeNextChangesToken(t)
+            return null
+        }
+
+        // t is null checked
+        try {
+            val changed = mutableListOf<Record>()
+            do {
+                var response = client.getChanges(t!!)
+                if (response.changesTokenExpired) {
+                    val newToken = client.getChangesToken(
+                        ChangesTokenRequest(
+                            recordTypes = recordTypes,
+                        )
+                    )
+                    response = client.getChanges(newToken)
+                }
+                response.changes.forEach {
+                    when (it) {
+                        is UpsertionChange -> {
+                            changed.add(it.record)
+                        }
                     }
                 }
-            }
-            t = response.nextChangesToken
-        } while (response.hasMore)
+                t = response.nextChangesToken
+            } while (response.hasMore)
 
-        storeNextChangesToken(t)
-        return changed
+            storeNextChangesToken(t!!)
+            return changed
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "An unexpected error occurred with the changes token")
+            return emptyList()
+        }
     }
 
     private fun storeNextChangesToken(token: String) {

@@ -70,138 +70,151 @@ internal class BatchDataLogs @Inject constructor(
         granted.forEach {
             when (it) {
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
+                    val recordType = StepsRecord::class
                     batchJobs += newBatchJob().launch {
-                        batchStepData()
+                        val records = healthConnectRepo.getChangedRecords(setOf(recordType))
+                            ?: healthConnectRepo.getCurrentDayRecords(recordType)
+                        records?.also { batchStepData(records = it) }
                     }
                 }
 
                 HealthPermission.getReadPermission(SleepSessionRecord::class) -> {
                     val recordType = SleepSessionRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                val sessions = records.map { it.toSahhaDataLogDto() }
-                                val stages = records.map { session ->
-                                    session.stages.map { it.toSahhaDataLog(session) }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val sessions =
+                                r.map { record -> (record as SleepSessionRecord).toSahhaDataLogDto() }
+                            println(sessions)
+                            val stages = r.map { session ->
+                                (session as SleepSessionRecord).stages.map {
+                                    it.toSahhaDataLog(session)
                                 }
-                                val stagesFlattened = stages.flatten()
-
-                                batchRepo.saveBatchedData(sessions + stagesFlattened)
-                                saveQuery(recordType)
                             }
+                            println(stages)
+                            val stagesFlattened = stages.flatten()
+
+                            batchRepo.saveBatchedData(sessions + stagesFlattened)
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(HeartRateRecord::class) -> {
                     val recordType = HeartRateRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                val batched =
-                                    records.map { record ->
-                                        record.samples.map { sample -> sample.toSahhaDataLog(record) }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val batched =
+                                r.map { record ->
+                                    (record as HeartRateRecord).samples.map { sample ->
+                                        sample.toSahhaDataLog(record)
                                     }
-                                batchRepo.saveBatchedData(batched.flatten())
-                                saveQuery(recordType)
-                            }
+                                }
+                            batchRepo.saveBatchedData(batched.flatten())
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(RestingHeartRateRecord::class) -> {
                     val recordType = RestingHeartRateRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { record -> (record as RestingHeartRateRecord).toSahhaLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class) -> {
                     val recordType = HeartRateVariabilityRmssdRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { record -> (record as HeartRateVariabilityRmssdRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(BloodGlucoseRecord::class) -> {
                     val recordType = BloodGlucoseRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { record -> (record as BloodGlucoseRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(BloodPressureRecord::class) -> {
                     val recordType = BloodPressureRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                val diastolic = records.map { it.toBloodPressureDiastolic() }
-                                val systolic = records.map { it.toBloodPressureSystolic() }
-                                batchRepo.saveBatchedData(diastolic + systolic)
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val diastolic =
+                                r.map { (it as BloodPressureRecord).toBloodPressureDiastolic() }
+                            val systolic =
+                                r.map { (it as BloodPressureRecord).toBloodPressureSystolic() }
+                            batchRepo.saveBatchedData(diastolic + systolic)
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class) -> {
                     val recordType = ActiveCaloriesBurnedRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as ActiveCaloriesBurnedRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class) -> {
                     val recordType = TotalCaloriesBurnedRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as TotalCaloriesBurnedRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(OxygenSaturationRecord::class) -> {
                     val recordType = OxygenSaturationRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as OxygenSaturationRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(Vo2MaxRecord::class) -> {
                     val recordType = Vo2MaxRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)
-                            ?.also { records ->
-                                batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
-                                saveQuery(recordType)
-                            }
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as Vo2MaxRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
                     }
                 }
 
                 HealthPermission.getReadPermission(BasalMetabolicRateRecord::class) -> {
                     val recordType = BasalMetabolicRateRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BasalMetabolicRateRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -210,8 +223,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(BodyFatRecord::class) -> {
                     val recordType = BodyFatRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BodyFatRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -220,8 +234,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(BodyWaterMassRecord::class) -> {
                     val recordType = BodyWaterMassRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BodyWaterMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -230,8 +245,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(LeanBodyMassRecord::class) -> {
                     val recordType = LeanBodyMassRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as LeanBodyMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -240,8 +256,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(HeightRecord::class) -> {
                     val recordType = HeightRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as HeightRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -250,8 +267,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(WeightRecord::class) -> {
                     val recordType = WeightRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as WeightRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -260,8 +278,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(RespiratoryRateRecord::class) -> {
                     val recordType = RespiratoryRateRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as RespiratoryRateRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -270,8 +289,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(BoneMassRecord::class) -> {
                     val recordType = BoneMassRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BoneMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -280,8 +300,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(FloorsClimbedRecord::class) -> {
                     val recordType = FloorsClimbedRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as FloorsClimbedRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -290,8 +311,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(BodyTemperatureRecord::class) -> {
                     val recordType = BodyTemperatureRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BodyTemperatureRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -300,8 +322,9 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class) -> {
                     val recordType = BasalBodyTemperatureRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            batchRepo.saveBatchedData(records.map { it.toSahhaDataLogDto() })
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as BasalBodyTemperatureRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -310,9 +333,10 @@ internal class BatchDataLogs @Inject constructor(
                 HealthPermission.getReadPermission(ExerciseSessionRecord::class) -> {
                     val recordType = ExerciseSessionRecord::class
                     batchJobs += newBatchJob().launch {
-                        healthConnectRepo.getNewRecords(recordType)?.also { records ->
-                            val batched = records.flatMap { exercise ->
-                                listOf(exercise.toSahhaDataLogDto()) +
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val batched = r.flatMap { exercise ->
+                                listOf((exercise as ExerciseSessionRecord).toSahhaDataLogDto()) +
                                         exercise.laps.map { lap -> lap.toSahhaDataLogDto(exercise) } +
                                         exercise.segments.map { segment ->
                                             segment.toSahhaDataLogDto(
@@ -340,6 +364,12 @@ internal class BatchDataLogs @Inject constructor(
         }
     }
 
+    private suspend fun <T : Record> detectRecords(recordType: KClass<T>) =
+        healthConnectRepo.getChangedRecords(
+            setOf(recordType),
+            healthConnectRepo.getExistingChangesToken()
+        ) ?: healthConnectRepo.getNewRecords(recordType)
+
     private suspend fun getLastCustomQuery(customId: String): HealthConnectQuery? {
         return healthConnectRepo.getLastCustomQuery(customId)
     }
@@ -361,44 +391,41 @@ internal class BatchDataLogs @Inject constructor(
         )
     }
 
-    private suspend fun batchStepData() {
-        healthConnectRepo.getCurrentDayRecords(StepsRecord::class)
-            ?.also { records ->
-                var batchData = mutableListOf<SahhaDataLog>()
-                val typicalData: List<StepsHealthConnect>
-                val edgeCaseData: List<StepsHealthConnect>
-                val localSteps = healthConnectRepo.getAllStepsHc()
-                val queries = records.map { qr -> qr.toStepsHealthConnect() }
+    private suspend fun batchStepData(records: List<Record>) {
+        var batchData = mutableListOf<SahhaDataLog>()
+        val typicalData: List<StepsHealthConnect>
+        val edgeCaseData: List<StepsHealthConnect>
+        val localSteps = healthConnectRepo.getAllStepsHc()
+        val queries = records.map { qr -> (qr as StepsRecord).toStepsHealthConnect() }
 
-                edgeCaseData =
-                    filterData(queries) { data ->
-                        isTotalDayTimestamps(data)
-                    }
-                typicalData =
-                    filterData(queries) { data ->
-                        !isTotalDayTimestamps(data)
-                    }
-
-                // Handles edge cases like daily total steps from Samsung Health
-                batchData = processEdgeCase(
-                    edgeCaseData = edgeCaseData, localSteps = localSteps, batchData = batchData
-                )
-
-                // Handles duplicate steps for typical step data
-                batchData =
-                    processSteps(
-                        queries = typicalData,
-                        localSteps = localSteps,
-                        batchData = batchData
-                    )
-
-                saveCustomStepsQuery(Constants.CUSTOM_STEPS_QUERY_ID)
-                if (batchData.isEmpty()) return
-
-                batchRepo.saveBatchedData(batchData)
-                saveQuery(StepsRecord::class)
-                checkAndClearLastMidnightSteps()
+        edgeCaseData =
+            filterData(queries) { data ->
+                isTotalDayTimestamps(data)
             }
+        typicalData =
+            filterData(queries) { data ->
+                !isTotalDayTimestamps(data)
+            }
+
+        // Handles edge cases like daily total steps from Samsung Health
+        batchData = processEdgeCase(
+            edgeCaseData = edgeCaseData, localSteps = localSteps, batchData = batchData
+        )
+
+        // Handles duplicate steps for typical step data
+        batchData =
+            processSteps(
+                queries = typicalData,
+                localSteps = localSteps,
+                batchData = batchData
+            )
+
+        saveCustomStepsQuery(Constants.CUSTOM_STEPS_QUERY_ID)
+        if (batchData.isEmpty()) return
+
+        batchRepo.saveBatchedData(batchData)
+        saveQuery(StepsRecord::class)
+        checkAndClearLastMidnightSteps()
     }
 
     private fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {

@@ -154,6 +154,6 @@ internal interface HealthConnectRepo {
     suspend fun saveCustomSuccessfulQuery(customId: String, timeStamp: ZonedDateTime)
     suspend fun getLastCustomQuery(customId: String): HealthConnectQuery?
 
-    suspend fun getChangedRecords(recordTypes: Set<KClass<Record>>, token: String? = null): List<Record>
+    suspend fun getChangedRecords(recordTypes: Set<KClass<out Record>>, token: String? = null): List<Record>?
     fun getExistingChangesToken(): String?
 }
