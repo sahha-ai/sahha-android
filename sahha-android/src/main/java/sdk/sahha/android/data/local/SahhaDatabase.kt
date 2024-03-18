@@ -49,7 +49,10 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         ManualPermission::class,
         SahhaDataLog::class,
     ],
-    exportSchema = true
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 10, to = 11)
+    ]
 )
 
 @TypeConverters(Converter::class)
