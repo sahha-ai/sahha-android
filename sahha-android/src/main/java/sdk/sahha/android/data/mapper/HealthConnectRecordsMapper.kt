@@ -63,7 +63,7 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
         dataType = (mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING)
             ?: Constants.SLEEP_STAGE_UNKNOWN),
         source = metadata.dataOrigin.packageName,
-        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble(),
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60),
         unit = Constants.DataUnits.MINUTE,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
@@ -74,7 +74,7 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
 
 internal fun SleepSessionRecord.Stage.toSahhaDataLog(session: SleepSessionRecord): SahhaDataLog {
     val durationInMinutes =
-        ((endTime.toEpochMilli() - startTime.toEpochMilli()) / 1000 / 60).toDouble()
+        ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60)
     return SahhaDataLog(
         id = UUID.randomUUID().toString(),
         parentId = session.metadata.id,
