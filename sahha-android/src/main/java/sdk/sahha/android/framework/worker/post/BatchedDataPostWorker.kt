@@ -1,6 +1,7 @@
 package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,7 @@ import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.source.Sahha
 import kotlin.coroutines.resume
 
+private const val tag = "BatchedDataPostWorker"
 internal class BatchedDataPostWorker(
     private val context: Context,
     workerParameters: WorkerParameters
@@ -30,10 +32,18 @@ internal class BatchedDataPostWorker(
 
         return suspendCancellableCoroutine { cont ->
             scope.launch {
+                val batchedData = try {
+                    Sahha.di.batchedDataRepo.getBatchedData()
+                } catch (e: Exception) {
+                    Log.w(tag, e.message ?: "Something went wrong reading batched data")
+                    if (cont.isActive) cont.resume(Result.retry())
+                    emptyList()
+                }
+
                 withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
                     Sahha.sim.sensor.postBatchData(
                         context,
-                        Sahha.di.batchedDataRepo.getBatchedData()
+                        batchedData
                     ) { _, successful ->
                         if (successful) {
                             if (cont.isActive) cont.resume(Result.success())
