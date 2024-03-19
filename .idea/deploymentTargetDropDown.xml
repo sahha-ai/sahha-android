@@ -2,45 +2,22 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="ChunkingTest">
+        <State />
+      </entry>
       <entry key="PreSahhaConfigureTest">
-        <State>
-          <targetSelectedWithDropDown>
-            <Target>
-              <type value="QUICK_BOOT_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_32.avd" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-08T04:25:00.994089Z" />
-        </State>
+        <State />
       </entry>
       <entry key="Tests in 'sdk.sahha.android.suite.batched'">
         <State />
       </entry>
       <entry key="app">
-        <State>
-          <runningDeviceTargetSelectedWithDropDown>
-            <Target>
-              <type value="RUNNING_DEVICE_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="SERIAL_NUMBER" />
-                  <value value="36131JEHN06350" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-14T03:32:25.688551Z" />
-        </State>
-      </entry>
-      <entry key="exerciseSession_mapsCorrectly()">
         <State />
       </entry>
-      <entry key="test_timestamps()">
+      <entry key="errorLogs_postSuccessfully()">
+        <State />
+      </entry>
+      <entry key="test()">
         <State />
       </entry>
     </value>

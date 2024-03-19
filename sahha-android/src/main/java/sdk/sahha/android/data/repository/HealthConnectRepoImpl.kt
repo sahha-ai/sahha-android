@@ -2,11 +2,13 @@ package sdk.sahha.android.data.repository
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
+import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
@@ -23,6 +25,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
+import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
@@ -67,6 +70,7 @@ import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
@@ -109,7 +113,8 @@ internal class HealthConnectRepoImpl @Inject constructor(
     private val healthConnectConfigDao: HealthConnectConfigDao,
     private val sahhaAlarmManager: SahhaAlarmManager,
     private val movementDao: MovementDao,
-    private val mapper: HealthConnectConstantsMapper
+    private val mapper: HealthConnectConstantsMapper,
+    private val sharedPrefs: SharedPreferences
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -992,32 +997,72 @@ internal class HealthConnectRepoImpl @Inject constructor(
         }
     }
 
-    // Placeholder - could potentially use
-//    suspend fun getChangedRecords(
-//        token: String?,
-//        recordTypes: Set<KClass<Record>>
-//    ): List<Record> {
-//        client ?: return listOf()
-//        var t = token ?: client.getChangesToken(
-//            ChangesTokenRequest(
-//                recordTypes = recordTypes,
-//            )
-//        )
-//
-//        val changed = mutableListOf<Record>()
-//        do {
-//            val response = client.getChanges(t)
-//            response.changes.forEach {
-//                when(it) {
-//                    is UpsertionChange -> {
-//                        changed.add(it.record)
-//                    }
-//                }
-//            }
-//            t = response.nextChangesToken
-//        } while (response.hasMore)
-//        return changed
-//    }
+    override suspend fun <T : Record> getChangedRecords(
+        recordType: KClass<T>,
+        token: String?
+    ): List<Record>? {
+        client ?: return emptyList()
+        var t = token
+        val noTokenFound = t == null
+        if (noTokenFound) {
+            t = client.getChangesToken(
+                ChangesTokenRequest(
+                    recordTypes = setOf(recordType),
+                )
+            )
+            storeNextChangesToken(recordType, t)
+            return null
+        }
+
+        // t is null checked
+        try {
+            val changed = mutableListOf<Record>()
+            do {
+                var response = client.getChanges(t!!)
+                if (response.changesTokenExpired) {
+                    val newToken = client.getChangesToken(
+                        ChangesTokenRequest(
+                            recordTypes = setOf(recordType),
+                        )
+                    )
+                    response = client.getChanges(newToken)
+                }
+                response.changes.forEach {
+                    when (it) {
+                        is UpsertionChange -> {
+                            changed.add(it.record)
+                        }
+                    }
+                }
+                t = response.nextChangesToken
+            } while (response.hasMore)
+
+            storeNextChangesToken(recordType, t!!)
+            return changed
+        } catch (e: Exception) {
+            sahhaErrorLogger.application(
+                message = e.message ?: "An unexpected error occurred with the changes token",
+                path = tag,
+                method = "getChangedRecords"
+            )
+            return emptyList()
+        }
+    }
+
+    private suspend fun <T : Record> storeNextChangesToken(recordType: KClass<T>, token: String) {
+        val recordTypeString = HealthPermission.getReadPermission(recordType)
+        healthConnectConfigDao.saveChangeToken(
+            HealthConnectChangeToken(
+                recordTypeString,
+                token
+            )
+        )
+    }
+
+    override suspend fun <T : Record> getExistingChangesToken(recordType: KClass<T>): String? {
+        val recordTypeString = HealthPermission.getReadPermission(recordType)
+        return healthConnectConfigDao.getChangeToken(recordTypeString)?.token
+    }
 
     override suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>? {
         return if (isFirstQuery(dataType)) runInitialQuery(dataType)
@@ -1047,6 +1092,10 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
     override suspend fun clearAllStepsHc() {
         movementDao.clearAllStepsHc()
+    }
+
+    override suspend fun saveChangeToken(changeToken: HealthConnectChangeToken) {
+        healthConnectConfigDao.saveChangeToken(changeToken = changeToken)
     }
 
     override suspend fun clearStepsBeforeHc(dateTime: LocalDateTime) {

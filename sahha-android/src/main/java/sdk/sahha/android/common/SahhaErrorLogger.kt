@@ -135,6 +135,7 @@ internal class SahhaErrorLogger(
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         mainScope.launch {
+            Log.w(path, message)
             sahhaErrorLog = getNewSahhaErrorLog()
             setStaticParameters()
             setApplicationLogProperties(framework, message, path, method, body)

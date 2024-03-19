@@ -19,6 +19,7 @@ import okhttp3.ResponseBody
 import retrofit2.Response
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import java.time.Duration
@@ -77,6 +78,7 @@ internal interface HealthConnectRepo {
     suspend fun getAllStepsHc(): List<StepsHealthConnect>
     suspend fun clearStepsListHc(stepsHc: List<StepsHealthConnect>)
     suspend fun clearAllStepsHc()
+    suspend fun saveChangeToken(changeToken: HealthConnectChangeToken)
     suspend fun <T : Record> getNewRecords(dataType: KClass<T>): List<T>?
 
     suspend fun postStepData(
@@ -153,4 +155,6 @@ internal interface HealthConnectRepo {
 
     suspend fun saveCustomSuccessfulQuery(customId: String, timeStamp: ZonedDateTime)
     suspend fun getLastCustomQuery(customId: String): HealthConnectQuery?
+    suspend fun <T: Record> getExistingChangesToken(recordType: KClass<T>): String?
+    suspend fun <T: Record> getChangedRecords(recordType: KClass<T>, token: String? = null): List<Record>?
 }

@@ -20,8 +20,6 @@ internal object Constants {
     const val APP_ID_HEADER = "AppId"
     const val APP_SECRET_HEADER = "AppSecret"
     const val PLATFORM_NAME = "android"
-    const val MAX_STEP_POST_VALUE = 1000
-    const val SENSOR_SHARED_PREF_KEY = "device.sensor.status"
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
@@ -29,7 +27,6 @@ internal object Constants {
 
     // Alarm
     const val DEFAULT_ALARM_INTERVAL_MINS = 15L
-    const val DEFAULT_INITIAL_ALARM_DELAY_SECS = 10L
 
     // Post limits
     private const val DATA_LOG_SIZE_BYTES = 292 // bytes
@@ -47,9 +44,6 @@ internal object Constants {
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
     const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
-
-    // Package name
-    const val SAMSUNG_HEALTH_PACKAGE_NAME = "com.sec.android.app.shealth"
 
     // Data Type
     object DataTypes {
@@ -110,7 +104,6 @@ internal object Constants {
         const val STEP_PER_MIN = "step/min" // May be used in future - could be changed to count/min
         const val MINUTE = "minute"
         const val SECOND = "second"
-        const val STEP = "step" // No longer used
     }
 
     object DataLogs {
