@@ -88,13 +88,11 @@ internal class BatchDataLogs @Inject constructor(
                         records?.also { r ->
                             val sessions =
                                 r.map { record -> (record as SleepSessionRecord).toSahhaDataLogDto() }
-                            println(sessions)
                             val stages = r.map { session ->
                                 (session as SleepSessionRecord).stages.map {
                                     it.toSahhaDataLog(session)
                                 }
                             }
-                            println(stages)
                             val stagesFlattened = stages.flatten()
 
                             batchRepo.saveBatchedData(sessions + stagesFlattened)
