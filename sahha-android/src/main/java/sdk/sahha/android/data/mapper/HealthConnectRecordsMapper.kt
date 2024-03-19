@@ -121,7 +121,7 @@ internal fun BloodGlucoseRecord.toSahhaDataLogDto(): SahhaDataLog {
 
 internal fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLog {
     return SahhaDataLog(
-        id = metadata.id,
+        id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_DIASTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -140,13 +140,13 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(): SahhaDataLog {
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN),
         ),
-
-        )
+        parentId = metadata.id
+    )
 }
 
 internal fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLog {
     return SahhaDataLog(
-        id = metadata.id,
+        id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = Constants.DataTypes.BLOOD_PRESSURE_SYSTOLIC,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -165,6 +165,7 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(): SahhaDataLog {
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
         ),
+        parentId = metadata.id
     )
 }
 
@@ -392,7 +393,7 @@ internal fun OxygenSaturationRecord.toSahhaDataLogDto(): SahhaDataLog {
         id = metadata.id,
         logType = Constants.DataLogs.OXYGEN,
         dataType = Constants.DataTypes.OXYGEN_SATURATION,
-        value = percentage.value,
+        value = percentage.value.toDecimalPercentage(),
         unit = Constants.DataUnits.PERCENTAGE,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -422,7 +423,7 @@ internal fun BodyFatRecord.toSahhaDataLogDto(): SahhaDataLog {
         id = metadata.id,
         logType = Constants.DataLogs.BODY,
         dataType = Constants.DataTypes.BODY_FAT,
-        value = percentage.value,
+        value = percentage.value.toDecimalPercentage(),
         unit = Constants.DataUnits.PERCENTAGE,
         source = metadata.dataOrigin.packageName,
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
@@ -664,4 +665,8 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         recordingMethod = recordingMethod,
         deviceType = deviceType,
     )
+}
+
+private fun Double.toDecimalPercentage(): Double {
+    return this / 100
 }

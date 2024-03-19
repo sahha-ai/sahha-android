@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 
 @Dao
@@ -20,4 +21,10 @@ internal interface HealthConnectConfigDao {
 
     @Delete
     suspend fun clearQueries(queries: List<HealthConnectQuery>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveChangeToken(changeToken: HealthConnectChangeToken)
+
+    @Query("SELECT * FROM HealthConnectChangeToken WHERE recordType = :recordType")
+    suspend fun getChangeToken(recordType: String): HealthConnectChangeToken?
 }

@@ -6,6 +6,5 @@ internal interface BatchedDataRepo {
     suspend fun getBatchedData(): List<SahhaDataLog>
     suspend fun saveBatchedData(data: List<SahhaDataLog>)
     suspend fun deleteBatchedData(data: List<SahhaDataLog>)
-
     suspend fun deleteAllBatchedData()
 }
