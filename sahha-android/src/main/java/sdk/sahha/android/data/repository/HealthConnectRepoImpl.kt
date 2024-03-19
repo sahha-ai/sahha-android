@@ -997,7 +997,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         }
     }
 
-    override suspend fun <T: Record> getChangedRecords(
+    override suspend fun <T : Record> getChangedRecords(
         recordType: KClass<T>,
         token: String?
     ): List<Record>? {
@@ -1040,12 +1040,16 @@ internal class HealthConnectRepoImpl @Inject constructor(
             storeNextChangesToken(recordType, t!!)
             return changed
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "An unexpected error occurred with the changes token")
+            sahhaErrorLogger.application(
+                message = e.message ?: "An unexpected error occurred with the changes token",
+                path = tag,
+                method = "getChangedRecords"
+            )
             return emptyList()
         }
     }
 
-    private suspend fun <T: Record> storeNextChangesToken(recordType: KClass<T>, token: String) {
+    private suspend fun <T : Record> storeNextChangesToken(recordType: KClass<T>, token: String) {
         val recordTypeString = HealthPermission.getReadPermission(recordType)
         healthConnectConfigDao.saveChangeToken(
             HealthConnectChangeToken(
@@ -1055,7 +1059,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun <T: Record> getExistingChangesToken(recordType: KClass<T>): String? {
+    override suspend fun <T : Record> getExistingChangesToken(recordType: KClass<T>): String? {
         val recordTypeString = HealthPermission.getReadPermission(recordType)
         return healthConnectConfigDao.getChangeToken(recordTypeString)?.token
     }

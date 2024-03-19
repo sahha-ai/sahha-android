@@ -1,7 +1,6 @@
 package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -16,11 +15,13 @@ import sdk.sahha.android.source.Sahha
 import kotlin.coroutines.resume
 
 private const val tag = "BatchedDataPostWorker"
+
 internal class BatchedDataPostWorker(
     private val context: Context,
     workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
     private val scope = CoroutineScope(Dispatchers.Default + Job())
+    private val errorLogger = Sahha.di.sahhaErrorLogger
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
         return postDataLogs()
@@ -35,7 +36,11 @@ internal class BatchedDataPostWorker(
                 val batchedData = try {
                     Sahha.di.batchedDataRepo.getBatchedData()
                 } catch (e: Exception) {
-                    Log.w(tag, e.message ?: "Something went wrong reading batched data")
+                    errorLogger.application(
+                        e.message ?: "Something went wrong reading batched data",
+                        tag,
+                        "postDataLogs"
+                    )
                     if (cont.isActive) cont.resume(Result.retry())
                     emptyList()
                 }
