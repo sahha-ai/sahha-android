@@ -1044,6 +1044,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     path = tag,
                     method = "getChangedRecords"
                 )
+                return emptyList()
             }
         } while (response?.hasMore == true)
 
