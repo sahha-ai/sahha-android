@@ -27,6 +27,7 @@ import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.response.ChangesResponse
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -1015,10 +1016,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
         }
 
         // t is null checked
-        try {
-            val changed = mutableListOf<Record>()
-            do {
-                var response = client.getChanges(t!!)
+        val changed = mutableListOf<Record>()
+        var response: ChangesResponse? = null
+        do {
+            try {
+                response = client.getChanges(t!!)
                 if (response.changesTokenExpired) {
                     val newToken = client.getChangesToken(
                         ChangesTokenRequest(
@@ -1035,18 +1037,18 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     }
                 }
                 t = response.nextChangesToken
-            } while (response.hasMore)
+            } catch (e: Exception) {
+                sahhaErrorLogger.application(
+                    message = e.message
+                        ?: "An unexpected error occurred with the changes token",
+                    path = tag,
+                    method = "getChangedRecords"
+                )
+            }
+        } while (response?.hasMore == true)
 
-            storeNextChangesToken(recordType, t!!)
-            return changed
-        } catch (e: Exception) {
-            sahhaErrorLogger.application(
-                message = e.message ?: "An unexpected error occurred with the changes token",
-                path = tag,
-                method = "getChangedRecords"
-            )
-            return emptyList()
-        }
+        storeNextChangesToken(recordType, t!!)
+        return changed
     }
 
     private suspend fun <T : Record> storeNextChangesToken(recordType: KClass<T>, token: String) {
