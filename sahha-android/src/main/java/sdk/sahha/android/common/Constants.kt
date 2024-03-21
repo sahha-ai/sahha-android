@@ -9,6 +9,7 @@ internal object Constants {
 
     // Query
     const val CUSTOM_STEPS_QUERY_ID = "custom.healthconnect.steps.query"
+    const val PAGE_TOKEN_SUFFIX = ".initial.query.page.token"
 
     // Configs
     const val TRANSFORMATION = "AES/GCM/NoPadding"
