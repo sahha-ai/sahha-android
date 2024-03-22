@@ -54,7 +54,6 @@ internal class HealthConnectQueryService : Service() {
                 }
         }
 
-
         return START_NOT_STICKY
     }
 
