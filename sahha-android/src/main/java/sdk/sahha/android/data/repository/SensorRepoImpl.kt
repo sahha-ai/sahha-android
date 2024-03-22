@@ -5,34 +5,43 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.util.Log
-import androidx.work.*
-import kotlinx.coroutines.*
+import androidx.work.BackoffPolicy
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Response
-import sdk.sahha.android.common.*
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.common.Constants.SLEEP_POST_WORKER_TAG
+import sdk.sahha.android.common.Constants.SLEEP_WORKER_TAG
 import sdk.sahha.android.common.Constants.STEP_POST_WORKER_TAG
+import sdk.sahha.android.common.ResponseCode
+import sdk.sahha.android.common.SahhaErrorLogger
+import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaReceiversAndListeners
+import sdk.sahha.android.common.SahhaResponseHandler
+import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
-import sdk.sahha.android.framework.worker.SleepCollectionWorker
-import sdk.sahha.android.framework.worker.post.DevicePostWorker
-import sdk.sahha.android.framework.worker.post.SleepPostWorker
-import sdk.sahha.android.framework.worker.post.StepPostWorker
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
-import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepData
@@ -41,8 +50,14 @@ import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.framework.worker.SleepCollectionWorker
 import sdk.sahha.android.framework.worker.post.BatchedDataPostWorker
-import sdk.sahha.android.source.*
+import sdk.sahha.android.framework.worker.post.DevicePostWorker
+import sdk.sahha.android.framework.worker.post.SleepPostWorker
+import sdk.sahha.android.framework.worker.post.StepPostWorker
+import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaConverterUtility
+import sdk.sahha.android.source.SahhaSensor
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -122,6 +137,15 @@ internal class SensorRepoImpl @Inject constructor(
     }
 
     override fun stopAllWorkers() {
+        if (permissionManager.shouldUseHealthConnect()) {
+            workManager.cancelAllWorkByTag(SLEEP_WORKER_TAG)
+            workManager.cancelAllWorkByTag(DEVICE_POST_WORKER_TAG)
+            workManager.cancelAllWorkByTag(SLEEP_POST_WORKER_TAG)
+            workManager.cancelAllWorkByTag(STEP_POST_WORKER_TAG)
+            return
+        }
+
+        // Else
         workManager.cancelAllWork()
     }
 
@@ -403,11 +427,11 @@ internal class SensorRepoImpl @Inject constructor(
 
                     handleResponse(response, { getResponse(chunk) }, null) {
                         clearData(chunk)
-                        if(cont.isActive) cont.resume(true)
+                        if (cont.isActive) cont.resume(true)
                     }
                 } catch (e: Exception) {
                     Log.w(tag, e.message, e)
-                    if(cont.isActive) cont.resume(false)
+                    if (cont.isActive) cont.resume(false)
                 }
             }
         }
@@ -481,7 +505,7 @@ internal class SensorRepoImpl @Inject constructor(
                 Sahha.sim.sensor.killMainService(context)
                 return
             }
-            
+
             if (ResponseCode.isUnauthorized(code)) {
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, false)
                 SahhaResponseHandler.checkTokenExpired(code) {
@@ -556,7 +580,7 @@ internal class SensorRepoImpl @Inject constructor(
                     errorSummary = updatedErrorSummary
                     successfulResults = updatedSuccessfulResults
 
-                    if(successful) Log.i(tag, "Successfully posted ${sensor.name} data.")
+                    if (successful) Log.i(tag, "Successfully posted ${sensor.name} data.")
                     else error?.also { Log.i(tag, "Error posting ${sensor.name} data: $it") }
 
                     deferredResult.complete(Unit)

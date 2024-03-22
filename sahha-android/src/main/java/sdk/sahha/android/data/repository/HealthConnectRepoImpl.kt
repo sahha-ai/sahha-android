@@ -1045,11 +1045,9 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 }
                 t = response.nextChangesToken
             } catch (e: Exception) {
-                sahhaErrorLogger.application(
-                    message = e.message
-                        ?: "An unexpected error occurred with the changes token",
-                    path = tag,
-                    method = "getChangedRecords"
+                Log.w(
+                    tag, e.message
+                        ?: "An unexpected error occurred with the changes token"
                 )
                 return emptyList()
             }

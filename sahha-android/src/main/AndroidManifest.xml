@@ -41,7 +41,7 @@
             android:foregroundServiceType="health" />
 
         <service
-            android:name=".framework.service.HealthConnectPostService"
+            android:name=".framework.service.HealthConnectQueryService"
             android:exported="false"
             android:foregroundServiceType="health" />
 

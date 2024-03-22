@@ -3,6 +3,9 @@ package sdk.sahha.android.common
 internal object Constants {
     const val UNKNOWN = "UNKNOWN"
 
+    // Prefs
+    const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
+
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
     const val ACTION_KILL_SERVICE = "custom.intent.action.KILL_SERVICE"
@@ -24,7 +27,7 @@ internal object Constants {
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
-    const val POST_TIMEOUT_LIMIT_MILLIS = 300000L
+    const val POST_TIMEOUT_LIMIT_MILLIS = 90L * 1000L
 
     // Alarm
     const val DEFAULT_ALARM_INTERVAL_MINS = 15L

@@ -5,12 +5,8 @@ import android.content.Intent
 import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -39,7 +35,7 @@ import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.framework.service.DataCollectionService
-import sdk.sahha.android.framework.service.HealthConnectPostService
+import sdk.sahha.android.framework.service.HealthConnectQueryService
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
@@ -85,12 +81,12 @@ internal class SensorInteractionManager @Inject constructor(
                     Session.healthConnectPostCallback = null
                     Session.healthConnectPostCallback = callback
 
-                    notificationManager.startForegroundService(HealthConnectPostService::class.java)
+                    notificationManager.startForegroundService(HealthConnectQueryService::class.java)
                     postAllSensorDataUseCase()
                     return@launch
                 }
                 if (statusDisabled)
-                    notificationManager.startForegroundService(HealthConnectPostService::class.java)
+                    notificationManager.startForegroundService(HealthConnectQueryService::class.java)
 
                 postAllSensorDataUseCase(callback)
             }
@@ -162,33 +158,28 @@ internal class SensorInteractionManager @Inject constructor(
         repository.postStepSessions(repository.getAllStepSessions(), callback)
     }
 
-    internal suspend fun postWithMinimumDelay(callback: (error: String?, successful: Boolean) -> Unit) {
+    internal suspend fun queryWithMinimumDelay(
+        afterTimer: () -> Unit,
+        callback: (error: String?, successful: Boolean) -> Unit
+    ) {
         var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
-        val query = ioScope.launch {
+        ioScope.launch {
             try {
-                withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
-                    result = awaitHealthConnectPost()
-                }
-            } catch (e: TimeoutCancellationException) {
+                result = awaitHealthConnectQuery()
+            } catch (e: Exception) {
                 result = Pair(e.message, false)
-                val minutesFromMillis = Constants.POST_TIMEOUT_LIMIT_MILLIS / 1000 / 60
-                Log.e(tag, "Task timed out after $minutesFromMillis minutes")
+                Log.e(tag, e.message ?: "Something went wrong querying Health Connect data")
             }
+            callback(result.first, result.second)
         }
 
-        val minimumTime = ioScope.launch {
-            delay(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
+        ioScope.launch {
+            Thread.sleep(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
+            afterTimer()
         }
-
-        val minimumTimeOrQuery = listOf(query, minimumTime)
-        minimumTimeOrQuery.joinAll()
-        if (query.isActive) query.cancel()
-        if (minimumTime.isActive) minimumTime.cancel()
-
-        callback(result.first, result.second)
     }
 
-    private suspend fun awaitHealthConnectPost() = suspendCancellableCoroutine { cont ->
+    private suspend fun awaitHealthConnectQuery() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
             batchDataLogs()
             if (cont.isActive) cont.resume(Pair(null, true))
