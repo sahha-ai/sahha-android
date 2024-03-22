@@ -419,7 +419,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     error?.also { errors.add(it) }
                     successes.add(success)
                     cont.resume(Unit)
-                    //this.cancel()
                 }
             }
         }
@@ -441,7 +440,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     error?.also { errors.add(it) }
                     successes.add(success)
                     cont.resume(Unit)
-                    //this.cancel()
                 }
             }
         }
@@ -965,33 +963,37 @@ internal class HealthConnectRepoImpl @Inject constructor(
         healthConnectConfigDao.clearAllQueries()
     }
 
+    private suspend fun getChangeToken(recordType: String): String? {
+        return healthConnectConfigDao.getChangeToken(recordType)?.token
+    }
+
     override suspend fun <T : Record> getRecords(
         recordType: KClass<T>,
         timeRangeFilter: TimeRangeFilter
     ): List<T> {
         try {
-            var records = listOf<T>()
-            var response = client?.readRecords(
+            val recordTypeString = HealthPermission.getReadPermission(recordType)
+            val pageTokenId = recordTypeString + Constants.PAGE_TOKEN_SUFFIX
+            val pageToken = getChangeToken(pageTokenId)
+            val response = client?.readRecords(
                 ReadRecordsRequest(
                     recordType = recordType,
-                    timeRangeFilter = timeRangeFilter
+                    timeRangeFilter = timeRangeFilter,
+                    pageToken = pageToken
                 )
             )
-
-            records += response?.records as List<T>
-
-            while (response?.pageToken != null) {
-                response = client?.readRecords(
-                    ReadRecordsRequest(
-                        recordType = recordType,
-                        timeRangeFilter = timeRangeFilter,
-                        pageToken = response.pageToken
+            try {
+                saveChangeToken(
+                    HealthConnectChangeToken(
+                        pageTokenId,
+                        response?.pageToken
                     )
                 )
-                records += response?.records as List<T>
+            } catch (e: Exception) {
+                Log.w(tag, e.message ?: "Something went wrong storing next page token")
             }
 
-            return records
+            return response?.records ?: emptyList()
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Could not query Health Connect data")
             return emptyList()
@@ -1003,6 +1005,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
         token: String?
     ): List<Record>? {
         client ?: return emptyList()
+        val recordTypeString = HealthPermission.getReadPermission(recordType)
+        val pageToken = getChangeToken(recordType = recordTypeString + Constants.PAGE_TOKEN_SUFFIX)
+        val pageTokenExists = !pageToken.isNullOrEmpty()
+        if (pageTokenExists) return null
+
         var t = token
         val noTokenFound = t == null
         if (noTokenFound) {
@@ -1017,7 +1024,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
         // t is null checked
         val changed = mutableListOf<Record>()
-        var response: ChangesResponse? = null
+        var response: ChangesResponse?
         do {
             try {
                 response = client.getChanges(t!!)
@@ -1038,11 +1045,9 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 }
                 t = response.nextChangesToken
             } catch (e: Exception) {
-                sahhaErrorLogger.application(
-                    message = e.message
-                        ?: "An unexpected error occurred with the changes token",
-                    path = tag,
-                    method = "getChangedRecords"
+                Log.w(
+                    tag, e.message
+                        ?: "An unexpected error occurred with the changes token"
                 )
                 return emptyList()
             }
@@ -1107,6 +1112,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
     }
 
     private suspend fun <T : Record> isFirstQuery(dataType: KClass<T>): Boolean {
+        val recordTypeString = HealthPermission.getReadPermission(dataType)
+        val pageTokenId = recordTypeString + Constants.PAGE_TOKEN_SUFFIX
+        val pageTokenExists = !getChangeToken(pageTokenId).isNullOrEmpty()
+        if (pageTokenExists) return true
+
         return getLastSuccessfulQuery(dataType)?.let { false } ?: true
     }
 

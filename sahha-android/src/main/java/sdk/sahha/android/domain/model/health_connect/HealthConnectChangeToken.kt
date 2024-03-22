@@ -6,5 +6,5 @@ import androidx.room.PrimaryKey
 @Entity
 internal data class HealthConnectChangeToken(
     @PrimaryKey val recordType: String,
-    val token: String
+    val token: String?
 )

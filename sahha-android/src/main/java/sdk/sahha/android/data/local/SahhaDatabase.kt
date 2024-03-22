@@ -27,7 +27,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 11,
+    version = 12,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -51,7 +51,8 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
     ],
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 10, to = 11)
+        AutoMigration(from = 10, to = 11),
+        AutoMigration(from = 11, to = 12)
     ]
 )
 

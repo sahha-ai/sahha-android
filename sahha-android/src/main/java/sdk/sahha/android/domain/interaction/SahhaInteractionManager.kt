@@ -20,11 +20,12 @@ import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.framework.receiver.BackgroundTaskRestarterReceiver
-import sdk.sahha.android.framework.service.HealthConnectPostService
+import sdk.sahha.android.framework.service.HealthConnectQueryService
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
@@ -35,6 +36,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.coroutines.resume
+
 
 private const val tag = "SahhaInteractionManager"
 
@@ -50,6 +52,7 @@ internal class SahhaInteractionManager @Inject constructor(
     private val alarms: SahhaAlarmManager,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
+    private val healthConnectRepo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     internal suspend fun configure(
@@ -192,7 +195,7 @@ internal class SahhaInteractionManager @Inject constructor(
                     },
                     async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
-                    async { notifications.startForegroundService(HealthConnectPostService::class.java) },
+                    async { notifications.startForegroundService(HealthConnectQueryService::class.java) },
                     async { scheduleInsightsAlarm(context) },
                     async { scheduleBackgroundTaskRestarter(context) }
                 ).joinAll()
