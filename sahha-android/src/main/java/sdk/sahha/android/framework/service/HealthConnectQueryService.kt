@@ -3,7 +3,6 @@ package sdk.sahha.android.framework.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,15 +25,14 @@ internal class HealthConnectQueryService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (!Session.healthConnectServiceLaunched)
-            scope.launch {
-                Session.healthConnectServiceLaunched = true
-                SahhaReconfigure(this@HealthConnectQueryService)
-                startNotification()
-                if (stopOnNoAuth()) return@launch
+        scope.launch {
+            SahhaReconfigure(this@HealthConnectQueryService)
+            startNotification()
+            if (stopOnNoAuth()) return@launch
 
+            if (!Session.healthConnectServiceLaunched)
                 launch {
-                    Log.d(tag, "healthConnectQueryScope launched")
+                    Session.healthConnectServiceLaunched = true
                     Sahha.di
                         .sahhaInteractionManager
                         .sensor
@@ -54,7 +52,7 @@ internal class HealthConnectQueryService : Service() {
                             }
                         }
                 }
-            }
+        }
 
 
         return START_NOT_STICKY
@@ -63,7 +61,6 @@ internal class HealthConnectQueryService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Session.healthConnectServiceLaunched = false
-        Log.d(tag, "Service destroyed")
         Sahha.di.sahhaAlarmManager.setAlarm(
             Sahha.di.sahhaAlarmManager.getHealthConnectQueryPendingIntent(this),
             ZonedDateTime.now()
