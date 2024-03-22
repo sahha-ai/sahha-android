@@ -13,39 +13,46 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import java.time.ZonedDateTime
 
-private const val tag = "HealthConnectPostService"
+private const val tag = "HealthConnectQueryService"
 
-internal class HealthConnectPostService : Service() {
-    val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
+internal class HealthConnectQueryService : Service() {
+    private val scope by lazy {
+        CoroutineScope(Dispatchers.Default + Job())
+    }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (!Session.healthConnectServiceLaunched)
-            scope.launch {
-                Session.healthConnectServiceLaunched = true
-                SahhaReconfigure(this@HealthConnectPostService)
-                startNotification()
-                if (stopOnNoAuth()) return@launch
+        scope.launch {
+            SahhaReconfigure(this@HealthConnectQueryService)
+            startNotification()
+            if (stopOnNoAuth()) return@launch
 
-                Sahha.di
-                    .sahhaInteractionManager
-                    .sensor
-                    .postWithMinimumDelay { error, successful ->
-                        Session.healthConnectPostCallback?.invoke(error, successful)
-                        Session.healthConnectPostCallback = null
+            if (!Session.healthConnectServiceLaunched)
+                launch {
+                    Session.healthConnectServiceLaunched = true
+                    Sahha.di
+                        .sahhaInteractionManager
+                        .sensor
+                        .queryWithMinimumDelay(
+                            afterTimer = {
+                                stopForeground(STOP_FOREGROUND_REMOVE)
+                                stopSelf()
+                            }
+                        ) { error, successful ->
+                            Session.healthConnectPostCallback?.invoke(error, successful)
+                            Session.healthConnectPostCallback = null
 
-                        error?.also { e ->
-                            Sahha.di.sahhaErrorLogger.application(
-                                e, tag, "onStartCommand"
-                            )
+                            error?.also { e ->
+                                Sahha.di.sahhaErrorLogger.application(
+                                    e, tag, "onStartCommand"
+                                )
+                            }
                         }
-
-                        stopForeground(STOP_FOREGROUND_REMOVE)
-                        stopSelf()
-                    }
-            }
+                }
+        }
 
         return START_NOT_STICKY
     }

@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.framework.service.HealthConnectPostService
+import sdk.sahha.android.framework.service.HealthConnectQueryService
 import sdk.sahha.android.source.Sahha
 
 private const val tag = "SahhaAlarmReceiver"
@@ -23,7 +23,7 @@ internal class HealthConnectQueryReceiver : BroadcastReceiver() {
             try {
                 SahhaReconfigure(context)
 
-                nm.startForegroundService(HealthConnectPostService::class.java)
+                nm.startForegroundService(HealthConnectQueryService::class.java)
             } catch (e: Exception) {
                 Log.e(tag, e.message, e)
                 Sahha.di.sahhaErrorLogger
