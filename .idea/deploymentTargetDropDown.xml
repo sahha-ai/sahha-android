@@ -8,9 +8,6 @@
       <entry key="HCManifestPermissionsTest">
         <State />
       </entry>
-      <entry key="Tests in 'sdk.sahha.android.suite.batched'">
-        <State />
-      </entry>
       <entry key="app">
         <State>
           <targetSelectedWithDropDown>
@@ -30,7 +27,10 @@
       <entry key="configureDiffData_savesCurrentInfo()">
         <State />
       </entry>
-      <entry key="deviceWorker_postsSuccessfully()">
+      <entry key="emptySet_usesExpectedPermissions()">
+        <State />
+      </entry>
+      <entry key="noDeclarations_usesExpectedPermissions()">
         <State />
       </entry>
     </value>

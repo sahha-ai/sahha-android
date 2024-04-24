@@ -86,6 +86,8 @@ internal class PermissionManagerImpl @Inject constructor(
         val permissions = getHcPermissions()
 
         val trimmed = manifestPermissions?.let { mPermissions ->
+            if (mPermissions.isEmpty()) return@let null
+
             permissions.filter { mPermissions.contains(it) }
         }
 
