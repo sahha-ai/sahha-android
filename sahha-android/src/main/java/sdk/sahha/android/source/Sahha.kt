@@ -26,6 +26,9 @@ object Sahha {
     val isAuthenticated: Boolean
         get() = if (simInitialized()) sim.auth.checkIsAuthenticated() else false
 
+    val profileToken: String?
+        get() = di.authRepo.getToken()
+
     internal fun diInitialized(): Boolean {
         return ::di.isInitialized
     }

@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="DeviceInfoTest">
-        <State />
-      </entry>
       <entry key="HCManifestPermissionsTest">
         <State />
       </entry>
@@ -16,21 +13,15 @@
               <deviceKey>
                 <Key>
                   <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_33.avd" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-22T03:19:07.753022Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-04-15T04:33:17.010593Z" />
         </State>
       </entry>
-      <entry key="configureDiffData_savesCurrentInfo()">
-        <State />
-      </entry>
-      <entry key="emptySet_usesExpectedPermissions()">
-        <State />
-      </entry>
-      <entry key="noDeclarations_usesExpectedPermissions()">
+      <entry key="token()">
         <State />
       </entry>
     </value>
