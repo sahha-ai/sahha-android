@@ -218,7 +218,7 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             manager.requestHealthConnectSensors(context) { _, _ ->
-                manager.getHealthConnectSensorStatus { status ->
+                manager.getHealthConnectSensorStatus(context) { status ->
                     cont.resume(status)
                 }
             }
@@ -237,7 +237,7 @@ internal class PermissionInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectSensorStatus(context: Context): Enum<SahhaSensorStatus> {
         return suspendCoroutine { cont ->
-            manager.getHealthConnectSensorStatus { status ->
+            manager.getHealthConnectSensorStatus(context = context) { status ->
                 cont.resume(status)
             }
         }

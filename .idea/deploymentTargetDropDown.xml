@@ -2,7 +2,10 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="ChunkingTest">
+      <entry key="DeviceInfoTest">
+        <State />
+      </entry>
+      <entry key="HCManifestPermissionsTest">
         <State />
       </entry>
       <entry key="app">
@@ -21,13 +24,13 @@
           <timeTargetWasSelectedWithDropDown value="2024-03-22T03:19:07.753022Z" />
         </State>
       </entry>
-      <entry key="openAppSettings()">
+      <entry key="configureDiffData_savesCurrentInfo()">
         <State />
       </entry>
-      <entry key="testLimiting()">
+      <entry key="emptySet_usesExpectedPermissions()">
         <State />
       </entry>
-      <entry key="write2500StepRecords()">
+      <entry key="noDeclarations_usesExpectedPermissions()">
         <State />
       </entry>
     </value>
