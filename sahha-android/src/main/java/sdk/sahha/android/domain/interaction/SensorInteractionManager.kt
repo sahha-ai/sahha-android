@@ -70,9 +70,10 @@ internal class SensorInteractionManager @Inject constructor(
     internal val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     fun postSensorData(
+        context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        permissionManager.getHealthConnectSensorStatus { status ->
+        permissionManager.getHealthConnectSensorStatus(context = context) { status ->
             ioScope.launch {
                 val statusEnabled = status == SahhaSensorStatus.enabled
                 val statusDisabled = status == SahhaSensorStatus.disabled

@@ -16,7 +16,8 @@ internal interface PermissionManager {
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
 
-    suspend fun getHcPermissions(): Set<String>
+    suspend fun getTrimmedHcPermissions(manifestPermissions: Set<String>?): Set<String>
+    suspend fun getManifestPermissions(context: Context): Set<String>?
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
     fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean
@@ -27,7 +28,7 @@ internal interface PermissionManager {
     )
 
     fun getNativeSensorStatus(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
-    fun getHealthConnectSensorStatus(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
+    fun getHealthConnectSensorStatus(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
     fun openHealthConnectSettings(context: Context)
     suspend fun getDeviceOnlySensorStatus(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
     suspend fun enableDeviceOnlySensor(callback: (status: Enum<SahhaSensorStatus>) -> Unit)

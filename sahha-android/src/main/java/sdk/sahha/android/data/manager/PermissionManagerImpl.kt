@@ -80,8 +80,32 @@ internal class PermissionManagerImpl @Inject constructor(
         return clientIsAvailable && isAndroid9OrAbove
     }
 
+    override suspend fun getTrimmedHcPermissions(
+        manifestPermissions: Set<String>?
+    ): Set<String> {
+        val permissions = getHcPermissions()
 
-    override suspend fun getHcPermissions(): Set<String> {
+        val trimmed = manifestPermissions?.let { mPermissions ->
+            permissions.filter { mPermissions.contains(it) }
+        }
+
+        return trimmed?.toSet() ?: permissions
+    }
+
+    override suspend fun getManifestPermissions(context: Context): Set<String>? {
+        return try {
+            val packageName = context.packageName
+            val packageInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+            val requestedPermissions = packageInfo.requestedPermissions
+            requestedPermissions.toSet()
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
+    private suspend fun getHcPermissions(): Set<String> {
         val permissions = mutableSetOf<String>()
         val enabledSensors = configRepo.getConfig().sensorArray
 
@@ -257,8 +281,8 @@ internal class PermissionManagerImpl @Inject constructor(
         callback(SahhaSensorStatus.enabled)
     }
 
-    override fun getHealthConnectSensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
-        SahhaPermissions.getSensorStatusHealthConnect(callback)
+    override fun getHealthConnectSensorStatus(context: Context, callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+        SahhaPermissions.getSensorStatusHealthConnect(context, callback)
     }
 
     override fun getNativeSensorStatus(

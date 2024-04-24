@@ -2,7 +2,13 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="ChunkingTest">
+      <entry key="DeviceInfoTest">
+        <State />
+      </entry>
+      <entry key="HCManifestPermissionsTest">
+        <State />
+      </entry>
+      <entry key="Tests in 'sdk.sahha.android.suite.batched'">
         <State />
       </entry>
       <entry key="app">
@@ -21,13 +27,10 @@
           <timeTargetWasSelectedWithDropDown value="2024-03-22T03:19:07.753022Z" />
         </State>
       </entry>
-      <entry key="openAppSettings()">
+      <entry key="configureDiffData_savesCurrentInfo()">
         <State />
       </entry>
-      <entry key="testLimiting()">
-        <State />
-      </entry>
-      <entry key="write2500StepRecords()">
+      <entry key="deviceWorker_postsSuccessfully()">
         <State />
       </entry>
     </value>
