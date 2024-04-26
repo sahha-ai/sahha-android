@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.health.connect.HealthConnectManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -88,10 +89,21 @@ internal class PermissionManagerImpl @Inject constructor(
         val trimmed = manifestPermissions?.let { mPermissions ->
             if (mPermissions.isEmpty()) return@let null
 
+            logUndeclaredPermissions(permissions, mPermissions)
             permissions.filter { mPermissions.contains(it) }
         }
 
         return trimmed?.toSet() ?: permissions
+    }
+
+    private fun logUndeclaredPermissions(
+        permissions: Set<String>,
+        manifestPermissions: Set<String>
+    ) {
+        permissions.forEach { permission ->
+            if (!manifestPermissions.contains(permission))
+                Log.w(tag, "Permission: $permission is not declared in the AndroidManifest!")
+        }
     }
 
     override suspend fun getManifestPermissions(context: Context): Set<String>? {

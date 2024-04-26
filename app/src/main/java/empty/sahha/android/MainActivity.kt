@@ -70,7 +70,8 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf(
 //                SahhaSensor.heart,
 //                SahhaSensor.activity,
-//                SahhaSensor.sleep)
+//                SahhaSensor.sleep
+//            )
 //            sensors = setOf()
         )
 
