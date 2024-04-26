@@ -102,7 +102,7 @@ internal class PermissionManagerImpl @Inject constructor(
     ) {
         permissions.forEach { permission ->
             if (!manifestPermissions.contains(permission))
-                Log.w(tag, "Permission: $permission is not declared in the AndroidManifest!")
+                Log.w(tag, "Permission: [$permission] is not declared in the AndroidManifest!")
         }
     }
 
