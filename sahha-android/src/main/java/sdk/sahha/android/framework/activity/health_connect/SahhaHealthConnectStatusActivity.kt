@@ -1,5 +1,6 @@
 package sdk.sahha.android.framework.activity.health_connect
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
@@ -19,13 +20,15 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
         lifecycleScope.launch {
             SahhaReconfigure(this@SahhaHealthConnectStatusActivity)
             healthConnectClient?.also { client ->
-                checkPermissions(client)
+                checkPermissions(this@SahhaHealthConnectStatusActivity, client)
             } ?: healthConnectUnavailable()
         }
     }
 
-    private suspend fun checkPermissions(healthConnectClient: HealthConnectClient) {
-        val hcPermissions = Sahha.di.permissionManager.getHcPermissions()
+    private suspend fun checkPermissions(context: Context, healthConnectClient: HealthConnectClient) {
+        val hcPermissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
+            Sahha.di.permissionManager.getManifestPermissions(context = context)
+        )
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         if (granted.containsAll(hcPermissions)) {
             permissionHandler.activityCallback.statusCallback

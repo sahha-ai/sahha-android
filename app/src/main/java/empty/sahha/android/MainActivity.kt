@@ -67,7 +67,11 @@ class MainActivity : ComponentActivity() {
 //                title = "Foreground Service",
 //                shortDescription = "This mainly handles native steps and screen locks"
             ),
-//            sensors = setOf(SahhaSensor.device)
+//            sensors = setOf(
+//                SahhaSensor.heart,
+//                SahhaSensor.activity,
+//                SahhaSensor.sleep
+//            )
 //            sensors = setOf()
         )
 

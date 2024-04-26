@@ -1045,10 +1045,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 }
                 t = response.nextChangesToken
             } catch (e: Exception) {
-                Log.w(
-                    tag, e.message
-                        ?: "An unexpected error occurred with the changes token"
-                )
                 return emptyList()
             }
         } while (response?.hasMore == true)
