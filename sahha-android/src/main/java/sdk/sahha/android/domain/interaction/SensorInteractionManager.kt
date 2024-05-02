@@ -14,7 +14,6 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
-import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -35,7 +34,6 @@ import sdk.sahha.android.domain.use_case.post.PostStepDataUseCase
 import sdk.sahha.android.domain.use_case.post.StartHealthConnectBackgroundTasksUseCase
 import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.framework.service.DataCollectionService
-import sdk.sahha.android.framework.service.HealthConnectQueryService
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
@@ -50,7 +48,6 @@ internal class SensorInteractionManager @Inject constructor(
     private val configRepo: SahhaConfigRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
-    private val alarms: SahhaAlarmManager,
     private val sensorManager: SensorManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
@@ -82,12 +79,17 @@ internal class SensorInteractionManager @Inject constructor(
                     Session.healthConnectPostCallback = null
                     Session.healthConnectPostCallback = callback
 
-                    notificationManager.startForegroundService(HealthConnectQueryService::class.java)
                     postAllSensorDataUseCase()
+                    repository.startHealthConnectQueryWorker(
+                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
+                    )
                     return@launch
                 }
-                if (statusDisabled)
-                    notificationManager.startForegroundService(HealthConnectQueryService::class.java)
+                if (statusDisabled) repository.startHealthConnectQueryWorker(
+                    Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                    Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
+                )
 
                 postAllSensorDataUseCase(callback)
             }
@@ -95,7 +97,6 @@ internal class SensorInteractionManager @Inject constructor(
     }
 
     internal fun stopAllBackgroundTasks(context: Context) {
-        alarms.stopAllAlarms(context)
         repository.stopAllWorkers()
         unregisterExistingReceiversAndListeners(context.applicationContext)
     }

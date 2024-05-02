@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.Constants
@@ -16,6 +17,7 @@ import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
@@ -26,7 +28,7 @@ internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
-    private val scope by lazy { CoroutineScope(Dispatchers.Default) }
+    private val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
     private val sensors by lazy { Sahha.sim.sensor }
 
     private var killswitched = false
@@ -48,6 +50,7 @@ internal class DataCollectionService : Service() {
                 startDataCollectors(this@DataCollectionService)
 
                 checkAndRestartService(intent)
+                handleActions(intent)
             } catch (e: Exception) {
                 stopService()
                 Log.w(tag, e.message ?: "Something went wrong")
@@ -55,6 +58,55 @@ internal class DataCollectionService : Service() {
         }
 
         return START_STICKY
+    }
+
+    private fun handleActions(intent: Intent?) {
+        intent?.getStringExtra(Constants.INTENT_ACTION)?.also { action ->
+            when (action) {
+                Constants.IntentAction.QUERY_HEALTH_CONNECT -> {
+                    Log.d(tag, "Query action received")
+                    scope.launch { queryHealthConnect() }
+                }
+
+                Constants.IntentAction.RESTART_BACKGROUND_TASKS -> {
+                    Log.d(tag, "Restart action received")
+                    scope.launch { restartBackgroundTasks() }
+                }
+            }
+        }
+    }
+
+    private suspend fun restartBackgroundTasks() {
+        try {
+            Sahha.sim.permission.startHcOrNativeDataCollection(applicationContext)
+        } catch (e: Exception) {
+            Log.e(tag, e.message, e)
+            Sahha.di.sahhaErrorLogger
+                .application(
+                    e.message ?: SahhaErrors.somethingWentWrong,
+                    tag,
+                    "restartBackgroundTasks",
+                    e.stackTraceToString()
+                )
+        }
+    }
+
+    private suspend fun queryHealthConnect() {
+        Sahha.di
+            .sahhaInteractionManager
+            .sensor
+            .queryWithMinimumDelay(
+                afterTimer = {}
+            ) { error, successful ->
+                Session.healthConnectPostCallback?.invoke(error, successful)
+                Session.healthConnectPostCallback = null
+
+                error?.also { e ->
+                    Sahha.di.sahhaErrorLogger.application(
+                        e, tag, "queryHealthConnect"
+                    )
+                }
+            }
     }
 
     override fun onDestroy() {

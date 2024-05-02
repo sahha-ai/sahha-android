@@ -28,6 +28,7 @@ import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -378,16 +379,16 @@ internal class BatchDataLogs @Inject constructor(
             }
         }
 
-//        batchJobs.joinAll()
+        batchJobs.joinAll()
 
-        batchJobs.forEach { job ->
-            suspendCancellableCoroutine { cont ->
-                syncJob.launch {
-                    job.join()
-                    if (cont.isActive) cont.resume(Unit)
-                }
-            }
-        }
+//        batchJobs.forEach { job ->
+//            suspendCancellableCoroutine { cont ->
+//                syncJob.launch {
+//                    job.join()
+//                    if (cont.isActive) cont.resume(Unit)
+//                }
+//            }
+//        }
     }
 
     private suspend fun <T : Record> detectRecords(recordType: KClass<T>) =
@@ -456,21 +457,22 @@ internal class BatchDataLogs @Inject constructor(
     }
 
     private fun filterExisting(data: List<SahhaDataLog>): List<SahhaDataLog> {
-        return data.filterNot { d ->
-            existingBatch.find { e ->
-                d.source == e.source
-                        && d.dataType == e.dataType
-                        && d.deviceType == e.deviceType
-                        && d.startDateTime == e.startDateTime
-                        && d.endDateTime == e.endDateTime
-                        && d.logType == e.logType
-                        && d.additionalProperties == e.additionalProperties
-                        && d.recordingMethod == e.recordingMethod
-                        && d.unit == e.unit
-                        && d.value == e.value
-                        && d.parentId == e.parentId
-            } != null
-        }
+//        return data.filterNot { d ->
+//            existingBatch.find { e ->
+//                d.source == e.source
+//                        && d.dataType == e.dataType
+//                        && d.deviceType == e.deviceType
+//                        && d.startDateTime == e.startDateTime
+//                        && d.endDateTime == e.endDateTime
+//                        && d.logType == e.logType
+//                        && d.additionalProperties == e.additionalProperties
+//                        && d.recordingMethod == e.recordingMethod
+//                        && d.unit == e.unit
+//                        && d.value == e.value
+//                        && d.parentId == e.parentId
+//            } != null
+//        }
+        return data
     }
 
     private fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {

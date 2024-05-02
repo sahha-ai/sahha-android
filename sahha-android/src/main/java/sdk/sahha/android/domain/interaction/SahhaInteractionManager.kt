@@ -1,9 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.app.Application
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -17,23 +15,16 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
-import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
-import sdk.sahha.android.framework.receiver.BackgroundTaskRestarterReceiver
-import sdk.sahha.android.framework.service.HealthConnectQueryService
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -49,7 +40,6 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val sensor: SensorInteractionManager,
     internal val insights: InsightsInteractionManager,
     internal val notifications: SahhaNotificationManager,
-    private val alarms: SahhaAlarmManager,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
@@ -105,46 +95,6 @@ internal class SahhaInteractionManager @Inject constructor(
         )
     }
 
-    fun scheduleInsightsAlarm(
-        context: Context,
-        localTime: LocalTime = LocalTime.of(Constants.ALARM_6PM, 5)
-    ) {
-        val insightsPendingIntent = alarms.getInsightsQueryPendingIntent(context)
-        val timestamp =
-            ZonedDateTime.of(
-                LocalDate.now(),
-                localTime,
-                ZonedDateTime.now().offset
-            )
-
-        alarms.setAlarm(insightsPendingIntent, timestamp.toInstant().toEpochMilli())
-    }
-
-    fun scheduleBackgroundTaskRestarter(
-        context: Context,
-        nextAlarmTime: LocalDateTime =
-            LocalDateTime.of(
-                LocalDate.now().plusDays(1),
-                LocalTime.of(Constants.ALARM_12AM, 0),
-            )
-    ) {
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            Constants.RESTARTER_RECEIVER,
-            Intent(context, BackgroundTaskRestarterReceiver::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val nextAlarmTimeEpochMillis = ZonedDateTime.of(
-            nextAlarmTime,
-            ZonedDateTime.now().offset
-        ).toInstant().toEpochMilli()
-
-        alarms.setAlarm(
-            pendingIntent = pendingIntent,
-            setTimeEpochMillis = nextAlarmTimeEpochMillis
-        )
-    }
-
     private suspend fun awaitProcessAndPutDeviceInfo(context: Context) =
         suspendCancellableCoroutine { cont ->
             defaultScope.launch {
@@ -162,9 +112,17 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
-                    async { sensor.startDataCollection(context) },
+                    async {
+                        sensor.startDataCollection(context) { _, success ->
+                            if (success) {
+                                sensorRepo.startBackgroundTaskRestarterWorker(
+                                    Constants.WORKER_REPEAT_1_DAY,
+                                    Constants.BACKGROUND_TASK_RESTARTER_WORKER_TAG
+                                )
+                            }
+                        }
+                    },
                     async { sensor.checkAndStartPostWorkers(context) },
-                    async { scheduleBackgroundTaskRestarter(context) }
                 ).joinAll()
 
                 callback?.invoke(null, true)
@@ -193,11 +151,21 @@ internal class SahhaInteractionManager @Inject constructor(
                             Constants.SAHHA_DATA_LOG_WORKER_TAG
                         )
                     },
-                    async { sensor.startDataCollection(context) },
+                    async {
+                        sensor.startDataCollection(context) { _, success ->
+                            if (success) {
+                                sensorRepo.startHealthConnectQueryWorker(
+                                    Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                                    Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
+                                )
+                                sensorRepo.startBackgroundTaskRestarterWorker(
+                                    Constants.WORKER_REPEAT_1_DAY,
+                                    Constants.BACKGROUND_TASK_RESTARTER_WORKER_TAG
+                                )
+                            }
+                        }
+                    },
                     async { sensor.checkAndStartPostWorkers(context) },
-                    async { notifications.startForegroundService(HealthConnectQueryService::class.java) },
-                    async { scheduleInsightsAlarm(context) },
-                    async { scheduleBackgroundTaskRestarter(context) }
                 ).joinAll()
 
                 callback?.invoke(null, true)

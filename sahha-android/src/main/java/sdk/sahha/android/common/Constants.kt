@@ -27,6 +27,7 @@ internal object Constants {
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
     const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
+    const val WORKER_REPEAT_1_DAY = 1440L
     const val POST_TIMEOUT_LIMIT_MILLIS = 90L * 1000L
 
     // Alarm
@@ -42,6 +43,13 @@ internal object Constants {
     const val DEVICE_LOCK_POST_LIMIT = 91
     const val STEP_SESSION_COOLDOWN_MILLIS = 30000L
     const val OKHTTP_CLIENT_TIMEOUT = 30L
+
+    // Tasks
+    const val INTENT_ACTION = "sahha.intent.task"
+    object IntentAction {
+        const val QUERY_HEALTH_CONNECT = "queryHealthConnect"
+        const val RESTART_BACKGROUND_TASKS = "resetBackgroundTasks"
+    }
 
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
@@ -134,6 +142,8 @@ internal object Constants {
     const val STEP_POST_WORKER_TAG = "stepPost"
     const val SAHHA_DATA_LOG_WORKER_TAG = "sahhaDataLogPost"
     const val HEALTH_CONNECT_POST_WORKER_TAG = "healthConnectPost"
+    const val HEALTH_CONNECT_QUERY_WORKER_TAG = "healthConnectQuery"
+    const val BACKGROUND_TASK_RESTARTER_WORKER_TAG = "backgroundRestarter"
 
     // Sleep stage
     const val SLEEP_STAGE_UNKNOWN = "sleep_stage_unknown"
