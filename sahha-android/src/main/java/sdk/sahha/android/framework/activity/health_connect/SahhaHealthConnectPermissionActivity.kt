@@ -6,7 +6,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.framework.service.HealthConnectQueryService
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
@@ -68,7 +68,10 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
     private fun enabledStatus() {
         if (status == SahhaSensorStatus.enabled) {
-            Sahha.di.sahhaNotificationManager.startForegroundService(HealthConnectQueryService::class.java)
+            Sahha.di.sensorRepo.startHealthConnectQueryWorker(
+                Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
+            )
         }
 
         permissionHandler.activityCallback.statusCallback?.invoke(

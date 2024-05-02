@@ -67,7 +67,6 @@ import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
 import sdk.sahha.android.domain.manager.PostChunkManager
-import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
@@ -112,7 +111,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val sahhaTimeManager: SahhaTimeManager,
     private val healthConnectConfigDao: HealthConnectConfigDao,
-    private val sahhaAlarmManager: SahhaAlarmManager,
     private val movementDao: MovementDao,
     private val mapper: HealthConnectConstantsMapper,
     private val sharedPrefs: SharedPreferences
