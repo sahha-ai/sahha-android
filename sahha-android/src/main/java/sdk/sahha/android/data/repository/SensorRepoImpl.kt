@@ -7,9 +7,11 @@ import android.hardware.SensorManager
 import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ListenableWorker
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.Worker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -50,6 +52,8 @@ import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.framework.worker.BackgroundTaskRestarterWorker
+import sdk.sahha.android.framework.worker.HealthConnectQueryWorker
 import sdk.sahha.android.framework.worker.SleepCollectionWorker
 import sdk.sahha.android.framework.worker.post.BatchedDataPostWorker
 import sdk.sahha.android.framework.worker.post.DevicePostWorker
@@ -242,6 +246,26 @@ internal class SensorRepoImpl @Inject constructor(
                 .addTag(workerTag)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build()
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
+    }
+
+    override fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val workRequest = PeriodicWorkRequestBuilder<HealthConnectQueryWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .build()
+        startWorkManager(workRequest, workerTag, policy = ExistingPeriodicWorkPolicy.REPLACE)
+    }
+
+    override fun startBackgroundTaskRestarterWorker(repeatIntervalMinutes: Long, workerTag: String) {
+        val workRequest = PeriodicWorkRequestBuilder<BackgroundTaskRestarterWorker>(
+            repeatIntervalMinutes,
+            TimeUnit.MINUTES
+        )
+            .addTag(workerTag)
+            .build()
         startWorkManager(workRequest, workerTag)
     }
 

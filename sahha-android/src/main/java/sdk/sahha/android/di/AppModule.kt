@@ -54,7 +54,6 @@ import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
-import sdk.sahha.android.domain.manager.SahhaAlarmManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
@@ -68,7 +67,6 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
-import sdk.sahha.android.framework.manager.SahhaAlarmManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
@@ -558,7 +556,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaErrorLogger: SahhaErrorLogger,
         sahhaTimeManager: SahhaTimeManager,
         healthConnectConfigDao: HealthConnectConfigDao,
-        sahhaAlarmManager: SahhaAlarmManager,
         movementDao: MovementDao,
         constantsMapper: HealthConnectConstantsMapper,
         sharedPrefs: SharedPreferences
@@ -578,7 +575,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             sahhaErrorLogger,
             sahhaTimeManager,
             healthConnectConfigDao,
-            sahhaAlarmManager,
             movementDao,
             constantsMapper,
             sharedPrefs
@@ -607,16 +603,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context
     ): AlarmManager {
         return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    }
-
-    @Singleton
-    @Provides
-    fun provideSahhaAlarmManager(
-        alarmManager: AlarmManager
-    ): SahhaAlarmManager {
-        return SahhaAlarmManagerImpl(
-            alarmManager
-        )
     }
 
     @Singleton

@@ -11,11 +11,6 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Alarms -->
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
-        android:minSdkVersion="33"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
-        android:maxSdkVersion="32"/>
     <application>
         <activity
             android:name=".common.SahhaSensorPermissionActivity"
@@ -37,16 +32,6 @@
 
         <service
             android:name=".framework.service.DataCollectionService"
-            android:exported="false"
-            android:foregroundServiceType="health" />
-
-        <service
-            android:name=".framework.service.HealthConnectQueryService"
-            android:exported="false"
-            android:foregroundServiceType="health" />
-
-        <service
-            android:name=".framework.service.InsightsPostService"
             android:exported="false"
             android:foregroundServiceType="health" />
 
@@ -80,34 +65,12 @@
             android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
 
         <receiver
-            android:name=".framework.receiver.HealthConnectQueryReceiver"
-            android:attributionTags="com.sahha.android:hc_query_receiver"
-            android:enabled="true"
-            android:exported="false"
-            tools:targetApi="s" />
-
-        <receiver
-            android:name=".framework.receiver.InsightsQueryReceiver"
-            android:attributionTags="com.sahha.android:insights_receiver"
-            android:enabled="true"
-            android:exported="false"
-            tools:targetApi="s" />
-
-        <receiver
-            android:name=".framework.receiver.BackgroundTaskRestarterReceiver"
-            android:attributionTags="com.sahha.android:bg_task_restarter_receiver"
-            android:enabled="true"
-            android:exported="false"
-            tools:targetApi="s" />
-
-        <receiver
             android:name=".framework.receiver.SleepReceiver"
             android:attributionTags="com.sahha.android:sleep_receiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.ACTIVITY_RECOGNITION"
             tools:targetApi="s" />
-
 
         <receiver
             android:name=".framework.receiver.AutoStartReceiver"

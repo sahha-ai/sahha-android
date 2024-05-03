@@ -28,9 +28,9 @@ import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.Session
@@ -53,7 +53,6 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
-import kotlin.coroutines.resume
 import kotlin.reflect.KClass
 
 internal class BatchDataLogs @Inject constructor(
@@ -96,8 +95,7 @@ internal class BatchDataLogs @Inject constructor(
                             }
                             val stagesFlattened = stages.flatten()
 
-                            val cleanData = filterExisting(sessions + stagesFlattened)
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(sessions + stagesFlattened)
                             saveQuery(recordType)
                         }
                     }
@@ -115,8 +113,7 @@ internal class BatchDataLogs @Inject constructor(
                                     }
                                 }
 
-                            val cleanData = filterExisting(batched.flatten())
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(batched.flatten())
                             saveQuery(recordType)
                         }
                     }
@@ -127,8 +124,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { record -> (record as RestingHeartRateRecord).toSahhaLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { record -> (record as RestingHeartRateRecord).toSahhaLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -139,8 +135,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { record -> (record as HeartRateVariabilityRmssdRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { record -> (record as HeartRateVariabilityRmssdRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -151,8 +146,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { record -> (record as BloodGlucoseRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { record -> (record as BloodGlucoseRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -168,8 +162,7 @@ internal class BatchDataLogs @Inject constructor(
                             val systolic =
                                 r.map { sr -> (sr as BloodPressureRecord).toBloodPressureSystolic() }
 
-                            val cleanData = filterExisting(diastolic + systolic)
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(diastolic + systolic)
                             saveQuery(recordType)
                         }
                     }
@@ -180,8 +173,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as ActiveCaloriesBurnedRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as ActiveCaloriesBurnedRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -192,8 +184,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as TotalCaloriesBurnedRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as TotalCaloriesBurnedRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -204,8 +195,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as OxygenSaturationRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as OxygenSaturationRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -216,8 +206,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as Vo2MaxRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as Vo2MaxRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -228,8 +217,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BasalMetabolicRateRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BasalMetabolicRateRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -240,8 +228,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BodyFatRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BodyFatRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -252,8 +239,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BodyWaterMassRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BodyWaterMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -264,8 +250,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as LeanBodyMassRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as LeanBodyMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -276,8 +261,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as HeightRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as HeightRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -288,8 +272,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as WeightRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as WeightRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -300,8 +283,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as RespiratoryRateRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as RespiratoryRateRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -312,8 +294,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BoneMassRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BoneMassRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -324,8 +305,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as FloorsClimbedRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as FloorsClimbedRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -336,8 +316,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BodyTemperatureRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BodyTemperatureRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -348,8 +327,7 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val cleanData = filterExisting(r.map { (it as BasalBodyTemperatureRecord).toSahhaDataLogDto() })
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(r.map { (it as BasalBodyTemperatureRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -369,8 +347,7 @@ internal class BatchDataLogs @Inject constructor(
                                             )
                                         }
                             }
-                            val cleanData = filterExisting(batched)
-                            batchRepo.saveBatchedData(cleanData)
+                            batchRepo.saveBatchedData(batched)
                             saveQuery(recordType)
                         }
                     }
@@ -378,16 +355,7 @@ internal class BatchDataLogs @Inject constructor(
             }
         }
 
-//        batchJobs.joinAll()
-
-        batchJobs.forEach { job ->
-            suspendCancellableCoroutine { cont ->
-                syncJob.launch {
-                    job.join()
-                    if (cont.isActive) cont.resume(Unit)
-                }
-            }
-        }
+        batchJobs.joinAll()
     }
 
     private suspend fun <T : Record> detectRecords(recordType: KClass<T>) =
@@ -449,28 +417,9 @@ internal class BatchDataLogs @Inject constructor(
         saveCustomStepsQuery(Constants.CUSTOM_STEPS_QUERY_ID)
         if (batchData.isEmpty()) return
 
-        val cleanData = filterExisting(batchData)
-        batchRepo.saveBatchedData(cleanData)
+        batchRepo.saveBatchedData(batchData)
         saveQuery(StepsRecord::class)
         checkAndClearLastMidnightSteps()
-    }
-
-    private fun filterExisting(data: List<SahhaDataLog>): List<SahhaDataLog> {
-        return data.filterNot { d ->
-            existingBatch.find { e ->
-                d.source == e.source
-                        && d.dataType == e.dataType
-                        && d.deviceType == e.deviceType
-                        && d.startDateTime == e.startDateTime
-                        && d.endDateTime == e.endDateTime
-                        && d.logType == e.logType
-                        && d.additionalProperties == e.additionalProperties
-                        && d.recordingMethod == e.recordingMethod
-                        && d.unit == e.unit
-                        && d.value == e.value
-                        && d.parentId == e.parentId
-            } != null
-        }
     }
 
     private fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {

@@ -7,7 +7,6 @@ import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.model.dto.SleepDto
-import sdk.sahha.android.domain.model.dto.send.SleepSendDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.source.SahhaSensor
@@ -40,7 +39,8 @@ internal interface SensorRepo {
     )
 
     suspend fun postPhoneScreenLockData(
-        phoneLockData: List<PhoneUsage>, callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+        phoneLockData: List<PhoneUsage>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
     suspend fun postStepData(
@@ -93,4 +93,9 @@ internal interface SensorRepo {
 
     fun checkAndStartWorker(config: SahhaConfiguration, sensorId: Int, startWorker: () -> Unit)
     fun startBatchedDataPostWorker(repeatIntervalMinutes: Long, workerTag: String)
+    fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String)
+    fun startBackgroundTaskRestarterWorker(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    )
 }
