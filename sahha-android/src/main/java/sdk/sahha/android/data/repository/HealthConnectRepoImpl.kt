@@ -19,7 +19,6 @@ import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -120,7 +119,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
             HealthPermission.getReadPermission(HeartRateRecord::class),
             HealthPermission.getReadPermission(RestingHeartRateRecord::class),
             HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(SleepStageRecord::class),
             HealthPermission.getReadPermission(SleepSessionRecord::class),
             HealthPermission.getReadPermission(BloodPressureRecord::class),
             HealthPermission.getReadPermission(BloodGlucoseRecord::class),
@@ -135,7 +133,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
             HealthPermission.getReadPermission(HeartRateRecord::class) -> HeartRateRecord::class
             HealthPermission.getReadPermission(RestingHeartRateRecord::class) -> RestingHeartRateRecord::class
             HealthPermission.getReadPermission(StepsRecord::class) -> StepsRecord::class
-            HealthPermission.getReadPermission(SleepStageRecord::class) -> SleepStageRecord::class
             HealthPermission.getReadPermission(SleepSessionRecord::class) -> SleepSessionRecord::class
             HealthPermission.getReadPermission(BloodPressureRecord::class) -> BloodPressureRecord::class
             HealthPermission.getReadPermission(BloodGlucoseRecord::class) -> BloodGlucoseRecord::class
@@ -156,7 +153,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
     ) {
         defaultScope.launch {
             val config = configRepo.getConfig()
-            if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+            if (config.sensorArray.contains(SahhaSensor.device_lock.ordinal)) {
                 sensorRepo.startDevicePostWorker(
                     Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                     Constants.DEVICE_POST_WORKER_TAG

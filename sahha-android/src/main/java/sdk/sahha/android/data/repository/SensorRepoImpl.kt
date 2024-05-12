@@ -87,8 +87,8 @@ internal class SensorRepoImpl @Inject constructor(
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val sensorToWorkerAction = mapOf(
         SahhaSensor.sleep to Pair(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker),
-        SahhaSensor.device to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
-        SahhaSensor.activity to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
+        SahhaSensor.device_lock to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
+        SahhaSensor.step_count to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
     )
 
     override suspend fun startStepDetectorAsync(
@@ -159,7 +159,7 @@ internal class SensorRepoImpl @Inject constructor(
     ) {
         try {
             when (sensor) {
-                SahhaSensor.device -> {
+                SahhaSensor.device_lock -> {
                     val deviceSummary = getDeviceDataSummary()
                     if (deviceSummary.isNotEmpty()) {
                         callback(null, deviceSummary)
@@ -175,7 +175,7 @@ internal class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.activity -> {
+                SahhaSensor.step_count -> {
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
                         callback(null, stepSummary)
@@ -354,7 +354,7 @@ internal class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepData,
-            SahhaSensor.activity,
+            SahhaSensor.step_count,
             Constants.STEP_POST_LIMIT,
             getResponse,
             movementDao::clearStepData,
@@ -372,7 +372,7 @@ internal class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepSessions,
-            SahhaSensor.activity,
+            SahhaSensor.step_count,
             Constants.STEP_SESSION_POST_LIMIT,
             getResponse,
             this::clearStepSessions,
@@ -400,7 +400,7 @@ internal class SensorRepoImpl @Inject constructor(
     ) {
         postData(
             phoneLockData,
-            SahhaSensor.device,
+            SahhaSensor.device_lock,
             Constants.DEVICE_LOCK_POST_LIMIT,
             this::getPhoneScreenLockResponse,
             deviceDao::clearUsages,
@@ -638,14 +638,14 @@ internal class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.device -> {
+                SahhaSensor.device_lock -> {
                     postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
                 }
 
-                SahhaSensor.activity -> {
+                SahhaSensor.step_count -> {
                     postStepSessions(getAllStepSessions()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
