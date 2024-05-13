@@ -119,6 +119,7 @@ internal object Constants {
     }
 
     object DataLogs {
+        const val DEMOGRAPHIC = "demographic"
         const val DEVICE = "device"
         const val ACTIVITY = "activity"
         const val SLEEP = "sleep"

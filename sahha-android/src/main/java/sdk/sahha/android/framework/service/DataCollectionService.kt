@@ -175,7 +175,7 @@ internal class DataCollectionService : Service() {
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
-        if (config.sensorArray.contains(SahhaSensor.activity.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.step_count.ordinal)) {
             Sahha.sim.sensor.startCollectingStepDetectorData(
                 this,
                 Sahha.di.movementDao,
@@ -196,7 +196,7 @@ internal class DataCollectionService : Service() {
             Log.w(tag, e.message ?: "Could not unregister receiver or listener")
         }
 
-        if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.device_lock.ordinal)) {
             Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )

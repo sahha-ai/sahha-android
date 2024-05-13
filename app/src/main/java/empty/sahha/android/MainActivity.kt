@@ -68,9 +68,11 @@ class MainActivity : ComponentActivity() {
 //                shortDescription = "This mainly handles native steps and screen locks"
             ),
 //            sensors = setOf(
-//                SahhaSensor.heart,
-//                SahhaSensor.activity,
-//                SahhaSensor.sleep
+//                SahhaSensor.heart_rate,
+//                SahhaSensor.step_count,
+//                SahhaSensor.sleep,
+//                SahhaSensor.total_energy_burned,
+//                SahhaSensor.exercise
 //            )
 //            sensors = setOf()
         )
