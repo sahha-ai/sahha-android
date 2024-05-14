@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.app.Service
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
@@ -609,5 +610,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideHealthConnectConstantsMapper(): HealthConnectConstantsMapper {
         return HealthConnectConstantsMapperImpl()
+    }
+
+    @Singleton
+    @Provides
+    fun provideUsageStatsManager(
+        context: Context
+    ): UsageStatsManager {
+        return context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
     }
 }

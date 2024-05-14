@@ -3,6 +3,7 @@ package sdk.sahha.android.framework.service
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -205,7 +206,19 @@ internal class DataCollectionService : Service() {
     }
 
     private fun startForegroundService() {
-        startForeground(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            startForeground(
+                NOTIFICATION_DATA_COLLECTION,
+                Sahha.di.sahhaNotificationManager.notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_DATA_COLLECTION,
+                Sahha.di.sahhaNotificationManager.notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else startForeground(
             NOTIFICATION_DATA_COLLECTION,
             Sahha.di.sahhaNotificationManager.notification
         )
