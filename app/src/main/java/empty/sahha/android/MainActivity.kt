@@ -39,7 +39,6 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
-import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -108,6 +107,9 @@ class MainActivity : ComponentActivity() {
                     var externalId by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
                     var authStatus by remember { mutableStateOf("Pending") }
+                    var appUsageStatus by remember {
+                        mutableStateOf(Sahha.getAppUsageStatus(this).name)
+                    }
 
                     appId = sharedPrefs.getString(APP_ID, null) ?: ""
                     appSecret = sharedPrefs.getString(APP_SECRET, null) ?: ""
@@ -129,6 +131,18 @@ class MainActivity : ComponentActivity() {
                             item {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Text(appUsageStatus)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.enableAppUsage(this@MainActivity)
+                                }) {
+                                    Text(text = "Toggle App Usage")
+                                }
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = { Sahha.storeAppUsages() }) {
+                                    Text(text = "Store App Usage")
+                                }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))

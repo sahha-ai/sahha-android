@@ -33,6 +33,7 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.source.SahhaEnvironment
@@ -81,6 +82,7 @@ internal interface AppComponent {
     val sahhaConfigRepo: SahhaConfigRepo
     val insightsRepo: InsightsRepo
     val batchedDataRepo: BatchedDataRepo
+    val appUsageRepo: AppUsageRepo
 
     @get:MainScope
     val mainScope: CoroutineScope

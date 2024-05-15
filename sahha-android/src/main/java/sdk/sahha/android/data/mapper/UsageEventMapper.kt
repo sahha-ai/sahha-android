@@ -22,5 +22,20 @@ internal fun UsageEvents.Event.toSahhaDataLog(): SahhaDataLog {
         unit = Constants.DataUnits.MILLISECOND,
         recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
         deviceType = mapper.devices(Device.TYPE_PHONE),
+        additionalProperties = hashMapOf(
+            "eventType" to UsageEventMapper.getString(this.eventType)
+        )
     )
+}
+
+object UsageEventMapper {
+    fun getString(num: Int): String {
+        return when (num) {
+            UsageEvents.Event.ACTIVITY_RESUMED -> "ACTIVITY_RESUMED"
+            UsageEvents.Event.ACTIVITY_PAUSED -> "ACTIVITY_PAUSED"
+            UsageEvents.Event.DEVICE_SHUTDOWN -> "DEVICE_SHUTDOWN"
+            UsageEvents.Event.DEVICE_STARTUP -> "DEVICE_STARTUP"
+            else -> Constants.UNKNOWN
+        }
+    }
 }

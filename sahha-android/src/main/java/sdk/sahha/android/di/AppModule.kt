@@ -44,6 +44,7 @@ import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
+import sdk.sahha.android.data.repository.AppUsageRepoImpl
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
@@ -59,6 +60,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -618,5 +620,17 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context
     ): UsageStatsManager {
         return context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppUsageRepo(
+        usageStatsManager: UsageStatsManager,
+        queriedTimeDao: HealthConnectConfigDao
+    ): AppUsageRepo {
+        return AppUsageRepoImpl(
+            usageStatsManager,
+            queriedTimeDao
+        )
     }
 }

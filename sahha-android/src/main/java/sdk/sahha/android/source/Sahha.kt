@@ -13,6 +13,8 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.util.Date
 
 private const val tag = "Sahha"
@@ -209,5 +211,32 @@ object Sahha {
     private fun sahhaIsConfigured(): Boolean {
         if (!diInitialized()) return false
         return simInitialized()
+    }
+
+    fun enableAppUsage(context: Context) {
+        di.permissionManager.appUsageSettings(context = context)
+    }
+
+    fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
+        return di.permissionManager.getAppUsageStatus(context = context)
+    }
+
+    fun storeAppUsages() {
+        val now = ZonedDateTime.now()
+        val events = di.appUsageRepo.getEvents(
+            ZonedDateTime.of(
+                now.minusDays(1).toLocalDate(),
+                LocalTime.MIDNIGHT,
+                now.zone
+            ).toInstant().toEpochMilli(),
+            ZonedDateTime.of(
+                now.minusDays(1).toLocalDate(),
+                LocalTime.of(23, 59, 59, 99),
+                now.zone
+            ).toInstant().toEpochMilli()
+        )
+        di.defaultScope.launch {
+            di.batchedDataRepo.saveBatchedData(events)
+        }
     }
 }
