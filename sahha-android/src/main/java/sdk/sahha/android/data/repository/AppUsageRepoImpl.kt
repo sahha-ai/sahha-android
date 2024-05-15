@@ -20,8 +20,6 @@ internal class AppUsageRepoImpl @Inject constructor(
             UsageEvents.Event.ACTIVITY_RESUMED,
             UsageEvents.Event.ACTIVITY_PAUSED,
             UsageEvents.Event.DEVICE_STARTUP,
-            UsageEvents.Event.FOREGROUND_SERVICE_START,
-            UsageEvents.Event.FOREGROUND_SERVICE_STOP,
             UsageEvents.Event.DEVICE_SHUTDOWN,
         )
     } else {

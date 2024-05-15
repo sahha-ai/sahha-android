@@ -32,4 +32,6 @@ internal interface PermissionManager {
     fun openHealthConnectSettings(context: Context)
     suspend fun getDeviceOnlySensorStatus(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
     suspend fun enableDeviceOnlySensor(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
+    fun appUsageSettings(context: Context)
+    fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus>
 }
