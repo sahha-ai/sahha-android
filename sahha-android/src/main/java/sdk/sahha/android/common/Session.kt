@@ -26,7 +26,7 @@ internal object Session {
     }
 
     internal var healthConnectServiceLaunched = false
-
+    internal var handlerRunning = false
 
     internal fun shouldBeDevEnvironment(
         context: Context,

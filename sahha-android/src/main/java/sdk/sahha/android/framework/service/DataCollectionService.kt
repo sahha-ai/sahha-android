@@ -4,6 +4,8 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -33,8 +35,18 @@ internal class DataCollectionService : Service() {
 
     private var killswitched = false
 
+    private lateinit var handlerThread: HandlerThread
+    private lateinit var serviceHandler: Handler
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
+        handlerThread.start()
+        serviceHandler = Handler(handlerThread.looper)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -50,7 +62,9 @@ internal class DataCollectionService : Service() {
                 startDataCollectors(this@DataCollectionService)
 
                 checkAndRestartService(intent)
-                handleActions(intent)
+//                handleActions(intent)
+
+                serviceHandler.postDelayed(periodicTask, 15 * 60 * 1000)
             } catch (e: Exception) {
                 stopService()
                 Log.w(tag, e.message ?: "Something went wrong")
@@ -58,6 +72,32 @@ internal class DataCollectionService : Service() {
         }
 
         return START_STICKY
+    }
+
+    private val periodicTask = object : Runnable {
+        override fun run() {
+            if (Session.handlerRunning) {
+                Log.d(tag, "Handler is running, exiting task")
+                return
+            }
+            try {
+                Session.handlerRunning = true
+                Log.d(tag, "Handler task started: ${Session.handlerRunning}")
+
+                // Your periodic task here, e.g., data collection
+                scope.launch {
+                    queryHealthConnect { _, _ ->
+                        Session.handlerRunning = false
+                    }
+                }
+
+                // Re-schedule the task
+                serviceHandler.postDelayed(this, 15 * 60 * 1000) // Every 15 minutes
+            } catch (e: Exception) {
+                Session.handlerRunning = false
+                Log.e(tag, "Periodic task failed", e)
+            }
+        }
     }
 
     private fun handleActions(intent: Intent?) {
@@ -91,7 +131,9 @@ internal class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun queryHealthConnect() {
+    private suspend fun queryHealthConnect(
+        onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
+    ) {
         Sahha.di
             .sahhaInteractionManager
             .sensor
@@ -100,6 +142,8 @@ internal class DataCollectionService : Service() {
             ) { error, successful ->
                 Session.healthConnectPostCallback?.invoke(error, successful)
                 Session.healthConnectPostCallback = null
+
+                onComplete?.invoke(error, successful)
 
                 error?.also { e ->
                     Sahha.di.sahhaErrorLogger.application(
