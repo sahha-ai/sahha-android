@@ -1,19 +1,22 @@
 package sdk.sahha.android.framework.service
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.common.SahhaErrors
@@ -24,8 +27,10 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
+import java.time.ZonedDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
+private const val LOOP_INTERVAL = 15 * 60 * 1000L
+
 internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
@@ -35,21 +40,14 @@ internal class DataCollectionService : Service() {
 
     private var killswitched = false
 
-    private lateinit var handlerThread: HandlerThread
-    private lateinit var serviceHandler: Handler
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onCreate() {
         super.onCreate()
-        handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
-        handlerThread.start()
-        serviceHandler = Handler(handlerThread.looper)
-    }
+        startForeground(NOTIFICATION_DATA_COLLECTION, createBasicNotification())
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         scope.launch {
             try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
@@ -57,20 +55,23 @@ internal class DataCollectionService : Service() {
 
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
-                checkAndKillService(intent)
                 startTimeZoneChangedReceiver()
                 startDataCollectors(this@DataCollectionService)
 
-                checkAndRestartService(intent)
-//                handleActions(intent)
-
-                serviceHandler.postDelayed(periodicTask, 15 * 60 * 1000)
+                Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
+                Session.handlerThread.start()
+                Session.serviceHandler = Handler(Session.handlerThread.looper)
+                Session.serviceHandler.post(periodicTask)
             } catch (e: Exception) {
                 stopService()
                 Log.w(tag, e.message ?: "Something went wrong")
             }
         }
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        checkAndKillService(intent)
+        checkAndRestartService(intent)
         return START_STICKY
     }
 
@@ -82,7 +83,10 @@ internal class DataCollectionService : Service() {
             }
             try {
                 Session.handlerRunning = true
-                Log.d(tag, "Handler task started: ${Session.handlerRunning}")
+                Log.d(
+                    tag, "Handler task started at ${ZonedDateTime.now().toLocalTime()}\n" +
+                            "Thread: ${Session.handlerThread.threadId}\n\n"
+                )
 
                 // Your periodic task here, e.g., data collection
                 scope.launch {
@@ -92,42 +96,11 @@ internal class DataCollectionService : Service() {
                 }
 
                 // Re-schedule the task
-                serviceHandler.postDelayed(this, 15 * 60 * 1000) // Every 15 minutes
+                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL) // Every 15 minutes
             } catch (e: Exception) {
                 Session.handlerRunning = false
                 Log.e(tag, "Periodic task failed", e)
             }
-        }
-    }
-
-    private fun handleActions(intent: Intent?) {
-        intent?.getStringExtra(Constants.INTENT_ACTION)?.also { action ->
-            when (action) {
-                Constants.IntentAction.QUERY_HEALTH_CONNECT -> {
-                    Log.d(tag, "Query action received")
-                    scope.launch { queryHealthConnect() }
-                }
-
-                Constants.IntentAction.RESTART_BACKGROUND_TASKS -> {
-                    Log.d(tag, "Restart action received")
-                    scope.launch { restartBackgroundTasks() }
-                }
-            }
-        }
-    }
-
-    private suspend fun restartBackgroundTasks() {
-        try {
-            Sahha.sim.permission.startHcOrNativeDataCollection(applicationContext)
-        } catch (e: Exception) {
-            Log.e(tag, e.message, e)
-            Sahha.di.sahhaErrorLogger
-                .application(
-                    e.message ?: SahhaErrors.somethingWentWrong,
-                    tag,
-                    "restartBackgroundTasks",
-                    e.stackTraceToString()
-                )
         }
     }
 
@@ -155,6 +128,12 @@ internal class DataCollectionService : Service() {
 
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
+        try {
+            Session.handlerThread.quitSafely()
+        } catch (e: Exception) {
+            Log.d(tag, e.message ?: "Handler thread is not yet initialized")
+        }
+        Session.handlerRunning = false
 
         if (killswitched) {
             println("Turning off main service")
@@ -253,5 +232,21 @@ internal class DataCollectionService : Service() {
             NOTIFICATION_DATA_COLLECTION,
             Sahha.di.sahhaNotificationManager.notification
         )
+    }
+
+    private fun createBasicNotification(): Notification {
+        val channelId = "ForegroundServiceChannel"
+        val channel = NotificationChannel(
+            channelId,
+            "Foreground Service Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Starting Service")
+            .setContentText("Preparing to start...")
+            .setSmallIcon(R.drawable.ic_sahha_no_bg)
+            .build()
     }
 }
