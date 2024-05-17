@@ -88,15 +88,13 @@ internal class DataCollectionService : Service() {
                             "Thread: ${Session.handlerThread.threadId}\n\n"
                 )
 
-                // Your periodic task here, e.g., data collection
                 scope.launch {
                     queryHealthConnect { _, _ ->
                         Session.handlerRunning = false
                     }
                 }
 
-                // Re-schedule the task
-                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL) // Every 15 minutes
+                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL)
             } catch (e: Exception) {
                 Session.handlerRunning = false
                 Log.e(tag, "Periodic task failed", e)
