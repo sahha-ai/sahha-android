@@ -36,7 +36,6 @@ import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.SleepStageRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -109,7 +108,8 @@ internal class PermissionManagerImpl @Inject constructor(
     override suspend fun getManifestPermissions(context: Context): Set<String>? {
         return try {
             val packageName = context.packageName
-            val packageInfo = context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+            val packageInfo =
+                context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
             val requestedPermissions = packageInfo.requestedPermissions
             requestedPermissions.toSet()
         } catch (e: PackageManager.NameNotFoundException) {
@@ -124,7 +124,6 @@ internal class PermissionManagerImpl @Inject constructor(
         val enabledSensors = configRepo.getConfig().sensorArray
 
         if (enabledSensors.contains(SahhaSensor.sleep.ordinal)) {
-            permissions.add(HealthPermission.getReadPermission(SleepStageRecord::class))
             permissions.add(HealthPermission.getReadPermission(SleepSessionRecord::class))
         }
 
@@ -295,7 +294,10 @@ internal class PermissionManagerImpl @Inject constructor(
         callback(SahhaSensorStatus.enabled)
     }
 
-    override fun getHealthConnectSensorStatus(context: Context, callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+    override fun getHealthConnectSensorStatus(
+        context: Context,
+        callback: ((status: Enum<SahhaSensorStatus>) -> Unit)
+    ) {
         SahhaPermissions.getSensorStatusHealthConnect(context, callback)
     }
 

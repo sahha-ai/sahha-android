@@ -113,14 +113,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
                     async {
-                        sensor.startDataCollection(context) { _, success ->
-                            if (success) {
-                                sensorRepo.startBackgroundTaskRestarterWorker(
-                                    Constants.WORKER_REPEAT_1_DAY,
-                                    Constants.BACKGROUND_TASK_RESTARTER_WORKER_TAG
-                                )
-                            }
-                        }
+                        sensor.startDataCollection(context)
                     },
                     async { sensor.checkAndStartPostWorkers(context) },
                 ).joinAll()
@@ -152,18 +145,7 @@ internal class SahhaInteractionManager @Inject constructor(
                         )
                     },
                     async {
-                        sensor.startDataCollection(context) { _, success ->
-                            if (success) {
-                                sensorRepo.startHealthConnectQueryWorker(
-                                    Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                                    Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
-                                )
-                                sensorRepo.startBackgroundTaskRestarterWorker(
-                                    Constants.WORKER_REPEAT_1_DAY,
-                                    Constants.BACKGROUND_TASK_RESTARTER_WORKER_TAG
-                                )
-                            }
-                        }
+                        sensor.startDataCollection(context)
                     },
                     async { sensor.checkAndStartPostWorkers(context) },
                 ).joinAll()
