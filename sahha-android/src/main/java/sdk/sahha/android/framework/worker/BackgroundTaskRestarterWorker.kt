@@ -7,6 +7,8 @@ import androidx.work.WorkerParameters
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.framework.service.DataCollectionService
 
+@Deprecated("No longer used", level = DeprecationLevel.WARNING)
+
 internal class BackgroundTaskRestarterWorker(context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {
     override suspend fun doWork(): Result {

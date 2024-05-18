@@ -2,6 +2,8 @@ package sdk.sahha.android.common
 
 import android.content.Context
 import android.icu.text.DateFormat
+import android.os.Handler
+import android.os.HandlerThread
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
@@ -25,8 +27,11 @@ internal object Session {
                 && settings?.sensors?.count() == 1
     }
 
-    internal var healthConnectServiceLaunched = false
+    internal lateinit var handlerThread: HandlerThread
+    internal lateinit var serviceHandler: Handler
 
+    internal var handlerRunning = false
+    internal var healthConnectServiceLaunched = false
 
     internal fun shouldBeDevEnvironment(
         context: Context,
