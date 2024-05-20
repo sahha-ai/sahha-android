@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.interaction
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
@@ -203,23 +204,23 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         nativeStatus: Enum<SahhaSensorStatus>
     ): Enum<SahhaSensorStatus> {
-        return suspendCoroutine { cont ->
+        return suspendCancellableCoroutine { cont ->
             val nativeDisabled =
                 nativeStatus == SahhaSensorStatus.disabled
                         || nativeStatus == SahhaSensorStatus.unavailable
                         || nativeStatus == SahhaSensorStatus.pending
             if (!manager.shouldUseHealthConnect()) {
-                cont.resume(SahhaSensorStatus.unavailable)
-                return@suspendCoroutine
+                if (cont.isActive) cont.resume(SahhaSensorStatus.unavailable)
+                return@suspendCancellableCoroutine
             }
             if (nativeDisabled) {
-                cont.resume(SahhaSensorStatus.disabled)
-                return@suspendCoroutine
+                if (cont.isActive) cont.resume(SahhaSensorStatus.disabled)
+                return@suspendCancellableCoroutine
             }
 
             manager.requestHealthConnectSensors(context) { _, _ ->
                 manager.getHealthConnectSensorStatus(context) { status ->
-                    cont.resume(status)
+                    if (cont.isActive) cont.resume(status)
                 }
             }
         }
