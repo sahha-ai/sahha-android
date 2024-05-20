@@ -128,6 +128,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                ForceCrashTestView()
+                                Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -453,6 +455,16 @@ fun ErrorLogView() {
         }
     }) {
         Text("Post Error")
+    }
+}
+
+@Composable
+fun ForceCrashTestView() {
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        throw Exception("Crash test!")
+    }) {
+        Text("Force Crash Test")
     }
 }
 
