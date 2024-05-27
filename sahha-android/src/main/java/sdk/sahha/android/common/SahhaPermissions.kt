@@ -168,29 +168,30 @@ internal object SahhaPermissions : BroadcastReceiver() {
     private suspend fun checkPermissions(
         context: Context,
         healthConnectClient: HealthConnectClient,
-        callback: ((Enum<SahhaSensorStatus>) -> Unit)?
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         val permissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
-            Sahha.di.permissionManager.getManifestPermissions(context = context)
+            Sahha.di.permissionManager.getManifestPermissions(context = context),
+            callback
         )
 
         if (granted.containsAll(permissions)) {
-            callback?.invoke(SahhaSensorStatus.enabled)
+            callback?.invoke(null, SahhaSensorStatus.enabled)
             return
         }
 
         // Else
-        callback?.invoke(SahhaSensorStatus.disabled)
+        callback?.invoke(null, SahhaSensorStatus.disabled)
     }
 
-    private fun healthConnectUnavailable(callback: ((Enum<SahhaSensorStatus>) -> Unit)?) {
-        callback?.invoke(SahhaSensorStatus.unavailable)
+    private fun healthConnectUnavailable(callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?) {
+        callback?.invoke(null, SahhaSensorStatus.unavailable)
     }
 
     fun getSensorStatusHealthConnect(
         context: Context,
-        callback: ((Enum<SahhaSensorStatus>) -> Unit)?
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         healthConnectClient?.also { client ->
             mainScope.launch {

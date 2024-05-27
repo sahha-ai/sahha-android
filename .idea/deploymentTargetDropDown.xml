@@ -2,23 +2,21 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="AuthenticatedPropTest">
-        <State />
-      </entry>
-      <entry key="BatchDataTest">
-        <State />
-      </entry>
-      <entry key="ChunkingTest">
-        <State />
-      </entry>
       <entry key="app">
-        <State />
-      </entry>
-      <entry key="posting150Logs_equatesTo4Chunks()">
-        <State />
-      </entry>
-      <entry key="token()">
-        <State />
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-05-27T22:12:00.205215Z" />
+        </State>
       </entry>
     </value>
   </component>

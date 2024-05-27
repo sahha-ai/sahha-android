@@ -6,12 +6,15 @@ import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import java.time.LocalDateTime
 import java.util.Date
 
@@ -168,6 +171,7 @@ object Sahha {
 
     fun enableSensors(
         context: Context,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -175,11 +179,20 @@ object Sahha {
             return
         }
 
-        sim.permission.enableSensors(context, callback)
+        di.defaultScope.launch {
+            val configSensors = di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet()
+            Session.sensors = sensors + configSensors
+            sim.saveConfiguration(
+                sensors + configSensors,
+                Session.settings ?: SahhaSettings(environment = SahhaEnvironment.sandbox)
+            )
+            sim.permission.enableSensors(context, callback)
+        }
     }
 
     fun getSensorStatus(
         context: Context,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -187,7 +200,7 @@ object Sahha {
             return
         }
 
-        sim.permission.getSensorStatus(context, callback)
+        sim.permission.getSensorStatus(context, sensors, callback)
     }
 
     fun postError(

@@ -41,6 +41,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
@@ -49,6 +50,7 @@ import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.framework.activity.SahhaPermissionActivity
@@ -81,14 +83,15 @@ internal class PermissionManagerImpl @Inject constructor(
     }
 
     override suspend fun getTrimmedHcPermissions(
-        manifestPermissions: Set<String>?
+        manifestPermissions: Set<String>?,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ): Set<String> {
         val permissions = getHcPermissions()
 
         val trimmed = manifestPermissions?.let { mPermissions ->
             if (mPermissions.isEmpty()) return@let null
 
-            logUndeclaredPermissions(permissions, mPermissions)
+            logUndeclaredPermissions(permissions, mPermissions, callback)
             permissions.filter { mPermissions.contains(it) }
         }
 
@@ -97,12 +100,19 @@ internal class PermissionManagerImpl @Inject constructor(
 
     private fun logUndeclaredPermissions(
         permissions: Set<String>,
-        manifestPermissions: Set<String>
+        manifestPermissions: Set<String>,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
+        var undeclared = ""
         permissions.forEach { permission ->
-            if (!manifestPermissions.contains(permission))
-                Log.w(tag, "Permission: [$permission] is not declared in the AndroidManifest!")
+            if (!manifestPermissions.contains(permission)) {
+                val error = "Permission: [$permission] is not declared in the AndroidManifest!"
+                undeclared += "$error\n"
+                Log.e(tag, error)
+            }
         }
+
+        if (undeclared.isNotEmpty()) callback?.invoke(undeclared, SahhaSensorStatus.unavailable)
     }
 
     override suspend fun getManifestPermissions(context: Context): Set<String>? {
@@ -119,111 +129,112 @@ internal class PermissionManagerImpl @Inject constructor(
     }
 
 
-    private suspend fun getHcPermissions(): Set<String> {
+    private suspend fun getHcPermissions(
+        sensors: Set<SahhaSensor> = runBlocking { configRepo.getConfig().sensorArray.toSahhaSensorSet() }
+    ): Set<String> {
         val permissions = mutableSetOf<String>()
-        val enabledSensors = configRepo.getConfig().sensorArray
 
-        if (enabledSensors.contains(SahhaSensor.sleep.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.sleep)) permissions.add(
             HealthPermission.getReadPermission(
                 SleepSessionRecord::class
             )
         )
 
-        if (enabledSensors.contains(SahhaSensor.step_count.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.step_count)) permissions.add(
             HealthPermission.getReadPermission(StepsRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.floor_count.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.floor_count)) permissions.add(
             HealthPermission.getReadPermission(FloorsClimbedRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.heart_rate.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.heart_rate)) permissions.add(
             HealthPermission.getReadPermission(HeartRateRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.heart_rate_variability_rmssd.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.heart_rate_variability_rmssd)) permissions.add(
             HealthPermission.getReadPermission(HeartRateVariabilityRmssdRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.resting_heart_rate.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.resting_heart_rate)) permissions.add(
             HealthPermission.getReadPermission(RestingHeartRateRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.blood_pressure_diastolic.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.blood_pressure_diastolic)) permissions.add(
             HealthPermission.getReadPermission(BloodPressureRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.blood_pressure_systolic.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.blood_pressure_systolic)) permissions.add(
             HealthPermission.getReadPermission(BloodPressureRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.blood_glucose.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.blood_glucose)) permissions.add(
             HealthPermission.getReadPermission(BloodGlucoseRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.oxygen_saturation.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.oxygen_saturation)) permissions.add(
             HealthPermission.getReadPermission(OxygenSaturationRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.vo2_max.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.vo2_max)) permissions.add(
             HealthPermission.getReadPermission(
                 Vo2MaxRecord::class
             )
         )
 
-        if (enabledSensors.contains(SahhaSensor.respiratory_rate.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.respiratory_rate)) permissions.add(
             HealthPermission.getReadPermission(RespiratoryRateRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.active_energy_burned.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.active_energy_burned)) permissions.add(
             HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.total_energy_burned.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.total_energy_burned)) permissions.add(
             HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.basal_metabolic_rate.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.basal_metabolic_rate)) permissions.add(
             HealthPermission.getReadPermission(BasalMetabolicRateRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.height.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.height)) permissions.add(
             HealthPermission.getReadPermission(
                 HeightRecord::class
             )
         )
 
-        if (enabledSensors.contains(SahhaSensor.weight.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.weight)) permissions.add(
             HealthPermission.getReadPermission(
                 WeightRecord::class
             )
         )
 
-        if (enabledSensors.contains(SahhaSensor.lean_body_mass.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.lean_body_mass)) permissions.add(
             HealthPermission.getReadPermission(LeanBodyMassRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.bone_mass.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.bone_mass)) permissions.add(
             HealthPermission.getReadPermission(BoneMassRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.body_water_mass.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.body_water_mass)) permissions.add(
             HealthPermission.getReadPermission(BodyWaterMassRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.body_fat.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.body_fat)) permissions.add(
             HealthPermission.getReadPermission(BodyFatRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.body_temperature.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.body_temperature)) permissions.add(
             HealthPermission.getReadPermission(BodyTemperatureRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.basal_body_temperature.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.basal_body_temperature)) permissions.add(
             HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class)
         )
 
-        if (enabledSensors.contains(SahhaSensor.exercise.ordinal)) permissions.add(
+        if (sensors.contains(SahhaSensor.exercise)) permissions.add(
             HealthPermission.getReadPermission(ExerciseSessionRecord::class)
         )
 
@@ -350,7 +361,7 @@ internal class PermissionManagerImpl @Inject constructor(
 
     override fun getHealthConnectSensorStatus(
         context: Context,
-        callback: ((status: Enum<SahhaSensorStatus>) -> Unit)
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         SahhaPermissions.getSensorStatusHealthConnect(context, callback)
     }

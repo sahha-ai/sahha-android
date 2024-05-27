@@ -44,6 +44,7 @@ import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
+import kotlin.coroutines.resume
 import kotlin.random.Random
 
 const val SEVEN_DAYS_MILLIS = 604800000L
@@ -114,7 +115,8 @@ class MainActivity : ComponentActivity() {
                     externalId = sharedPrefs.getString(EXTERNAL_ID, null) ?: ""
 
                     Sahha.getSensorStatus(
-                        this@MainActivity
+                        this@MainActivity,
+                        setOf(SahhaSensor.sleep)
                     ) { error, sensorStatus ->
                         mainScope.launch {
                             permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"
@@ -135,6 +137,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
+                                        setOf(SahhaSensor.sleep)
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"

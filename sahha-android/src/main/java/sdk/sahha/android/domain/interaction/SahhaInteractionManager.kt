@@ -51,7 +51,6 @@ internal class SahhaInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         try {
-            saveConfiguration(sahhaSettings)
             cacheConfiguration(sahhaSettings)
             auth.migrateDataIfNeeded { error, success ->
                 if (!success) {
@@ -203,10 +202,11 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun saveConfiguration(
+    internal suspend fun saveConfiguration(
+        sensors: Set<SahhaSensor>?,
         settings: SahhaSettings
     ) {
-        val sensorEnums = settings.sensors?.let {
+        val sensorEnums = sensors?.let {
             convertToEnums(it)
         } ?: convertToEnums(SahhaSensor.values().toSet())
 
