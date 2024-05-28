@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
 
                     Sahha.getSensorStatus(
                         this@MainActivity,
-                        setOf(SahhaSensor.sleep)
+                        setOf(SahhaSensor.step_count)
                     ) { error, sensorStatus ->
                         mainScope.launch {
                             permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"

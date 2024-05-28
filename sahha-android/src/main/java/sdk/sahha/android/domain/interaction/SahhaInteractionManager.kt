@@ -52,6 +52,10 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             cacheConfiguration(sahhaSettings)
+            saveConfiguration(
+                sensors = setOf(),
+                settings = sahhaSettings
+            )
             auth.migrateDataIfNeeded { error, success ->
                 if (!success) {
                     callback?.invoke(error, false)
