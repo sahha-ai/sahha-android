@@ -41,4 +41,10 @@ internal interface PermissionManager {
         sensors: Set<SahhaSensor>,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     )
+
+    suspend fun getTrimmedHcPermissions(
+        manifestPermissions: Set<String>?,
+        sensors: Set<SahhaSensor>,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>, permissions: Set<String>) -> Unit)?
+    )
 }

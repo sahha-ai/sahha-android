@@ -21,13 +21,16 @@
           <timeTargetWasSelectedWithDropDown value="2024-05-28T23:41:42.599065Z" />
         </State>
       </entry>
-      <entry key="test01_initial_sleepStatus_isPending()">
-        <State />
-      </entry>
       <entry key="test01_initial_status_isPending()">
         <State />
       </entry>
-      <entry key="test02_emptySet_isUnavailable()">
+      <entry key="test04_nativeAndHealthConnectPermissions()">
+        <State />
+      </entry>
+      <entry key="test05_healthConnectPermissionsOnly()">
+        <State />
+      </entry>
+      <entry key="test06_enableSensors_null_enablesALl()">
         <State />
       </entry>
     </value>

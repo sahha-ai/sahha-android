@@ -17,6 +17,7 @@ import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -53,7 +54,7 @@ internal class SahhaInteractionManager @Inject constructor(
         try {
             cacheConfiguration(sahhaSettings)
             saveConfiguration(
-                sensors = setOf(),
+                sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: setOf(),
                 settings = sahhaSettings
             )
             auth.migrateDataIfNeeded { error, success ->

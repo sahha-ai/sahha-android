@@ -171,7 +171,7 @@ object Sahha {
 
     fun enableSensors(
         context: Context,
-        sensors: Set<SahhaSensor>,
+        sensors: Set<SahhaSensor>?,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -181,9 +181,9 @@ object Sahha {
 
         di.defaultScope.launch {
             val configSensors = di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet()
-            Session.sensors = sensors + configSensors
+            Session.sensors = (sensors ?: SahhaSensor.values().toSet()) + configSensors
             sim.saveConfiguration(
-                sensors + configSensors,
+                Session.sensors,
                 Session.settings ?: SahhaSettings(environment = SahhaEnvironment.sandbox)
             )
             sim.permission.enableSensors(context, callback)

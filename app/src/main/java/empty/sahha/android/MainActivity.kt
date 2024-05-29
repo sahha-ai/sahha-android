@@ -44,7 +44,6 @@ import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
-import kotlin.coroutines.resume
 import kotlin.random.Random
 
 const val SEVEN_DAYS_MILLIS = 604800000L
@@ -116,7 +115,14 @@ class MainActivity : ComponentActivity() {
 
                     Sahha.getSensorStatus(
                         this@MainActivity,
-                        setOf(SahhaSensor.step_count)
+                        setOf(
+                            SahhaSensor.device_lock,
+                            SahhaSensor.heart_rate,
+                            SahhaSensor.step_count,
+                            SahhaSensor.sleep,
+                            SahhaSensor.total_energy_burned,
+                            SahhaSensor.exercise
+                        )
                     ) { error, sensorStatus ->
                         mainScope.launch {
                             permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"
@@ -137,7 +143,14 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        setOf(SahhaSensor.sleep)
+                                        setOf(
+                                            SahhaSensor.device_lock,
+                                            SahhaSensor.heart_rate,
+                                            SahhaSensor.step_count,
+                                            SahhaSensor.sleep,
+                                            SahhaSensor.total_energy_burned,
+                                            SahhaSensor.exercise
+                                        )
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"

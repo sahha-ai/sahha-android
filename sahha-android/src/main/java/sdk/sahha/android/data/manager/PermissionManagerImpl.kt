@@ -99,6 +99,23 @@ internal class PermissionManagerImpl @Inject constructor(
         return trimmed?.toSet() ?: permissions
     }
 
+    override suspend fun getTrimmedHcPermissions(
+        manifestPermissions: Set<String>?,
+        sensors: Set<SahhaSensor>,
+        callback: ((error: String?, status: Enum<SahhaSensorStatus>, permissions: Set<String>) -> Unit)?
+    ) {
+        val permissions = getHcPermissions(sensors)
+
+        manifestPermissions?.let { mPermissions ->
+            if (mPermissions.isEmpty()) return@let null
+
+            logUndeclaredPermissions(permissions, mPermissions) { error, status ->
+                val trimmed = permissions.filter { mPermissions.contains(it) }
+                callback?.invoke(error, status, trimmed.toSet() ?: permissions)
+            }
+        }
+    }
+
     private fun logUndeclaredPermissions(
         permissions: Set<String>,
         manifestPermissions: Set<String>,
@@ -282,12 +299,13 @@ internal class PermissionManagerImpl @Inject constructor(
 
     override fun openHealthConnectSettings(context: Context) {
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
-        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
-                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
-        } else {
-            Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
-        }.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+//        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+//            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
+//                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+//        } else {
+//            Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+//        }.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         context.startActivity(intent)
     }
