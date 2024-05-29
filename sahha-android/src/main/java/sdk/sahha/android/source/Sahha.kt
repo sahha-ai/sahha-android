@@ -192,7 +192,7 @@ object Sahha {
 
     fun getSensorStatus(
         context: Context,
-        sensors: Set<SahhaSensor>,
+        sensors: Set<SahhaSensor>?,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -200,7 +200,7 @@ object Sahha {
             return
         }
 
-        sim.permission.getSensorStatus(context, sensors, callback)
+        sim.permission.getSensorStatus(context, sensors ?: SahhaSensor.values().toSet(), callback)
     }
 
     fun postError(

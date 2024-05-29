@@ -84,9 +84,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
     override suspend fun getTrimmedHcPermissions(
         manifestPermissions: Set<String>?,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ): Set<String> {
-        val permissions = getHcPermissions()
+        val permissions = getHcPermissions(sensors)
 
         val trimmed = manifestPermissions?.let { mPermissions ->
             if (mPermissions.isEmpty()) return@let null
@@ -129,8 +130,8 @@ internal class PermissionManagerImpl @Inject constructor(
     }
 
 
-    private suspend fun getHcPermissions(
-        sensors: Set<SahhaSensor> = runBlocking { configRepo.getConfig().sensorArray.toSahhaSensorSet() }
+    private fun getHcPermissions(
+        sensors: Set<SahhaSensor>
     ): Set<String> {
         val permissions = mutableSetOf<String>()
 
@@ -361,9 +362,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
     override fun getHealthConnectSensorStatus(
         context: Context,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        SahhaPermissions.getSensorStatusHealthConnect(context, callback)
+        SahhaPermissions.getSensorStatusHealthConnect(context, sensors, callback)
     }
 
     override fun getNativeSensorStatus(

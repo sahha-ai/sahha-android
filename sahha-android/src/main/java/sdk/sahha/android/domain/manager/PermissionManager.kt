@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.appcompat.app.AppCompatActivity
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal interface PermissionManager {
@@ -18,6 +19,7 @@ internal interface PermissionManager {
 
     suspend fun getTrimmedHcPermissions(
         manifestPermissions: Set<String>?,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ): Set<String>
     suspend fun getManifestPermissions(context: Context): Set<String>?
@@ -36,6 +38,7 @@ internal interface PermissionManager {
     suspend fun enableDeviceOnlySensor(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
     fun getHealthConnectSensorStatus(
         context: Context,
+        sensors: Set<SahhaSensor>,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     )
 }

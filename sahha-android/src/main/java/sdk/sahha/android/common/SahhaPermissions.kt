@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.health.connect.client.HealthConnectClient
 import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
 internal const val PREFERENCE_KEY = "sdk.sahha.android.PREFERENCE_KEY"
@@ -168,11 +169,13 @@ internal object SahhaPermissions : BroadcastReceiver() {
     private suspend fun checkPermissions(
         context: Context,
         healthConnectClient: HealthConnectClient,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         val permissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
             Sahha.di.permissionManager.getManifestPermissions(context = context),
+            sensors,
             callback
         )
 
@@ -191,11 +194,12 @@ internal object SahhaPermissions : BroadcastReceiver() {
 
     fun getSensorStatusHealthConnect(
         context: Context,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         healthConnectClient?.also { client ->
             mainScope.launch {
-                checkPermissions(context, client, callback)
+                checkPermissions(context, client, sensors, callback)
             }
         } ?: healthConnectUnavailable(callback)
     }
