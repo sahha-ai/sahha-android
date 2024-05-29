@@ -141,6 +141,25 @@ class MainActivity : ComponentActivity() {
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
+                                    Sahha.getSensorStatus(
+                                        this@MainActivity,
+                                        setOf(
+                                            SahhaSensor.device_lock,
+                                            SahhaSensor.heart_rate,
+                                            SahhaSensor.step_count,
+                                            SahhaSensor.sleep,
+                                            SahhaSensor.total_energy_burned,
+                                            SahhaSensor.exercise
+                                        )
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Get Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
                                         setOf(

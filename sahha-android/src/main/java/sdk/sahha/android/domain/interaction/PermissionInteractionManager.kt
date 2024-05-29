@@ -70,10 +70,11 @@ internal class PermissionInteractionManager @Inject constructor(
 
             val status = processStatuses(nativeStatus, healthConnectStatus.second)
             startTasks(
-                context,
-                Sahha.di.sahhaInteractionManager,
-                status,
-                callback
+                context = context,
+                sim = Sahha.di.sahhaInteractionManager,
+                status = status,
+                previousError = healthConnectStatus.first,
+                callback = callback
             )
         }
     }
@@ -82,6 +83,7 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         sim: SahhaInteractionManager,
         status: Enum<InternalSensorStatus>,
+        previousError: String? = null,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ) {
         when (manager.shouldUseHealthConnect()) {
@@ -102,33 +104,33 @@ internal class PermissionInteractionManager @Inject constructor(
                     )
 
                     InternalSensorStatus.disabled -> callback?.invoke(
-                        null,
+                        previousError,
                         SahhaSensorStatus.disabled
                     )
 
                     InternalSensorStatus.unavailable -> callback?.invoke(
-                        null,
+                        previousError,
                         SahhaSensorStatus.unavailable
                     )
 
-                    else -> callback?.invoke(null, SahhaSensorStatus.pending)
+                    else -> callback?.invoke(previousError, SahhaSensorStatus.pending)
                 }
             }
 
             false -> {
                 when (status) {
                     InternalSensorStatus.partial -> startNativeTasks(
-                        context,
-                        sim,
-                        status.toSahhaSensorStatus(),
-                        callback
+                        context = context,
+                        sim = sim,
+                        status = status.toSahhaSensorStatus(),
+                        callback = callback
                     )
 
                     InternalSensorStatus.enabled -> startNativeTasks(
-                        context,
-                        sim,
-                        status.toSahhaSensorStatus(),
-                        callback
+                        context = context,
+                        sim = sim,
+                        status = status.toSahhaSensorStatus(),
+                        callback = callback
                     )
 
                     InternalSensorStatus.disabled -> callback?.invoke(
@@ -155,8 +157,10 @@ internal class PermissionInteractionManager @Inject constructor(
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ) {
         sim.startNative(context) { error, success ->
-            if (success)
+            if (success) {
                 callback?.invoke(null, status)
+                return@startNative
+            }
 
             error?.also { e -> callback?.invoke(e, status) }
         }
@@ -169,8 +173,10 @@ internal class PermissionInteractionManager @Inject constructor(
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
     ) {
         sim.startNativeAndHealthConnect(context) { error, success ->
-            if (success)
+            if (success) {
                 callback?.invoke(null, status)
+                return@startNativeAndHealthConnect
+            }
 
             error?.also { e -> callback?.invoke(e, status) }
         }

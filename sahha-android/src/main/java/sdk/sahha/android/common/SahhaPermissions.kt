@@ -174,8 +174,8 @@ internal object SahhaPermissions : BroadcastReceiver() {
     ) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         Sahha.di.permissionManager.getTrimmedHcPermissions(
-            Sahha.di.permissionManager.getManifestPermissions(context = context),
-            sensors,
+            manifestPermissions = Sahha.di.permissionManager.getManifestPermissions(context = context),
+            sensors = sensors,
         ) { error, status, permissions ->
             error?.also { e ->
                 callback?.invoke(e, status)
