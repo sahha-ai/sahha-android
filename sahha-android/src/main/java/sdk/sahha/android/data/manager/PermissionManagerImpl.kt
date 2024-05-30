@@ -85,41 +85,27 @@ internal class PermissionManagerImpl @Inject constructor(
     override suspend fun getTrimmedHcPermissions(
         manifestPermissions: Set<String>?,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
-    ): Set<String> {
-        val permissions = getHcPermissions(sensors)
-
-        val trimmed = manifestPermissions?.let { mPermissions ->
-            if (mPermissions.isEmpty()) return@let null
-
-            logUndeclaredPermissions(permissions, mPermissions, callback)
-            permissions.filter { mPermissions.contains(it) }
-        }
-
-        return trimmed?.toSet() ?: permissions
-    }
-
-    override suspend fun getTrimmedHcPermissions(
-        manifestPermissions: Set<String>?,
-        sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>, permissions: Set<String>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>?, permissions: Set<String>) -> Unit)?
     ) {
         val permissions = getHcPermissions(sensors)
 
-        manifestPermissions?.let { mPermissions ->
-            if (mPermissions.isEmpty()) return@let null
+        manifestPermissions?.also { mPermissions ->
+            if (mPermissions.isEmpty()) {
+                callback?.invoke(null, null, permissions)
+                return@also
+            }
 
             logUndeclaredPermissions(permissions, mPermissions) { error, status ->
                 val trimmed = permissions.filter { mPermissions.contains(it) }
                 callback?.invoke(error, status, trimmed.toSet() ?: permissions)
             }
-        }
+        } ?: callback?.invoke(null, null, permissions)
     }
 
-    private fun logUndeclaredPermissions(
+    private suspend fun logUndeclaredPermissions(
         permissions: Set<String>,
         manifestPermissions: Set<String>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         var undeclared = ""
         permissions.forEach { permission ->

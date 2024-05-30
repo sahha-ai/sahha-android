@@ -36,11 +36,13 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
-                permissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
+                Sahha.di.permissionManager.getTrimmedHcPermissions(
                     Sahha.di.permissionManager.getManifestPermissions(context = this@SahhaHealthConnectPermissionActivity),
                     Session.sensors ?: setOf()
-                )
-                checkPermissionsAndRun(client)
+                ) { _, _, hcPermissions ->
+                    permissions = hcPermissions
+                    checkPermissionsAndRun(client)
+                }
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
     }

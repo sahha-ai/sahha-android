@@ -89,7 +89,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
-            } else if(Session.onlyDeviceSensorProvided) {
+            } else if (Session.onlyDeviceSensorProvided) {
                 sendBroadcast(Intent(PERMISSION_ENABLED))
             } else {
                 sendBroadcast(Intent(PERMISSION_DISABLED))
@@ -177,18 +177,16 @@ internal object SahhaPermissions : BroadcastReceiver() {
             manifestPermissions = Sahha.di.permissionManager.getManifestPermissions(context = context),
             sensors = sensors,
         ) { error, status, permissions ->
-            error?.also { e ->
-                callback?.invoke(e, status)
-                return@getTrimmedHcPermissions
-            }
-
             if (granted.containsAll(permissions)) {
                 callback?.invoke(null, SahhaSensorStatus.enabled)
                 return@getTrimmedHcPermissions
             }
 
-            // Else
-            callback?.invoke(null, SahhaSensorStatus.disabled)
+            if (status == SahhaSensorStatus.unavailable) error?.also { e ->
+                callback?.invoke(e, status)
+                return@getTrimmedHcPermissions
+            } ?: callback?.invoke(null, SahhaSensorStatus.disabled)
+            else callback?.invoke(null, SahhaSensorStatus.disabled)
         }
     }
 

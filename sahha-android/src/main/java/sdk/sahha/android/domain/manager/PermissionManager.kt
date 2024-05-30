@@ -16,12 +16,6 @@ internal interface PermissionManager {
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     )
-
-    suspend fun getTrimmedHcPermissions(
-        manifestPermissions: Set<String>?,
-        sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)? = null
-    ): Set<String>
     suspend fun getManifestPermissions(context: Context): Set<String>?
     fun <T: Activity> launchPermissionActivity(context: Context, activity: Class<T>)
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
@@ -45,6 +39,6 @@ internal interface PermissionManager {
     suspend fun getTrimmedHcPermissions(
         manifestPermissions: Set<String>?,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>, permissions: Set<String>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>?, permissions: Set<String>) -> Unit)?
     )
 }

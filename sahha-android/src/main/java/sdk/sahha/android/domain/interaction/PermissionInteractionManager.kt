@@ -233,7 +233,10 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             manager.requestHealthConnectSensors(context) { _, _ ->
-                manager.getHealthConnectSensorStatus(context, Session.sensors ?: setOf()) { error, status ->
+                manager.getHealthConnectSensorStatus(
+                    context,
+                    Session.sensors ?: setOf()
+                ) { error, status ->
                     if (cont.isActive) cont.resume(Pair(error, status))
                 }
             }
@@ -253,7 +256,10 @@ internal class PermissionInteractionManager @Inject constructor(
     private suspend fun awaitHealthConnectSensorStatus(context: Context): Enum<SahhaSensorStatus> {
         val storedSensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
         return suspendCancellableCoroutine { cont ->
-            manager.getHealthConnectSensorStatus(context = context, sensors = Session.sensors ?: storedSensors) { _, status ->
+            manager.getHealthConnectSensorStatus(
+                context = context,
+                sensors = Session.sensors ?: storedSensors
+            ) { _, status ->
                 if (cont.isActive) cont.resume(status)
             }
         }
@@ -264,7 +270,11 @@ internal class PermissionInteractionManager @Inject constructor(
         sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        manager.getHealthConnectSensorStatus(context = context, sensors = sensors, callback = callback)
+        manager.getHealthConnectSensorStatus(
+            context = context,
+            sensors = sensors,
+            callback = callback
+        )
     }
 
     private suspend fun awaitNativeSensorStatus(

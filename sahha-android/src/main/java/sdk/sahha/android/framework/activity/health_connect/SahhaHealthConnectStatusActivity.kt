@@ -27,22 +27,24 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissions(context: Context, healthConnectClient: HealthConnectClient) {
-        val hcPermissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
+        Sahha.di.permissionManager.getTrimmedHcPermissions(
             Sahha.di.permissionManager.getManifestPermissions(context = context),
             Session.sensors ?: setOf()
-        )
-        val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(hcPermissions)) {
+        ) { error, status, permissions ->
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+            if (granted.containsAll(permissions)) {
+                permissionHandler.activityCallback.statusCallback
+                    ?.invoke(null, SahhaSensorStatus.enabled)
+                finish()
+                return@getTrimmedHcPermissions
+            }
+
+            // Else
             permissionHandler.activityCallback.statusCallback
-                ?.invoke(null, SahhaSensorStatus.enabled)
+                ?.invoke(null, SahhaSensorStatus.disabled)
             finish()
-            return
         }
 
-        // Else
-        permissionHandler.activityCallback.statusCallback
-            ?.invoke(null, SahhaSensorStatus.disabled)
-        finish()
     }
 
     private fun healthConnectUnavailable() {
