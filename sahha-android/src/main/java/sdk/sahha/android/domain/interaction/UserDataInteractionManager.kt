@@ -86,11 +86,11 @@ internal class UserDataInteractionManager @Inject constructor(
         try {
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it)) {
-                    saveAndPutDeviceInfo(context, callback)
                     checkAndResetSensors(
                         lastSdkVersion = lastDeviceInfo.sdkVersion,
                         config = sahhaConfigRepo.getConfig()
                     )
+                    saveAndPutDeviceInfo(context, callback)
                 }
                 else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
