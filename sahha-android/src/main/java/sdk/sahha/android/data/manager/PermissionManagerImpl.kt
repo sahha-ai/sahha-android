@@ -331,10 +331,10 @@ internal class PermissionManagerImpl @Inject constructor(
             callback(e.message, SahhaSensorStatus.pending)
 
             sahhaErrorLogger.application(
-                e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
-                "activate",
-                e.stackTraceToString()
+                message = e.message ?: SahhaErrors.somethingWentWrong,
+                path = tag,
+                method = "activate",
+                body = e.stackTraceToString()
             )
         }
     }
