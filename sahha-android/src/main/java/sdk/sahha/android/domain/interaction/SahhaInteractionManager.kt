@@ -80,7 +80,7 @@ internal class SahhaInteractionManager @Inject constructor(
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             listOf(
                 async { saveNotificationConfig(sahhaSettings.notificationSettings) },
             ).joinAll()
