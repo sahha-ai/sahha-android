@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
@@ -42,6 +43,7 @@ import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaIntents
@@ -68,10 +70,18 @@ internal class PermissionManagerImpl @Inject constructor(
     private val manualPermissionsDao: ManualPermissionsDao,
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val sharedPrefs: SharedPreferences
 ) : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
+
+    override val isFirstHealthConnectRequest
+        get() = sharedPrefs.getBoolean(Constants.FIRST_HC_REQUEST_KEY, true)
+
+    override fun isFirstHealthConnectRequest(firstRequest: Boolean) {
+        sharedPrefs.edit().putBoolean(Constants.FIRST_HC_REQUEST_KEY, firstRequest).apply()
+    }
 
     override fun shouldUseHealthConnect(
         buildVersion: Int
@@ -96,8 +106,7 @@ internal class PermissionManagerImpl @Inject constructor(
             }
 
             logUndeclaredPermissions(permissions, mPermissions) { error, status ->
-                val trimmed = permissions.filter { mPermissions.contains(it) }
-                callback?.invoke(error, status, trimmed.toSet() ?: permissions)
+                callback?.invoke(error, status, permissions)
             }
         } ?: callback?.invoke(null, null, permissions)
     }
@@ -105,7 +114,7 @@ internal class PermissionManagerImpl @Inject constructor(
     private suspend fun logUndeclaredPermissions(
         permissions: Set<String>,
         manifestPermissions: Set<String>,
-        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>?) -> Unit)?
     ) {
         var undeclared = ""
         permissions.forEach { permission ->
@@ -116,7 +125,13 @@ internal class PermissionManagerImpl @Inject constructor(
             }
         }
 
-        if (undeclared.isNotEmpty()) callback?.invoke(undeclared, SahhaSensorStatus.unavailable)
+        if (undeclared.isNotEmpty()) {
+            callback?.invoke(undeclared, SahhaSensorStatus.unavailable)
+            return
+        }
+
+        // Else
+        callback?.invoke(null, null)
     }
 
     override suspend fun getManifestPermissions(context: Context): Set<String>? {

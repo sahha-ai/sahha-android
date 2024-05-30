@@ -41,4 +41,7 @@ internal interface PermissionManager {
         sensors: Set<SahhaSensor>,
         callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>?, permissions: Set<String>) -> Unit)?
     )
+
+    fun isFirstHealthConnectRequest(firstRequest: Boolean)
+    val isFirstHealthConnectRequest: Boolean
 }

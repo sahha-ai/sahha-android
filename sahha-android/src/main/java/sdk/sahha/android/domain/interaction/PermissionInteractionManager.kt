@@ -1,12 +1,16 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
+import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
@@ -31,6 +35,7 @@ internal class PermissionInteractionManager @Inject constructor(
     private val configRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     @DefaultScope private val defaultScope: CoroutineScope,
+    @MainScope private val mainScope: CoroutineScope,
 ) {
     fun openAppSettings(context: Context) {
         openAppSettingsUseCase(context)
@@ -192,7 +197,7 @@ internal class PermissionInteractionManager @Inject constructor(
         val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
         val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
                 || healthConnectStatus == SahhaSensorStatus.unavailable
-                || healthConnectStatus == SahhaSensorStatus.pending
+//                || healthConnectStatus == SahhaSensorStatus.pending
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
         val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
@@ -233,6 +238,7 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             manager.requestHealthConnectSensors(context) { _, _ ->
+                manager.isFirstHealthConnectRequest(false)
                 manager.getHealthConnectSensorStatus(
                     context,
                     Session.sensors ?: setOf()
@@ -292,7 +298,7 @@ internal class PermissionInteractionManager @Inject constructor(
         sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             Session.sensors = sensors
             val sensorSetEmpty = sensors.isEmpty()
             if (sensorSetEmpty) {

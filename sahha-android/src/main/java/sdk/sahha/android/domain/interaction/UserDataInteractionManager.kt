@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -84,14 +85,29 @@ internal class UserDataInteractionManager @Inject constructor(
     ) {
         try {
             lastDeviceInfo?.also {
-                if (!deviceInfoIsEqual(context, it))
+                if (!deviceInfoIsEqual(context, it)) {
                     saveAndPutDeviceInfo(context, callback)
+                    checkAndResetSensors(
+                        lastSdkVersion = lastDeviceInfo.sdkVersion,
+                        config = sahhaConfigRepo.getConfig()
+                    )
+                }
                 else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
             callback?.invoke(e.message, false)
         }
+    }
+
+    internal suspend fun checkAndResetSensors(
+        lastSdkVersion: String,
+        config: SahhaConfiguration
+    ): Boolean {
+        val beforeSensorRefactor = lastSdkVersion < "0.15.17"
+        if (beforeSensorRefactor)
+            sahhaConfigRepo.saveConfig(config.copy(sensorArray = arrayListOf()))
+        return beforeSensorRefactor
     }
 
     private suspend fun handleSavingDeviceInfo(

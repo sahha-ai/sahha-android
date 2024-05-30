@@ -52,9 +52,10 @@ internal class SahhaInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         try {
+            val sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: emptySet()
             cacheConfiguration(sahhaSettings)
             saveConfiguration(
-                sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: setOf(),
+                sensors = sensors,
                 settings = sahhaSettings
             )
             auth.migrateDataIfNeeded { error, success ->

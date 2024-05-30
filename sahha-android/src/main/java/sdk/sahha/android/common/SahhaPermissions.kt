@@ -182,11 +182,17 @@ internal object SahhaPermissions : BroadcastReceiver() {
                 return@getTrimmedHcPermissions
             }
 
-            if (status == SahhaSensorStatus.unavailable) error?.also { e ->
-                callback?.invoke(e, status)
+            if (status == SahhaSensorStatus.unavailable) {
+                callback?.invoke(error, status)
                 return@getTrimmedHcPermissions
-            } ?: callback?.invoke(null, SahhaSensorStatus.disabled)
-            else callback?.invoke(null, SahhaSensorStatus.disabled)
+            }
+
+            if (Sahha.di.permissionManager.isFirstHealthConnectRequest) {
+                callback?.invoke(null, SahhaSensorStatus.pending)
+                return@getTrimmedHcPermissions
+            }
+
+            callback?.invoke(null, SahhaSensorStatus.disabled)
         }
     }
 
