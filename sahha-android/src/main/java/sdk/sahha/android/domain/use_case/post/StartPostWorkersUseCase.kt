@@ -24,7 +24,7 @@ internal class StartPostWorkersUseCase @Inject constructor(
             val config = configRepo.getConfig()
 
             permissionManager.getNativeSensorStatus(context) { status ->
-                sensorRepo.checkAndStartWorker(config, SahhaSensor.device.ordinal) {
+                sensorRepo.checkAndStartWorker(config, SahhaSensor.device_lock.ordinal) {
                     sensorRepo.startDevicePostWorker(
                         Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                         Constants.DEVICE_POST_WORKER_TAG
@@ -38,7 +38,7 @@ internal class StartPostWorkersUseCase @Inject constructor(
                             Constants.SLEEP_POST_WORKER_TAG
                         )
                     }
-                    sensorRepo.checkAndStartWorker(config, SahhaSensor.activity.ordinal) {
+                    sensorRepo.checkAndStartWorker(config, SahhaSensor.step_count.ordinal) {
                         sensorRepo.startStepPostWorker(
                             Constants.WORKER_REPEAT_INTERVAL_MINUTES,
                             Constants.STEP_POST_WORKER_TAG

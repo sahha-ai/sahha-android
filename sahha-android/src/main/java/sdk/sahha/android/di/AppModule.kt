@@ -1,5 +1,6 @@
 package sdk.sahha.android.di
 
+import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.KeyguardManager
 import android.app.NotificationManager
@@ -43,6 +44,7 @@ import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
+import sdk.sahha.android.data.repository.AppCrashRepoImpl
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
@@ -58,6 +60,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -384,6 +387,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         manualPermissionsDao: ManualPermissionsDao,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
+        sharedPrefs: SharedPreferences,
         @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
@@ -392,7 +396,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             manualPermissionsDao,
             permissionHandler,
             healthConnectClient,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            sharedPrefs
         )
     }
 
@@ -578,6 +583,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             movementDao,
             constantsMapper,
             sharedPrefs
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideActivityManager(context: Context): ActivityManager {
+        return context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppCrashRepo(
+        activityManager: ActivityManager
+    ): AppCrashRepo {
+        return AppCrashRepoImpl(
+            activityManager = activityManager
         )
     }
 

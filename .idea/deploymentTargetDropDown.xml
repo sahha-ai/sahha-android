@@ -2,10 +2,22 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PreSahhaConfigureTest">
+      <entry key="SpecifiedSensorsTest">
         <State />
       </entry>
       <entry key="app">
+        <State />
+      </entry>
+      <entry key="test01_initial_status_isPending()">
+        <State />
+      </entry>
+      <entry key="test04_nativeAndHealthConnectPermissions()">
+        <State />
+      </entry>
+      <entry key="test05_healthConnectPermissionsOnly()">
+        <State />
+      </entry>
+      <entry key="test06_enableSensors_null_enablesALl()">
         <State />
       </entry>
     </value>
