@@ -85,6 +85,11 @@ internal class SahhaInteractionManager @Inject constructor(
                 async { saveNotificationConfig(sahhaSettings.notificationSettings) },
             ).joinAll()
 
+            val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
+            userData.checkAndResetSensors(
+                lastSdkVersion = lastDeviceInfo?.sdkVersion ?: "0",
+                config = sahhaConfigRepo.getConfig()
+            )
             awaitProcessAndPutDeviceInfo(application)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 requestNotificationPermission(application)
