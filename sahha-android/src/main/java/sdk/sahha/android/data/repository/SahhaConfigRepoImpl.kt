@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.repository
 
+import android.content.SharedPreferences
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
@@ -8,7 +9,7 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
 import javax.inject.Inject
 
 internal class SahhaConfigRepoImpl @Inject constructor(
-    private val dao: ConfigurationDao
+    private val dao: ConfigurationDao,
 ) : SahhaConfigRepo {
     override suspend fun saveConfig(config: SahhaConfiguration) {
         dao.saveConfig(config)

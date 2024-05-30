@@ -5,6 +5,7 @@ internal object Constants {
 
     // Prefs
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
+    const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
@@ -119,6 +120,7 @@ internal object Constants {
     }
 
     object DataLogs {
+        const val DEMOGRAPHIC = "demographic"
         const val DEVICE = "device"
         const val ACTIVITY = "activity"
         const val SLEEP = "sleep"

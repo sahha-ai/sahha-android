@@ -387,6 +387,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         manualPermissionsDao: ManualPermissionsDao,
         healthConnectClient: HealthConnectClient?,
         sahhaErrorLogger: SahhaErrorLogger,
+        sharedPrefs: SharedPreferences,
         @MainScope mainScope: CoroutineScope,
     ): PermissionManager {
         return PermissionManagerImpl(
@@ -395,7 +396,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             manualPermissionsDao,
             permissionHandler,
             healthConnectClient,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            sharedPrefs
         )
     }
 

@@ -7,8 +7,6 @@ import android.os.HandlerThread
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaSensor
@@ -22,9 +20,10 @@ internal object Session {
 
     internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
     internal var settings: SahhaSettings? = null
+    internal var sensors: Set<SahhaSensor>? = null
     internal val onlyDeviceSensorProvided by lazy {
-        settings?.sensors?.contains(SahhaSensor.device) ?: false
-                && settings?.sensors?.count() == 1
+        sensors?.contains(SahhaSensor.device_lock) ?: false
+                && sensors?.count() == 1
     }
 
     internal lateinit var handlerThread: HandlerThread

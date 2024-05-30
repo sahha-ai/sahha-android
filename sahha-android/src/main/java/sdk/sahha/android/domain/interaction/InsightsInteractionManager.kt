@@ -88,7 +88,7 @@ internal class InsightsInteractionManager @Inject constructor(
             )
         }
 
-        if (sensors.contains(SahhaSensor.activity.ordinal)) {
+        if (sensors.contains(SahhaSensor.step_count.ordinal)) {
             checkAndAddStepsInsight(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
@@ -101,7 +101,7 @@ internal class InsightsInteractionManager @Inject constructor(
             )
         }
 
-        if (sensors.contains(SahhaSensor.energy.ordinal)) {
+        if (sensors.contains(SahhaSensor.total_energy_burned.ordinal)) {
             checkAndAddEnergyInsights(
                 LocalDateTime.of(
                     now.minusDays(1).toLocalDate(),
