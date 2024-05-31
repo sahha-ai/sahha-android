@@ -2,23 +2,21 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="SpecifiedSensorsTest">
-        <State />
-      </entry>
       <entry key="app">
-        <State />
-      </entry>
-      <entry key="test01_initial_status_isPending()">
-        <State />
-      </entry>
-      <entry key="test04_nativeAndHealthConnectPermissions()">
-        <State />
-      </entry>
-      <entry key="test05_healthConnectPermissionsOnly()">
-        <State />
-      </entry>
-      <entry key="test06_enableSensors_null_enablesALl()">
-        <State />
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-05-31T00:31:13.368353Z" />
+        </State>
       </entry>
     </value>
   </component>

@@ -52,6 +52,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             val sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: emptySet()
+            Log.d(tag, sensors.toString())
             cacheConfiguration(sahhaSettings)
             saveConfiguration(
                 sensors = sensors,
@@ -86,10 +87,12 @@ internal class SahhaInteractionManager @Inject constructor(
             ).joinAll()
 
             val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
-            userData.checkAndResetSensors(
-                lastSdkVersion = lastDeviceInfo?.sdkVersion ?: "0",
-                config = sahhaConfigRepo.getConfig()
-            )
+            lastDeviceInfo?.also { info ->
+                userData.checkAndResetSensors(
+                    lastSdkVersion = info.sdkVersion,
+                    config = sahhaConfigRepo.getConfig()
+                )
+            }
             awaitProcessAndPutDeviceInfo(application)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 requestNotificationPermission(application)
