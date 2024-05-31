@@ -166,16 +166,12 @@ internal class DataCollectionService : Service() {
             return
         }
 
-        try {
-            startForegroundService(
-                Intent(
-                    this@DataCollectionService.applicationContext,
-                    DataCollectionService::class.java
-                )
+        startForegroundService(
+            Intent(
+                this@DataCollectionService.applicationContext,
+                DataCollectionService::class.java
             )
-        } catch (e: Exception) {
-            Log.w(tag, e.message, e)
-        }
+        )
     }
 
     private fun createBasicNotification(): Notification {
