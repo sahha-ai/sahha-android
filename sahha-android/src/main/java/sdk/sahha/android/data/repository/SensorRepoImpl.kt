@@ -246,7 +246,7 @@ internal class SensorRepoImpl @Inject constructor(
                 .addTag(workerTag)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build()
-        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.KEEP)
     }
 
     override fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String) {

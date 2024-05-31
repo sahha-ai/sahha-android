@@ -38,115 +38,115 @@ internal interface SahhaApi {
         @Body refreshToken: RefreshTokenSendDto
     ): Response<TokenData>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postStepDataLog(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body stepData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postSleepDataRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sleepData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postHeartRateData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body heartRateData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBloodGlucoseData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body bloodData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBloodPressureData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body bloodData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postDeviceActivityRange(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body lockData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postActiveCaloriesBurned(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body activeCaloriesBurnedData: List<SahhaDataLog?>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postTotalCaloriesBurned(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body totalCaloriesBurnedData: List<SahhaDataLog?>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBasalMetabolicRate(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body basalMetabolicRateData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postOxygenSaturation(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body oxygenSaturationData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postVo2Max(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body vo2MaxData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postRespiratoryRate(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body respiratoryRate: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBodyFat(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body bodyFatData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBodyWaterMass(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body bodyWaterMassData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postLeanBodyMass(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body leanBodyMassData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postBoneMass(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body boneMassData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postHeight(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body heightData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postWeight(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body weightData: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-    @POST("profile/health/log")
+    @POST("profile/data/log")
     suspend fun postSahhaDataLogs(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sahhaDataLogs: List<SahhaDataLog>
