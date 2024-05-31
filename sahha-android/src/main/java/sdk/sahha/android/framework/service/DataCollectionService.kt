@@ -165,13 +165,6 @@ internal class DataCollectionService : Service() {
             println("Turning off main service")
             return
         }
-
-        startForegroundService(
-            Intent(
-                this@DataCollectionService.applicationContext,
-                DataCollectionService::class.java
-            )
-        )
     }
 
     private fun createBasicNotification(): Notification {
