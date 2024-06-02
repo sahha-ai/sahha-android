@@ -79,12 +79,12 @@ class MainActivity : ComponentActivity() {
 
 //        val sensors = null
         val sensors = setOf<SahhaSensor>(
-            SahhaSensor.device_lock,
-            SahhaSensor.heart_rate,
-            SahhaSensor.step_count,
-            SahhaSensor.sleep,
-            SahhaSensor.total_energy_burned,
-            SahhaSensor.exercise
+//            SahhaSensor.device_lock,
+//            SahhaSensor.heart_rate,
+//            SahhaSensor.step_count,
+//            SahhaSensor.sleep,
+//            SahhaSensor.total_energy_burned,
+//            SahhaSensor.exercise
         )
 
         Sahha.configure(
