@@ -180,9 +180,8 @@ object Sahha {
         }
 
         di.defaultScope.launch {
-            val configSensors = di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet()
             val allSensors = SahhaSensor.values().toSet()
-            Session.sensors = (sensors ?: allSensors) + configSensors
+            Session.sensors = sensors ?: allSensors
             sim.saveConfiguration(
                 Session.sensors,
                 Session.settings ?: SahhaSettings(environment = SahhaEnvironment.sandbox)
