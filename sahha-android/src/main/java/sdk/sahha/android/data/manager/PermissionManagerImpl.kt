@@ -301,6 +301,8 @@ internal class PermissionManagerImpl @Inject constructor(
     override fun openHealthConnectSettings(context: Context) {
         val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
         val intent = Intent(HealthConnectClient.ACTION_HEALTH_CONNECT_SETTINGS)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
 //        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 //            Intent(HealthConnectManager.ACTION_MANAGE_HEALTH_PERMISSIONS)
 //                .putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
