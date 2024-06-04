@@ -19,6 +19,9 @@ internal interface ConfigurationDao {
     @Query("UPDATE SahhaConfiguration SET sensorArray=:sensors WHERE id=1 ")
     suspend fun updateConfig(sensors: ArrayList<Int>)
 
+    @Query("DELETE FROM SahhaConfiguration")
+    suspend fun clearConfig()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveNotificationConfig(notificationConfiguration: SahhaNotificationConfiguration)
 

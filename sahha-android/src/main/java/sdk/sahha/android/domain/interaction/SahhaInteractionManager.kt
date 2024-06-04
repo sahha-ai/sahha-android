@@ -15,11 +15,12 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
-import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.domain.use_case.UploadLatestCrashLog
 import sdk.sahha.android.framework.activity.SahhaNotificationPermissionActivity
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
@@ -39,10 +40,9 @@ internal class SahhaInteractionManager @Inject constructor(
     internal val userData: UserDataInteractionManager,
     internal val sensor: SensorInteractionManager,
     internal val insights: InsightsInteractionManager,
-    internal val notifications: SahhaNotificationManager,
+    private val uploadLatestCrashLog: UploadLatestCrashLog,
     private val sahhaConfigRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
-    private val healthConnectRepo: HealthConnectRepo,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     internal suspend fun configure(
@@ -51,8 +51,13 @@ internal class SahhaInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
         try {
-            saveConfiguration(sahhaSettings)
+            val sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: emptySet()
+            Log.d(tag, sensors.toString())
             cacheConfiguration(sahhaSettings)
+            saveConfiguration(
+                sensors = sensors,
+                settings = sahhaSettings
+            )
             auth.migrateDataIfNeeded { error, success ->
                 if (!success) {
                     callback?.invoke(error, false)
@@ -75,11 +80,19 @@ internal class SahhaInteractionManager @Inject constructor(
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)?
     ) {
-        defaultScope.launch {
+        mainScope.launch {
             listOf(
                 async { saveNotificationConfig(sahhaSettings.notificationSettings) },
+                async { uploadLatestCrashLog(application.packageName) },
             ).joinAll()
 
+            val lastDeviceInfo = sahhaConfigRepo.getDeviceInformation()
+            lastDeviceInfo?.also { info ->
+                userData.checkAndResetSensors(
+                    lastSdkVersion = info.sdkVersion,
+                    config = sahhaConfigRepo.getConfig()
+                )
+            }
             awaitProcessAndPutDeviceInfo(application)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 requestNotificationPermission(application)
@@ -185,10 +198,11 @@ internal class SahhaInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun saveConfiguration(
+    internal suspend fun saveConfiguration(
+        sensors: Set<SahhaSensor>?,
         settings: SahhaSettings
     ) {
-        val sensorEnums = settings.sensors?.let {
+        val sensorEnums = sensors?.let {
             convertToEnums(it)
         } ?: convertToEnums(SahhaSensor.values().toSet())
 

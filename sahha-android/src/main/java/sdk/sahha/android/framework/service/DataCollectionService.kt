@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
@@ -24,6 +25,7 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -37,6 +39,7 @@ internal class DataCollectionService : Service() {
 
     private val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
     private val sensors by lazy { Sahha.sim.sensor }
+    private val sensorSet by lazy { runBlocking { Sahha.di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet() } }
 
     private var killswitched = false
 
@@ -55,7 +58,6 @@ internal class DataCollectionService : Service() {
 
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
-
                 startTimeZoneChangedReceiver()
                 startDataCollectors(this@DataCollectionService)
 
@@ -72,7 +74,10 @@ internal class DataCollectionService : Service() {
 
     private val periodicTask = object : Runnable {
         override fun run() {
-            Sahha.di.permissionManager.getHealthConnectSensorStatus(this@DataCollectionService) { status ->
+            Sahha.di.permissionManager.getHealthConnectSensorStatus(
+                context = this@DataCollectionService,
+                sensors = sensorSet
+            ) { _, status ->
                 val isEnabledOrDisabled =
                     status == SahhaSensorStatus.enabled || status == SahhaSensorStatus.disabled
                 if (!isEnabledOrDisabled) Session.handlerThread.quitSafely()
@@ -160,13 +165,6 @@ internal class DataCollectionService : Service() {
             println("Turning off main service")
             return
         }
-
-        startForegroundService(
-            Intent(
-                this@DataCollectionService.applicationContext,
-                DataCollectionService::class.java
-            )
-        )
     }
 
     private fun createBasicNotification(): Notification {
@@ -236,7 +234,7 @@ internal class DataCollectionService : Service() {
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
-        if (config.sensorArray.contains(SahhaSensor.activity.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.step_count.ordinal)) {
             Sahha.sim.sensor.startCollectingStepDetectorData(
                 this,
                 Sahha.di.movementDao,
@@ -257,7 +255,7 @@ internal class DataCollectionService : Service() {
             Log.w(tag, e.message ?: "Could not unregister receiver or listener")
         }
 
-        if (config.sensorArray.contains(SahhaSensor.device.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.device_lock.ordinal)) {
             Sahha.sim.sensor.startCollectingPhoneScreenLockDataUseCase(
                 this@DataCollectionService.applicationContext,
             )

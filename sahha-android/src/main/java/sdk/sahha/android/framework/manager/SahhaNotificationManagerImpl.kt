@@ -83,7 +83,6 @@ internal class SahhaNotificationManagerImpl(
                 ContextCompat.startForegroundService(
                     context,
                     Intent(context.applicationContext, DataCollectionService::class.java)
-                        .setAction(Constants.ACTION_RESTART_SERVICE)
                 )
                 callback?.invoke(null, true)
             } catch (e: Exception) {
