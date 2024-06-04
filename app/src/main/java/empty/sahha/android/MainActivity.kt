@@ -77,15 +77,15 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
-//        val sensors = null
-        val sensors = setOf<SahhaSensor>(
+        val sensors = null
+//        val sensors = setOf<SahhaSensor>(
 //            SahhaSensor.device_lock,
 //            SahhaSensor.heart_rate,
 //            SahhaSensor.step_count,
 //            SahhaSensor.sleep,
 //            SahhaSensor.total_energy_burned,
 //            SahhaSensor.exercise
-        )
+//        )
 
         Sahha.configure(
             application,
@@ -145,6 +145,31 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.getSensorStatus(
+                                        this@MainActivity,
+                                        setOf<SahhaSensor>()
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Get No Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.getSensorStatus(
+                                        this@MainActivity,
+                                        setOf<SahhaSensor>(
+                                            SahhaSensor.heart_rate, SahhaSensor.sleep)
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Get Some Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
                                 Button(onClick = {
                                     Sahha.getSensorStatus(
                                         this@MainActivity,
