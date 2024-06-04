@@ -179,7 +179,7 @@ class MainActivity : ComponentActivity() {
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
                                     }
                                 }) {
-                                    Text("Get Sensor Status")
+                                    Text("Get All Sensor Status")
                                 }
                                 Spacer(modifier = Modifier.padding(8.dp))
                                 Button(onClick = {
