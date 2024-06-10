@@ -1,9 +1,10 @@
 package sdk.sahha.android.domain.interaction
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.di.IoScope
@@ -13,8 +14,12 @@ import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.SaveTokensUseCase
+import sdk.sahha.android.domain.use_case.background.KillMainService
+import sdk.sahha.android.domain.use_case.background.RestartWorkers
 import sdk.sahha.android.source.Sahha
 import javax.inject.Inject
+
+private const val TAG = "AuthInteractionManager"
 
 internal class AuthInteractionManager @Inject constructor(
     @IoScope private val ioScope: CoroutineScope,
@@ -25,7 +30,9 @@ internal class AuthInteractionManager @Inject constructor(
     private val batchedDataRepo: BatchedDataRepo,
     private val sensorRepo: SensorRepo,
     private val sleepDao: SleepDao,
-    private val saveTokensUseCase: SaveTokensUseCase
+    private val saveTokensUseCase: SaveTokensUseCase,
+    private val restartWorkers: RestartWorkers,
+    private val killMainService: KillMainService
 ) {
     fun checkIsAuthenticated(): Boolean {
         val tokenIsNotNullOrEmpty = !authRepo.getToken().isNullOrEmpty()
@@ -40,7 +47,11 @@ internal class AuthInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         ioScope.launch {
-            saveTokensUseCase(appId, appSecret, externalId, callback)
+            saveTokensUseCase(appId, appSecret, externalId) { error, success ->
+                error?.also { e -> Log.d(TAG, e) }
+                if (success) launch { restartWorkers() }
+                callback(error, success)
+            }
         }
     }
 
@@ -50,7 +61,11 @@ internal class AuthInteractionManager @Inject constructor(
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
         ioScope.launch {
-            saveTokensUseCase(profileToken, refreshToken, callback)
+            saveTokensUseCase(profileToken, refreshToken) { error, success ->
+                error?.also { e -> Log.d(TAG, e) }
+                if (success) launch { restartWorkers() }
+                callback(error, success)
+            }
         }
     }
 
@@ -67,6 +82,7 @@ internal class AuthInteractionManager @Inject constructor(
         sleepDao.clearSleepDto()
         sensorRepo.clearAllStepSessions()
         sensorRepo.stopAllWorkers()
+        killMainService()
     }
 
     internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {

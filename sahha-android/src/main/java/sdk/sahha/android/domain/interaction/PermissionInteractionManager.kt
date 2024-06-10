@@ -329,6 +329,11 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
+        if(!Sahha.isAuthenticated) {
+            callback?.invoke("Not yet authenticated", false)
+            return
+        }
+
         if (Session.onlyDeviceSensorProvided) {
             manager.getDeviceOnlySensorStatus { status ->
                 if (status == SahhaSensorStatus.enabled) {
