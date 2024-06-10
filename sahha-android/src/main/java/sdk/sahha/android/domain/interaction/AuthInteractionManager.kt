@@ -5,10 +5,15 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.data.local.dao.SecurityDao
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.SaveTokensUseCase
+import sdk.sahha.android.source.Sahha
 import javax.inject.Inject
 
 internal class AuthInteractionManager @Inject constructor(
@@ -16,6 +21,10 @@ internal class AuthInteractionManager @Inject constructor(
     private val authRepo: AuthRepo,
     private val securityDao: SecurityDao,
     private val decryptor: Decryptor,
+    private val healthConnectRepo: HealthConnectRepo,
+    private val batchedDataRepo: BatchedDataRepo,
+    private val sensorRepo: SensorRepo,
+    private val sleepDao: SleepDao,
     private val saveTokensUseCase: SaveTokensUseCase
 ) {
     fun checkIsAuthenticated(): Boolean {
@@ -49,6 +58,15 @@ internal class AuthInteractionManager @Inject constructor(
         callback: (suspend (error: String?, success: Boolean) -> Unit)
     ) {
         authRepo.clearTokenData(callback)
+        healthConnectRepo.clearAllQueries()
+        healthConnectRepo.clearAllStepsHc()
+        healthConnectRepo.clearAllChangeTokens()
+        batchedDataRepo.deleteAllBatchedData()
+        sleepDao.clearAllSleepHistory()
+        sleepDao.clearSleep()
+        sleepDao.clearSleepDto()
+        sensorRepo.clearAllStepSessions()
+        sensorRepo.stopAllWorkers()
     }
 
     internal suspend fun migrateDataIfNeeded(callback: (error: String?, success: Boolean) -> Unit) {

@@ -1,10 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors

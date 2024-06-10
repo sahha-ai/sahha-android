@@ -141,15 +141,6 @@ internal class SensorRepoImpl @Inject constructor(
     }
 
     override fun stopAllWorkers() {
-        if (permissionManager.shouldUseHealthConnect()) {
-            workManager.cancelAllWorkByTag(SLEEP_WORKER_TAG)
-            workManager.cancelAllWorkByTag(DEVICE_POST_WORKER_TAG)
-            workManager.cancelAllWorkByTag(SLEEP_POST_WORKER_TAG)
-            workManager.cancelAllWorkByTag(STEP_POST_WORKER_TAG)
-            return
-        }
-
-        // Else
         workManager.cancelAllWork()
     }
 

@@ -55,4 +55,7 @@ internal interface SleepDao {
 
     @Query("DELETE FROM SleepQueueHistory WHERE id=:id")
     suspend fun removeHistory(id: Int)
+
+    @Query("DELETE FROM SleepQueueHistory")
+    suspend fun clearAllSleepHistory()
 }
