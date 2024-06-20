@@ -31,7 +31,6 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger
 ) {
     suspend operator fun invoke(
-//        context: Context,
         batchedData: List<SahhaDataLog>,
         chunkBytes: Int = Constants.DATA_LOG_LIMIT_BYTES,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
