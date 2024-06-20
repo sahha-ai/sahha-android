@@ -63,18 +63,20 @@ internal class BatchDataLogs @Inject constructor(
     private var batchJobs = emptyList<Job>()
     private val syncJob = CoroutineScope(Dispatchers.Default + Job())
     private val existingBatch by lazy { runBlocking { batchRepo.getBatchedData() } }
-    suspend operator fun invoke() {
-        if (Session.hcQueryInProgress) return
+    suspend operator fun invoke(): Boolean {
+        if (Session.hcQueryInProgress) return false
+        healthConnectRepo.resetHasMore()
 
         val granted = healthConnectRepo.getGrantedPermissions()
         granted.forEach {
             when (it) {
                 HealthPermission.getReadPermission(StepsRecord::class) -> {
                     val recordType = StepsRecord::class
+                    val changesToken = healthConnectRepo.getExistingChangesToken(recordType)
                     batchJobs += newBatchJob().launch {
                         val records = healthConnectRepo.getChangedRecords(
                             recordType,
-                            healthConnectRepo.getExistingChangesToken(recordType)
+                            changesToken
                         )
                             ?: healthConnectRepo.getCurrentDayRecords(recordType)
                         records?.also { batchStepData(records = it) }
@@ -356,6 +358,7 @@ internal class BatchDataLogs @Inject constructor(
         }
 
         batchJobs.joinAll()
+        return healthConnectRepo.shouldLoop
     }
 
     private suspend fun <T : Record> detectRecords(recordType: KClass<T>) =

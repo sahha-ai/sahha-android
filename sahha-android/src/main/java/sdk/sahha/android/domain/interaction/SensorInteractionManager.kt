@@ -15,6 +15,7 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -46,6 +47,7 @@ internal class SensorInteractionManager @Inject constructor(
     private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
     private val configRepo: SahhaConfigRepo,
+    private val batchedDataRepo: BatchedDataRepo,
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
     private val sensorManager: SensorManager,
@@ -70,7 +72,10 @@ internal class SensorInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        permissionManager.getHealthConnectSensorStatus(context = context, Session.sensors ?: setOf()) { _, status ->
+        permissionManager.getHealthConnectSensorStatus(
+            context = context,
+            Session.sensors ?: setOf()
+        ) { _, status ->
             ioScope.launch {
                 val statusEnabled = status == SahhaSensorStatus.enabled
                 val statusDisabled = status == SahhaSensorStatus.disabled
@@ -168,6 +173,7 @@ internal class SensorInteractionManager @Inject constructor(
         ioScope.launch {
             try {
                 result = awaitHealthConnectQuery()
+                postBatchData(batchedDataRepo.getBatchedData())
             } catch (e: Exception) {
                 result = Pair(e.message, false)
                 Log.e(tag, e.message ?: "Something went wrong querying Health Connect data")
@@ -183,7 +189,9 @@ internal class SensorInteractionManager @Inject constructor(
 
     private suspend fun awaitHealthConnectQuery() = suspendCancellableCoroutine { cont ->
         ioScope.launch {
-            batchDataLogs()
+            do {
+                val hasMore = batchDataLogs()
+            } while (hasMore)
             if (cont.isActive) cont.resume(Pair(null, true))
         }
     }
