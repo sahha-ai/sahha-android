@@ -54,6 +54,7 @@ internal class PostBatchData @Inject constructor(
             allData = batchedData,
             limit = chunkBytes / approximateBytesPerLog,
             postData = { chunk ->
+                Session.batchPostInProgress = true
                 val token = authRepo.getToken() ?: ""
 
                 try {
@@ -62,12 +63,16 @@ internal class PostBatchData @Inject constructor(
                         context = context,
                         response = response,
                         retryLogic = { api.postSahhaDataLogs(TokenBearer(token), chunk) },
-                        successfulLogic = { batchRepo.deleteBatchedData(chunk) },
+                        successfulLogic = {
+                            batchRepo.deleteBatchedData(chunk)
+                            Session.batchPostInProgress = false
+                        },
                         callback = null
                     )
                     ResponseCode.isSuccessful(response.code())
                 } catch (e: Exception) {
                     Log.e(tag, e.message, e)
+                    Session.batchPostInProgress = false
                     false
                 }
             },

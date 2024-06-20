@@ -965,6 +965,10 @@ internal class HealthConnectRepoImpl @Inject constructor(
         healthConnectConfigDao.clearAllQueries()
     }
 
+    override suspend fun clearAllChangeTokens() {
+        healthConnectConfigDao.clearAllChangeTokens()
+    }
+
     private suspend fun getChangeToken(recordType: String): String? {
         return healthConnectConfigDao.getChangeToken(recordType)?.token
     }
