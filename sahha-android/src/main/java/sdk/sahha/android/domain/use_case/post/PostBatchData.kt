@@ -23,6 +23,7 @@ import javax.inject.Inject
 private const val tag = "PostBatchData"
 
 internal class PostBatchData @Inject constructor(
+    private val context: Context,
     private val api: SahhaApi,
     private val chunkManager: PostChunkManager,
     private val authRepo: AuthRepo,
@@ -30,13 +31,12 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger
 ) {
     suspend operator fun invoke(
-        context: Context,
         batchedData: List<SahhaDataLog>,
         chunkBytes: Int = Constants.DATA_LOG_LIMIT_BYTES,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        if (Session.batchPostInProgress) {
-            callback?.invoke("Post already in progress", false)
+        if (Session.batchedDataPosting) {
+            callback?.invoke("Batched data posting already in progress", false)
             return
         }
 
@@ -45,6 +45,7 @@ internal class PostBatchData @Inject constructor(
             return
         }
 
+        Session.batchedDataPosting = true
         val sample = batchedData.random()
         val approximateBytesPerLog =
             SahhaConverterUtility.convertToJsonString(sample).toByteArray().size
@@ -123,9 +124,11 @@ internal class PostBatchData @Inject constructor(
             if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.invoke(null, true)
+                Session.batchedDataPosting = false
                 return
             }
 
+            Session.batchedDataPosting = false
             callback?.invoke(
                 "${code}: ${response.message()}",
                 false
@@ -133,6 +136,7 @@ internal class PostBatchData @Inject constructor(
 
             sahhaErrorLogger.apiFromJsonArray(response)
         } catch (e: Exception) {
+            Session.batchedDataPosting = false
             callback?.invoke(e.message, false)
 
             sahhaErrorLogger.application(

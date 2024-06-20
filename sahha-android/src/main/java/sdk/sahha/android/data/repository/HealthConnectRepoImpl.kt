@@ -93,7 +93,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.reflect.KClass
 
-private val tag = "HealthConnectRepoImpl"
+private val TAG = "HealthConnectRepoImpl"
 
 internal class HealthConnectRepoImpl @Inject constructor(
     private val context: Context,
@@ -125,6 +125,13 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     override val successfulQueryTimestamps =
         hashMapOf<String, ZonedDateTime>()
+
+    private var hasMore: List<Boolean> = listOf()
+    override var shouldLoop: Boolean = false
+
+    override fun resetHasMore() {
+        hasMore = emptyList()
+    }
 
     private fun getDataClassFromPermission(
         permission: String
@@ -170,7 +177,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         try {
             context.unregisterReceiver(receiver)
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener", e)
+            Log.w(TAG, e.message ?: "Could not unregister receiver or listener", e)
         }
     }
 
@@ -330,7 +337,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         if (!successes.all { it })
             sahhaErrorLogger.application(
                 errors.toString(),
-                tag,
+                TAG,
                 "postHeartRateAggregateData",
                 heartRateAggregateData.toString()
             )
@@ -444,7 +451,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
         if (!successes.all { it })
             sahhaErrorLogger.application(
                 errors.toString(),
-                tag,
+                TAG,
                 "postBloodPressureData",
                 bloodPressureData.map {
                     it.toBloodPressureSystolic()
@@ -801,7 +808,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             ioScope.launch {
                 try {
                     val response = getResponse(chunk)
-                    Log.d(tag, "Content length: ${response.raw().request.body?.contentLength()}")
+                    Log.d(TAG, "Content length: ${response.raw().request.body?.contentLength()}")
 
                     handleResponse(response, { getResponse(chunk) }, null) {
                         // When successful
@@ -809,7 +816,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                         if (cont.isActive) cont.resume(true)
                     }
                 } catch (e: Exception) {
-                    Log.e(tag, e.message, e)
+                    Log.e(TAG, e.message, e)
                     if (cont.isActive) cont.resume(false)
                 }
             }
@@ -826,8 +833,8 @@ internal class HealthConnectRepoImpl @Inject constructor(
             val code = response.code()
 
             if (ResponseCode.accountRemoved(code)) {
-                Log.w(tag, "Account does not exist, stopping all tasks")
-                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
+                Log.w(TAG, "Account does not exist, stopping all tasks")
+                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(TAG, it) } }
                 Sahha.sim.sensor.stopAllBackgroundTasks(context)
                 Sahha.sim.sensor.killMainService(context)
                 return
@@ -873,7 +880,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
+                TAG,
                 "handleResponse",
                 e.stackTraceToString(),
             )
@@ -989,12 +996,12 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     )
                 )
             } catch (e: Exception) {
-                Log.w(tag, e.message ?: "Something went wrong storing next page token")
+                Log.w(TAG, e.message ?: "Something went wrong storing next page token")
             }
 
             return response?.records ?: emptyList()
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not query Health Connect data")
+            Log.w(TAG, e.message ?: "Could not query Health Connect data")
             return emptyList()
         }
     }
@@ -1044,9 +1051,15 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 }
                 t = response.nextChangesToken
             } catch (e: Exception) {
+                Log.d(TAG, e.message, e)
+                shouldLoop = false
                 return emptyList()
             }
         } while (response?.hasMore == true)
+        response?.also {
+            hasMore += it.hasMore
+            shouldLoop = hasMore.contains(true)
+        }
 
         storeNextChangesToken(recordType, t!!)
         return changed
@@ -1124,6 +1137,8 @@ internal class HealthConnectRepoImpl @Inject constructor(
         if (records.isEmpty()) return null
 
         successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] = now
+        hasMore += true
+        shouldLoop = hasMore.contains(true)
         return records
     }
 
@@ -1141,6 +1156,8 @@ internal class HealthConnectRepoImpl @Inject constructor(
 
         successfulQueryTimestamps[HealthPermission.getReadPermission(dataType)] =
             currentMidnight
+        hasMore += true
+        shouldLoop = hasMore.contains(true)
         return records
     }
 

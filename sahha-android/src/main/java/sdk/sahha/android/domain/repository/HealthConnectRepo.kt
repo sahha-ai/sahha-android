@@ -158,4 +158,6 @@ internal interface HealthConnectRepo {
     suspend fun <T: Record> getExistingChangesToken(recordType: KClass<T>): String?
     suspend fun <T: Record> getChangedRecords(recordType: KClass<T>, token: String? = null): List<Record>?
     suspend fun clearAllChangeTokens()
+    var shouldLoop: Boolean
+    fun resetHasMore()
 }
