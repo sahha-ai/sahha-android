@@ -98,4 +98,5 @@ internal interface SensorRepo {
         repeatIntervalMinutes: Long,
         workerTag: String
     )
+    fun startOneTimeBatchedDataPostWorker(workerTag: String)
 }

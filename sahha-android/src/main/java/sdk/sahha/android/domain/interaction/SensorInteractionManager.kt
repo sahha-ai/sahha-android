@@ -172,8 +172,7 @@ internal class SensorInteractionManager @Inject constructor(
         scope.launch {
             try {
                 result = awaitHealthConnectQuery()
-                if (batchLimitReached()) sensorRepo.startBatchedDataPostWorker(
-                    Constants.THIRTY_MINUTES,
+                sensorRepo.startOneTimeBatchedDataPostWorker(
                     Constants.SAHHA_DATA_LOG_WORKER_TAG
                 )
             } catch (e: Exception) {

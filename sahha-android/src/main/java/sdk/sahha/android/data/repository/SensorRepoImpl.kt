@@ -7,6 +7,9 @@ import android.hardware.SensorManager
 import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -237,6 +240,15 @@ internal class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
 
+    override fun startOneTimeBatchedDataPostWorker(workerTag: String) {
+        val workRequest: OneTimeWorkRequest =
+            OneTimeWorkRequestBuilder<BatchedDataPostWorker>()
+                .addTag(workerTag)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
+                .build()
+        startOneTimeWork(workRequest, workerTag)
+    }
+
     override fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String) {
         val workRequest = PeriodicWorkRequestBuilder<HealthConnectQueryWorker>(
             repeatIntervalMinutes,
@@ -323,6 +335,18 @@ internal class SensorRepoImpl @Inject constructor(
         policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
     ) {
         workManager.enqueueUniquePeriodicWork(
+            workerTag,
+            policy,
+            workRequest
+        )
+    }
+
+    private fun startOneTimeWork(
+        workRequest: OneTimeWorkRequest,
+        workerTag: String,
+        policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP
+    ) {
+        workManager.enqueueUniqueWork(
             workerTag,
             policy,
             workRequest

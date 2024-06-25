@@ -37,7 +37,7 @@ internal object Constants {
 
     // Post limits
     private const val DATA_LOG_SIZE_BYTES = 292 // bytes
-    const val DATA_LOG_LIMIT_BYTES = 16 * 1024
+    const val DATA_LOG_LIMIT_BYTES = 32 * 1024
     const val DEFAULT_POST_LIMIT = (DATA_LOG_LIMIT_BYTES + DATA_LOG_SIZE_BYTES) / DATA_LOG_SIZE_BYTES
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
