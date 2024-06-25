@@ -232,7 +232,7 @@ internal class SensorRepoImpl @Inject constructor(
                 TimeUnit.MINUTES
             )
                 .addTag(workerTag)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
                 .build()
         startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
@@ -247,7 +247,10 @@ internal class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag, policy = ExistingPeriodicWorkPolicy.REPLACE)
     }
 
-    override fun startBackgroundTaskRestarterWorker(repeatIntervalMinutes: Long, workerTag: String) {
+    override fun startBackgroundTaskRestarterWorker(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ) {
         val workRequest = PeriodicWorkRequestBuilder<BackgroundTaskRestarterWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
