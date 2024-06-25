@@ -549,6 +549,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-1421978597">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Google Pixel 7a" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1397089274">
           <value>
             <AndroidTestResultsTableState>

@@ -112,6 +112,7 @@ internal class PostBatchData @Inject constructor(
             if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.invoke(null, true)
+                Log.d(tag, "${code}: ${response.message()}")
                 return
             }
 

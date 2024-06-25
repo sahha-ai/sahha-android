@@ -2,6 +2,21 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="InsightsTest">
+        <State />
+      </entry>
+      <entry key="NewApiTests">
+        <State />
+      </entry>
+      <entry key="StepSessionTest">
+        <State />
+      </entry>
+      <entry key="TokenAuthenticateTest">
+        <State />
+      </entry>
+      <entry key="WorkerIndependentTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
           <runningDeviceTargetSelectedWithDropDown>
@@ -17,15 +32,6 @@
           </runningDeviceTargetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-06-19T23:13:47.398373Z" />
         </State>
-      </entry>
-      <entry key="environment()">
-        <State />
-      </entry>
-      <entry key="metaIds()">
-        <State />
-      </entry>
-      <entry key="write2500StepRecords()">
-        <State />
       </entry>
     </value>
   </component>
