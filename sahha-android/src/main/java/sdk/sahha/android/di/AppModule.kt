@@ -69,11 +69,13 @@ import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -527,10 +529,19 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return Mutex()
     }
 
+    @Named("BatchMutex")
     @Singleton
     @Provides
-    fun providePostChunkManager(): PostChunkManager {
-        return PostChunkManagerImpl()
+    fun provideBatchMutex(): Mutex {
+        return Mutex()
+    }
+
+    @Singleton
+    @Provides
+    fun providePostChunkManager(
+        @Named("BatchMutex") mutex: Mutex
+    ): PostChunkManager {
+        return PostChunkManagerImpl(mutex)
     }
 
     @Singleton
@@ -630,5 +641,15 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideHealthConnectConstantsMapper(): HealthConnectConstantsMapper {
         return HealthConnectConstantsMapperImpl()
+    }
+
+    @Singleton
+    @Provides
+    fun provideCalculateBatchLimit(
+        batchedDataRepo: BatchedDataRepo
+    ): CalculateBatchLimit {
+        return CalculateBatchLimit(
+            batchedDataRepo
+        )
     }
 }

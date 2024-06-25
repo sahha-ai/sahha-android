@@ -162,7 +162,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
             val config = configRepo.getConfig()
             if (config.sensorArray.contains(SahhaSensor.device_lock.ordinal)) {
                 sensorRepo.startDevicePostWorker(
-                    Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                    Constants.FIFTEEN_MINUTES,
                     Constants.DEVICE_POST_WORKER_TAG
                 )
             }

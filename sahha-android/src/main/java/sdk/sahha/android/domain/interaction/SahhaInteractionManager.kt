@@ -153,9 +153,7 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
-                    async {
-                        sensor.startDataCollection(context)
-                    },
+                    async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
                 ).joinAll()
 

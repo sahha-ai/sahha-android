@@ -7,11 +7,12 @@ import android.hardware.SensorManager
 import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ListenableWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.Worker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -23,7 +24,6 @@ import retrofit2.Response
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.common.Constants.SLEEP_POST_WORKER_TAG
-import sdk.sahha.android.common.Constants.SLEEP_WORKER_TAG
 import sdk.sahha.android.common.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -235,9 +235,18 @@ internal class SensorRepoImpl @Inject constructor(
                 TimeUnit.MINUTES
             )
                 .addTag(workerTag)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
                 .build()
-        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.KEEP)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
+    }
+
+    override fun startOneTimeBatchedDataPostWorker(workerTag: String) {
+        val workRequest: OneTimeWorkRequest =
+            OneTimeWorkRequestBuilder<BatchedDataPostWorker>()
+                .addTag(workerTag)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
+                .build()
+        startOneTimeWork(workRequest, workerTag)
     }
 
     override fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String) {
@@ -250,7 +259,10 @@ internal class SensorRepoImpl @Inject constructor(
         startWorkManager(workRequest, workerTag, policy = ExistingPeriodicWorkPolicy.REPLACE)
     }
 
-    override fun startBackgroundTaskRestarterWorker(repeatIntervalMinutes: Long, workerTag: String) {
+    override fun startBackgroundTaskRestarterWorker(
+        repeatIntervalMinutes: Long,
+        workerTag: String
+    ) {
         val workRequest = PeriodicWorkRequestBuilder<BackgroundTaskRestarterWorker>(
             repeatIntervalMinutes,
             TimeUnit.MINUTES
@@ -323,6 +335,18 @@ internal class SensorRepoImpl @Inject constructor(
         policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP
     ) {
         workManager.enqueueUniquePeriodicWork(
+            workerTag,
+            policy,
+            workRequest
+        )
+    }
+
+    private fun startOneTimeWork(
+        workRequest: OneTimeWorkRequest,
+        workerTag: String,
+        policy: ExistingWorkPolicy = ExistingWorkPolicy.KEEP
+    ) {
+        workManager.enqueueUniqueWork(
             workerTag,
             policy,
             workRequest
@@ -670,7 +694,7 @@ internal class SensorRepoImpl @Inject constructor(
     private fun rescheduleWorker(sensor: Enum<SahhaSensor>) {
         sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
             stopWorkerByTag(workerTag)
-            startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
+            startWorkerAction(Constants.FIFTEEN_MINUTES, workerTag)
         }
     }
 

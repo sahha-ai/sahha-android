@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.manager.PermissionManager
-import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.source.SahhaSensor
@@ -26,7 +25,7 @@ internal class StartPostWorkersUseCase @Inject constructor(
             permissionManager.getNativeSensorStatus(context) { status ->
                 sensorRepo.checkAndStartWorker(config, SahhaSensor.device_lock.ordinal) {
                     sensorRepo.startDevicePostWorker(
-                        Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                        Constants.FIFTEEN_MINUTES,
                         Constants.DEVICE_POST_WORKER_TAG
                     )
                 }
@@ -34,13 +33,13 @@ internal class StartPostWorkersUseCase @Inject constructor(
                 if (status == SahhaSensorStatus.enabled) {
                     sensorRepo.checkAndStartWorker(config, SahhaSensor.sleep.ordinal) {
                         sensorRepo.startSleepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            Constants.FIFTEEN_MINUTES,
                             Constants.SLEEP_POST_WORKER_TAG
                         )
                     }
                     sensorRepo.checkAndStartWorker(config, SahhaSensor.step_count.ordinal) {
                         sensorRepo.startStepPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                            Constants.FIFTEEN_MINUTES,
                             Constants.STEP_POST_WORKER_TAG
                         )
                     }

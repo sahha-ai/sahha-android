@@ -16,7 +16,6 @@ import java.time.ZoneOffset
 
 internal object Session {
     var hcQueryInProgress = false
-    var batchedDataPosting = false
     var tokenRefreshAttempted = false
     var batchPostInProgress = false
 
