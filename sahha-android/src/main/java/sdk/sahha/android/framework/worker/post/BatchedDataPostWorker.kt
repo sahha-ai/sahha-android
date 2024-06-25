@@ -34,7 +34,6 @@ internal class BatchedDataPostWorker(
 
         return suspendCancellableCoroutine { cont ->
             scope.launch {
-                Session.batchedDataPosting = true
                 val batchedData = try {
                     Sahha.di.batchedDataRepo.getBatchedData()
                 } catch (e: Exception) {

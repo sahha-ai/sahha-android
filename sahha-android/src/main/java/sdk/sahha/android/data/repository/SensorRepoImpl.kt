@@ -7,11 +7,9 @@ import android.hardware.SensorManager
 import android.util.Log
 import androidx.work.BackoffPolicy
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ListenableWorker
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.Worker
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -23,7 +21,6 @@ import retrofit2.Response
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Constants.DEVICE_POST_WORKER_TAG
 import sdk.sahha.android.common.Constants.SLEEP_POST_WORKER_TAG
-import sdk.sahha.android.common.Constants.SLEEP_WORKER_TAG
 import sdk.sahha.android.common.Constants.STEP_POST_WORKER_TAG
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -237,7 +234,7 @@ internal class SensorRepoImpl @Inject constructor(
                 .addTag(workerTag)
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
                 .build()
-        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.KEEP)
+        startWorkManager(workRequest, workerTag, ExistingPeriodicWorkPolicy.REPLACE)
     }
 
     override fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String) {
@@ -670,7 +667,7 @@ internal class SensorRepoImpl @Inject constructor(
     private fun rescheduleWorker(sensor: Enum<SahhaSensor>) {
         sensorToWorkerAction[sensor]?.let { (workerTag, startWorkerAction) ->
             stopWorkerByTag(workerTag)
-            startWorkerAction(Constants.WORKER_REPEAT_INTERVAL_MINUTES, workerTag)
+            startWorkerAction(Constants.FIFTEEN_MINUTES, workerTag)
         }
     }
 

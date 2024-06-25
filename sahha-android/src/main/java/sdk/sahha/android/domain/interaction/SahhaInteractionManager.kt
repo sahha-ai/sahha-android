@@ -153,10 +153,14 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
-                    async {
-                        sensor.startDataCollection(context)
-                    },
+                    async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
+                    async {
+                        sensorRepo.startBatchedDataPostWorker(
+                            Constants.THIRTY_MINUTES,
+                            Constants.SAHHA_DATA_LOG_WORKER_TAG
+                        )
+                    }
                 ).joinAll()
 
                 callback?.invoke(null, true)

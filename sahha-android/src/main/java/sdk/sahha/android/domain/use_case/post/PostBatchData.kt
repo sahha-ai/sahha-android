@@ -16,6 +16,7 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
@@ -28,33 +29,22 @@ internal class PostBatchData @Inject constructor(
     private val chunkManager: PostChunkManager,
     private val authRepo: AuthRepo,
     private val batchRepo: BatchedDataRepo,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val calculateBatchLimit: CalculateBatchLimit
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
-        chunkBytes: Int = Constants.DATA_LOG_LIMIT_BYTES,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        if (Session.batchedDataPosting) {
-            callback?.invoke("Batched data posting already in progress", false)
-            return
-        }
-
         if (batchedData.isEmpty()) {
             callback?.invoke("No data found", true)
             return
         }
 
-        Session.batchedDataPosting = true
-        val sample = batchedData.random()
-        val approximateBytesPerLog =
-            SahhaConverterUtility.convertToJsonString(sample).toByteArray().size
-
         chunkManager.postAllChunks(
             allData = batchedData,
-            limit = chunkBytes / approximateBytesPerLog,
+            limit = calculateBatchLimit(),
             postData = { chunk ->
-                Session.batchPostInProgress = true
                 val token = authRepo.getToken() ?: ""
 
                 try {
@@ -65,14 +55,12 @@ internal class PostBatchData @Inject constructor(
                         retryLogic = { api.postSahhaDataLogs(TokenBearer(token), chunk) },
                         successfulLogic = {
                             batchRepo.deleteBatchedData(chunk)
-                            Session.batchPostInProgress = false
                         },
                         callback = null
                     )
                     ResponseCode.isSuccessful(response.code())
                 } catch (e: Exception) {
                     Log.e(tag, e.message, e)
-                    Session.batchPostInProgress = false
                     false
                 }
             },
@@ -124,11 +112,9 @@ internal class PostBatchData @Inject constructor(
             if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.invoke(null, true)
-                Session.batchedDataPosting = false
                 return
             }
 
-            Session.batchedDataPosting = false
             callback?.invoke(
                 "${code}: ${response.message()}",
                 false
@@ -136,7 +122,6 @@ internal class PostBatchData @Inject constructor(
 
             sahhaErrorLogger.apiFromJsonArray(response)
         } catch (e: Exception) {
-            Session.batchedDataPosting = false
             callback?.invoke(e.message, false)
 
             sahhaErrorLogger.application(

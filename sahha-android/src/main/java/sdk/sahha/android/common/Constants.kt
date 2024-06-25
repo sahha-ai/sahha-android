@@ -27,7 +27,8 @@ internal object Constants {
     const val PLATFORM_NAME = "android"
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
-    const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
+    const val FIFTEEN_MINUTES = 15L
+    const val THIRTY_MINUTES = 30L
     const val WORKER_REPEAT_1_DAY = 1440L
     const val POST_TIMEOUT_LIMIT_MILLIS = 90L * 1000L
 
