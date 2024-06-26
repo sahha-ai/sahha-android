@@ -17,7 +17,6 @@ import java.time.ZoneOffset
 internal object Session {
     var hcQueryInProgress = false
     var tokenRefreshAttempted = false
-    var batchPostInProgress = false
 
     internal var healthConnectPostCallback: ((error: String?, successful: Boolean) -> Unit)? = null
     internal var settings: SahhaSettings? = null
