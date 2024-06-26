@@ -16,6 +16,7 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
@@ -23,16 +24,16 @@ import javax.inject.Inject
 private const val tag = "PostBatchData"
 
 internal class PostBatchData @Inject constructor(
+    private val context: Context,
     private val api: SahhaApi,
     private val chunkManager: PostChunkManager,
     private val authRepo: AuthRepo,
     private val batchRepo: BatchedDataRepo,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val calculateBatchLimit: CalculateBatchLimit
 ) {
     suspend operator fun invoke(
-        context: Context,
         batchedData: List<SahhaDataLog>,
-        chunkBytes: Int = Constants.DATA_LOG_LIMIT_BYTES,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
     ) {
         if (batchedData.isEmpty()) {
@@ -40,13 +41,9 @@ internal class PostBatchData @Inject constructor(
             return
         }
 
-        val sample = batchedData.random()
-        val approximateBytesPerLog =
-            SahhaConverterUtility.convertToJsonString(sample).toByteArray().size
-
         chunkManager.postAllChunks(
             allData = batchedData,
-            limit = chunkBytes / approximateBytesPerLog,
+            limit = calculateBatchLimit(),
             postData = { chunk ->
                 val token = authRepo.getToken() ?: ""
 
@@ -56,7 +53,9 @@ internal class PostBatchData @Inject constructor(
                         context = context,
                         response = response,
                         retryLogic = { api.postSahhaDataLogs(TokenBearer(token), chunk) },
-                        successfulLogic = { batchRepo.deleteBatchedData(chunk) },
+                        successfulLogic = {
+                            batchRepo.deleteBatchedData(chunk)
+                        },
                         callback = null
                     )
                     ResponseCode.isSuccessful(response.code())
@@ -113,6 +112,7 @@ internal class PostBatchData @Inject constructor(
             if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.invoke(null, true)
+                Log.d(tag, "${code}: ${response.message()}")
                 return
             }
 

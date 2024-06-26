@@ -27,4 +27,7 @@ internal interface HealthConnectConfigDao {
 
     @Query("SELECT * FROM HealthConnectChangeToken WHERE recordType = :recordType")
     suspend fun getChangeToken(recordType: String): HealthConnectChangeToken?
+
+    @Query("DELETE FROM HealthConnectChangeToken")
+    suspend fun clearAllChangeTokens()
 }

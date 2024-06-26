@@ -17,7 +17,6 @@ import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
-import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.UploadLatestCrashLog
@@ -30,7 +29,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 
 
-private const val tag = "SahhaInteractionManager"
+private const val TAG = "SahhaInteractionManager"
 
 internal class SahhaInteractionManager @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
@@ -52,7 +51,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             val sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: emptySet()
-            Log.d(tag, sensors.toString())
+            Log.d(TAG, sensors.toString())
             cacheConfiguration(sahhaSettings)
             saveConfiguration(
                 sensors = sensors,
@@ -66,7 +65,7 @@ internal class SahhaInteractionManager @Inject constructor(
                 continueConfigurationAsync(application, sahhaSettings, callback)
             }
         } catch (e: Exception) {
-            Log.w(tag, e.message, e)
+            Log.w(TAG, e.message, e)
             continueConfigurationAsync(application, sahhaSettings, callback)
         }
     }
@@ -97,7 +96,10 @@ internal class SahhaInteractionManager @Inject constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 requestNotificationPermission(application)
 
-            permission.startHcOrNativeDataCollection(application, callback)
+            permission.startHcOrNativeDataCollection(application) { error, _ ->
+                error?.also { e -> Log.d(TAG, e) }
+                callback?.invoke(null, true)
+            }
         }
     }
 
@@ -137,7 +139,7 @@ internal class SahhaInteractionManager @Inject constructor(
             callback?.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
+                TAG,
                 "startNative"
             )
         }
@@ -151,15 +153,7 @@ internal class SahhaInteractionManager @Inject constructor(
             defaultScope.launch {
                 sensor.stopAllBackgroundTasks(context)
                 listOf(
-                    async {
-                        sensorRepo.startBatchedDataPostWorker(
-                            Constants.WORKER_REPEAT_INTERVAL_MINUTES,
-                            Constants.SAHHA_DATA_LOG_WORKER_TAG
-                        )
-                    },
-                    async {
-                        sensor.startDataCollection(context)
-                    },
+                    async { sensor.startDataCollection(context) },
                     async { sensor.checkAndStartPostWorkers(context) },
                 ).joinAll()
 
@@ -169,7 +163,7 @@ internal class SahhaInteractionManager @Inject constructor(
             callback?.invoke("Error: ${e.message}", false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
+                TAG,
                 "startNativeAndHealthConnect"
             )
         }

@@ -2,20 +2,35 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="InsightsTest">
+        <State />
+      </entry>
+      <entry key="NewApiTests">
+        <State />
+      </entry>
+      <entry key="StepSessionTest">
+        <State />
+      </entry>
+      <entry key="TokenAuthenticateTest">
+        <State />
+      </entry>
+      <entry key="WorkerIndependentTest">
+        <State />
+      </entry>
       <entry key="app">
         <State>
-          <targetSelectedWithDropDown>
+          <runningDeviceTargetSelectedWithDropDown>
             <Target>
-              <type value="QUICK_BOOT_TARGET" />
+              <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_33.avd" />
+                  <type value="SERIAL_NUMBER" />
+                  <value value="36131JEHN06350" />
                 </Key>
               </deviceKey>
             </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-06-03T21:56:20.071332Z" />
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-06-19T23:13:47.398373Z" />
         </State>
       </entry>
     </value>

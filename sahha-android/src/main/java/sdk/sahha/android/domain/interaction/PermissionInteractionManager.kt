@@ -1,10 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
@@ -332,6 +329,11 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
+        if(!Sahha.isAuthenticated) {
+            callback?.invoke("Not yet authenticated", false)
+            return
+        }
+
         if (Session.onlyDeviceSensorProvided) {
             manager.getDeviceOnlySensorStatus { status ->
                 if (status == SahhaSensorStatus.enabled) {

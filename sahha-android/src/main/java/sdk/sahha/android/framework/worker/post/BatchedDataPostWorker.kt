@@ -11,6 +11,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import kotlin.coroutines.resume
 
@@ -47,7 +48,6 @@ internal class BatchedDataPostWorker(
 
                 withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
                     Sahha.sim.sensor.postBatchData(
-                        context,
                         batchedData
                     ) { _, successful ->
                         if (successful) {
