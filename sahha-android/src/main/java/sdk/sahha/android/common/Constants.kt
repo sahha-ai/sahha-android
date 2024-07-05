@@ -5,6 +5,7 @@ internal object Constants {
 
     // Prefs
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
+    const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
@@ -26,7 +27,8 @@ internal object Constants {
     const val PLATFORM_NAME = "android"
     const val NOTIFICATION_TITLE_DEFAULT = "Gathering health insights"
     const val NOTIFICATION_DESC_DEFAULT = "Swipe for options to hide this notification."
-    const val WORKER_REPEAT_INTERVAL_MINUTES = 15L
+    const val FIFTEEN_MINUTES = 15L
+    const val THIRTY_MINUTES = 30L
     const val WORKER_REPEAT_1_DAY = 1440L
     const val POST_TIMEOUT_LIMIT_MILLIS = 90L * 1000L
 
@@ -35,7 +37,7 @@ internal object Constants {
 
     // Post limits
     private const val DATA_LOG_SIZE_BYTES = 292 // bytes
-    const val DATA_LOG_LIMIT_BYTES = 16 * 1024
+    const val DATA_LOG_LIMIT_BYTES = 32 * 1024
     const val DEFAULT_POST_LIMIT = (DATA_LOG_LIMIT_BYTES + DATA_LOG_SIZE_BYTES) / DATA_LOG_SIZE_BYTES
     const val SLEEP_POST_LIMIT = 46
     const val STEP_POST_LIMIT = 45
@@ -120,6 +122,7 @@ internal object Constants {
     }
 
     object DataLogs {
+        const val DEMOGRAPHIC = "demographic"
         const val DEVICE = "device"
         const val ACTIVITY = "activity"
         const val SLEEP = "sleep"

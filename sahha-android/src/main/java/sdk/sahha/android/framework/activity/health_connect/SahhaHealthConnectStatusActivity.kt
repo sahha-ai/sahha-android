@@ -7,6 +7,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
@@ -26,21 +27,24 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
     }
 
     private suspend fun checkPermissions(context: Context, healthConnectClient: HealthConnectClient) {
-        val hcPermissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
-            Sahha.di.permissionManager.getManifestPermissions(context = context)
-        )
-        val granted = healthConnectClient.permissionController.getGrantedPermissions()
-        if (granted.containsAll(hcPermissions)) {
+        Sahha.di.permissionManager.getTrimmedHcPermissions(
+            Sahha.di.permissionManager.getManifestPermissions(context = context),
+            Session.sensors ?: setOf()
+        ) { error, status, permissions ->
+            val granted = healthConnectClient.permissionController.getGrantedPermissions()
+            if (granted.containsAll(permissions)) {
+                permissionHandler.activityCallback.statusCallback
+                    ?.invoke(null, SahhaSensorStatus.enabled)
+                finish()
+                return@getTrimmedHcPermissions
+            }
+
+            // Else
             permissionHandler.activityCallback.statusCallback
-                ?.invoke(null, SahhaSensorStatus.enabled)
+                ?.invoke(null, SahhaSensorStatus.disabled)
             finish()
-            return
         }
 
-        // Else
-        permissionHandler.activityCallback.statusCallback
-            ?.invoke(null, SahhaSensorStatus.disabled)
-        finish()
     }
 
     private fun healthConnectUnavailable() {

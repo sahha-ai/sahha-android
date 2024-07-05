@@ -76,6 +76,16 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
+        val sensors = null
+//        val sensors = setOf<SahhaSensor>(
+//            SahhaSensor.device_lock,
+//            SahhaSensor.heart_rate,
+//            SahhaSensor.step_count,
+//            SahhaSensor.sleep,
+//            SahhaSensor.total_energy_burned,
+//            SahhaSensor.exercise
+//        )
+
         Sahha.configure(
             application,
             config,
@@ -116,7 +126,8 @@ class MainActivity : ComponentActivity() {
                     externalId = sharedPrefs.getString(EXTERNAL_ID, null) ?: ""
 
                     Sahha.getSensorStatus(
-                        this@MainActivity
+                        this@MainActivity,
+                        sensors
                     ) { error, sensorStatus ->
                         mainScope.launch {
                             permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"
@@ -132,6 +143,7 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
+
                                 Text(appUsageStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -143,18 +155,83 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = { Sahha.storeAppUsages() }) {
                                     Text(text = "Store App Usage")
                                 }
+
+                                ForceCrashTestView()
+
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.enableSensors(
+                                    Sahha.getSensorStatus(
                                         this@MainActivity,
+                                        setOf<SahhaSensor>()
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
                                     }
                                 }) {
-                                    Text("Grant Permissions")
+                                    Text("Get No Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.getSensorStatus(
+                                        this@MainActivity,
+                                        setOf<SahhaSensor>(
+                                            SahhaSensor.heart_rate, SahhaSensor.sleep)
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Get Some Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.getSensorStatus(
+                                        this@MainActivity,
+                                        sensors
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Get All Sensor Status")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.enableSensors(
+                                        this@MainActivity,
+                                        setOf(SahhaSensor.heart_rate)
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Grant Heart Permission")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.enableSensors(
+                                        this@MainActivity,
+                                        setOf(SahhaSensor.sleep)
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Grant Sleep Permission")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(onClick = {
+                                    Sahha.enableSensors(
+                                        this@MainActivity,
+                                        sensors
+                                    ) { error, status ->
+                                        permissionStatus =
+                                            "${status.name}${error?.let { "\n$it" } ?: ""}"
+                                    }
+                                }) {
+                                    Text("Grant All Permissions")
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
@@ -469,6 +546,16 @@ fun ErrorLogView() {
         }
     }) {
         Text("Post Error")
+    }
+}
+
+@Composable
+fun ForceCrashTestView() {
+    Spacer(modifier = Modifier.padding(16.dp))
+    Button(onClick = {
+        throw Exception("Crash test!")
+    }) {
+        Text("Force Crash Test")
     }
 }
 

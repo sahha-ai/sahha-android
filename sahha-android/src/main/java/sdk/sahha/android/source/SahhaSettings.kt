@@ -7,5 +7,4 @@ class SahhaSettings(
     val environment: Enum<SahhaEnvironment>,
     val notificationSettings: SahhaNotificationConfiguration? = null,
     val framework: SahhaFramework = SahhaFramework.android_kotlin,
-    val sensors: Set<Enum<SahhaSensor>>? = null,
 )

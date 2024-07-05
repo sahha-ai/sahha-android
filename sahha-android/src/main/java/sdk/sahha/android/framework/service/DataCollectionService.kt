@@ -1,18 +1,23 @@
 package sdk.sahha.android.framework.service
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo
-import android.os.Build
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Constants.NOTIFICATION_DATA_COLLECTION
 import sdk.sahha.android.common.SahhaErrors
@@ -20,17 +25,21 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
+import java.time.ZonedDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
+private const val LOOP_INTERVAL = 15 * 60 * 1000L
+
 internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
     private val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
     private val sensors by lazy { Sahha.sim.sensor }
+    private val sensorSet by lazy { runBlocking { Sahha.di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet() } }
 
     private var killswitched = false
 
@@ -38,7 +47,10 @@ internal class DataCollectionService : Service() {
         return null
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onCreate() {
+        super.onCreate()
+        startForeground(NOTIFICATION_DATA_COLLECTION, createBasicNotification())
+
         scope.launch {
             try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
@@ -46,35 +58,60 @@ internal class DataCollectionService : Service() {
 
                 config = Sahha.di.configurationDao.getConfig() ?: return@launch
 
-                checkAndKillService(intent)
                 startTimeZoneChangedReceiver()
                 startDataCollectors(this@DataCollectionService)
 
-                checkAndRestartService(intent)
-                handleActions(intent)
+                Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
+                Session.handlerThread.start()
+                Session.serviceHandler = Handler(Session.handlerThread.looper)
+                Session.serviceHandler.post(periodicTask)
             } catch (e: Exception) {
                 stopService()
                 Log.w(tag, e.message ?: "Something went wrong")
             }
         }
-
-        return START_STICKY
     }
 
-    private fun handleActions(intent: Intent?) {
-        intent?.getStringExtra(Constants.INTENT_ACTION)?.also { action ->
-            when (action) {
-                Constants.IntentAction.QUERY_HEALTH_CONNECT -> {
-                    Log.d(tag, "Query action received")
-                    scope.launch { queryHealthConnect() }
-                }
+    private val periodicTask = object : Runnable {
+        override fun run() {
+            Sahha.di.permissionManager.getHealthConnectSensorStatus(
+                context = this@DataCollectionService,
+                sensors = sensorSet
+            ) { _, status ->
+                val isEnabledOrDisabled =
+                    status == SahhaSensorStatus.enabled || status == SahhaSensorStatus.disabled
+                if (!isEnabledOrDisabled) Session.handlerThread.quitSafely()
+            }
 
-                Constants.IntentAction.RESTART_BACKGROUND_TASKS -> {
-                    Log.d(tag, "Restart action received")
-                    scope.launch { restartBackgroundTasks() }
+            if (Session.handlerRunning) {
+                Log.d(tag, "Handler is running, exiting task")
+                return
+            }
+
+            try {
+                Session.handlerRunning = true
+                Log.d(
+                    tag, "Handler task started at ${ZonedDateTime.now().toLocalTime()}\n" +
+                            "Thread: ${Session.handlerThread.threadId}\n\n"
+                )
+
+                scope.launch {
+                    queryHealthConnect { _, _ ->
+                        Session.handlerRunning = false
+                    }
                 }
+                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL)
+            } catch (e: Exception) {
+                Session.handlerRunning = false
+                Log.e(tag, "Periodic task failed", e)
             }
         }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        checkAndKillService(intent)
+        checkAndRestartService(intent)
+        return START_STICKY
     }
 
     private suspend fun restartBackgroundTasks() {
@@ -92,7 +129,9 @@ internal class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun queryHealthConnect() {
+    private suspend fun queryHealthConnect(
+        onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
+    ) {
         Sahha.di
             .sahhaInteractionManager
             .sensor
@@ -101,6 +140,8 @@ internal class DataCollectionService : Service() {
             ) { error, successful ->
                 Session.healthConnectPostCallback?.invoke(error, successful)
                 Session.healthConnectPostCallback = null
+
+                onComplete?.invoke(error, successful)
 
                 error?.also { e ->
                     Sahha.di.sahhaErrorLogger.application(
@@ -113,18 +154,35 @@ internal class DataCollectionService : Service() {
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
 
+        try {
+            Session.handlerThread.quitSafely()
+        } catch (e: Exception) {
+            Log.d(tag, e.message ?: "Handler thread is not yet initialized")
+        }
+        Session.handlerRunning = false
+
         if (killswitched) {
             println("Turning off main service")
             return
         }
-
-        startForegroundService(
-            Intent(
-                this@DataCollectionService.applicationContext,
-                DataCollectionService::class.java
-            )
-        )
     }
+
+    private fun createBasicNotification(): Notification {
+        val channelId = "ForegroundServiceChannel"
+        val channel = NotificationChannel(
+            channelId,
+            "Foreground Service Channel",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Starting Service")
+            .setContentText("Preparing to start...")
+            .setSmallIcon(R.drawable.ic_sahha_no_bg)
+            .build()
+    }
+
 
     private fun checkAndKillService(intent: Intent?) {
         intent?.also {

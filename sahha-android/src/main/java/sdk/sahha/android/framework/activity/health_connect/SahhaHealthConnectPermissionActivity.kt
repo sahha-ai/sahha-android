@@ -7,6 +7,7 @@ import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
@@ -35,10 +36,13 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
 
         healthConnectClient?.also { client ->
             lifecycleScope.launch {
-                permissions = Sahha.di.permissionManager.getTrimmedHcPermissions(
-                    Sahha.di.permissionManager.getManifestPermissions(context = this@SahhaHealthConnectPermissionActivity)
-                )
-                checkPermissionsAndRun(client)
+                Sahha.di.permissionManager.getTrimmedHcPermissions(
+                    Sahha.di.permissionManager.getManifestPermissions(context = this@SahhaHealthConnectPermissionActivity),
+                    Session.sensors ?: setOf()
+                ) { _, _, hcPermissions ->
+                    permissions = hcPermissions
+                    checkPermissionsAndRun(client)
+                }
             }
         } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
     }
@@ -69,7 +73,7 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     private fun enabledStatus() {
         if (status == SahhaSensorStatus.enabled) {
             Sahha.di.sensorRepo.startHealthConnectQueryWorker(
-                Constants.WORKER_REPEAT_INTERVAL_MINUTES,
+                Constants.FIFTEEN_MINUTES,
                 Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
             )
         }

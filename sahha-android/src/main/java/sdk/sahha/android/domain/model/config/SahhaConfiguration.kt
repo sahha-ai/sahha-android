@@ -33,10 +33,22 @@ internal fun SahhaConfiguration.toSahhaSettings(): SahhaSettings {
     return SahhaSettings(
         environment = SahhaEnvironment.values()[environment],
         framework = SahhaFramework.valueOf(framework),
-        sensors = sensorArray.mapTo(mutableSetOf()) {
-            SahhaSensor.values()[it]
-        }
     )
+}
+
+internal fun SahhaSettings.toSahhaConfiguration(): SahhaConfiguration {
+    return SahhaConfiguration(
+        environment = environment.ordinal,
+        framework = framework.name,
+        sensorArray = arrayListOf(),
+        manuallyPostData = false
+    )
+}
+
+internal fun ArrayList<Int>.toSahhaSensorSet(): Set<SahhaSensor> {
+    return mapTo(mutableSetOf()) {
+        SahhaSensor.values()[it]
+    }
 }
 
 internal fun SahhaConfiguration.toSetOfSensors(): Set<SahhaSensor> {
