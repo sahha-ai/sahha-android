@@ -7,6 +7,7 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
@@ -14,7 +15,7 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
-import sdk.sahha.android.domain.model.config.toSahhaSensorSet
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -236,20 +237,26 @@ object Sahha {
 
     fun storeAppUsages() {
         val now = ZonedDateTime.now()
-        val events = di.appUsageRepo.getEvents(
-            ZonedDateTime.of(
-                now.minusDays(1).toLocalDate(),
-                LocalTime.MIDNIGHT,
-                now.zone
-            ).toInstant().toEpochMilli(),
-            ZonedDateTime.of(
-                now.minusDays(1).toLocalDate(),
-                LocalTime.of(23, 59, 59, 99),
-                now.zone
-            ).toInstant().toEpochMilli()
-        )
-        di.defaultScope.launch {
-            di.batchedDataRepo.saveBatchedData(events)
+        val jobs = mutableListOf<Job>()
+
+        //Multi thread
+        for (day in 1L..30L) {
+            jobs += di.defaultScope.launch {
+                val events = di.appUsageRepo.getEvents(
+                    ZonedDateTime.of(
+                        now.minusDays(day).toLocalDate(),
+                        LocalTime.MIDNIGHT,
+                        now.zone
+                    ).toInstant().toEpochMilli(),
+                    ZonedDateTime.of(
+                        now.minusDays(day).toLocalDate(),
+                        LocalTime.of(23, 59, 59, 99),
+                        now.zone
+                    ).toInstant().toEpochMilli()
+                )
+                di.batchedDataRepo.saveBatchedData(events)
+                println("Day $day usages batched")
+            }
         }
     }
 }
