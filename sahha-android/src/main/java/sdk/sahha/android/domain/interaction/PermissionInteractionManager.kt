@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -23,7 +24,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-private const val tag = "PermissionInteractionManager"
+private const val TAG = "PermissionInteractionManager"
 
 internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
@@ -69,16 +70,34 @@ internal class PermissionInteractionManager @Inject constructor(
             val nativeStatus =
                 if (containsStepsOrSleep) awaitNativeSensorRequest(context) else SahhaSensorStatus.enabled
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
+            val appUsageStatus = awaitAppUsageRequest(context = context)
 
-            val status = processStatuses(nativeStatus, healthConnectStatus.second)
+            val processedStatus = processStatuses(nativeStatus, healthConnectStatus.second)
             startTasks(
                 context = context,
                 sim = Sahha.di.sahhaInteractionManager,
-                status = status,
+                status = processedStatus,
                 previousError = healthConnectStatus.first,
                 callback = callback
             )
+            // TODO: Additionally process and start tasks for app usage
         }
+    }
+
+    private suspend fun awaitAppUsageRequest(
+        context: Context
+    ) = suspendCancellableCoroutine { cont ->
+        val usageStatus = manager.getAppUsageStatus(context)
+        val notEnabled = usageStatus != SahhaSensorStatus.enabled
+
+        if (notEnabled) manager.appUsageSettings(context) { error, status ->
+            logError(error)
+            if (cont.isActive) cont.resume(status)
+        }
+    }
+
+    private fun logError(error: String?) {
+        error?.also { e -> Log.d(TAG, e) }
     }
 
     private fun startTasks(
@@ -328,7 +347,7 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        if(!Sahha.isAuthenticated) {
+        if (!Sahha.isAuthenticated) {
             callback?.invoke("Not yet authenticated", false)
             return
         }
