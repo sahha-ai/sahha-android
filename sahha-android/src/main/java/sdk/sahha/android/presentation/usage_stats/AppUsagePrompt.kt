@@ -125,7 +125,7 @@ internal fun AppUsagePrompt(
                             Text(
                                 text = buildAnnotatedString {
                                     append(
-                                        "For permission:\n" +
+                                        "To permit usage access:\n" +
                                                 "\t\t1.  "
                                     )
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
