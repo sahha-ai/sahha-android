@@ -194,7 +194,6 @@ internal class PermissionInteractionManager @Inject constructor(
         val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
         val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
                 || healthConnectStatus == SahhaSensorStatus.unavailable
-//                || healthConnectStatus == SahhaSensorStatus.pending
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
         val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 

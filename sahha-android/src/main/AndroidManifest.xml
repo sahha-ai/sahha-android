@@ -48,6 +48,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".framework.activity.app_usage.AppUsagePermissionActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"

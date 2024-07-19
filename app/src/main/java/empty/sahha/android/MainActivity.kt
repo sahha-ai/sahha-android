@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
-        val sensors = null
+        val sensors = SahhaSensor.values().toSet()
 //        val sensors = setOf<SahhaSensor>(
 //            SahhaSensor.device_lock,
 //            SahhaSensor.heart_rate,
@@ -148,7 +148,9 @@ class MainActivity : ComponentActivity() {
                                 Text(appUsageStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.enableAppUsage(this@MainActivity)
+                                    Sahha.enableAppUsage(this@MainActivity) { error, status ->
+                                        appUsageStatus = error ?: status.name
+                                    }
                                 }) {
                                     Text(text = "Toggle App Usage")
                                 }
@@ -178,7 +180,8 @@ class MainActivity : ComponentActivity() {
                                     Sahha.getSensorStatus(
                                         this@MainActivity,
                                         setOf<SahhaSensor>(
-                                            SahhaSensor.heart_rate, SahhaSensor.sleep)
+                                            SahhaSensor.heart_rate, SahhaSensor.sleep
+                                        )
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"

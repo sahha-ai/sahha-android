@@ -174,7 +174,7 @@ object Sahha {
 
     fun enableSensors(
         context: Context,
-        sensors: Set<SahhaSensor>?,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -183,8 +183,7 @@ object Sahha {
         }
 
         di.defaultScope.launch {
-            val allSensors = SahhaSensor.values().toSet()
-            Session.sensors = sensors ?: allSensors
+            Session.sensors = sensors
             sim.saveConfiguration(
                 Session.sensors,
                 Session.settings ?: SahhaSettings(environment = SahhaEnvironment.sandbox)
@@ -227,8 +226,8 @@ object Sahha {
         return simInitialized()
     }
 
-    fun enableAppUsage(context: Context) {
-        di.permissionManager.appUsageSettings(context = context)
+    fun enableAppUsage(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
+        di.permissionManager.appUsageSettings(context = context, callback)
     }
 
     fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {

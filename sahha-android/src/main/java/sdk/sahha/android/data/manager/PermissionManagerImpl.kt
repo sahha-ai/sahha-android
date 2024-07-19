@@ -9,10 +9,8 @@ import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
-import android.health.connect.HealthConnectManager
 import android.os.Build
 import android.os.Process
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
@@ -45,7 +43,6 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -55,10 +52,10 @@ import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
-import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.framework.activity.SahhaPermissionActivity
+import sdk.sahha.android.framework.activity.app_usage.AppUsagePermissionActivity
 import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
@@ -417,10 +414,14 @@ internal class PermissionManagerImpl @Inject constructor(
         }
     }
 
-    override fun appUsageSettings(context: Context) {
-        val settingsIntent =
-            Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(settingsIntent)
+    override fun appUsageSettings(
+        context: Context,
+        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+    ) {
+        permissionHandler.activityCallback.statusCallback = callback
+        val intent = Intent(context, AppUsagePermissionActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
 
     override fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
