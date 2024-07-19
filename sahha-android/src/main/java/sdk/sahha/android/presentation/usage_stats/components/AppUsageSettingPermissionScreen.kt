@@ -34,13 +34,14 @@ fun AppUsageSettingPermissionScreenPreview() {
     AppUsageSettingPermissionScreen(
         "ExampleApp",
         null
-    )
+    ) {}
 }
 
 @Composable
 fun AppUsageSettingPermissionScreen(
     appName: String,
-    appIcon: Drawable?
+    appIcon: Drawable?,
+    onToggle: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -54,25 +55,25 @@ fun AppUsageSettingPermissionScreen(
             modifier = Modifier.padding(10.dp)
         ) {
             Column {
-                Text(text = "Usage access", fontSize = 32.sp)
-                Spacer(modifier = Modifier.size(20.dp))
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    appIcon?.also { icon ->
-                        Image(
-                            bitmap = icon.toBitmap().asImageBitmap(),
-                            contentDescription = "App Icon",
-                            modifier = Modifier.size(50.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.size(5.dp))
-                    Text(text = appName, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.size(5.dp))
-                    Text(text = "1.0", color = Color.Gray)
-                }
-                Spacer(modifier = Modifier.size(20.dp))
+//                Text(text = "Usage access", fontSize = 32.sp)
+//                Spacer(modifier = Modifier.size(20.dp))
+//                Column(
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    appIcon?.also { icon ->
+//                        Image(
+//                            bitmap = icon.toBitmap().asImageBitmap(),
+//                            contentDescription = "App Icon",
+//                            modifier = Modifier.size(50.dp)
+//                        )
+//                    }
+//                    Spacer(modifier = Modifier.size(5.dp))
+//                    Text(text = appName, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+//                    Spacer(modifier = Modifier.size(5.dp))
+//                    Text(text = "1.0", color = Color.Gray)
+//                }
+//                Spacer(modifier = Modifier.size(20.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -80,7 +81,7 @@ fun AppUsageSettingPermissionScreen(
                 ) {
                     Text(text = "Permit usage access", fontSize = 18.sp)
                     Switch(
-                        checked = true, onCheckedChange = {}, enabled = false,
+                        checked = true, onCheckedChange = { onToggle() }, enabled = true,
                         colors = SwitchDefaults.colors(
                             disabledCheckedThumbColor = Color.White,
                             disabledCheckedTrackColor = MaterialTheme.colorScheme.primary,

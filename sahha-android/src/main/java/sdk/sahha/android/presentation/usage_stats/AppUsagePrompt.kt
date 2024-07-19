@@ -126,10 +126,10 @@ internal fun AppUsagePrompt(
                                 text = buildAnnotatedString {
                                     append(
                                         "For permission:\n" +
-                                                "\t\t1. Tap "
+                                                "\t\t1.  "
                                     )
                                     withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                        append("Settings")
+                                        append("Open Settings")
                                     }
                                 },
                                 textAlign = TextAlign.Start,
@@ -176,7 +176,9 @@ internal fun AppUsagePrompt(
                             AppUsageSettingPermissionScreen(
                                 appName = appName,
                                 appIcon = appIcon
-                            )
+                            ) {
+                                onSettings()
+                            }
                             Spacer(modifier = Modifier.size(10.dp))
                         }
                         item {
@@ -216,7 +218,7 @@ internal fun AppUsagePrompt(
                                     onClick = { onSettings() }
                                 ) {
                                     Text(
-                                        text = "Settings",
+                                        text = "Open Settings",
                                         fontSize = TextUnit(fontSize, TextUnitType.Sp)
                                     )
                                 }
