@@ -79,6 +79,11 @@ internal class PermissionManagerImpl @Inject constructor(
     override val isFirstHealthConnectRequest
         get() = sharedPrefs.getBoolean(Constants.FIRST_HC_REQUEST_KEY, true)
 
+    override var appUsageDenialCount
+        get() = sharedPrefs.getInt(Constants.APP_USAGE_DENIAL_COUNT_KEY, 0)
+        set(deniedCount: Int) = sharedPrefs.edit()
+            .putInt(Constants.APP_USAGE_DENIAL_COUNT_KEY, deniedCount).apply()
+
     override fun isFirstHealthConnectRequest(firstRequest: Boolean) {
         sharedPrefs.edit().putBoolean(Constants.FIRST_HC_REQUEST_KEY, firstRequest).apply()
     }

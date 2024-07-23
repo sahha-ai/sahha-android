@@ -49,4 +49,5 @@ internal interface PermissionManager {
     )
     fun isFirstHealthConnectRequest(firstRequest: Boolean)
     val isFirstHealthConnectRequest: Boolean
+    var appUsageDenialCount: Int
 }

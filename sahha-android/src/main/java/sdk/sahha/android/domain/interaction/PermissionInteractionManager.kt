@@ -87,10 +87,9 @@ internal class PermissionInteractionManager @Inject constructor(
     private suspend fun awaitAppUsageRequest(
         context: Context
     ) = suspendCancellableCoroutine { cont ->
-        val usageStatus = manager.getAppUsageStatus(context)
-        val notEnabled = usageStatus != SahhaSensorStatus.enabled
+        val shouldShowRationale = manager.appUsageDenialCount < 2
 
-        if (notEnabled) manager.appUsageSettings(context) { error, status ->
+        if (shouldShowRationale) manager.appUsageSettings(context) { error, status ->
             logError(error)
             if (cont.isActive) cont.resume(status)
         }
