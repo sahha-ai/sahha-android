@@ -66,33 +66,4 @@ internal object SahhaReconfigure {
             .context(context)
             .build()
     }
-
-    private suspend fun getSahhaSettings(context: Context): SahhaSettings {
-        val db = SahhaDbUtility.getDb(context)
-        val config: SahhaConfiguration? = try {
-            db.configurationDao().getConfig()
-        } catch (e: Exception) {
-            Log.w(TAG, e.message ?: "Something went wrong")
-            null
-        }
-
-        return config?.toSahhaSettings() ?: useDefaultSahhaSettings()
-    }
-
-    private suspend fun setSahhaSettings(
-        context: Context,
-        config: SahhaConfiguration
-    ) {
-        val db = SahhaDbUtility.getDb(context)
-        db.configurationDao().saveConfig(config)
-    }
-
-    private fun useDefaultSahhaSettings(): SahhaSettings {
-        Sahha.di.sahhaErrorLogger.application(
-            message = "Could not find a locally stored Sahha configuration, loading default settings",
-            path = TAG,
-            method = "useDefaultSahhaSettings",
-        )
-        return SahhaSettings(environment = SahhaEnvironment.sandbox)
-    }
 }
