@@ -6,6 +6,8 @@ internal object Constants {
     // Prefs
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
     const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
+    const val CONFIGURATION_PREFS = "configuration_prefs"
+    const val ENVIRONMENT_KEY = "environment.key"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
