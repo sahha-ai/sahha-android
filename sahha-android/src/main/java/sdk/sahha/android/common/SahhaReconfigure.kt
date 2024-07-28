@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
+import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
@@ -22,7 +23,7 @@ internal object SahhaReconfigure {
         environment: SahhaEnvironment? = null
     ) {
         withContext(Main) {
-            val env = environment ?: getEnvironmentSharedPrefs(context) ?: return@withContext
+            val env = environment ?: getEnvironmentSharedPrefs(context) ?: SahhaEnvironment.sandbox
             saveEnv(context, env)
 
             if (!Sahha.diInitialized())
