@@ -1,18 +1,14 @@
 package sdk.sahha.android.common
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.data.local.SahhaDbUtility
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
-import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.toSahhaSettings
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaEnvironment
-import sdk.sahha.android.source.SahhaSettings
 
 private const val TAG = "SahhaReconfigure"
 
@@ -22,7 +18,10 @@ internal object SahhaReconfigure {
         environment: SahhaEnvironment? = null
     ) {
         withContext(Main) {
-            val env = environment ?: getEnvironmentSharedPrefs(context) ?: return@withContext
+            val env = environment ?: getEnvironmentSharedPrefs(context)
+            ?: getEnvironmentDb(context)
+            ?: SahhaEnvironment.sandbox
+
             saveEnv(context, env)
 
             if (!Sahha.diInitialized())
@@ -38,6 +37,14 @@ internal object SahhaReconfigure {
                 notificationConfig.shortDescription,
             )
         }
+    }
+
+    private suspend fun getEnvironmentDb(context: Context): Enum<SahhaEnvironment>? {
+        val dao = SahhaDbUtility.getDb(context).configurationDao()
+        val config = dao.getConfig() ?: return null
+
+        val envInt = config.environment
+        return SahhaEnvironment.values()[envInt]
     }
 
     private fun saveEnv(context: Context, env: Enum<SahhaEnvironment>) {
