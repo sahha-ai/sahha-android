@@ -10,8 +10,10 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
+import sdk.sahha.android.domain.internal_enum.RationaleSensorType
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -28,6 +30,7 @@ private const val TAG = "PermissionInteractionManager"
 
 internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
+    private val rationaleManager: RationaleManager,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
     private val activityCallback: ActivityCallback,
     private val configRepo: SahhaConfigRepo,
@@ -87,11 +90,16 @@ internal class PermissionInteractionManager @Inject constructor(
     private suspend fun awaitAppUsageRequest(
         context: Context
     ) = suspendCancellableCoroutine { cont ->
-        val shouldShowRationale = manager.appUsageDenialCount < 2
+        defaultScope.launch {
+            val notEnabled = manager.getAppUsageStatus(context) != SahhaSensorStatus.enabled
+            val shouldShowRationale =
+                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE)
+                        && notEnabled
 
-        if (shouldShowRationale) manager.appUsageSettings(context) { error, status ->
-            logError(error)
-            if (cont.isActive) cont.resume(status)
+            if (shouldShowRationale) manager.appUsageSettings(context) { error, status ->
+                logError(error)
+                if (cont.isActive) cont.resume(status)
+            } else if (cont.isActive) cont.resume(manager.getAppUsageStatus(context))
         }
     }
 

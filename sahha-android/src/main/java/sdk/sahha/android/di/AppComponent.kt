@@ -33,6 +33,7 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
@@ -64,6 +65,7 @@ internal interface AppComponent {
     val receiverManager: ReceiverManager
     val permissionHandler: PermissionHandler
     val permissionManager: PermissionManager
+    val rationaleManager: RationaleManager
     val postChunkManager: PostChunkManager
     val encryptedSharedPreferences: SharedPreferences
     val sahhaErrorLogger: SahhaErrorLogger

@@ -12,8 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import sdk.sahha.android.domain.internal_enum.RationaleSensorType
 import sdk.sahha.android.domain.manager.PermissionManager
-import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.presentation.usage_stats.AppUsagePrompt
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -21,8 +23,8 @@ import java.util.ArrayDeque
 import java.util.Queue
 
 internal class AppUsagePermissionActivity : ComponentActivity() {
-    private val permissionHandler: PermissionHandler = Sahha.di.permissionHandler
     private val permissionManager: PermissionManager = Sahha.di.permissionManager
+    private val rationaleManager = Sahha.di.rationaleManager
     private val queue: Queue<Boolean> = ArrayDeque()
 
     override fun onStart() {
@@ -30,12 +32,29 @@ internal class AppUsagePermissionActivity : ComponentActivity() {
 
         if (queue.isNotEmpty()) {
             val status = permissionManager.getAppUsageStatus(this)
-            permissionHandler.activityCallback.statusCallback?.invoke(
-                null, status
-            )
-            queue.poll()
-            finish()
+            lifecycleScope.launch {
+                updateRationale(status)
+                val updatedStatus = permissionManager.getAppUsageStatus(this@AppUsagePermissionActivity)
+                permissionManager.appUsageCallback.invoke(
+                    null, updatedStatus
+                )
+                queue.poll()
+                finish()
+            }
         }
+    }
+
+    private suspend fun updateRationale(status: Enum<SahhaSensorStatus>) {
+        val rationale = rationaleManager.getRationale(RationaleSensorType.APP_USAGE)
+
+        if (status == SahhaSensorStatus.enabled)
+            rationaleManager.removeRationales(
+                listOf(rationale)
+            )
+
+        rationaleManager.saveRationale(
+            rationale.copy(denialCount = rationale.denialCount + 1)
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,8 +65,8 @@ internal class AppUsagePermissionActivity : ComponentActivity() {
         val appName = packageManager.getApplicationLabel(applicationInfo).toString()
         val appIcon = applicationInfo.loadIcon(packageManager)
 
-        val status = permissionManager.getAppUsageStatus(this)
-        val notYetGranted = status != SahhaSensorStatus.enabled
+        val usageStatus = permissionManager.getAppUsageStatus(this)
+        val notYetGranted = usageStatus != SahhaSensorStatus.enabled
 
         setContent {
             MaterialTheme(colors = MaterialTheme.colors) {
@@ -59,11 +78,17 @@ internal class AppUsagePermissionActivity : ComponentActivity() {
                     visible = promptVisible,
                     onDismiss = {
                         promptVisible = false
-                        permissionHandler.activityCallback.statusCallback?.invoke(
-                            null,
+                        val status =
                             permissionManager.getAppUsageStatus(this@AppUsagePermissionActivity)
-                        )
-                        finish()
+                        lifecycleScope.launch {
+                            updateRationale(status)
+                            val updatedStatus = permissionManager.getAppUsageStatus(this@AppUsagePermissionActivity)
+                            permissionManager.appUsageCallback.invoke(
+                                null,
+                                updatedStatus
+                            )
+                            finish()
+                        }
                     },
                     onSettings = {
                         val settingsIntent =

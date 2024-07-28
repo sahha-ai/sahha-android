@@ -39,10 +39,12 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.local.dao.RationaleDao
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
+import sdk.sahha.android.data.manager.RationaleManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AppCrashRepoImpl
@@ -57,6 +59,7 @@ import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
+import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
@@ -394,6 +397,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaErrorLogger: SahhaErrorLogger,
         sharedPrefs: SharedPreferences,
         @MainScope mainScope: CoroutineScope,
+        rationaleManager: RationaleManager
     ): PermissionManager {
         return PermissionManagerImpl(
             mainScope,
@@ -402,8 +406,17 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger,
-            sharedPrefs
+            sharedPrefs,
+            rationaleManager
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideRationaleManager(
+        rationaleDao: RationaleDao
+    ): RationaleManager {
+        return RationaleManagerImpl(rationaleDao)
     }
 
     @Singleton
@@ -458,6 +471,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideManualPermissionsDao(db: SahhaDatabase): ManualPermissionsDao {
         return db.manualPermissionsDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRationaleDao(db: SahhaDatabase): RationaleDao {
+        return db.rationaleDao()
     }
 
     @DefaultScope

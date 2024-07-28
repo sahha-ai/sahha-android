@@ -50,7 +50,9 @@ import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.domain.internal_enum.RationaleSensorType
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -62,7 +64,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-private val tag = "PermissionManagerImpl"
+private val TAG = "PermissionManagerImpl"
 
 internal class PermissionManagerImpl @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
@@ -71,18 +73,16 @@ internal class PermissionManagerImpl @Inject constructor(
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val sharedPrefs: SharedPreferences
+    private val sharedPrefs: SharedPreferences,
+    private val rationaleManager: RationaleManager,
 ) : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
 
+    override lateinit var appUsageCallback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+
     override val isFirstHealthConnectRequest
         get() = sharedPrefs.getBoolean(Constants.FIRST_HC_REQUEST_KEY, true)
-
-    override var appUsageDenialCount
-        get() = sharedPrefs.getInt(Constants.APP_USAGE_DENIAL_COUNT_KEY, 0)
-        set(deniedCount: Int) = sharedPrefs.edit()
-            .putInt(Constants.APP_USAGE_DENIAL_COUNT_KEY, deniedCount).apply()
 
     override fun isFirstHealthConnectRequest(firstRequest: Boolean) {
         sharedPrefs.edit().putBoolean(Constants.FIRST_HC_REQUEST_KEY, firstRequest).apply()
@@ -126,7 +126,7 @@ internal class PermissionManagerImpl @Inject constructor(
             if (!manifestPermissions.contains(permission)) {
                 val error = "Permission: [$permission] is not declared in the AndroidManifest!"
                 undeclared += "$error\n"
-                Log.e(tag, error)
+                Log.e(TAG, error)
             }
         }
 
@@ -339,7 +339,7 @@ internal class PermissionManagerImpl @Inject constructor(
 
             sahhaErrorLogger.application(
                 message = e.message ?: SahhaErrors.somethingWentWrong,
-                path = tag,
+                path = TAG,
                 method = "activate",
                 body = e.stackTraceToString()
             )
@@ -423,7 +423,7 @@ internal class PermissionManagerImpl @Inject constructor(
         context: Context,
         callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
-        permissionHandler.activityCallback.statusCallback = callback
+        appUsageCallback = callback
         val intent = Intent(context, AppUsagePermissionActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
@@ -444,14 +444,27 @@ internal class PermissionManagerImpl @Inject constructor(
             )
         }
 
-        return if (mode == AppOpsManager.MODE_DEFAULT) {
+        val status = if (mode == AppOpsManager.MODE_DEFAULT) {
             val granted =
                 context.checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED
-            if (granted) SahhaSensorStatus.enabled else SahhaSensorStatus.disabled
+
+            when {
+                granted -> SahhaSensorStatus.enabled
+                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE) -> SahhaSensorStatus.pending
+                else -> SahhaSensorStatus.disabled
+            }
         } else {
             val allowed = mode == AppOpsManager.MODE_ALLOWED
-            if (allowed) SahhaSensorStatus.enabled else SahhaSensorStatus.disabled
+
+            when {
+                allowed -> SahhaSensorStatus.enabled
+                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE) -> SahhaSensorStatus.pending
+                else -> SahhaSensorStatus.disabled
+            }
         }
+
+        Log.d(TAG, "Usage status: ${status.name}")
+        return status
     }
 }
 
