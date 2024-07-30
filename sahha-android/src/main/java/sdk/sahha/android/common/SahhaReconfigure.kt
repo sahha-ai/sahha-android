@@ -1,6 +1,7 @@
 package sdk.sahha.android.common
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.data.local.SahhaDbUtility
@@ -30,12 +31,18 @@ internal object SahhaReconfigure {
             if (!Sahha.simInitialized())
                 Sahha.sim = Sahha.di.sahhaInteractionManager
 
-            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-            Sahha.notificationManager.setNewPersistent(
-                notificationConfig.icon,
-                notificationConfig.title,
-                notificationConfig.shortDescription,
-            )
+            try {
+                val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+                notificationConfig?.also {
+                    Sahha.notificationManager.setNewPersistent(
+                        it.icon,
+                        it.title,
+                        it.shortDescription,
+                    )
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, e.message ?: "Could not set notification configuration")
+            }
         }
     }
 
