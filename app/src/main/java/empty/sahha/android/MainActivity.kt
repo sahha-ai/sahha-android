@@ -118,9 +118,7 @@ class MainActivity : ComponentActivity() {
                     var externalId by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
                     var authStatus by remember { mutableStateOf("Pending") }
-                    var appUsageStatus by remember {
-                        mutableStateOf(Sahha.getAppUsageStatus(this).name)
-                    }
+                    var appUsageStatus by remember { mutableStateOf("Pending") }
 
                     appId = sharedPrefs.getString(APP_ID, null) ?: ""
                     appSecret = sharedPrefs.getString(APP_SECRET, null) ?: ""
@@ -132,6 +130,15 @@ class MainActivity : ComponentActivity() {
                     ) { error, sensorStatus ->
                         mainScope.launch {
                             permissionStatus = "${sensorStatus.name}${error?.let { "\n$it" } ?: ""}"
+                        }
+                    }
+
+                    Sahha.getSensorStatus(
+                        this@MainActivity,
+                        setOf(SahhaSensor.app_usage)
+                    ) { error, status ->
+                        mainScope.launch {
+                            appUsageStatus = "${status.name}${error?.let { "\n$it" } ?: ""}"
                         }
                     }
 
@@ -148,7 +155,10 @@ class MainActivity : ComponentActivity() {
                                 Text(appUsageStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    Sahha.enableAppUsage(this@MainActivity) { error, status ->
+                                    Sahha.enableSensors(
+                                        this@MainActivity,
+                                        setOf(SahhaSensor.app_usage)
+                                    ) { error, status ->
                                         appUsageStatus = error ?: status.name
                                     }
                                 }) {

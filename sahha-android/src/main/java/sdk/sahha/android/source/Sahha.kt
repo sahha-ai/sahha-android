@@ -226,13 +226,13 @@ object Sahha {
         return simInitialized()
     }
 
-    fun enableAppUsage(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
-        di.permissionManager.appUsageSettings(context = context, callback)
-    }
-
-    fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
-        return di.permissionManager.getAppUsageStatus(context = context)
-    }
+//    fun enableAppUsage(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
+//        di.permissionManager.appUsageSettings(context = context, callback)
+//    }
+//
+//    fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
+//        return di.permissionManager.getAppUsageStatus(context = context)
+//    }
 
     fun storeAppUsages() {
         val now = ZonedDateTime.now()

@@ -10,11 +10,8 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
-import sdk.sahha.android.domain.internal_enum.RationaleSensorType
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
-import sdk.sahha.android.domain.manager.RationaleManager
-import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -30,9 +27,8 @@ private const val TAG = "PermissionInteractionManager"
 
 internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
-    private val rationaleManager: RationaleManager,
+//    private val rationaleManager: RationaleManager,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
-    private val activityCallback: ActivityCallback,
     private val configRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     @DefaultScope private val defaultScope: CoroutineScope,
@@ -74,16 +70,56 @@ internal class PermissionInteractionManager @Inject constructor(
                 if (containsStepsOrSleep) awaitNativeSensorRequest(context) else SahhaSensorStatus.enabled
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
             val appUsageStatus = awaitAppUsageRequest(context = context)
-
             val processedStatus = processStatuses(nativeStatus, healthConnectStatus.second)
+
             startTasks(
                 context = context,
                 sim = Sahha.di.sahhaInteractionManager,
                 status = processedStatus,
                 previousError = healthConnectStatus.first,
-                callback = callback
-            )
-            // TODO: Additionally process and start tasks for app usage
+            ) { error, status ->
+                val containsAppUsage = sensors.contains(SahhaSensor.app_usage)
+                val finalStatus = processFinalStatus(status, appUsageStatus)
+
+                if (containsAppUsage) callback(error, finalStatus)
+                else callback(error, status)
+            }
+        }
+    }
+
+    internal fun processFinalStatus(
+        status: Enum<SahhaSensorStatus>,
+        appUsageStatus: Enum<SahhaSensorStatus>
+    ): Enum<SahhaSensorStatus> {
+        val statusEnabled = status == SahhaSensorStatus.enabled
+        val statusDisabled = status == SahhaSensorStatus.disabled
+        val statusPending = status == SahhaSensorStatus.pending
+        val statusUnavailable = status == SahhaSensorStatus.unavailable
+
+        val appUsageEnabled = appUsageStatus == SahhaSensorStatus.enabled
+        val appUsageDisabled = appUsageStatus == SahhaSensorStatus.disabled
+        val appUsagePending = appUsageStatus == SahhaSensorStatus.pending
+        val appUsageUnavailable = appUsageStatus == SahhaSensorStatus.unavailable
+
+        val enabled = statusEnabled && appUsageEnabled
+        val partiallyEnabled = statusEnabled || appUsageEnabled
+        val disabled = statusDisabled && appUsageDisabled
+        val partiallyDisabled = statusDisabled || appUsageDisabled
+        val pending = statusPending && appUsagePending
+        val partiallyPending = statusPending || appUsagePending
+        val unavailable = statusUnavailable && appUsageUnavailable
+        val partiallyUnavailable = statusUnavailable || appUsageUnavailable
+
+        return when {
+            pending -> SahhaSensorStatus.pending
+            partiallyPending -> SahhaSensorStatus.pending
+            disabled -> SahhaSensorStatus.disabled
+            partiallyDisabled -> SahhaSensorStatus.disabled
+            enabled -> SahhaSensorStatus.enabled
+            partiallyEnabled -> SahhaSensorStatus.disabled
+            unavailable -> SahhaSensorStatus.unavailable
+            partiallyUnavailable -> SahhaSensorStatus.disabled
+            else -> SahhaSensorStatus.pending
         }
     }
 
@@ -92,14 +128,16 @@ internal class PermissionInteractionManager @Inject constructor(
     ) = suspendCancellableCoroutine { cont ->
         defaultScope.launch {
             val notEnabled = manager.getAppUsageStatus(context) != SahhaSensorStatus.enabled
-            val shouldShowRationale =
-                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE)
-                        && notEnabled
+//            val shouldShowRationale =
+//                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE)
+//                        && notEnabled
 
-            if (shouldShowRationale) manager.appUsageSettings(context) { error, status ->
-                logError(error)
-                if (cont.isActive) cont.resume(status)
-            } else if (cont.isActive) cont.resume(manager.getAppUsageStatus(context))
+            if (notEnabled)
+                manager.appUsageSettings(context) { error, status ->
+                    logError(error)
+                    if (cont.isActive) cont.resume(status)
+                }
+            else if (cont.isActive) cont.resume(manager.getAppUsageStatus(context))
         }
     }
 
@@ -337,11 +375,16 @@ internal class PermissionInteractionManager @Inject constructor(
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
                 if (containsStepsOrSleep) awaitNativeSensorStatus(context) else SahhaSensorStatus.enabled
+            val appUsageStatus = manager.getAppUsageStatus(context)
+            val containsAppUsage = sensors.contains(SahhaSensor.app_usage)
 
             if (manager.shouldUseHealthConnect())
                 getHealthConnectSensorStatus(context, sensors) { error, status ->
                     val processedStatus = processStatuses(nativeStatus, status)
-                    callback(error, processedStatus.toSahhaSensorStatus())
+                    val finalStatus = processFinalStatus(status, appUsageStatus)
+
+                    if (containsAppUsage) callback(error, finalStatus)
+                    else callback(error, processedStatus.toSahhaSensorStatus())
                 }
             else {
                 val status = processStatuses(nativeStatus, SahhaSensorStatus.unavailable)
