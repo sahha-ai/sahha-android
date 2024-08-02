@@ -60,8 +60,7 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
         logType = Constants.DataLogs.SLEEP,
-        dataType = (mapper.sleepStages(SleepSessionRecord.STAGE_TYPE_SLEEPING)
-            ?: Constants.SLEEP_STAGE_UNKNOWN),
+        dataType = Constants.SLEEP_STAGE_IN_BED,
         source = metadata.dataOrigin.packageName,
         value = ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60),
         unit = Constants.DataUnits.MINUTE,
