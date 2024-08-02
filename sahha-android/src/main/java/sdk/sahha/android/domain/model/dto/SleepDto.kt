@@ -15,7 +15,7 @@ internal data class SleepDto(
     val startDateTime: String,
     val endDateTime: String,
     val source: String = Constants.SLEEP_DATA_SOURCE,
-    val sleepStage: String = Constants.SLEEP_STAGE_SLEEPING,
+    val sleepStage: String = Constants.SLEEP_STAGE_IN_BED,
     val createdAt: String = "",
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
