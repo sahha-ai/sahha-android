@@ -154,6 +154,7 @@ internal object Constants {
     const val SLEEP_STAGE_UNKNOWN = "sleep_stage_unknown"
     const val SLEEP_STAGE_AWAKE_IN_OR_OUT_OF_BED = "sleep_stage_awake_in_or_out_of_bed"
     const val SLEEP_STAGE_SLEEPING = "sleep_stage_sleeping"
+    const val SLEEP_STAGE_IN_BED = "sleep_stage_in_bed"
 
     // Device types
     const val DEVICE_TYPE_WATCH = "WATCH"
