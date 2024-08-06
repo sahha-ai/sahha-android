@@ -85,7 +85,6 @@ internal interface AppComponent {
     val batchedDataRepo: BatchedDataRepo
 
     val batchDataLogs: BatchDataLogs
-    val filterActivityOverlaps: FilterActivityOverlaps
 
     @get:MainScope
     val mainScope: CoroutineScope
