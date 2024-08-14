@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
-        val sensors = null
+        val sensors = SahhaSensor.values().toSet()
 //        val sensors = setOf<SahhaSensor>(
 //            SahhaSensor.device_lock,
 //            SahhaSensor.heart_rate,
