@@ -215,7 +215,7 @@ object Sahha {
             return
         }
 
-        sim.permission.getSensorStatus(context, sensors ?: SahhaSensor.values().toSet(), callback)
+        sim.permission.getSensorStatus(context, sensors, callback)
     }
 
     fun postError(
