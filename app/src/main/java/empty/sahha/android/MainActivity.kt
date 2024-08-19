@@ -197,7 +197,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        setOf(SahhaSensor.sleep)
+                                        setOf(SahhaSensor.sleep, SahhaSensor.device_lock)
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
