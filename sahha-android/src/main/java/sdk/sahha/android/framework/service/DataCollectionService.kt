@@ -56,7 +56,7 @@ internal class DataCollectionService : Service() {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
                 startForegroundNotification()
 
-                config = Sahha.di.configurationDao.getConfig() ?: return@launch
+                config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
 
                 startTimeZoneChangedReceiver()
                 startDataCollectors(this@DataCollectionService)
@@ -111,6 +111,11 @@ internal class DataCollectionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         checkAndKillService(intent)
         checkAndRestartService(intent)
+        scope.launch {
+            SahhaReconfigure(this@DataCollectionService)
+            config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
+            checkAndStartCollectingScreenLockData()
+        }
         return START_STICKY
     }
 
