@@ -71,13 +71,6 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     }
 
     private fun enabledStatus() {
-        if (status == SahhaSensorStatus.enabled) {
-            Sahha.di.sensorRepo.startHealthConnectQueryWorker(
-                Constants.FIFTEEN_MINUTES,
-                Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
-            )
-        }
-
         permissionHandler.activityCallback.statusCallback?.invoke(
             null, status
         )
