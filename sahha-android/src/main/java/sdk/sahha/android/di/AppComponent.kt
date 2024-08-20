@@ -36,6 +36,7 @@ import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
+import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 

@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
-        val sensors = null
+        val sensors = SahhaSensor.values().toSet()
 //        val sensors = setOf<SahhaSensor>(
 //            SahhaSensor.device_lock,
 //            SahhaSensor.heart_rate,
@@ -197,7 +197,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        setOf(SahhaSensor.sleep)
+                                        setOf(SahhaSensor.sleep, SahhaSensor.device_lock)
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
