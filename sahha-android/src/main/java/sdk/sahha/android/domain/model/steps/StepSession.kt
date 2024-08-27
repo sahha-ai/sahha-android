@@ -28,6 +28,6 @@ internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
         endDateTime = endDateTime,
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
     )
 }
