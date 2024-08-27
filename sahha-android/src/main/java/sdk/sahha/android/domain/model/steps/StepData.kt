@@ -28,7 +28,7 @@ internal fun StepData.toSahhaDataLogAsChildLog(): SahhaDataLog {
         startDateTime = detectedAt,
         endDateTime = detectedAt,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
     )
 }
 
