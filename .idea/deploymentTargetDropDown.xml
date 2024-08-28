@@ -2,13 +2,22 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="SensorSetReqTest">
-        <State />
-      </entry>
       <entry key="app">
         <State />
       </entry>
-      <entry key="emptySet_returnsEmptySetError()">
+      <entry key="intermenstrualBleedingMapping()">
+        <State />
+      </entry>
+      <entry key="menstruationFlowMapping()">
+        <State />
+      </entry>
+      <entry key="menstruationPeriodMapping()">
+        <State />
+      </entry>
+      <entry key="ovulationTestMapping()">
+        <State />
+      </entry>
+      <entry key="sexualActivityMapping()">
         <State />
       </entry>
     </value>
