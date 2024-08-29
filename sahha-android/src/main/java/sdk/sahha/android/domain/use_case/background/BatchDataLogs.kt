@@ -386,28 +386,32 @@ internal class BatchDataLogs @Inject constructor(
                 }
 
                 HealthPermission.getReadPermission(MenstruationFlowRecord::class) -> {
-                    val recordType = MenstruationFlowRecord::class
-                    batchJobs += newBatchJob().launch {
-                        val records = detectRecords(recordType)
-                        records?.also { r ->
-                            val mapped =
-                                r.map { record -> (record as MenstruationFlowRecord).toSahhaDataLogDto() }
-                            batchRepo.saveBatchedData(mapped)
-                            saveQuery(recordType)
-                        }
-                    }
-                }
+                    val flowType = MenstruationFlowRecord::class
+                    val periodType = MenstruationPeriodRecord::class
 
-                HealthPermission.getReadPermission(MenstruationPeriodRecord::class) -> {
-                    val recordType = MenstruationPeriodRecord::class
                     batchJobs += newBatchJob().launch {
-                        val records = detectRecords(recordType)
-                        records?.also { r ->
-                            val mapped =
-                                r.map { record -> (record as MenstruationPeriodRecord).toSahhaDataLogDto() }
-                            batchRepo.saveBatchedData(mapped)
-                            saveQuery(recordType)
+                        val menstruationJobs = mutableListOf<Job>()
+
+                        menstruationJobs += newBatchJob().launch {
+                            val flowRecords = detectRecords(flowType)
+                            flowRecords?.also { flows ->
+                                val mapped =
+                                    flows.map { flow -> (flow as MenstruationFlowRecord).toSahhaDataLogDto() }
+                                batchRepo.saveBatchedData(mapped)
+                            }
                         }
+
+                        menstruationJobs += newBatchJob().launch {
+                            val periodRecords = detectRecords(periodType)
+                            periodRecords?.also { periods ->
+                                val mapped =
+                                    periods.map { period -> (period as MenstruationPeriodRecord).toSahhaDataLogDto() }
+                                batchRepo.saveBatchedData(mapped)
+                            }
+                        }
+
+                        menstruationJobs.joinAll()
+                        saveQuery(flowType)
                     }
                 }
 
