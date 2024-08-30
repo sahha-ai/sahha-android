@@ -675,7 +675,7 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 internal fun CervicalMucusRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.CERVICAL_MUCUS,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,
@@ -694,7 +694,7 @@ internal fun CervicalMucusRecord.toSahhaDataLogDto(): SahhaDataLog {
 internal fun IntermenstrualBleedingRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.INTERMENSTRUAL_BLEEDING,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,
@@ -709,7 +709,7 @@ internal fun IntermenstrualBleedingRecord.toSahhaDataLogDto(): SahhaDataLog {
 internal fun MenstruationFlowRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.MENSTRUATION_FLOW,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,
@@ -727,7 +727,7 @@ internal fun MenstruationFlowRecord.toSahhaDataLogDto(): SahhaDataLog {
 internal fun MenstruationPeriodRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.MENSTRUATION_PERIOD,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,
@@ -742,7 +742,7 @@ internal fun MenstruationPeriodRecord.toSahhaDataLogDto(): SahhaDataLog {
 internal fun OvulationTestRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.OVULATION_TEST,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,
@@ -760,7 +760,7 @@ internal fun OvulationTestRecord.toSahhaDataLogDto(): SahhaDataLog {
 internal fun SexualActivityRecord.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
-        logType = Constants.DataLogs.WOMENS_PLACEHOLDER,
+        logType = Constants.DataLogs.REPRODUCTIVE,
         dataType = Constants.DataTypes.SEXUAL_ACTIVITY,
         value = 0.0,
         unit = Constants.DataUnits.MINUTE,

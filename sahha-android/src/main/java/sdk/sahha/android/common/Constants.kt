@@ -140,7 +140,7 @@ internal object Constants {
         const val BODY = "body"
         const val TEMPERATURE = "temperature"
         const val EXERCISE = "exercise"
-        const val WOMENS_PLACEHOLDER = "PLACEHOLDER"
+        const val REPRODUCTIVE = "reproductive"
     }
 
     // Sahha Error API parameters
