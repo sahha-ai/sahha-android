@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.CervicalMucusRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseSegment
 import androidx.health.connect.client.records.ExerciseSessionRecord
@@ -17,10 +18,15 @@ import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.IntermenstrualBleedingRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.MenstruationFlowRecord
+import androidx.health.connect.client.records.MenstruationPeriodRecord
+import androidx.health.connect.client.records.OvulationTestRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.SexualActivityRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
@@ -663,6 +669,109 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+    )
+}
+
+internal fun CervicalMucusRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.CERVICAL_MUCUS,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "appearance" to (mapper.cervicalMucusAppearance(appearance) ?: Constants.UNKNOWN),
+            "sensation" to (mapper.cervicalMucusSensation(sensation) ?: Constants.UNKNOWN),
+        )
+    )
+}
+
+internal fun IntermenstrualBleedingRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.INTERMENSTRUAL_BLEEDING,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+internal fun MenstruationFlowRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.MENSTRUATION_FLOW,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "flow" to (mapper.menstruationFlow(flow) ?: Constants.UNKNOWN)
+        )
+    )
+}
+
+internal fun MenstruationPeriodRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.MENSTRUATION_PERIOD,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+internal fun OvulationTestRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.OVULATION_TEST,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "result" to (mapper.ovulationTestResult(result) ?: Constants.UNKNOWN)
+        )
+    )
+}
+
+internal fun SexualActivityRecord.toSahhaDataLogDto(): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.REPRODUCTIVE,
+        dataType = Constants.DataTypes.SEXUAL_ACTIVITY,
+        value = 1.0,
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+        additionalProperties = hashMapOf(
+            "protectionUsed" to (mapper.sexualActivityProtectionUsed(protectionUsed) ?: Constants.UNKNOWN)
+        )
     )
 }
 

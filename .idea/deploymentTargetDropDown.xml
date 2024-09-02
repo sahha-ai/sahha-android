@@ -2,14 +2,49 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="SensorSetReqTest">
+      <entry key="WomensHealthDataSchema">
         <State />
       </entry>
       <entry key="app">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-08-29T03:19:56.777153Z" />
+        </State>
+      </entry>
+      <entry key="cervicalMucusMapping()">
         <State />
       </entry>
-      <entry key="emptySet_returnsEmptySetError()">
+      <entry key="ovulationTestMapping()">
         <State />
+      </entry>
+      <entry key="printEnums()">
+        <State />
+      </entry>
+      <entry key="sexualActivityMapping()">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_34.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-08-29T00:21:16.925264Z" />
+        </State>
       </entry>
     </value>
   </component>
