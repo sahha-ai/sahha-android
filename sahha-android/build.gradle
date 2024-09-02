@@ -193,7 +193,7 @@ afterEvaluate {
                     licenses {
                         license {
                             name = 'Sahha SDK Licence Agreement'
-                            url = 'https://docs.sahha.ai/docs/legal/api-licence-agreement' //TODO
+                            url = 'https://github.com/sahha-ai/sahha-android/blob/main/LICENSE.md'
                         }
                     }
 
