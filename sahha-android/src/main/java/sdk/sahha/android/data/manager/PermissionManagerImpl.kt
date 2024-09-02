@@ -8,7 +8,6 @@ import android.content.SharedPreferences
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
-import android.health.connect.HealthConnectManager
 import android.os.Build
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -27,22 +26,27 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.CervicalMucusRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.IntermenstrualBleedingRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.MenstruationFlowRecord
+import androidx.health.connect.client.records.MenstruationPeriodRecord
+import androidx.health.connect.client.records.OvulationTestRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.SexualActivityRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -52,7 +56,6 @@ import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
-import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.framework.activity.SahhaPermissionActivity
@@ -255,6 +258,30 @@ internal class PermissionManagerImpl @Inject constructor(
 
         if (sensors.contains(SahhaSensor.exercise)) permissions.add(
             HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.cervical_mucus)) permissions.add(
+            HealthPermission.getReadPermission(CervicalMucusRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.intermenstrual_bleeding)) permissions.add(
+            HealthPermission.getReadPermission(IntermenstrualBleedingRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.menstruation_flow)) permissions.add(
+            HealthPermission.getReadPermission(MenstruationFlowRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.menstruation_period)) permissions.add(
+            HealthPermission.getReadPermission(MenstruationPeriodRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.ovulation_test)) permissions.add(
+            HealthPermission.getReadPermission(OvulationTestRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.sexual_activity)) permissions.add(
+            HealthPermission.getReadPermission(SexualActivityRecord::class)
         )
 
         return permissions
