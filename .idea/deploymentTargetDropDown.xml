@@ -2,13 +2,22 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="SahhaReconfigureTest">
+        <State />
+      </entry>
       <entry key="SensorSetReqTest">
         <State />
       </entry>
-      <entry key="app">
+      <entry key="StepSessionTest">
         <State />
       </entry>
-      <entry key="emptySet_returnsEmptySetError()">
+      <entry key="TokenAuthenticateTest">
+        <State />
+      </entry>
+      <entry key="WorkerIndependentTest">
+        <State />
+      </entry>
+      <entry key="app">
         <State />
       </entry>
     </value>

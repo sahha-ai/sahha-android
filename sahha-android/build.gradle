@@ -199,9 +199,9 @@ afterEvaluate {
 
                     developers {
                         developer {
-                            id = 'min.sahha'
-                            name = 'Hee-Min Chae'
-                            email = 'min@sahha.ai'
+                            id = 'sahha'
+                            name = 'Sahha Ltd'
+                            email = 'support@sahha.ai'
                         }
                     }
 
