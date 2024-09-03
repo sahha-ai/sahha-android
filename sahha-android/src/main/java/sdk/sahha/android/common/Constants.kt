@@ -107,6 +107,7 @@ internal object Constants {
 
     // Data Units
     object DataUnits {
+        const val EMPTY_STRING = ""
         const val BOOLEAN = "boolean"
         const val COUNT = "count"
         const val MMOL_PER_LITRE = "mmol/L"
