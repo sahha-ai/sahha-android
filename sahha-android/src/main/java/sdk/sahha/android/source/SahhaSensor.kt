@@ -95,10 +95,4 @@ enum class SahhaSensor {
     activity_summary,
     device_lock,
     exercise,
-    cervical_mucus,
-    intermenstrual_bleeding,
-    menstruation_flow,
-    menstruation_period,
-    ovulation_test,
-    sexual_activity,
 }
