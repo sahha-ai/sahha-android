@@ -97,12 +97,6 @@ internal object Constants {
         const val BODY_TEMPERATURE = "body_temperature"
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
         const val EXERCISE_SESSION = "exercise_session"
-        const val CERVICAL_MUCUS = "cervical_mucus"
-        const val INTERMENSTRUAL_BLEEDING = "intermenstrual_bleeding"
-        const val MENSTRUATION_FLOW = "menstruation_flow"
-        const val MENSTRUATION_PERIOD = "menstruation_period"
-        const val OVULATION_TEST = "ovulation_test"
-        const val SEXUAL_ACTIVITY = "sexual_activity"
     }
 
     // Data Units
@@ -140,7 +134,6 @@ internal object Constants {
         const val BODY = "body"
         const val TEMPERATURE = "temperature"
         const val EXERCISE = "exercise"
-        const val REPRODUCTIVE = "reproductive"
     }
 
     // Sahha Error API parameters
