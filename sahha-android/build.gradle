@@ -2,8 +2,8 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-    id 'maven-publish'
     id 'signing'
+    id 'maven-publish'
 }
 
 def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
@@ -171,8 +171,8 @@ afterEvaluate {
                 name = "MavenCentral"
                 url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                 credentials {
-                    username = project.findProperty("ossrhUsername") ?: ""
-                    password = project.findProperty("ossrhPassword") ?: ""
+                    username = System.getenv('OSSRH_USERNAME')
+                    password = System.getenv('OSSRH_PASSWORD')
                 }
             }
         }
@@ -216,7 +216,18 @@ afterEvaluate {
     }
 
     signing {
-        sign publishing.publications.mavenJava
+        def keyId = System.getenv('SIGNING_KEY_ID')
+        def secretKeyRingFile = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
+        def password = System.getenv('SIGNING_PASSWORD')
+
+        if (System.getenv('OSSRH_USERNAME') && System.getenv('OSSRH_PASSWORD')) {
+            useInMemoryPgpKeys(
+                    keyId,
+                    secretKeyRingFile,
+                    password
+            )
+            sign publishing.publications.mavenJava
+        }
     }
 }
 
