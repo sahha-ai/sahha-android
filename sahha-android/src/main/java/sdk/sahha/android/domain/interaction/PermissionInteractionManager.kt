@@ -184,34 +184,30 @@ internal class PermissionInteractionManager @Inject constructor(
         }
     }
 
-    private fun processStatuses(
+    internal fun processStatuses(
         nativeStatus: Enum<SahhaSensorStatus>,
         healthConnectStatus: Enum<SahhaSensorStatus>
     ): Enum<InternalSensorStatus> {
         val nativeUnavailable = nativeStatus == SahhaSensorStatus.unavailable
         val nativePending = nativeStatus == SahhaSensorStatus.pending
         val nativeDisabled = nativeStatus == SahhaSensorStatus.disabled
-        val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
-        val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
-                || healthConnectStatus == SahhaSensorStatus.unavailable
-//                || healthConnectStatus == SahhaSensorStatus.pending
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
-        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
-        val disabled = nativeDisabled && healthConnectDisabled
-        val partialNative =
-            nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
-        val requested = nativeEnabled && healthConnectEnabled
-        val onlyNativeAvailableAndEnabled = nativeEnabled && !manager.shouldUseHealthConnect()
+        val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
+        val healthConnectPending = healthConnectStatus == SahhaSensorStatus.pending
+        val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
+        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
         return when {
             nativeUnavailable -> InternalSensorStatus.unavailable
-            healthConnectUnavailable -> InternalSensorStatus.unavailable
             nativePending -> InternalSensorStatus.pending
-            partialNative -> InternalSensorStatus.partial
-            onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
-            requested -> InternalSensorStatus.enabled
-            disabled -> InternalSensorStatus.disabled
+            nativeDisabled -> InternalSensorStatus.disabled
+
+            nativeEnabled && healthConnectUnavailable -> InternalSensorStatus.enabled
+            nativeEnabled && healthConnectPending -> InternalSensorStatus.partial
+            nativeEnabled && healthConnectDisabled -> InternalSensorStatus.partial
+            nativeEnabled && healthConnectEnabled -> InternalSensorStatus.enabled
+
             else -> InternalSensorStatus.pending
         }
     }
