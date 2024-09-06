@@ -5,12 +5,8 @@ import android.health.connect.datatypes.Metadata
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureMeasurementLocation
-import androidx.health.connect.client.records.CervicalMucusRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.MealType
-import androidx.health.connect.client.records.MenstruationFlowRecord
-import androidx.health.connect.client.records.OvulationTestRecord
-import androidx.health.connect.client.records.SexualActivityRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.metadata.Device
@@ -160,25 +156,5 @@ internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
             segmentTypeStringToIntMap.entries.associateBy({ it.value }, { it.key })
 
         return segmentTypeIntToStringMap[constantInt]
-    }
-
-    override fun cervicalMucusAppearance(appearanceInt: Int): String? {
-        return CervicalMucusRecord.APPEARANCE_INT_TO_STRING_MAP[appearanceInt]
-    }
-
-    override fun cervicalMucusSensation(sensationInt: Int): String? {
-        return CervicalMucusRecord.SENSATION_INT_TO_STRING_MAP[sensationInt]
-    }
-
-    override fun menstruationFlow(flowInt: Int): String? {
-        return MenstruationFlowRecord.FLOW_TYPE_INT_TO_STRING_MAP[flowInt]
-    }
-
-    override fun ovulationTestResult(resultInt: Int): String? {
-        return OvulationTestRecord.RESULT_INT_TO_STRING_MAP[resultInt]
-    }
-
-    override fun sexualActivityProtectionUsed(protectionUsedInt: Int): String? {
-        return SexualActivityRecord.PROTECTION_USED_INT_TO_STRING_MAP[protectionUsedInt]
     }
 }
