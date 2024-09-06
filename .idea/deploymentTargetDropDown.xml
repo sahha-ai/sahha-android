@@ -5,9 +5,6 @@
       <entry key="SensorSetReqTest">
         <State />
       </entry>
-      <entry key="StepSessionTest">
-        <State />
-      </entry>
       <entry key="TokenAuthenticateTest">
         <State />
       </entry>
@@ -15,9 +12,6 @@
         <State />
       </entry>
       <entry key="app">
-        <State />
-      </entry>
-      <entry key="demog()">
         <State />
       </entry>
     </value>
