@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+    id 'signing'
     id 'maven-publish'
 }
 
@@ -9,7 +10,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.15.23"
+def gVersionName = "1.0.0"
 
 android {
     compileSdk 34
@@ -165,13 +166,51 @@ dependencies {
 
 afterEvaluate {
     publishing {
+        repositories {
+            maven {
+                name = "MavenCentral"
+                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username = System.getenv('OSSRH_USERNAME')
+                    password = System.getenv('OSSRH_PASSWORD')
+                }
+            }
+        }
+
         publications {
-            release(MavenPublication) {
+            mavenJava(MavenPublication) {
                 from components.release
 
-                groupId = 'com.github.sahha-ai'
+                groupId = 'ai.sahha'
                 artifactId = 'sahha-android'
                 version = gVersionName
+
+                pom {
+                    name = 'Sahha Android'
+                    description = 'The Sahha SDK provides a convenient way for Android apps to connect to the Sahha API'
+                    url = 'https://github.com/sahha-ai/sahha-android'
+
+                    licenses {
+                        license {
+                            name = 'Sahha SDK Licence Agreement'
+                            url = 'https://github.com/sahha-ai/sahha-android/blob/main/LICENSE.md'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = 'sahha'
+                            name = 'Sahha Ltd'
+                            email = 'support@sahha.ai'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/sahha-ai/sahha-android.git'
+                        developerConnection = 'scm:git:ssh://github.com/sahha-ai/sahha-android.git'
+                        url = 'https://github.com/sahha-ai/sahha-android'
+                    }
+                }
             }
         }
     }
