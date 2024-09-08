@@ -5,10 +5,13 @@
       <entry key="SensorSetReqTest">
         <State />
       </entry>
-      <entry key="app">
+      <entry key="TokenAuthenticateTest">
         <State />
       </entry>
-      <entry key="emptySet_returnsEmptySetError()">
+      <entry key="WorkerIndependentTest">
+        <State />
+      </entry>
+      <entry key="app">
         <State />
       </entry>
     </value>
