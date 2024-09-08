@@ -4,7 +4,6 @@ import android.os.Build
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import java.time.LocalDateTime
 import java.util.*
@@ -19,7 +18,7 @@ internal class AnalyzeProfileUseCase @Inject constructor (
     suspend operator fun invoke(
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        repository.getAnalysis(callback = callback)
+        repository.getScores(callback = callback)
     }
 
     @JvmName("invokeDate")
@@ -44,7 +43,7 @@ internal class AnalyzeProfileUseCase @Inject constructor (
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getScores(datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(7), null)
 
@@ -89,7 +88,7 @@ internal class AnalyzeProfileUseCase @Inject constructor (
                     return
                 }
 
-                repository.getAnalysis(datesISO, callback)
+                repository.getScores(datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(
