@@ -29,17 +29,56 @@ internal class UserDataRepoImpl(
     private val api: SahhaApi,
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) : UserDataRepo {
-    override suspend fun getAnalysis(
+//    override suspend fun getAnalysis(
+//        dates: Pair<String, String>?,
+//        callback: ((error: String?, successful: String?) -> Unit)?,
+//    ) {
+//        try {
+//            val response = getDetectedAnalysisCall(dates)
+//
+//            if (ResponseCode.isUnauthorized(response.code())) {
+//                callback?.invoke(SahhaErrors.attemptingTokenRefresh, null)
+//                SahhaResponseHandler.checkTokenExpired(response.code()) {
+//                    getAnalysis(dates, callback)
+//                }
+//                sahhaErrorLogger.api(
+//                    response
+//                )
+//                return
+//            }
+//
+//            if (ResponseCode.isSuccessful(response.code())) {
+//                returnFormattedResponse(response, callback)
+//                return
+//            }
+//
+//            callback?.invoke(
+//                "${response.code()}: ${response.message()}",
+//                null
+//            )
+//            sahhaErrorLogger.api(response)
+//        } catch (e: Exception) {
+//            sahhaErrorLogger.application(
+//                e.message ?: SahhaErrors.somethingWentWrong,
+//                tag,
+//                "getAnalysis",
+//                dates?.toString()
+//            )
+//            callback?.invoke(e.message, null)
+//        }
+//    }
+
+    override suspend fun getScores(
         dates: Pair<String, String>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val response = getDetectedAnalysisCall(dates)
+            val response = getScoreResponse(dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, null)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
-                    getAnalysis(dates, callback)
+                    getScores(dates, callback)
                 }
                 sahhaErrorLogger.api(
                     response
@@ -231,34 +270,49 @@ internal class UserDataRepoImpl(
         return api.patchDemographic(TokenBearer(token), sahhaDemographic)
     }
 
-    private suspend fun getDetectedAnalysisCall(
-        datesISO: Pair<String, String>?,
-    ): Response<ResponseBody> {
-        return datesISO?.let { it ->
-            getAnalysisResponse(it.first, it.second)
-        } ?: getAnalysisResponse()
-    }
+//    private suspend fun getDetectedAnalysisCall(
+//        datesISO: Pair<String, String>?,
+//    ): Response<ResponseBody> {
+//        return datesISO?.let { it ->
+//            getAnalysisResponse(it.first, it.second)
+//        } ?: getAnalysisResponse()
+//    }
 
-    private suspend fun getAnalysisResponse(): Response<ResponseBody> {
-        val analyzeRequest = AnalyzeRequest(
-            null,
-            null,
-        )
+//    private suspend fun getAnalysisResponse(): Response<ResponseBody> {
+//        val analyzeRequest = AnalyzeRequest(
+//            null,
+//            null,
+//        )
+//        val token = authRepo.getToken() ?: ""
+//
+//        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
+//    }
+
+//    private suspend fun getAnalysisResponse(
+//        startDate: String,
+//        endDate: String,
+//    ): Response<ResponseBody> {
+//        val analyzeRequest = AnalyzeRequest(
+//            startDate,
+//            endDate,
+//        )
+//        val token = authRepo.getToken() ?: ""
+//
+//        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
+//    }
+
+    private suspend fun getScoreResponse(
+        dates: Pair<String, String>? = null
+    ): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
 
-        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
-    }
-
-    private suspend fun getAnalysisResponse(
-        startDate: String,
-        endDate: String,
-    ): Response<ResponseBody> {
-        val analyzeRequest = AnalyzeRequest(
-            startDate,
-            endDate,
-        )
-        val token = authRepo.getToken() ?: ""
-
-        return api.analyzeProfileResponse(TokenBearer(token), analyzeRequest)
+        return dates?.let {
+            api.getScore(
+                TokenBearer(token),
+                listOf("activity"),
+                it.first,
+                it.second
+            )
+        } ?: api.getScore(TokenBearer(token), listOf("activity"))
     }
 }

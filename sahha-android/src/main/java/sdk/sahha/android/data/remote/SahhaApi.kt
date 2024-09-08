@@ -154,22 +154,22 @@ internal interface SahhaApi {
 
 
 
-    @POST("profile/analysis")
-    fun analyzeProfile(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-    ): Call<ResponseBody>
+//    @POST("profile/analysis")
+//    fun analyzeProfile(
+//        @Header(AUTHORIZATION_HEADER) profileToken: String,
+//    ): Call<ResponseBody>
+//
+//    @POST("profile/analysis")
+//    fun analyzeProfile(
+//        @Header(AUTHORIZATION_HEADER) profileToken: String,
+//        @Body analyzeRequest: AnalyzeRequest
+//    ): Call<ResponseBody>
 
-    @POST("profile/analysis")
-    fun analyzeProfile(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body analyzeRequest: AnalyzeRequest
-    ): Call<ResponseBody>
-
-    @POST("profile/analysis")
-    suspend fun analyzeProfileResponse(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body analyzeRequest: AnalyzeRequest
-    ): Response<ResponseBody>
+//    @POST("profile/analysis")
+//    suspend fun analyzeProfileResponse(
+//        @Header(AUTHORIZATION_HEADER) profileToken: String,
+//        @Body analyzeRequest: AnalyzeRequest
+//    ): Response<ResponseBody>
 
     @GET("profile/demographic")
     fun getDemographic(
@@ -192,6 +192,20 @@ internal interface SahhaApi {
     suspend fun postInsightsData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body insights: List<InsightData>
+    ): Response<ResponseBody>
+
+    @GET("profile/score")
+    suspend fun getScore(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("types") types: List<String>,
+    ): Response<ResponseBody>
+
+    @GET("profile/score")
+    suspend fun getScore(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("types") types: List<String>,
+        @Query("startDateTime") startDateTimeIso: String,
+        @Query("endDateTime") endDateTimeIso: String,
     ): Response<ResponseBody>
 }
 

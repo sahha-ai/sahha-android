@@ -1,7 +1,7 @@
 package sdk.sahha.android.common
 
 import okhttp3.ResponseBody
-import org.json.JSONObject
+import org.json.JSONArray
 import retrofit2.Response
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.source.Sahha
@@ -20,7 +20,7 @@ internal object SahhaResponseHandler {
 
         val reader = response.body()?.charStream()
         val bodyString = reader?.readText()
-        val json = JSONObject(bodyString ?: "")
+        val json = JSONArray(bodyString ?: "")
         val jsonString = json.toString(6)
         callback?.also { it(null, jsonString) }
     }
