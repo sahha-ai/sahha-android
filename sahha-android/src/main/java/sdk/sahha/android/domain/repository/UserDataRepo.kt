@@ -10,6 +10,7 @@ internal interface UserDataRepo {
     )
 
     suspend fun getScores(
+        scoresString: List<String>,
         dates: Pair<String, String>? = null,
         callback: ((error: String?, successful: String?) -> Unit)?
     )

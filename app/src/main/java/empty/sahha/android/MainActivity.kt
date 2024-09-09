@@ -39,6 +39,7 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
+import sdk.sahha.android.source.SahhaScoreTypeIdentifier
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
@@ -311,7 +312,12 @@ class MainActivity : ComponentActivity() {
                                     val now = Date()
                                     val lastWeek = Date(now.time - SEVEN_DAYS_MILLIS)
 
-                                    Sahha.analyze { error, success ->
+                                    Sahha.analyze(
+                                        listOf(
+                                            SahhaScoreTypeIdentifier.activity,
+                                            SahhaScoreTypeIdentifier.sleep
+                                        )
+                                    ) { error, success ->
                                         error?.also { analyzeResponse = it }
                                         success?.also {
                                             analyzeResponse = it
@@ -319,6 +325,10 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.analyze(
+                                        scores = listOf(
+                                            SahhaScoreTypeIdentifier.activity,
+                                            SahhaScoreTypeIdentifier.sleep
+                                        ),
                                         dates = Pair(lastWeek, now),
                                     ) { error, success ->
                                         error?.also { analyzeResponseDate = it }
@@ -328,6 +338,10 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.analyze(
+                                        scores = listOf(
+                                            SahhaScoreTypeIdentifier.activity,
+                                            SahhaScoreTypeIdentifier.sleep
+                                        ),
                                         dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
                                     ) { error, success ->
                                         error?.also { analyzeResponseLocalDateTime = it }
