@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import okhttp3.ResponseBody
 import retrofit2.Response
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -19,10 +18,9 @@ import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.source.Sahha
-import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
 
-private const val tag = "PostBatchData"
+private const val TAG = "PostBatchData"
 
 internal class PostBatchData @Inject constructor(
     private val context: Context,
@@ -43,7 +41,9 @@ internal class PostBatchData @Inject constructor(
             return
         }
 
+        Log.d(TAG, "Batched data: ${batchedData.count()}")
         val filtered = filterActivityOverlaps(batchedData)
+        Log.d(TAG ,"Filtered data: ${filtered.count()}")
         chunkManager.postAllChunks(
             allData = filtered,
             limit = calculateBatchLimit(),
@@ -63,7 +63,7 @@ internal class PostBatchData @Inject constructor(
                     )
                     ResponseCode.isSuccessful(response.code())
                 } catch (e: Exception) {
-                    Log.e(tag, e.message, e)
+                    Log.e(TAG, e.message, e)
                     false
                 }
             },
@@ -83,8 +83,8 @@ internal class PostBatchData @Inject constructor(
 
             if (ResponseCode.accountRemoved(code)) {
                 val error = "Account does not exist, stopping all tasks"
-                Log.w(tag, error)
-                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(tag, it) } }
+                Log.w(TAG, error)
+                Sahha.sim.auth.deauthenticate { error, _ -> error?.also { Log.w(TAG, it) } }
                 Sahha.sim.sensor.stopAllBackgroundTasks(context)
                 Sahha.sim.sensor.killMainService(context)
                 callback?.invoke(error, false)
@@ -115,7 +115,7 @@ internal class PostBatchData @Inject constructor(
             if (ResponseCode.isSuccessful(code)) {
                 successfulLogic?.invoke()
                 callback?.invoke(null, true)
-                Log.d(tag, "${code}: ${response.message()}")
+                Log.d(TAG, "${code}: ${response.message()}")
                 return
             }
 
@@ -130,7 +130,7 @@ internal class PostBatchData @Inject constructor(
 
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
+                TAG,
                 "handleResponse",
                 e.stackTraceToString(),
             )

@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
@@ -23,14 +24,19 @@ internal class FilterActivityOverlaps @Inject constructor(
     private suspend fun filterOverlaps(data: List<SahhaDataLog>): List<SahhaDataLog> =
         coroutineScope {
             val dataBySource = data.groupBy { it.source }
-
             val deferredResults = dataBySource.map { (_, sourceData) ->
                 async(Dispatchers.Default) {
                     val sortedData =
                         sourceData.sortedWith(compareBy({ it.startDateTime }, { it.endDateTime }))
 
+                    val ignoredLogs = mutableListOf<SahhaDataLog>()
                     val sourceFiltered = mutableListOf<SahhaDataLog>()
                     for (currentInterval in sortedData) {
+                        if(currentInterval.dataType != Constants.DataTypes.STEP) {
+                            ignoredLogs.add(currentInterval)
+                            continue
+                        }
+
                         if(sourceFiltered.isEmpty()) {
                             sourceFiltered.add(currentInterval)
                             continue
@@ -57,7 +63,7 @@ internal class FilterActivityOverlaps @Inject constructor(
                                 currentInterval
                         }
                     }
-                    sourceFiltered
+                    sourceFiltered + ignoredLogs
                 }
             }
 
