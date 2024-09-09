@@ -244,6 +244,6 @@ internal class UserDataRepoImpl(
                 it.first,
                 it.second
             )
-        } ?: api.getScore(TokenBearer(token), listOf("activity"))
+        } ?: api.getScore(TokenBearer(token), dataTypes)
     }
 }
