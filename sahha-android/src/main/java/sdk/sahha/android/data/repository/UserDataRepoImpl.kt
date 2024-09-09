@@ -232,7 +232,7 @@ internal class UserDataRepoImpl(
     }
 
     private suspend fun getScoreResponse(
-        dataTypes: List<String>,
+        scoresString: List<String>,
         dates: Pair<String, String>? = null
     ): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
@@ -240,10 +240,10 @@ internal class UserDataRepoImpl(
         return dates?.let {
             api.getScore(
                 TokenBearer(token),
-                dataTypes,
+                scoresString,
                 it.first,
                 it.second
             )
-        } ?: api.getScore(TokenBearer(token), dataTypes)
+        } ?: api.getScore(TokenBearer(token), scoresString)
     }
 }
