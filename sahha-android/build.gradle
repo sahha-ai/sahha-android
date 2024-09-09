@@ -168,12 +168,13 @@ afterEvaluate {
     publishing {
         repositories {
             maven {
-                name = "MavenCentral"
-                url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
                 credentials {
                     username = System.getenv('OSSRH_USERNAME')
                     password = System.getenv('OSSRH_PASSWORD')
                 }
+
+                name = "MavenCentral"
+                url = "https://repo1.maven.org/maven2"
             }
         }
 

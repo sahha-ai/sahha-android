@@ -17,6 +17,7 @@ import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaScoreTypeIdentifier
 import java.time.LocalDateTime
 import java.util.Date
 import javax.inject.Inject
@@ -34,31 +35,34 @@ internal class UserDataInteractionManager @Inject constructor(
     private val postDemographicUseCase: PostDemographicUseCase,
 ) {
     fun analyze(
+        scores: List<SahhaScoreTypeIdentifier>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(callback)
+            analyzeProfileUseCase(scores, callback)
         }
     }
 
 
     @JvmName("analyzeDate")
     fun analyze(
+        scores: List<SahhaScoreTypeIdentifier>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(dates, callback)
+            analyzeProfileUseCase(scores, dates, callback)
         }
     }
 
     @JvmName("analyzeLocalDateTime")
     fun analyze(
+        scores: List<SahhaScoreTypeIdentifier>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(dates, callback)
+            analyzeProfileUseCase(scores, dates, callback)
         }
     }
 
@@ -87,8 +91,7 @@ internal class UserDataInteractionManager @Inject constructor(
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it)) {
                     saveAndPutDeviceInfo(context, callback)
-                }
-                else callback?.invoke(null, true)
+                } else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
