@@ -350,7 +350,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 }) {
-                                    Text("Analyze")
+                                    Text("Get Scores")
                                 }
                                 Text(analyzeResponse)
                                 Text(analyzeResponseDate)
