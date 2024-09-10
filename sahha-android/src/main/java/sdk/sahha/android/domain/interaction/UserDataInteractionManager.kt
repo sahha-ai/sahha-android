@@ -13,7 +13,7 @@ import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
-import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
+import sdk.sahha.android.domain.use_case.GetScoresUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.source.SahhaDemographic
@@ -30,39 +30,39 @@ internal class UserDataInteractionManager @Inject constructor(
     private val authRepo: AuthRepo,
     private val deviceInfoRepo: DeviceInfoRepo,
     private val sahhaConfigRepo: SahhaConfigRepo,
-    private val analyzeProfileUseCase: AnalyzeProfileUseCase,
+    private val getScoresUseCase: GetScoresUseCase,
     private val getDemographicUseCase: GetDemographicUseCase,
     private val postDemographicUseCase: PostDemographicUseCase,
 ) {
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(scores, callback)
+            getScoresUseCase(scores, callback)
         }
     }
 
 
-    @JvmName("analyzeDate")
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    @JvmName("getScoresDate")
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(scores, dates, callback)
+            getScoresUseCase(scores, dates, callback)
         }
     }
 
-    @JvmName("analyzeLocalDateTime")
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    @JvmName("getScoresLocalDateTime")
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(scores, dates, callback)
+            getScoresUseCase(scores, dates, callback)
         }
     }
 

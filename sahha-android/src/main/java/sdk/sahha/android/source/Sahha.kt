@@ -107,8 +107,8 @@ object Sahha {
     }
 
 
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         if (!sahhaIsConfigured()) {
@@ -116,13 +116,13 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(scores, callback)
+        sim.userData.getScores(scores, callback)
     }
 
 
-    @JvmName("analyzeDate")
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    @JvmName("getScoresDate")
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
@@ -131,12 +131,12 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(scores, dates, callback)
+        sim.userData.getScores(scores, dates, callback)
     }
 
-    @JvmName("analyzeLocalDateTime")
-    fun analyze(
-        scores: List<SahhaScoreTypeIdentifier>,
+    @JvmName("getScoresLocalDateTime")
+    fun getScores(
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
@@ -145,7 +145,7 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(scores, dates, callback)
+        sim.userData.getScores(scores, dates, callback)
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {

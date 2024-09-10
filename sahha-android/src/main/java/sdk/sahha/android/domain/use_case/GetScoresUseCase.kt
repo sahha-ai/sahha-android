@@ -12,13 +12,13 @@ import javax.inject.Inject
 
 private const val tag = "AnalyzeProfileUseCase"
 
-internal class AnalyzeProfileUseCase @Inject constructor(
+internal class GetScoresUseCase @Inject constructor(
     private val repository: UserDataRepo,
     private val sahhaTimeManager: SahhaTimeManager?,
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
-        scores: List<SahhaScoreTypeIdentifier>,
+        scores: Set<SahhaScoreTypeIdentifier>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         repository.getScores(scoresString = scores.map { it.name }, callback = callback)
@@ -26,7 +26,7 @@ internal class AnalyzeProfileUseCase @Inject constructor(
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
-        scores: List<SahhaScoreTypeIdentifier>,
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
@@ -72,7 +72,7 @@ internal class AnalyzeProfileUseCase @Inject constructor(
 
     @JvmName("invokeLocalDateTime")
     suspend operator fun invoke(
-        scores: List<SahhaScoreTypeIdentifier>,
+        scores: Set<SahhaScoreTypeIdentifier>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {

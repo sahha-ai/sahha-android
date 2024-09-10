@@ -312,8 +312,8 @@ class MainActivity : ComponentActivity() {
                                     val now = Date()
                                     val lastWeek = Date(now.time - SEVEN_DAYS_MILLIS)
 
-                                    Sahha.analyze(
-                                        listOf(
+                                    Sahha.getScores(
+                                        setOf(
                                             SahhaScoreTypeIdentifier.activity,
                                             SahhaScoreTypeIdentifier.sleep
                                         )
@@ -324,8 +324,8 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
 
-                                    Sahha.analyze(
-                                        scores = listOf(
+                                    Sahha.getScores(
+                                        scores = setOf(
                                             SahhaScoreTypeIdentifier.activity,
                                             SahhaScoreTypeIdentifier.sleep
                                         ),
@@ -337,8 +337,8 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
 
-                                    Sahha.analyze(
-                                        scores = listOf(
+                                    Sahha.getScores(
+                                        scores = setOf(
                                             SahhaScoreTypeIdentifier.activity,
                                             SahhaScoreTypeIdentifier.sleep
                                         ),
