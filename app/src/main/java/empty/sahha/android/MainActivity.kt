@@ -108,10 +108,9 @@ class MainActivity : ComponentActivity() {
 //                    var permissionStatus = "place holder"
                     var manualPost by remember { mutableStateOf("") }
                     var manualPostDevice by remember { mutableStateOf("") }
-                    var analyzeResponse by remember { mutableStateOf("") }
-                    var analyzeResponseEpoch by remember { mutableStateOf("") }
-                    var analyzeResponseDate by remember { mutableStateOf("") }
-                    var analyzeResponseLocalDateTime by remember { mutableStateOf("") }
+                    var scoresResponse by remember { mutableStateOf("") }
+                    var scoresResponseDate by remember { mutableStateOf("") }
+                    var scoresResponseLocalDateTime by remember { mutableStateOf("") }
                     var postDemo by remember { mutableStateOf("") }
                     var getDemo by remember { mutableStateOf("") }
                     var appId by remember { mutableStateOf("") }
@@ -162,7 +161,8 @@ class MainActivity : ComponentActivity() {
                                     Sahha.getSensorStatus(
                                         this@MainActivity,
                                         setOf<SahhaSensor>(
-                                            SahhaSensor.heart_rate, SahhaSensor.sleep)
+                                            SahhaSensor.heart_rate, SahhaSensor.sleep
+                                        )
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
@@ -307,7 +307,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
-                                    analyzeResponse = ""
+                                    scoresResponse = ""
 
                                     val now = Date()
                                     val lastWeek = Date(now.time - SEVEN_DAYS_MILLIS)
@@ -318,9 +318,9 @@ class MainActivity : ComponentActivity() {
                                             SahhaScoreTypeIdentifier.sleep
                                         )
                                     ) { error, success ->
-                                        error?.also { analyzeResponse = it }
+                                        error?.also { scoresResponse = it }
                                         success?.also {
-                                            analyzeResponse = it
+                                            scoresResponse = it
                                         }
                                     }
 
@@ -331,9 +331,9 @@ class MainActivity : ComponentActivity() {
                                         ),
                                         dates = Pair(lastWeek, now),
                                     ) { error, success ->
-                                        error?.also { analyzeResponseDate = it }
+                                        error?.also { scoresResponseDate = it }
                                         success?.also {
-                                            analyzeResponseDate = it
+                                            scoresResponseDate = it
                                         }
                                     }
 
@@ -344,17 +344,17 @@ class MainActivity : ComponentActivity() {
                                         ),
                                         dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
                                     ) { error, success ->
-                                        error?.also { analyzeResponseLocalDateTime = it }
+                                        error?.also { scoresResponseLocalDateTime = it }
                                         success?.also {
-                                            analyzeResponseLocalDateTime = it
+                                            scoresResponseLocalDateTime = it
                                         }
                                     }
                                 }) {
                                     Text("Get Scores")
                                 }
-                                Text(analyzeResponse)
-                                Text(analyzeResponseDate)
-                                Text(analyzeResponseLocalDateTime)
+                                Text(scoresResponse)
+                                Text(scoresResponseDate)
+                                Text(scoresResponseLocalDateTime)
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     val rnd = Random.Default
