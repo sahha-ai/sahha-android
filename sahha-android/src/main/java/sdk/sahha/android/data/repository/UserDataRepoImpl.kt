@@ -61,7 +61,7 @@ internal class UserDataRepoImpl(
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
-                "getAnalysis",
+                "getScores",
                 dates?.toString()
             )
             callback?.invoke(e.message, null)

@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.Date
 import javax.inject.Inject
 
-private const val tag = "AnalyzeProfileUseCase"
+private const val TAG = "GetScoresUseCase"
 
 internal class GetScoresUseCase @Inject constructor(
     private val repository: UserDataRepo,
@@ -53,7 +53,7 @@ internal class GetScoresUseCase @Inject constructor(
 
                 sahhaErrorLogger?.application(
                     SahhaErrors.androidVersionTooLow(7),
-                    "AnalyzeProfileUseCase",
+                    TAG,
                     dates.toString()
                 )
             }
@@ -63,8 +63,8 @@ internal class GetScoresUseCase @Inject constructor(
 
             sahhaErrorLogger?.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
-                "AnalyzeProfileUseCase",
+                TAG,
+                "invoke",
                 dates.toString()
             )
         }
@@ -98,7 +98,7 @@ internal class GetScoresUseCase @Inject constructor(
                 it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(
                     SahhaErrors.androidVersionTooLow(8),
-                    "AnalyzeProfileUseCase",
+                    TAG,
                     dates.toString()
                 )
             }
@@ -106,8 +106,8 @@ internal class GetScoresUseCase @Inject constructor(
             callback?.also { it("Error: ${e.message}", null) }
             sahhaErrorLogger?.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
-                "AnalyzeProfileUseCase",
+                TAG,
+                "invoke",
                 dates.toString()
             )
         }

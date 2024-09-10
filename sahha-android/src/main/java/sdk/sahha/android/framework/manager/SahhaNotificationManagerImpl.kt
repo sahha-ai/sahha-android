@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -103,11 +104,11 @@ internal class SahhaNotificationManagerImpl(
     ) {
         val notification = getNewNotification(
             context,
-            "analytics",
-            "Analytics",
+            "insights",
+            "Health Insights",
             NotificationManager.IMPORTANCE_MIN,
-            title ?: "Analytics are running",
-            shortDescription ?: "Swipe for options to hide this notification.",
+            title ?: Constants.NOTIFICATION_TITLE_DEFAULT,
+            shortDescription ?: Constants.NOTIFICATION_DESC_DEFAULT,
             true,
             icon ?: R.drawable.ic_sahha_no_bg
         )
