@@ -17,7 +17,7 @@ import sdk.sahha.android.domain.use_case.GetScoresUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.source.SahhaDemographic
-import sdk.sahha.android.source.SahhaScoreTypeIdentifier
+import sdk.sahha.android.source.SahhaScoreType
 import java.time.LocalDateTime
 import java.util.Date
 import javax.inject.Inject
@@ -35,34 +35,34 @@ internal class UserDataInteractionManager @Inject constructor(
     private val postDemographicUseCase: PostDemographicUseCase,
 ) {
     fun getScores(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         mainScope.launch {
-            getScoresUseCase(scores, callback)
+            getScoresUseCase(types, callback)
         }
     }
 
 
     @JvmName("getScoresDate")
     fun getScores(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            getScoresUseCase(scores, dates, callback)
+            getScoresUseCase(types, dates, callback)
         }
     }
 
     @JvmName("getScoresLocalDateTime")
     fun getScores(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            getScoresUseCase(scores, dates, callback)
+            getScoresUseCase(types, dates, callback)
         }
     }
 

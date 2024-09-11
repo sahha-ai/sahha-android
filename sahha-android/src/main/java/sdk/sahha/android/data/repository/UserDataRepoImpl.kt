@@ -29,17 +29,17 @@ internal class UserDataRepoImpl(
     private val sahhaErrorLogger: SahhaErrorLogger,
 ) : UserDataRepo {
     override suspend fun getScores(
-        scoresString: List<String>,
+        scoreTypesString: List<String>,
         dates: Pair<String, String>?,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val response = getScoreResponse(scoresString, dates)
+            val response = getScoreResponse(scoreTypesString, dates)
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, null)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
-                    getScores(scoresString, dates, callback)
+                    getScores(scoreTypesString, dates, callback)
                 }
                 sahhaErrorLogger.api(
                     response
@@ -232,18 +232,18 @@ internal class UserDataRepoImpl(
     }
 
     private suspend fun getScoreResponse(
-        scoresString: List<String>,
+        scoreTypesString: List<String>,
         dates: Pair<String, String>? = null
     ): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
 
         return dates?.let {
-            api.getScore(
+            api.getScores(
                 TokenBearer(token),
-                scoresString,
+                scoreTypesString,
                 it.first,
                 it.second
             )
-        } ?: api.getScore(TokenBearer(token), scoresString)
+        } ?: api.getScores(TokenBearer(token), scoreTypesString)
     }
 }

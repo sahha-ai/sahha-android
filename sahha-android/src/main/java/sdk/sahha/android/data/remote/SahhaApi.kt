@@ -175,13 +175,13 @@ internal interface SahhaApi {
     ): Response<ResponseBody>
 
     @GET("profile/score")
-    suspend fun getScore(
+    suspend fun getScores(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Query("types") types: List<String>,
     ): Response<ResponseBody>
 
     @GET("profile/score")
-    suspend fun getScore(
+    suspend fun getScores(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Query("types") types: List<String>,
         @Query("startDateTime") startDateTimeIso: String,

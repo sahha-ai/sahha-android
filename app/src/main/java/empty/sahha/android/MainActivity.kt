@@ -39,7 +39,7 @@ import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
 import sdk.sahha.android.source.SahhaNotificationConfiguration
-import sdk.sahha.android.source.SahhaScoreTypeIdentifier
+import sdk.sahha.android.source.SahhaScoreType
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
@@ -314,8 +314,8 @@ class MainActivity : ComponentActivity() {
 
                                     Sahha.getScores(
                                         setOf(
-                                            SahhaScoreTypeIdentifier.activity,
-                                            SahhaScoreTypeIdentifier.sleep
+                                            SahhaScoreType.activity,
+                                            SahhaScoreType.sleep
                                         )
                                     ) { error, success ->
                                         error?.also { scoresResponse = it }
@@ -325,9 +325,9 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.getScores(
-                                        scores = setOf(
-                                            SahhaScoreTypeIdentifier.activity,
-                                            SahhaScoreTypeIdentifier.sleep
+                                        types = setOf(
+                                            SahhaScoreType.activity,
+                                            SahhaScoreType.sleep
                                         ),
                                         dates = Pair(lastWeek, now),
                                     ) { error, success ->
@@ -338,9 +338,9 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                     Sahha.getScores(
-                                        scores = setOf(
-                                            SahhaScoreTypeIdentifier.activity,
-                                            SahhaScoreTypeIdentifier.sleep
+                                        types = setOf(
+                                            SahhaScoreType.activity,
+                                            SahhaScoreType.sleep
                                         ),
                                         dates = Pair(LocalDateTime.now(), LocalDateTime.now()),
                                     ) { error, success ->

@@ -5,7 +5,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.repository.UserDataRepo
-import sdk.sahha.android.source.SahhaScoreTypeIdentifier
+import sdk.sahha.android.source.SahhaScoreType
 import java.time.LocalDateTime
 import java.util.Date
 import javax.inject.Inject
@@ -18,15 +18,15 @@ internal class GetScoresUseCase @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger? = null
 ) {
     suspend operator fun invoke(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
-        repository.getScores(scoresString = scores.map { it.name }, callback = callback)
+        repository.getScores(scoresString = types.map { it.name }, callback = callback)
     }
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
@@ -47,7 +47,7 @@ internal class GetScoresUseCase @Inject constructor(
                     return
                 }
 
-                repository.getScores(scores.map { it.name }, datesISO, callback)
+                repository.getScores(types.map { it.name }, datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(7), null)
 
@@ -72,7 +72,7 @@ internal class GetScoresUseCase @Inject constructor(
 
     @JvmName("invokeLocalDateTime")
     suspend operator fun invoke(
-        scores: Set<SahhaScoreTypeIdentifier>,
+        types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
@@ -93,7 +93,7 @@ internal class GetScoresUseCase @Inject constructor(
                     return
                 }
 
-                repository.getScores(scores.map { it.name }, datesISO, callback)
+                repository.getScores(types.map { it.name }, datesISO, callback)
             } ?: callback?.also {
                 it(SahhaErrors.androidVersionTooLow(8), null)
                 sahhaErrorLogger?.application(
