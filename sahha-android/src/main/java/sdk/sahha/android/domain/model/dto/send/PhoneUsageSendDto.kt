@@ -10,6 +10,6 @@ internal data class PhoneUsageSendDto(
     val isScreenOn: Boolean,
     val eventTimeStamp: String,
     val source: String = Constants.PHONE_USAGE_DATA_SOURCE,
-    val recordingMethod: String = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+    val recordingMethod: String = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
     val deviceType: String = Constants.DEVICE_TYPE_PHONE
 )
