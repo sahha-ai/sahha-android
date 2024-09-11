@@ -7,7 +7,6 @@ import retrofit2.http.*
 import sdk.sahha.android.common.Constants.APP_ID_HEADER
 import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
-import sdk.sahha.android.domain.model.analyze.AnalyzeRequest
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
@@ -152,25 +151,6 @@ internal interface SahhaApi {
         @Body sahhaDataLogs: List<SahhaDataLog>
     ): Response<ResponseBody>
 
-
-
-    @POST("profile/analysis")
-    fun analyzeProfile(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-    ): Call<ResponseBody>
-
-    @POST("profile/analysis")
-    fun analyzeProfile(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body analyzeRequest: AnalyzeRequest
-    ): Call<ResponseBody>
-
-    @POST("profile/analysis")
-    suspend fun analyzeProfileResponse(
-        @Header(AUTHORIZATION_HEADER) profileToken: String,
-        @Body analyzeRequest: AnalyzeRequest
-    ): Response<ResponseBody>
-
     @GET("profile/demographic")
     fun getDemographic(
         @Header(AUTHORIZATION_HEADER) profileToken: String
@@ -192,6 +172,20 @@ internal interface SahhaApi {
     suspend fun postInsightsData(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body insights: List<InsightData>
+    ): Response<ResponseBody>
+
+    @GET("profile/score")
+    suspend fun getScores(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("types") types: List<String>,
+    ): Response<ResponseBody>
+
+    @GET("profile/score")
+    suspend fun getScores(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("types") types: List<String>,
+        @Query("startDateTime") startDateTimeIso: String,
+        @Query("endDateTime") endDateTimeIso: String,
     ): Response<ResponseBody>
 }
 

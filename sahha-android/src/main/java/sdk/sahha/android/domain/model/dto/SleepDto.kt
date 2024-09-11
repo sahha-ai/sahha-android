@@ -30,7 +30,7 @@ internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLog {
         unit = Constants.DataUnits.MINUTE,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
     )
 }
