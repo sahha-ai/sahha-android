@@ -41,9 +41,7 @@ internal class PostBatchData @Inject constructor(
             return
         }
 
-        Log.d(TAG, "Batched data: ${batchedData.count()}")
         val filtered = filterActivityOverlaps(batchedData)
-        Log.d(TAG ,"Filtered data: ${filtered.count()}")
         chunkManager.postAllChunks(
             allData = filtered,
             limit = calculateBatchLimit(),
