@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.AppComponent
@@ -48,6 +49,8 @@ object Sahha {
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
+        saveEnvironment(application, sahhaSettings.environment.ordinal)
+
         if (!diInitialized())
             di = DaggerAppComponent.builder()
                 .appModule(AppModule(sahhaSettings.environment))
@@ -59,6 +62,11 @@ object Sahha {
         di.defaultScope.launch {
             sim.configure(application, sahhaSettings, callback)
         }
+    }
+
+    private fun saveEnvironment(context: Context, envInt: Int) {
+        val prefs = context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putInt(Constants.ENVIRONMENT_KEY, envInt).apply()
     }
 
     fun authenticate(
@@ -104,7 +112,8 @@ object Sahha {
     }
 
 
-    fun analyze(
+    fun getScores(
+        types: Set<SahhaScoreType>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         if (!sahhaIsConfigured()) {
@@ -112,12 +121,13 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(callback)
+        sim.userData.getScores(types, callback)
     }
 
 
-    @JvmName("analyzeDate")
-    fun analyze(
+    @JvmName("getScoresDate")
+    fun getScores(
+        types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
@@ -126,11 +136,12 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(dates, callback)
+        sim.userData.getScores(types, dates, callback)
     }
 
-    @JvmName("analyzeLocalDateTime")
-    fun analyze(
+    @JvmName("getScoresLocalDateTime")
+    fun getScores(
+        types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
@@ -139,7 +150,7 @@ object Sahha {
             return
         }
 
-        sim.userData.analyze(dates, callback)
+        sim.userData.getScores(types, dates, callback)
     }
 
     fun getDemographic(callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?) {
@@ -182,6 +193,11 @@ object Sahha {
             return
         }
 
+        if (sensors.isEmpty()) {
+            callback(SahhaErrors.sensorSetEmpty, SahhaSensorStatus.pending)
+            return
+        }
+
         di.defaultScope.launch {
             Session.sensors = sensors
             sim.saveConfiguration(
@@ -194,7 +210,7 @@ object Sahha {
 
     fun getSensorStatus(
         context: Context,
-        sensors: Set<SahhaSensor>?,
+        sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         if (!sahhaIsConfigured()) {
@@ -202,7 +218,12 @@ object Sahha {
             return
         }
 
-        sim.permission.getSensorStatus(context, sensors ?: SahhaSensor.values().toSet(), callback)
+        if (sensors.isEmpty()) {
+            callback(SahhaErrors.sensorSetEmpty, SahhaSensorStatus.pending)
+            return
+        }
+
+        sim.permission.getSensorStatus(context, sensors, callback)
     }
 
     fun postError(

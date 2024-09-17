@@ -7,6 +7,8 @@ internal object Constants {
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
     const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
     const val APP_USAGE_DENIAL_COUNT_KEY = "app.usage.denial.count.key"
+    const val CONFIGURATION_PREFS = "configuration_prefs"
+    const val ENVIRONMENT_KEY = "environment.key"
 
     // Action
     const val ACTION_RESTART_SERVICE = "custom.intent.action.RESTART_SERVICE"
@@ -154,6 +156,7 @@ internal object Constants {
     const val SLEEP_STAGE_UNKNOWN = "sleep_stage_unknown"
     const val SLEEP_STAGE_AWAKE_IN_OR_OUT_OF_BED = "sleep_stage_awake_in_or_out_of_bed"
     const val SLEEP_STAGE_SLEEPING = "sleep_stage_sleeping"
+    const val SLEEP_STAGE_IN_BED = "sleep_stage_in_bed"
 
     // Device types
     const val DEVICE_TYPE_WATCH = "WATCH"

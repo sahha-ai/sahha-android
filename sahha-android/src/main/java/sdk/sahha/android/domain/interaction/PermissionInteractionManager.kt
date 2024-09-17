@@ -1,7 +1,6 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -12,6 +11,7 @@ import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
+import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
@@ -23,12 +23,12 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-private const val TAG = "PermissionInteractionManager"
+private const val tag = "PermissionInteractionManager"
 
 internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
-//    private val rationaleManager: RationaleManager,
     private val openAppSettingsUseCase: OpenAppSettingsUseCase,
+    private val activityCallback: ActivityCallback,
     private val configRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
     @DefaultScope private val defaultScope: CoroutineScope,
@@ -69,80 +69,16 @@ internal class PermissionInteractionManager @Inject constructor(
             val nativeStatus =
                 if (containsStepsOrSleep) awaitNativeSensorRequest(context) else SahhaSensorStatus.enabled
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
-            val appUsageStatus = awaitAppUsageRequest(context = context)
-            val processedStatus = processStatuses(nativeStatus, healthConnectStatus.second)
 
+            val status = processStatuses(nativeStatus, healthConnectStatus.second)
             startTasks(
                 context = context,
                 sim = Sahha.di.sahhaInteractionManager,
-                status = processedStatus,
+                status = status,
                 previousError = healthConnectStatus.first,
-            ) { error, status ->
-                val containsAppUsage = sensors.contains(SahhaSensor.app_usage)
-                val finalStatus = processFinalStatus(status, appUsageStatus)
-
-                if (containsAppUsage) callback(error, finalStatus)
-                else callback(error, status)
-            }
+                callback = callback
+            )
         }
-    }
-
-    internal fun processFinalStatus(
-        status: Enum<SahhaSensorStatus>,
-        appUsageStatus: Enum<SahhaSensorStatus>
-    ): Enum<SahhaSensorStatus> {
-        val statusEnabled = status == SahhaSensorStatus.enabled
-        val statusDisabled = status == SahhaSensorStatus.disabled
-        val statusPending = status == SahhaSensorStatus.pending
-        val statusUnavailable = status == SahhaSensorStatus.unavailable
-
-        val appUsageEnabled = appUsageStatus == SahhaSensorStatus.enabled
-        val appUsageDisabled = appUsageStatus == SahhaSensorStatus.disabled
-        val appUsagePending = appUsageStatus == SahhaSensorStatus.pending
-        val appUsageUnavailable = appUsageStatus == SahhaSensorStatus.unavailable
-
-        val enabled = statusEnabled && appUsageEnabled
-        val partiallyEnabled = statusEnabled || appUsageEnabled
-        val disabled = statusDisabled && appUsageDisabled
-        val partiallyDisabled = statusDisabled || appUsageDisabled
-        val pending = statusPending && appUsagePending
-        val partiallyPending = statusPending || appUsagePending
-        val unavailable = statusUnavailable && appUsageUnavailable
-        val partiallyUnavailable = statusUnavailable || appUsageUnavailable
-
-        return when {
-            pending -> SahhaSensorStatus.pending
-            partiallyPending -> SahhaSensorStatus.pending
-            disabled -> SahhaSensorStatus.disabled
-            partiallyDisabled -> SahhaSensorStatus.disabled
-            enabled -> SahhaSensorStatus.enabled
-            partiallyEnabled -> SahhaSensorStatus.disabled
-            unavailable -> SahhaSensorStatus.unavailable
-            partiallyUnavailable -> SahhaSensorStatus.disabled
-            else -> SahhaSensorStatus.pending
-        }
-    }
-
-    private suspend fun awaitAppUsageRequest(
-        context: Context
-    ) = suspendCancellableCoroutine { cont ->
-        defaultScope.launch {
-            val notEnabled = manager.getAppUsageStatus(context) != SahhaSensorStatus.enabled
-//            val shouldShowRationale =
-//                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE)
-//                        && notEnabled
-
-            if (notEnabled)
-                manager.appUsageSettings(context) { error, status ->
-                    logError(error)
-                    if (cont.isActive) cont.resume(status)
-                }
-            else if (cont.isActive) cont.resume(manager.getAppUsageStatus(context))
-        }
-    }
-
-    private fun logError(error: String?) {
-        error?.also { e -> Log.d(TAG, e) }
     }
 
     private fun startTasks(
@@ -248,33 +184,30 @@ internal class PermissionInteractionManager @Inject constructor(
         }
     }
 
-    private fun processStatuses(
+    internal fun processStatuses(
         nativeStatus: Enum<SahhaSensorStatus>,
         healthConnectStatus: Enum<SahhaSensorStatus>
     ): Enum<InternalSensorStatus> {
         val nativeUnavailable = nativeStatus == SahhaSensorStatus.unavailable
         val nativePending = nativeStatus == SahhaSensorStatus.pending
         val nativeDisabled = nativeStatus == SahhaSensorStatus.disabled
-        val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
-        val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
-                || healthConnectStatus == SahhaSensorStatus.unavailable
         val nativeEnabled = nativeStatus == SahhaSensorStatus.enabled
-        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
-        val disabled = nativeDisabled && healthConnectDisabled
-        val partialNative =
-            nativeEnabled && healthConnectDisabled && manager.shouldUseHealthConnect()
-        val requested = nativeEnabled && healthConnectEnabled
-        val onlyNativeAvailableAndEnabled = nativeEnabled && !manager.shouldUseHealthConnect()
+        val healthConnectUnavailable = healthConnectStatus == SahhaSensorStatus.unavailable
+        val healthConnectPending = healthConnectStatus == SahhaSensorStatus.pending
+        val healthConnectDisabled = healthConnectStatus == SahhaSensorStatus.disabled
+        val healthConnectEnabled = healthConnectStatus == SahhaSensorStatus.enabled
 
         return when {
             nativeUnavailable -> InternalSensorStatus.unavailable
-            healthConnectUnavailable -> InternalSensorStatus.unavailable
             nativePending -> InternalSensorStatus.pending
-            partialNative -> InternalSensorStatus.partial
-            onlyNativeAvailableAndEnabled -> InternalSensorStatus.enabled
-            requested -> InternalSensorStatus.enabled
-            disabled -> InternalSensorStatus.disabled
+            nativeDisabled -> InternalSensorStatus.disabled
+
+            nativeEnabled && healthConnectUnavailable -> InternalSensorStatus.enabled
+            nativeEnabled && healthConnectPending -> InternalSensorStatus.partial
+            nativeEnabled && healthConnectDisabled -> InternalSensorStatus.partial
+            nativeEnabled && healthConnectEnabled -> InternalSensorStatus.enabled
+
             else -> InternalSensorStatus.pending
         }
     }
@@ -375,16 +308,11 @@ internal class PermissionInteractionManager @Inject constructor(
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
                 if (containsStepsOrSleep) awaitNativeSensorStatus(context) else SahhaSensorStatus.enabled
-            val appUsageStatus = manager.getAppUsageStatus(context)
-            val containsAppUsage = sensors.contains(SahhaSensor.app_usage)
 
             if (manager.shouldUseHealthConnect())
                 getHealthConnectSensorStatus(context, sensors) { error, status ->
                     val processedStatus = processStatuses(nativeStatus, status)
-                    val finalStatus = processFinalStatus(status, appUsageStatus)
-
-                    if (containsAppUsage) callback(error, finalStatus)
-                    else callback(error, processedStatus.toSahhaSensorStatus())
+                    callback(error, processedStatus.toSahhaSensorStatus())
                 }
             else {
                 val status = processStatuses(nativeStatus, SahhaSensorStatus.unavailable)
@@ -397,7 +325,7 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        if (!Sahha.isAuthenticated) {
+        if(!Sahha.isAuthenticated) {
             callback?.invoke("Not yet authenticated", false)
             return
         }

@@ -2,14 +2,18 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
-    id 'maven-publish'
+    id 'signing'
+    id 'com.vanniktech.maven.publish' version "0.28.0"
+    id 'com.gradleup.nmcp' version "0.0.7" apply false
 }
+
+import com.vanniktech.maven.publish.SonatypeHost
 
 def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "0.15.19-usages"
+def gVersionName = "1.0.0-usages"
 
 android {
     compileSdk 34
@@ -167,16 +171,36 @@ dependencies {
     androidTestImplementation 'androidx.test:core:1.4.0'
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
 
-                groupId = 'com.github.sahha-ai'
-                artifactId = 'sahha-android'
-                version = gVersionName
+    coordinates("ai.sahha", "sahha-android", gVersionName)
+
+    pom {
+        name = 'Sahha Android'
+        description = 'The Sahha SDK provides a convenient way for Android apps to connect to the Sahha API'
+        url = 'https://github.com/sahha-ai/sahha-android'
+
+        licenses {
+            license {
+                name = 'Sahha SDK Licence Agreement'
+                url = 'https://github.com/sahha-ai/sahha-android/blob/main/LICENSE.md'
             }
+        }
+
+        developers {
+            developer {
+                id = 'sahha'
+                name = 'Sahha Ltd'
+                email = 'support@sahha.ai'
+            }
+        }
+
+        scm {
+            connection = 'scm:git:git://github.com/sahha-ai/sahha-android.git'
+            developerConnection = 'scm:git:ssh://github.com/sahha-ai/sahha-android.git'
+            url = 'https://github.com/sahha-ai/sahha-android'
         }
     }
 }

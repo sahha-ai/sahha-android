@@ -15,7 +15,7 @@ internal data class SleepDto(
     val startDateTime: String,
     val endDateTime: String,
     val source: String = Constants.SLEEP_DATA_SOURCE,
-    val sleepStage: String = Constants.SLEEP_STAGE_SLEEPING,
+    val sleepStage: String = Constants.SLEEP_STAGE_IN_BED,
     val createdAt: String = "",
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 )
@@ -30,7 +30,7 @@ internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLog {
         unit = Constants.DataUnits.MINUTE,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        recordingMethod = RecordingMethodsHealthConnect.RECORDING_METHOD_AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
     )
 }

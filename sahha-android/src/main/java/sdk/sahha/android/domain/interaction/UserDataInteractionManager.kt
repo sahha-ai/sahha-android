@@ -13,10 +13,11 @@ import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
-import sdk.sahha.android.domain.use_case.AnalyzeProfileUseCase
+import sdk.sahha.android.domain.use_case.GetScoresUseCase
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.post.PostDemographicUseCase
 import sdk.sahha.android.source.SahhaDemographic
+import sdk.sahha.android.source.SahhaScoreType
 import java.time.LocalDateTime
 import java.util.Date
 import javax.inject.Inject
@@ -29,36 +30,39 @@ internal class UserDataInteractionManager @Inject constructor(
     private val authRepo: AuthRepo,
     private val deviceInfoRepo: DeviceInfoRepo,
     private val sahhaConfigRepo: SahhaConfigRepo,
-    private val analyzeProfileUseCase: AnalyzeProfileUseCase,
+    private val getScoresUseCase: GetScoresUseCase,
     private val getDemographicUseCase: GetDemographicUseCase,
     private val postDemographicUseCase: PostDemographicUseCase,
 ) {
-    fun analyze(
+    fun getScores(
+        types: Set<SahhaScoreType>,
         callback: ((error: String?, success: String?) -> Unit)?
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(callback)
+            getScoresUseCase(types, callback)
         }
     }
 
 
-    @JvmName("analyzeDate")
-    fun analyze(
+    @JvmName("getScoresDate")
+    fun getScores(
+        types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(dates, callback)
+            getScoresUseCase(types, dates, callback)
         }
     }
 
-    @JvmName("analyzeLocalDateTime")
-    fun analyze(
+    @JvmName("getScoresLocalDateTime")
+    fun getScores(
+        types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: ((error: String?, success: String?) -> Unit)?,
     ) {
         mainScope.launch {
-            analyzeProfileUseCase(dates, callback)
+            getScoresUseCase(types, dates, callback)
         }
     }
 
@@ -87,8 +91,7 @@ internal class UserDataInteractionManager @Inject constructor(
             lastDeviceInfo?.also {
                 if (!deviceInfoIsEqual(context, it)) {
                     saveAndPutDeviceInfo(context, callback)
-                }
-                else callback?.invoke(null, true)
+                } else callback?.invoke(null, true)
             } ?: handleSavingDeviceInfo(context, isAuthenticating, callback)
         } catch (e: Exception) {
             Log.w(tag, e.message ?: "Error sending device info")
