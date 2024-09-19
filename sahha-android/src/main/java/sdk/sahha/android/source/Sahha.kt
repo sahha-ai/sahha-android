@@ -247,6 +247,8 @@ object Sahha {
     }
 
     fun storeAppUsages() {
+        TODO("REMOVE")
+
         val now = ZonedDateTime.now()
         val jobs = mutableListOf<Job>()
 

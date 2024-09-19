@@ -2,10 +2,7 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PreSahhaConfigureTest">
-        <State />
-      </entry>
-      <entry key="analyze_beforeConfigure_returnsCallbackError()">
+      <entry key="RecordMappingTest">
         <State />
       </entry>
       <entry key="app">

@@ -5,16 +5,17 @@ import sdk.sahha.android.domain.repository.AppUsageRepo
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
-internal class SaveUsageStatsBetween @Inject constructor(
+internal class SaveUsageStatsAfter @Inject constructor(
     private val appUsageRepo: AppUsageRepo,
 ) {
     suspend operator fun invoke(
         startDateTime: ZonedDateTime,
-        endDateTime: ZonedDateTime,
     ): List<SahhaDataLog> {
+        val now = ZonedDateTime.now()
+
         return appUsageRepo.getEvents(
             startDateTime.toInstant().toEpochMilli(),
-            endDateTime.toInstant().toEpochMilli(),
+            now.toInstant().toEpochMilli(),
         )
     }
 }

@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -39,7 +40,7 @@ internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
     private lateinit var config: SahhaConfiguration
 
-    private val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
+    private val scope by lazy { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
     private val sensors by lazy { Sahha.sim.sensor }
     private val sensorSet by lazy { runBlocking { Sahha.di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet() } }
 
