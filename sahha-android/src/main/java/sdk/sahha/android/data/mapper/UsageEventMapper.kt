@@ -19,7 +19,7 @@ internal fun UsageEvents.Event.toSahhaDataLog(): SahhaDataLog {
         source = this.packageName ?: "UNKNOWN",
         startDateTime = timeManager.epochMillisToISO(this.timeStamp),
         endDateTime = timeManager.epochMillisToISO(this.timeStamp),
-        unit = Constants.DataUnits.MILLISECOND,
+        unit = Constants.DataUnits.EMPTY_STRING,
         recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
         deviceType = mapper.devices(Device.TYPE_PHONE),
         additionalProperties = hashMapOf(

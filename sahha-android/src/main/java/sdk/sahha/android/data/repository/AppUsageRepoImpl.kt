@@ -18,6 +18,10 @@ internal class AppUsageRepoImpl @Inject constructor(
     private val queriedTimeDao: HealthConnectConfigDao,
     @DefaultScope private val scope: CoroutineScope
 ) : AppUsageRepo {
+    private val eventTypeKey = "eventType"
+    private val sourceAndroid = "android"
+    private val sourceNexusLauncher = "com.google.android.apps.nexuslauncher"
+
     override suspend fun storeQueryTime(
         id: String, timestamp: Long
     ) {
@@ -54,12 +58,29 @@ internal class AppUsageRepoImpl @Inject constructor(
         return logs.filterNot {
             eventTypeUnknown(it) ||
                     packageNameUnknown(it) ||
-                    eventTypeNone(it)
+                    eventTypeNone(it) ||
+                    eventTypeStandByBucket(it) ||
+                    sourceAndroid(it) ||
+                    sourceNexusLauncher(it)
         }
     }
 
+    private fun eventTypeStandByBucket(log: SahhaDataLog): Boolean {
+        return log.additionalProperties?.get(eventTypeKey)
+            ?.let { type -> type == "STANDBY_BUCKET_CHANGED" }
+            ?: false
+    }
+
+    private fun sourceAndroid(log: SahhaDataLog): Boolean {
+        return log.source == sourceAndroid
+    }
+
+    private fun sourceNexusLauncher(log: SahhaDataLog): Boolean {
+        return log.source == sourceNexusLauncher
+    }
+
     private fun eventTypeNone(log: SahhaDataLog): Boolean {
-        return log.additionalProperties?.get("eventType")
+        return log.additionalProperties?.get(eventTypeKey)
             ?.let { type -> type == UsageEventMapper.getString(UsageEvents.Event.NONE) }
             ?: false
     }

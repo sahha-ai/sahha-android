@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -482,19 +483,19 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @DefaultScope
     @Provides
     fun provideDefaultScope(): CoroutineScope {
-        return CoroutineScope(Default)
+        return CoroutineScope(SupervisorJob() + Default)
     }
 
     @IoScope
     @Provides
     fun provideIoScope(): CoroutineScope {
-        return CoroutineScope(IO)
+        return CoroutineScope(SupervisorJob() + IO)
     }
 
     @MainScope
     @Provides
     fun provideMainScope(): CoroutineScope {
-        return CoroutineScope(Main)
+        return CoroutineScope(SupervisorJob() + Main)
     }
 
     @Singleton

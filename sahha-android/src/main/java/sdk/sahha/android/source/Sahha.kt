@@ -7,7 +7,6 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
@@ -16,7 +15,6 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
-import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
@@ -65,7 +63,8 @@ object Sahha {
     }
 
     private fun saveEnvironment(context: Context, envInt: Int) {
-        val prefs = context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
+        val prefs =
+            context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
         prefs.edit().putInt(Constants.ENVIRONMENT_KEY, envInt).apply()
     }
 
@@ -246,14 +245,6 @@ object Sahha {
         if (!diInitialized()) return false
         return simInitialized()
     }
-
-//    fun enableAppUsage(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
-//        di.permissionManager.appUsageSettings(context = context, callback)
-//    }
-//
-//    fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
-//        return di.permissionManager.getAppUsageStatus(context = context)
-//    }
 
     fun storeAppUsages() {
         val now = ZonedDateTime.now()
