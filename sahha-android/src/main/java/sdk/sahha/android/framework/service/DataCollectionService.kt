@@ -15,10 +15,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
@@ -28,13 +26,9 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
-import java.time.ZonedDateTime
-
-private const val LOOP_INTERVAL = 15 * 60 * 1000L
 
 internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
@@ -42,7 +36,6 @@ internal class DataCollectionService : Service() {
 
     private val scope by lazy { CoroutineScope(Dispatchers.Default + SupervisorJob()) }
     private val sensors by lazy { Sahha.sim.sensor }
-    private val sensorSet by lazy { runBlocking { Sahha.di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet() } }
 
     private var killswitched = false
 
@@ -67,46 +60,10 @@ internal class DataCollectionService : Service() {
                 Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
                 Session.handlerThread.start()
                 Session.serviceHandler = Handler(Session.handlerThread.looper)
-                Session.serviceHandler.post(periodicTask)
+                Session.serviceHandler.post(Sahha.di.dataCollectionPeriodicTask)
             } catch (e: Exception) {
                 stopService()
                 Log.w(tag, e.message ?: "Something went wrong")
-            }
-        }
-    }
-
-    private val periodicTask = object : Runnable {
-        override fun run() {
-            Sahha.di.permissionManager.getHealthConnectSensorStatus(
-                context = this@DataCollectionService,
-                sensors = sensorSet
-            ) { _, status ->
-                val isEnabledOrDisabled =
-                    status == SahhaSensorStatus.enabled || status == SahhaSensorStatus.disabled
-                if (!isEnabledOrDisabled) Session.handlerThread.quitSafely()
-            }
-
-            if (Session.handlerRunning) {
-                Log.d(tag, "Handler is running, exiting task")
-                return
-            }
-
-            try {
-                Session.handlerRunning = true
-                Log.d(
-                    tag, "Handler task started at ${ZonedDateTime.now().toLocalTime()}\n" +
-                            "Thread: ${Session.handlerThread.threadId}\n\n"
-                )
-
-                scope.launch {
-                    queryHealthConnect { _, _ ->
-                        Session.handlerRunning = false
-                    }
-                }
-                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL)
-            } catch (e: Exception) {
-                Session.handlerRunning = false
-                Log.e(tag, "Periodic task failed", e)
             }
         }
     }
@@ -120,43 +77,6 @@ internal class DataCollectionService : Service() {
             checkAndStartCollectingScreenLockData()
         }
         return START_STICKY
-    }
-
-    private suspend fun restartBackgroundTasks() {
-        try {
-            Sahha.sim.permission.startHcOrNativeDataCollection(applicationContext)
-        } catch (e: Exception) {
-            Log.e(tag, e.message, e)
-            Sahha.di.sahhaErrorLogger
-                .application(
-                    e.message ?: SahhaErrors.somethingWentWrong,
-                    tag,
-                    "restartBackgroundTasks",
-                    e.stackTraceToString()
-                )
-        }
-    }
-
-    private suspend fun queryHealthConnect(
-        onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
-    ) {
-        Sahha.di
-            .sahhaInteractionManager
-            .sensor
-            .queryWithMinimumDelay(
-                afterTimer = {}
-            ) { error, successful ->
-                Session.healthConnectPostCallback?.invoke(error, successful)
-                Session.healthConnectPostCallback = null
-
-                onComplete?.invoke(error, successful)
-
-                error?.also { e ->
-                    Sahha.di.sahhaErrorLogger.application(
-                        e, tag, "queryHealthConnect"
-                    )
-                }
-            }
     }
 
     override fun onDestroy() {

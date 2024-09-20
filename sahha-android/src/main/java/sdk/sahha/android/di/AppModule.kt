@@ -58,6 +58,7 @@ import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
+import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.RationaleManager
@@ -80,6 +81,7 @@ import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
+import sdk.sahha.android.framework.runnable.DataCollectionPeriodicTask
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -688,11 +690,31 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         )
     }
 
+    @Singleton
+    @Provides
     fun provideCalculateBatchLimit(
         batchedDataRepo: BatchedDataRepo
     ): CalculateBatchLimit {
         return CalculateBatchLimit(
             batchedDataRepo
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideDataCollectionPeriodicTask(
+        context: Context,
+        permissionManager: PermissionManager,
+        sahhaInteractionManager: SahhaInteractionManager,
+        sahhaConfigRepo: SahhaConfigRepo,
+        @DefaultScope defaultScope: CoroutineScope
+    ): DataCollectionPeriodicTask {
+        return DataCollectionPeriodicTask(
+            context = context,
+            permissionManager = permissionManager,
+            sahhaInteractionManager = sahhaInteractionManager,
+            configRepo = sahhaConfigRepo,
+            scope = defaultScope,
         )
     }
 }
