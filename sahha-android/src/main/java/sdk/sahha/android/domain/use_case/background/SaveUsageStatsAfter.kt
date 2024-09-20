@@ -9,12 +9,12 @@ internal class SaveUsageStatsAfter @Inject constructor(
     private val appUsageRepo: AppUsageRepo,
 ) {
     suspend operator fun invoke(
-        startDateTime: ZonedDateTime,
+        startDateTimeEpochMilli: Long,
     ): List<SahhaDataLog> {
         val now = ZonedDateTime.now()
 
         return appUsageRepo.getEvents(
-            startDateTime.toInstant().toEpochMilli(),
+            startDateTimeEpochMilli,
             now.toInstant().toEpochMilli(),
         )
     }
