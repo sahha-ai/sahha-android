@@ -246,30 +246,30 @@ object Sahha {
         return simInitialized()
     }
 
-    fun storeAppUsages() {
-        TODO("REMOVE")
-
-        val now = ZonedDateTime.now()
-        val jobs = mutableListOf<Job>()
-
-        //Multi thread
-        for (day in 1L..30L) {
-            jobs += di.defaultScope.launch {
-                val events = di.appUsageRepo.getEvents(
-                    ZonedDateTime.of(
-                        now.minusDays(day).toLocalDate(),
-                        LocalTime.MIDNIGHT,
-                        now.zone
-                    ).toInstant().toEpochMilli(),
-                    ZonedDateTime.of(
-                        now.minusDays(day).toLocalDate(),
-                        LocalTime.of(23, 59, 59, 99),
-                        now.zone
-                    ).toInstant().toEpochMilli()
-                )
-                di.batchedDataRepo.saveBatchedData(events)
-                println("Day $day usages batched")
-            }
-        }
-    }
+//    fun storeAppUsages() {
+//        TODO("REMOVE")
+//
+//        val now = ZonedDateTime.now()
+//        val jobs = mutableListOf<Job>()
+//
+//        //Multi thread
+//        for (day in 1L..30L) {
+//            jobs += di.defaultScope.launch {
+//                val events = di.appUsageRepo.getEvents(
+//                    ZonedDateTime.of(
+//                        now.minusDays(day).toLocalDate(),
+//                        LocalTime.MIDNIGHT,
+//                        now.zone
+//                    ).toInstant().toEpochMilli(),
+//                    ZonedDateTime.of(
+//                        now.minusDays(day).toLocalDate(),
+//                        LocalTime.of(23, 59, 59, 99),
+//                        now.zone
+//                    ).toInstant().toEpochMilli()
+//                )
+//                di.batchedDataRepo.saveBatchedData(events)
+//                println("Day $day usages batched")
+//            }
+//        }
+//    }
 }

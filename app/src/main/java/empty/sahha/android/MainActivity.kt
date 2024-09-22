@@ -164,10 +164,6 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text(text = "Toggle App Usage")
                                 }
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = { Sahha.storeAppUsages() }) {
-                                    Text(text = "Store App Usage")
-                                }
 
                                 ForceCrashTestView()
 

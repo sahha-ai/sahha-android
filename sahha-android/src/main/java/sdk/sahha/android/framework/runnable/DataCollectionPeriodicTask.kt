@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
@@ -13,17 +15,15 @@ import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
-import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
-import sdk.sahha.android.domain.use_case.background.BatchDataLogs
-import sdk.sahha.android.domain.use_case.background.SaveUsageStatsAfter
-import sdk.sahha.android.domain.use_case.background.SaveUsageStatsBetween
+import sdk.sahha.android.domain.use_case.background.getUsageStatsBetween
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 private const val TAG = "DataCollectionPeriodicTask"
 private const val LOOP_INTERVAL = 15 * 60 * 1000L
@@ -35,8 +35,7 @@ internal class DataCollectionPeriodicTask @Inject constructor(
     private val configRepo: SahhaConfigRepo,
     private val appUsageRepo: AppUsageRepo,
     private val batchedDataRepo: BatchedDataRepo,
-    private val saveUsageStatsBetween: SaveUsageStatsBetween,
-    private val saveUsageStatsAfter: SaveUsageStatsAfter,
+    private val getUsageStatsBetween: getUsageStatsBetween,
     @DefaultScope private val scope: CoroutineScope,
 ) : Runnable {
     override fun run() {
@@ -62,6 +61,7 @@ internal class DataCollectionPeriodicTask @Inject constructor(
                             "Thread: ${Session.handlerThread.threadId}\n\n"
                 )
 
+                awaitQueryUsageStats()
                 queryHealthConnect { _, _ ->
                     Session.handlerRunning = false
                 }
@@ -98,10 +98,10 @@ internal class DataCollectionPeriodicTask @Inject constructor(
             }
     }
 
-    private suspend fun queryUsageStats() {
+    private suspend fun awaitQueryUsageStats() {
         appUsageRepo.getQueryTime(Constants.APP_USAGE_STATS_QUERY_ID)?.also { timestamp ->
             val nowEpochMilli = ZonedDateTime.now().toInstant().toEpochMilli()
-            val logs = saveUsageStatsBetween(
+            val logs = getUsageStatsBetween(
                 timestamp, nowEpochMilli
             )
             batchedDataRepo.saveBatchedData(logs)
@@ -109,35 +109,42 @@ internal class DataCollectionPeriodicTask @Inject constructor(
         } ?: saveLastDays(30)
     }
 
-    private suspend fun saveLastDays(days: Int) {
-        val now = ZonedDateTime.now()
-        val jobs = mutableListOf<Job>()
+    private suspend fun saveLastDays(days: Int) = suspendCancellableCoroutine { cont ->
+        scope.launch {
+            val now = ZonedDateTime.now()
+            val jobs = mutableListOf<Job>()
 
-        for (day in 1L..days) {
-            val startEpochMilli = ZonedDateTime.of(
-                now.minusDays(day).toLocalDate(),
-                LocalTime.MIDNIGHT,
-                now.zone
-            ).toInstant().toEpochMilli()
+            for (day in 0L..days) {
+                val mostRecentQuery = day == 0L
+                val startEpochMilli = ZonedDateTime.of(
+                    now.minusDays(day).toLocalDate(),
+                    LocalTime.MIDNIGHT,
+                    now.zone
+                ).toInstant().toEpochMilli()
 
-            val endEpochMilli = ZonedDateTime.of(
-                now.minusDays(day).toLocalDate(),
-                LocalTime.of(23, 59, 59, 99),
-                now.zone
-            ).toInstant().toEpochMilli()
+                val endEpochMilli = ZonedDateTime.of(
+                    now.minusDays(day).toLocalDate(),
+                    if (mostRecentQuery) now.toLocalTime() else LocalTime.of(23, 59, 59, 999999999),
+                    now.zone
+                ).toInstant().toEpochMilli()
 
-            jobs += scope.launch {
-                saveUsageStatsBetween(
-                    startEpochMilli,
-                    endEpochMilli
-                )
+                if (mostRecentQuery) storeMostRecentQuery(now.toInstant().toEpochMilli())
+
+                jobs += scope.launch {
+                    val usages = getUsageStatsBetween(
+                        startEpochMilli,
+                        endEpochMilli
+                    )
+                    batchedDataRepo.saveBatchedData(usages)
+                }
+
+                jobs.joinAll()
+                if (cont.isActive) cont.resume(Unit)
             }
         }
+    }
 
-        val logs = saveUsageStatsBetween(
-            ZonedDateTime.now().minusDays(30).toInstant().toEpochMilli(),
-            now.toInstant().toEpochMilli()
-        )
-        batchedDataRepo.saveBatchedData(logs)
+    private suspend fun storeMostRecentQuery(timestamp: Long) {
+        appUsageRepo.storeQueryTime(Constants.APP_USAGE_STATS_QUERY_ID, timestamp)
     }
 }

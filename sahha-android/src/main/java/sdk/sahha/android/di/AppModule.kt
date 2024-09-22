@@ -78,6 +78,7 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
+import sdk.sahha.android.domain.use_case.background.getUsageStatsBetween
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
@@ -707,6 +708,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         permissionManager: PermissionManager,
         sahhaInteractionManager: SahhaInteractionManager,
         sahhaConfigRepo: SahhaConfigRepo,
+        appUsageRepo: AppUsageRepo,
+        batchedDataRepo: BatchedDataRepo,
+        getUsageStatsBetween: getUsageStatsBetween,
         @DefaultScope defaultScope: CoroutineScope
     ): DataCollectionPeriodicTask {
         return DataCollectionPeriodicTask(
@@ -714,6 +718,9 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             permissionManager = permissionManager,
             sahhaInteractionManager = sahhaInteractionManager,
             configRepo = sahhaConfigRepo,
+            appUsageRepo = appUsageRepo,
+            batchedDataRepo = batchedDataRepo,
+            getUsageStatsBetween = getUsageStatsBetween,
             scope = defaultScope,
         )
     }
