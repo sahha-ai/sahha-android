@@ -55,25 +55,6 @@ fun AppUsageSettingPermissionScreen(
             modifier = Modifier.padding(10.dp)
         ) {
             Column {
-//                Text(text = "Usage access", fontSize = 32.sp)
-//                Spacer(modifier = Modifier.size(20.dp))
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) {
-//                    appIcon?.also { icon ->
-//                        Image(
-//                            bitmap = icon.toBitmap().asImageBitmap(),
-//                            contentDescription = "App Icon",
-//                            modifier = Modifier.size(50.dp)
-//                        )
-//                    }
-//                    Spacer(modifier = Modifier.size(5.dp))
-//                    Text(text = appName, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-//                    Spacer(modifier = Modifier.size(5.dp))
-//                    Text(text = "1.0", color = Color.Gray)
-//                }
-//                Spacer(modifier = Modifier.size(20.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,

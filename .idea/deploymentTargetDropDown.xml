@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="HealthConnectTest">
-        <State />
-      </entry>
       <entry key="RecordingMethodTrimmed">
         <State />
       </entry>
@@ -18,20 +15,7 @@
         <State />
       </entry>
       <entry key="app">
-        <State>
-          <runningDeviceTargetSelectedWithDropDown>
-            <Target>
-              <type value="RUNNING_DEVICE_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="SERIAL_NUMBER" />
-                  <value value="36131JEHN06350" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-09-22T23:54:00.785312Z" />
-        </State>
+        <State />
       </entry>
     </value>
   </component>

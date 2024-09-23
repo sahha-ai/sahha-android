@@ -99,6 +99,9 @@ internal class DataCollectionPeriodicTask @Inject constructor(
     }
 
     private suspend fun awaitQueryUsageStats() {
+        val status = permissionManager.getAppUsageStatus(context)
+        if (status != SahhaSensorStatus.enabled) return
+
         appUsageRepo.getQueryTime(Constants.APP_USAGE_STATS_QUERY_ID)?.also { timestamp ->
             val nowEpochMilli = ZonedDateTime.now().toInstant().toEpochMilli()
             val logs = getUsageStatsBetween(
