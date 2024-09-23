@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
                     var externalId by remember { mutableStateOf("") }
                     var start by remember { mutableStateOf("") }
                     var authStatus by remember { mutableStateOf("Pending") }
+                    var appUsageStatus by remember { mutableStateOf("Pending") }
 
                     appId = sharedPrefs.getString(APP_ID, null) ?: ""
                     appSecret = sharedPrefs.getString(APP_SECRET, null) ?: ""
@@ -132,6 +133,15 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    Sahha.getSensorStatus(
+                        this@MainActivity,
+                        setOf(SahhaSensor.app_usage)
+                    ) { error, status ->
+                        mainScope.launch {
+                            appUsageStatus = "${status.name}${error?.let { "\n$it" } ?: ""}"
+                        }
+                    }
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LazyColumn(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -141,7 +151,22 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
+
+                                Text(appUsageStatus)
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.enableSensors(
+                                        this@MainActivity,
+                                        setOf(SahhaSensor.app_usage)
+                                    ) { error, status ->
+                                        appUsageStatus = error ?: status.name
+                                    }
+                                }) {
+                                    Text(text = "Toggle App Usage")
+                                }
+
                                 ForceCrashTestView()
+
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(permissionStatus)
                                 Spacer(modifier = Modifier.padding(16.dp))

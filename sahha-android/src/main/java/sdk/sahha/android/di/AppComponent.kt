@@ -33,10 +33,13 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.manager.RationaleManager
+import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
+import sdk.sahha.android.framework.runnable.DataCollectionPeriodicTask
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 
@@ -64,6 +67,7 @@ internal interface AppComponent {
     val receiverManager: ReceiverManager
     val permissionHandler: PermissionHandler
     val permissionManager: PermissionManager
+    val rationaleManager: RationaleManager
     val postChunkManager: PostChunkManager
     val encryptedSharedPreferences: SharedPreferences
     val sahhaErrorLogger: SahhaErrorLogger
@@ -83,6 +87,7 @@ internal interface AppComponent {
     val sahhaConfigRepo: SahhaConfigRepo
     val insightsRepo: InsightsRepo
     val batchedDataRepo: BatchedDataRepo
+    val appUsageRepo: AppUsageRepo
 
     val batchDataLogs: BatchDataLogs
 
@@ -101,6 +106,8 @@ internal interface AppComponent {
     val healthConnectClient: HealthConnectClient?
     val healthConnectRepo: HealthConnectRepo
     val healthConnectConstantsMapper: HealthConnectConstantsMapper
+
+    val dataCollectionPeriodicTask: DataCollectionPeriodicTask
 
     val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
 }
