@@ -106,7 +106,28 @@ internal class DataCollectionPeriodicTask @Inject constructor(
             )
             batchedDataRepo.saveBatchedData(logs)
             appUsageRepo.storeQueryTime(Constants.APP_USAGE_STATS_QUERY_ID, nowEpochMilli)
-        } ?: saveLastDays(30)
+        } ?: saveLastDaysUntilNow(30)
+    }
+
+    private suspend fun saveLastDaysUntilNow(days: Int) {
+        saveLastDays(days)
+        saveUntilNow()
+    }
+
+    private suspend fun saveUntilNow() {
+        val now = ZonedDateTime.now()
+
+        val startEpochMilli = ZonedDateTime.of(
+            now.toLocalDate(),
+            LocalTime.MIDNIGHT,
+            now.zone
+        ).toInstant().toEpochMilli()
+
+        val endEpochMilli = now.toInstant().toEpochMilli()
+
+        val usages = getUsageStatsBetween(startEpochMilli, endEpochMilli)
+        batchedDataRepo.saveBatchedData(usages)
+        appUsageRepo.storeQueryTime(Constants.APP_USAGE_STATS_QUERY_ID, endEpochMilli)
     }
 
     private suspend fun saveLastDays(days: Int) = suspendCancellableCoroutine { cont ->
@@ -115,7 +136,6 @@ internal class DataCollectionPeriodicTask @Inject constructor(
             val jobs = mutableListOf<Job>()
 
             for (day in 0L..days) {
-                val mostRecentQuery = day == 0L
                 val startEpochMilli = ZonedDateTime.of(
                     now.minusDays(day).toLocalDate(),
                     LocalTime.MIDNIGHT,
@@ -124,11 +144,9 @@ internal class DataCollectionPeriodicTask @Inject constructor(
 
                 val endEpochMilli = ZonedDateTime.of(
                     now.minusDays(day).toLocalDate(),
-                    if (mostRecentQuery) now.toLocalTime() else LocalTime.of(23, 59, 59, 999999999),
+                    LocalTime.of(23, 59, 59, 999999999),
                     now.zone
                 ).toInstant().toEpochMilli()
-
-                if (mostRecentQuery) storeMostRecentQuery(now.toInstant().toEpochMilli())
 
                 jobs += scope.launch {
                     val usages = getUsageStatsBetween(
@@ -142,9 +160,5 @@ internal class DataCollectionPeriodicTask @Inject constructor(
                 if (cont.isActive) cont.resume(Unit)
             }
         }
-    }
-
-    private suspend fun storeMostRecentQuery(timestamp: Long) {
-        appUsageRepo.storeQueryTime(Constants.APP_USAGE_STATS_QUERY_ID, timestamp)
     }
 }

@@ -2,23 +2,35 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="RecordMappingTest">
+      <entry key="HealthConnectTest">
+        <State />
+      </entry>
+      <entry key="RecordingMethodTrimmed">
+        <State />
+      </entry>
+      <entry key="SahhaReconfigureTest">
+        <State />
+      </entry>
+      <entry key="StepSessionTest">
+        <State />
+      </entry>
+      <entry key="WorkerIndependentTest">
         <State />
       </entry>
       <entry key="app">
         <State>
-          <targetSelectedWithDropDown>
+          <runningDeviceTargetSelectedWithDropDown>
             <Target>
-              <type value="QUICK_BOOT_TARGET" />
+              <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_33.avd" />
+                  <type value="SERIAL_NUMBER" />
+                  <value value="36131JEHN06350" />
                 </Key>
               </deviceKey>
             </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-09-05T22:30:15.078992Z" />
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2024-09-22T23:54:00.785312Z" />
         </State>
       </entry>
     </value>
