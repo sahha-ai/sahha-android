@@ -24,6 +24,16 @@ internal class SahhaPermissionActivity @Inject constructor(
         super.onCreate(savedInstanceState)
 
         getPermissionLogic().launch(android.Manifest.permission.ACTIVITY_RECOGNITION)
+
+        setContent {
+            SahhasdkemptyTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background.copy(alpha = 0f),
+                ) {}
+            }
+        }
     }
 
     private fun getPermissionLogic(): ActivityResultLauncher<String> {

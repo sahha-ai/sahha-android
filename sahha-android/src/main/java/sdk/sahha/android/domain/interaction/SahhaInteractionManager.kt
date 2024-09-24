@@ -51,6 +51,7 @@ internal class SahhaInteractionManager @Inject constructor(
     ) {
         try {
             val sensors = sahhaConfigRepo.getConfig()?.sensorArray?.toSahhaSensorSet() ?: emptySet()
+            Log.d(TAG, sensors.toString())
             cacheConfiguration(sahhaSettings)
             saveConfiguration(
                 sensors = sensors,
