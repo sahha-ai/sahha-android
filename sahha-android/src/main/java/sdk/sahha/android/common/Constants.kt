@@ -6,6 +6,7 @@ internal object Constants {
     // Prefs
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
     const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
+    const val APP_USAGE_DENIAL_COUNT_KEY = "app.usage.denial.count.key"
     const val CONFIGURATION_PREFS = "configuration_prefs"
     const val ENVIRONMENT_KEY = "environment.key"
 
@@ -15,6 +16,7 @@ internal object Constants {
 
     // Query
     const val CUSTOM_STEPS_QUERY_ID = "custom.healthconnect.steps.query"
+    const val APP_USAGE_STATS_QUERY_ID = "sahha.usage.stats.query"
     const val PAGE_TOKEN_SUFFIX = ".initial.query.page.token"
 
     // Configs
@@ -97,10 +99,12 @@ internal object Constants {
         const val BODY_TEMPERATURE = "body_temperature"
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
         const val EXERCISE_SESSION = "exercise_session"
+        const val APP_USAGE = "app_usage"
     }
 
     // Data Units
     object DataUnits {
+        const val EMPTY_STRING = ""
         const val BOOLEAN = "boolean"
         const val COUNT = "count"
         const val MMOL_PER_LITRE = "mmol/L"
