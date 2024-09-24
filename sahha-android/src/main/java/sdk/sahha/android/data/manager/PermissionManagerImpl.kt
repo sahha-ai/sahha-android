@@ -2,7 +2,6 @@ package sdk.sahha.android.data.manager
 
 import android.Manifest
 import android.app.Activity
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,7 +10,6 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PackageInfoFlags
 import android.health.connect.HealthConnectManager
 import android.os.Build
-import android.os.Process
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
@@ -44,6 +42,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -51,21 +50,19 @@ import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
-import sdk.sahha.android.domain.internal_enum.RationaleSensorType
 import sdk.sahha.android.domain.manager.PermissionManager
-import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.domain.model.permissions.ManualPermission
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.framework.activity.SahhaPermissionActivity
-import sdk.sahha.android.framework.activity.app_usage.AppUsagePermissionActivity
 import sdk.sahha.android.framework.activity.health_connect.SahhaHealthConnectPermissionActivity
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import javax.inject.Inject
 
-private val TAG = "PermissionManagerImpl"
+private val tag = "PermissionManagerImpl"
 
 internal class PermissionManagerImpl @Inject constructor(
     @MainScope private val mainScope: CoroutineScope,
@@ -74,13 +71,10 @@ internal class PermissionManagerImpl @Inject constructor(
     private val permissionHandler: PermissionHandler,
     private val healthConnectClient: HealthConnectClient?,
     private val sahhaErrorLogger: SahhaErrorLogger,
-    private val sharedPrefs: SharedPreferences,
-    private val rationaleManager: RationaleManager,
+    private val sharedPrefs: SharedPreferences
 ) : PermissionManager {
     private lateinit var permission: ActivityResultLauncher<String>
     private val sim by lazy { Sahha.di.sahhaInteractionManager }
-
-    override lateinit var appUsageCallback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
 
     override val isFirstHealthConnectRequest
         get() = sharedPrefs.getBoolean(Constants.FIRST_HC_REQUEST_KEY, true)
@@ -127,7 +121,7 @@ internal class PermissionManagerImpl @Inject constructor(
             if (!manifestPermissions.contains(permission)) {
                 val error = "Permission: [$permission] is not declared in the AndroidManifest!"
                 undeclared += "$error\n"
-                Log.e(TAG, error)
+                Log.e(tag, error)
             }
         }
 
@@ -340,7 +334,7 @@ internal class PermissionManagerImpl @Inject constructor(
 
             sahhaErrorLogger.application(
                 message = e.message ?: SahhaErrors.somethingWentWrong,
-                path = TAG,
+                path = tag,
                 method = "activate",
                 body = e.stackTraceToString()
             )
@@ -418,54 +412,6 @@ internal class PermissionManagerImpl @Inject constructor(
         } else {
             context.packageManager.getPackageInfo(packageName, 0)
         }
-    }
-
-    override fun appUsageSettings(
-        context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
-    ) {
-        appUsageCallback = callback
-        val intent = Intent(context, AppUsagePermissionActivity::class.java)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-    }
-
-    override fun getAppUsageStatus(context: Context): Enum<SahhaSensorStatus> {
-        val appOps = context
-            .getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOps.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(), context.packageName
-            )
-        } else {
-            appOps.checkOpNoThrow(
-                AppOpsManager.OPSTR_GET_USAGE_STATS,
-                Process.myUid(), context.packageName
-            )
-        }
-
-        val status = if (mode == AppOpsManager.MODE_DEFAULT) {
-            val granted =
-                context.checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED
-
-            when {
-                granted -> SahhaSensorStatus.enabled
-                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE) -> SahhaSensorStatus.pending
-                else -> SahhaSensorStatus.disabled
-            }
-        } else {
-            val allowed = mode == AppOpsManager.MODE_ALLOWED
-
-            when {
-                allowed -> SahhaSensorStatus.enabled
-                rationaleManager.shouldShowRationale(RationaleSensorType.APP_USAGE) -> SahhaSensorStatus.pending
-                else -> SahhaSensorStatus.disabled
-            }
-        }
-
-        Log.d(TAG, "Usage status: ${status.name}")
-        return status
     }
 }
 
