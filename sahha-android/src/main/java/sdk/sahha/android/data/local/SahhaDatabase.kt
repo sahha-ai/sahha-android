@@ -7,7 +7,15 @@ import androidx.room.TypeConverters
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
 import sdk.sahha.android.data.local.converter.Converter
-import sdk.sahha.android.data.local.dao.*
+import sdk.sahha.android.data.local.dao.BatchedDataDao
+import sdk.sahha.android.data.local.dao.ConfigurationDao
+import sdk.sahha.android.data.local.dao.DeviceUsageDao
+import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
+import sdk.sahha.android.data.local.dao.ManualPermissionsDao
+import sdk.sahha.android.data.local.dao.MovementDao
+import sdk.sahha.android.data.local.dao.RationaleDao
+import sdk.sahha.android.data.local.dao.SecurityDao
+import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.domain.model.activities.PreviousActivity
 import sdk.sahha.android.domain.model.activities.RecognisedActivity
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
@@ -20,6 +28,7 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.permissions.ManualPermission
+import sdk.sahha.android.domain.model.permissions.Rationale
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
@@ -27,7 +36,7 @@ import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.SahhaNotificationConfiguration
 
 @Database(
-    version = 12,
+    version = 13,
     entities = [
         RecognisedActivity::class,
         PreviousActivity::class,
@@ -48,11 +57,13 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
         StepsHealthConnect::class,
         ManualPermission::class,
         SahhaDataLog::class,
+        Rationale::class
     ],
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
-        AutoMigration(from = 11, to = 12)
+        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 12, to = 13),
     ]
 )
 
@@ -66,4 +77,5 @@ internal abstract class SahhaDatabase : RoomDatabase() {
     internal abstract fun healthConnectConfigDao(): HealthConnectConfigDao
     internal abstract fun manualPermissionsDao(): ManualPermissionsDao
     internal abstract fun BatchedDataDao(): BatchedDataDao
+    internal abstract fun rationaleDao(): RationaleDao
 }

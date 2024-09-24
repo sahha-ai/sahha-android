@@ -2,27 +2,20 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="PreSahhaConfigureTest">
+      <entry key="RecordingMethodTrimmed">
         <State />
       </entry>
-      <entry key="analyze_beforeConfigure_returnsCallbackError()">
+      <entry key="SahhaReconfigureTest">
+        <State />
+      </entry>
+      <entry key="StepSessionTest">
+        <State />
+      </entry>
+      <entry key="WorkerIndependentTest">
         <State />
       </entry>
       <entry key="app">
-        <State>
-          <targetSelectedWithDropDown>
-            <Target>
-              <type value="QUICK_BOOT_TARGET" />
-              <deviceKey>
-                <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="$USER_HOME$/.android/avd/Pixel_7_API_33.avd" />
-                </Key>
-              </deviceKey>
-            </Target>
-          </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-09-05T22:30:15.078992Z" />
-        </State>
+        <State />
       </entry>
     </value>
   </component>
