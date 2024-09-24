@@ -2,7 +2,7 @@ package sdk.sahha.android.domain.model.dto
 
 import androidx.annotation.Keep
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
+import sdk.sahha.android.domain.internal_enum.RecordingMethods
 
 @Keep
 internal data class HeartRateDto(
@@ -11,7 +11,7 @@ internal data class HeartRateDto(
     val source: String,
     val startDateTime: String,
     val endDateTime: String,
-    val recordingMethod: String? = RecordingMethodsHealthConnect.UNKNOWN.name,
+    val recordingMethod: String? = RecordingMethods.UNKNOWN.name,
     val unit: String? = null,
     val deviceType: String = Constants.UNKNOWN,
     val modifiedDateTime: String? = null,

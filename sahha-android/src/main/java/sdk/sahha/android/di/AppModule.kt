@@ -73,6 +73,7 @@ import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
+import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -651,5 +652,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return CalculateBatchLimit(
             batchedDataRepo
         )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHostAppLifecycleOvserver(): HostAppLifecycleObserver {
+        return HostAppLifecycleObserver()
     }
 }

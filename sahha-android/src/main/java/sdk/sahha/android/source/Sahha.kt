@@ -1,9 +1,10 @@
 package sdk.sahha.android.source
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import java.time.LocalDateTime
 import java.util.Date
 
@@ -39,28 +41,47 @@ object Sahha {
         return ::sim.isInitialized
     }
 
+    private fun subscribeToAppEvents(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(di.hostAppLifecycleObserver)
+    }
+
+//    private fun getApplicationFromActivity(activity: Any): Application {
+//        when(activity) {
+//            is AppCompatActivity -> {
+//
+//            } is ComponentActivity -> {
+//
+//            }
+//            else -> {
+//
+//            }
+//        }
+//    }
+
     fun configure(
-        application: Application,
+        activity: ComponentActivity,
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        saveEnvironment(application, sahhaSettings.environment.ordinal)
+        saveEnvironment(activity, sahhaSettings.environment.ordinal)
 
         if (!diInitialized())
             di = DaggerAppComponent.builder()
                 .appModule(AppModule(sahhaSettings.environment))
-                .context(application)
+                .context(activity)
                 .build()
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
         di.defaultScope.launch {
-            sim.configure(application, sahhaSettings, callback)
+            subscribeToAppEvents(activity)
+            sim.configure(activity.application, sahhaSettings, callback)
         }
     }
 
     private fun saveEnvironment(context: Context, envInt: Int) {
-        val prefs = context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
+        val prefs =
+            context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
         prefs.edit().putInt(Constants.ENVIRONMENT_KEY, envInt).apply()
     }
 

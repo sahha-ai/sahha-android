@@ -97,10 +97,12 @@ internal object Constants {
         const val BODY_TEMPERATURE = "body_temperature"
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
         const val EXERCISE_SESSION = "exercise_session"
+        const val APP_EVENT = "app_event"
     }
 
     // Data Units
     object DataUnits {
+        const val EMPTY_STRING = ""
         const val BOOLEAN = "boolean"
         const val COUNT = "count"
         const val MMOL_PER_LITRE = "mmol/L"
