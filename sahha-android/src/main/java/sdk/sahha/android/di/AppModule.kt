@@ -5,7 +5,6 @@ import android.app.AlarmManager
 import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.app.Service
-import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.SharedPreferences
 import android.hardware.SensorManager
@@ -21,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -40,16 +38,13 @@ import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.data.local.dao.MovementDao
-import sdk.sahha.android.data.local.dao.RationaleDao
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
-import sdk.sahha.android.data.manager.RationaleManagerImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AppCrashRepoImpl
-import sdk.sahha.android.data.repository.AppUsageRepoImpl
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
@@ -58,17 +53,14 @@ import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
-import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
-import sdk.sahha.android.domain.manager.RationaleManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.repository.AppCrashRepo
-import sdk.sahha.android.domain.repository.AppUsageRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
@@ -78,11 +70,9 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
-import sdk.sahha.android.domain.use_case.background.getUsageStatsBetween
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
-import sdk.sahha.android.framework.runnable.DataCollectionPeriodicTask
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -401,7 +391,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         sahhaErrorLogger: SahhaErrorLogger,
         sharedPrefs: SharedPreferences,
         @MainScope mainScope: CoroutineScope,
-        rationaleManager: RationaleManager
     ): PermissionManager {
         return PermissionManagerImpl(
             mainScope,
@@ -410,17 +399,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             permissionHandler,
             healthConnectClient,
             sahhaErrorLogger,
-            sharedPrefs,
-            rationaleManager
+            sharedPrefs
         )
-    }
-
-    @Singleton
-    @Provides
-    fun provideRationaleManager(
-        rationaleDao: RationaleDao
-    ): RationaleManager {
-        return RationaleManagerImpl(rationaleDao)
     }
 
     @Singleton
@@ -477,28 +457,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         return db.manualPermissionsDao()
     }
 
-    @Singleton
-    @Provides
-    fun provideRationaleDao(db: SahhaDatabase): RationaleDao {
-        return db.rationaleDao()
-    }
-
     @DefaultScope
     @Provides
     fun provideDefaultScope(): CoroutineScope {
-        return CoroutineScope(SupervisorJob() + Default)
+        return CoroutineScope(Default)
     }
 
     @IoScope
     @Provides
     fun provideIoScope(): CoroutineScope {
-        return CoroutineScope(SupervisorJob() + IO)
+        return CoroutineScope(IO)
     }
 
     @MainScope
     @Provides
     fun provideMainScope(): CoroutineScope {
-        return CoroutineScope(SupervisorJob() + Main)
+        return CoroutineScope(Main)
     }
 
     @Singleton
@@ -671,57 +645,11 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideUsageStatsManager(
-        context: Context
-    ): UsageStatsManager {
-        return context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-    }
-
-    @Singleton
-    @Provides
-    fun provideAppUsageRepo(
-        usageStatsManager: UsageStatsManager,
-        queriedTimeDao: HealthConnectConfigDao,
-        @DefaultScope defaultScope: CoroutineScope
-    ): AppUsageRepo {
-        return AppUsageRepoImpl(
-            usageStatsManager,
-            queriedTimeDao,
-            defaultScope
-        )
-    }
-
-    @Singleton
-    @Provides
     fun provideCalculateBatchLimit(
         batchedDataRepo: BatchedDataRepo
     ): CalculateBatchLimit {
         return CalculateBatchLimit(
             batchedDataRepo
-        )
-    }
-
-    @Singleton
-    @Provides
-    fun provideDataCollectionPeriodicTask(
-        context: Context,
-        permissionManager: PermissionManager,
-        sahhaInteractionManager: SahhaInteractionManager,
-        sahhaConfigRepo: SahhaConfigRepo,
-        appUsageRepo: AppUsageRepo,
-        batchedDataRepo: BatchedDataRepo,
-        getUsageStatsBetween: getUsageStatsBetween,
-        @DefaultScope defaultScope: CoroutineScope
-    ): DataCollectionPeriodicTask {
-        return DataCollectionPeriodicTask(
-            context = context,
-            permissionManager = permissionManager,
-            sahhaInteractionManager = sahhaInteractionManager,
-            configRepo = sahhaConfigRepo,
-            appUsageRepo = appUsageRepo,
-            batchedDataRepo = batchedDataRepo,
-            getUsageStatsBetween = getUsageStatsBetween,
-            scope = defaultScope,
         )
     }
 }

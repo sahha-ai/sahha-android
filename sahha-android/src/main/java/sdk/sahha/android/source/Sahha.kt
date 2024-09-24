@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.annotation.Keep
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
@@ -16,8 +15,6 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZonedDateTime
 import java.util.Date
 
 private const val tag = "Sahha"
@@ -63,8 +60,7 @@ object Sahha {
     }
 
     private fun saveEnvironment(context: Context, envInt: Int) {
-        val prefs =
-            context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(Constants.CONFIGURATION_PREFS, Context.MODE_PRIVATE)
         prefs.edit().putInt(Constants.ENVIRONMENT_KEY, envInt).apply()
     }
 
