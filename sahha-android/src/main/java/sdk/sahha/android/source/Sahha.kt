@@ -8,6 +8,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
@@ -41,22 +42,11 @@ object Sahha {
         return ::sim.isInitialized
     }
 
-    private fun subscribeToAppEvents(lifecycleOwner: LifecycleOwner) {
-        lifecycleOwner.lifecycle.addObserver(di.hostAppLifecycleObserver)
+    private suspend fun subscribeToAppEvents(lifecycleOwner: LifecycleOwner) {
+        withContext(Dispatchers.Main) {
+            lifecycleOwner.lifecycle.addObserver(di.hostAppLifecycleObserver)
+        }
     }
-
-//    private fun getApplicationFromActivity(activity: Any): Application {
-//        when(activity) {
-//            is AppCompatActivity -> {
-//
-//            } is ComponentActivity -> {
-//
-//            }
-//            else -> {
-//
-//            }
-//        }
-//    }
 
     fun configure(
         activity: ComponentActivity,
