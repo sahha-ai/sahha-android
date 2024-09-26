@@ -96,6 +96,7 @@ internal class DataCollectionService : Service() {
                 )
 
                 scope.launch {
+                    Sahha.di.logAppAliveState()
                     queryHealthConnect { _, _ ->
                         Session.handlerRunning = false
                     }

@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.internal_enum.AppEventEnum
 import sdk.sahha.android.domain.model.app_event.AppEvent
 import sdk.sahha.android.domain.use_case.background.LogAppEvent
 import java.time.ZonedDateTime
@@ -20,7 +21,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
             when (event) {
                 Lifecycle.Event.ON_CREATE -> {
                     val appEvent = AppEvent(
-                        "app_launch",
+                        AppEventEnum.APP_LAUNCH.event,
                         ZonedDateTime.now(),
                     )
 
@@ -29,7 +30,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
 
                 Lifecycle.Event.ON_START -> {
                     val appEvent = AppEvent(
-                        "app_open",
+                        AppEventEnum.APP_OPEN.event,
                         ZonedDateTime.now(),
                     )
 
@@ -38,7 +39,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
 
                 Lifecycle.Event.ON_STOP -> {
                     val appEvent = AppEvent(
-                        "app_close",
+                        AppEventEnum.APP_CLOSE.event,
                         ZonedDateTime.now(),
                     )
 
@@ -47,7 +48,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
 
                 Lifecycle.Event.ON_DESTROY -> {
                     val appEvent = AppEvent(
-                        "app_terminate",
+                        AppEventEnum.APP_TERMINATE.event,
                         ZonedDateTime.now(),
                     )
 
