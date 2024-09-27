@@ -35,6 +35,8 @@ internal class PermissionInteractionManager @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @MainScope private val mainScope: CoroutineScope,
 ) {
+    private val isAndroid8 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+
     fun openAppSettings(context: Context) {
         openAppSettingsUseCase(context)
     }
@@ -65,7 +67,6 @@ internal class PermissionInteractionManager @Inject constructor(
                 return@launch
             }
 
-            val isAndroid8 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
@@ -308,7 +309,6 @@ internal class PermissionInteractionManager @Inject constructor(
                 return@launch
             }
 
-            val isAndroid8 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
