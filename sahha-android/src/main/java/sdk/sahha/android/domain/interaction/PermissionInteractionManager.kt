@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.interaction
 
 import android.content.Context
+import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -34,6 +35,8 @@ internal class PermissionInteractionManager @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @MainScope private val mainScope: CoroutineScope,
 ) {
+    private val isAndroid8 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+
     fun openAppSettings(context: Context) {
         openAppSettingsUseCase(context)
     }
@@ -67,7 +70,9 @@ internal class PermissionInteractionManager @Inject constructor(
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
-                if (containsStepsOrSleep) awaitNativeSensorRequest(context) else SahhaSensorStatus.enabled
+                if (isAndroid8) SahhaSensorStatus.enabled
+                else if (containsStepsOrSleep) awaitNativeSensorRequest(context)
+                else SahhaSensorStatus.enabled
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
 
             val status = processStatuses(nativeStatus, healthConnectStatus.second)
@@ -307,7 +312,9 @@ internal class PermissionInteractionManager @Inject constructor(
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
-                if (containsStepsOrSleep) awaitNativeSensorStatus(context) else SahhaSensorStatus.enabled
+                if(isAndroid8) SahhaSensorStatus.enabled
+                else if (containsStepsOrSleep) awaitNativeSensorStatus(context)
+                else SahhaSensorStatus.enabled
 
             if (manager.shouldUseHealthConnect())
                 getHealthConnectSensorStatus(context, sensors) { error, status ->
