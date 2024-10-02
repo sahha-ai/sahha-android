@@ -110,8 +110,7 @@ internal class PermissionInteractionManager @Inject constructor(
                     callback(null, status)
                 }
                 return@launch
-            }
-            else if (sensors.contains(SahhaSensor.device_lock)) {
+            } else if (sensors.contains(SahhaSensor.device_lock)) {
                 manager.enableDeviceOnlySensor()
             }
 
@@ -261,6 +260,7 @@ internal class PermissionInteractionManager @Inject constructor(
 
             isBelowOrEqualToAndroid9 && nativeEnabled && healthConnectUnavailable ->
                 InternalSensorStatus.unavailable
+
             isBelowOrEqualToAndroid9 && nativeEnabled && healthConnectPending ->
                 InternalSensorStatus.pending
 
@@ -408,19 +408,16 @@ internal class PermissionInteractionManager @Inject constructor(
         }
 
         val sensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
-        val containsStepsOrSleep =
-            sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
-        val nativeStatus =
-            if (containsStepsOrSleep) awaitNativeSensorStatus(context) else SahhaSensorStatus.enabled
-        val healthConnectStatus = awaitHealthConnectSensorStatus(context)
-        val status = processStatuses(nativeStatus, healthConnectStatus)
-        stopWorkers()
-        startTasks(
-            context,
-            Sahha.di.sahhaInteractionManager,
-            status // Already processed from internal status
-        ) { error, _ ->
-            error?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
+        processMultipleSensors(context, sensors) { error, status ->
+            error?.also { e -> Log.d(TAG, e) }
+            stopWorkers()
+            startTasks(
+                context = context,
+                sim = Sahha.di.sahhaInteractionManager,
+                status = status,
+            ) { tasksError, _ ->
+                tasksError?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
+            }
         }
     }
 
