@@ -58,9 +58,6 @@ internal class DataCollectionService : Service() {
 
                 config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
 
-                startTimeZoneChangedReceiver()
-                startDataCollectors(this@DataCollectionService)
-
                 Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
                 Session.handlerThread.start()
                 Session.serviceHandler = Handler(Session.handlerThread.looper)
@@ -115,6 +112,8 @@ internal class DataCollectionService : Service() {
             SahhaReconfigure(this@DataCollectionService)
             config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
             checkAndStartCollectingScreenLockData()
+            startDataCollectors(this@DataCollectionService)
+            startTimeZoneChangedReceiver()
         }
         return START_STICKY
     }
