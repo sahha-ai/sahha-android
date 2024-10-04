@@ -50,6 +50,7 @@ import sdk.sahha.android.common.SahhaIntents
 import sdk.sahha.android.common.SahhaPermissions
 import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.domain.model.config.toSahhaSensorSet
@@ -365,20 +366,20 @@ internal class PermissionManagerImpl @Inject constructor(
         } ?: callback(SahhaErrors.noHealthConnectApp, SahhaSensorStatus.unavailable)
     }
 
-    override suspend fun getDeviceOnlySensorStatus(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+    override suspend fun getDeviceOnlySensorStatus(callback: ((status: Enum<InternalSensorStatus>) -> Unit)) {
         val permission = manualPermissionsDao.getPermissionStatus(SahhaSensor.device_lock.ordinal)
-        val status = SahhaSensorStatus.values().find { it.ordinal == permission?.statusEnum }
-        callback(status ?: SahhaSensorStatus.pending)
+        val status = InternalSensorStatus.values().find { it.ordinal == permission?.statusEnum }
+        callback(status ?: InternalSensorStatus.pending)
     }
 
-    override suspend fun enableDeviceOnlySensor(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)) {
+    override suspend fun enableDeviceOnlySensor(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)?) {
         manualPermissionsDao.savePermission(
             ManualPermission(
                 SahhaSensor.device_lock.ordinal,
                 SahhaSensorStatus.enabled.ordinal
             )
         )
-        callback(SahhaSensorStatus.enabled)
+        callback?.invoke(SahhaSensorStatus.enabled)
     }
 
     override fun getHealthConnectSensorStatus(

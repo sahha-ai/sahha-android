@@ -177,6 +177,11 @@ internal object SahhaPermissions : BroadcastReceiver() {
             manifestPermissions = Sahha.di.permissionManager.getManifestPermissions(context = context),
             sensors = sensors,
         ) { error, status, permissions ->
+            if (Sahha.di.permissionManager.isFirstHealthConnectRequest) {
+                callback?.invoke(null, SahhaSensorStatus.pending)
+                return@getTrimmedHcPermissions
+            }
+
             if (granted.containsAll(permissions)) {
                 callback?.invoke(null, SahhaSensorStatus.enabled)
                 return@getTrimmedHcPermissions
@@ -184,11 +189,6 @@ internal object SahhaPermissions : BroadcastReceiver() {
 
             if (status == SahhaSensorStatus.unavailable) {
                 callback?.invoke(error, status)
-                return@getTrimmedHcPermissions
-            }
-
-            if (Sahha.di.permissionManager.isFirstHealthConnectRequest) {
-                callback?.invoke(null, SahhaSensorStatus.pending)
                 return@getTrimmedHcPermissions
             }
 
