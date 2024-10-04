@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.appcompat.app.AppCompatActivity
+import sdk.sahha.android.domain.internal_enum.InternalSensorStatus
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 
@@ -28,8 +29,9 @@ internal interface PermissionManager {
 
     fun getNativeSensorStatus(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
     fun openHealthConnectSettings(context: Context)
-    suspend fun getDeviceOnlySensorStatus(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
-    suspend fun enableDeviceOnlySensor(callback: (status: Enum<SahhaSensorStatus>) -> Unit)
+    suspend fun getDeviceOnlySensorStatus(callback: (status: Enum<InternalSensorStatus>) -> Unit)
+    suspend fun enableDeviceOnlySensor(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)? = null)
+
     fun getHealthConnectSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
@@ -41,7 +43,6 @@ internal interface PermissionManager {
         sensors: Set<SahhaSensor>,
         callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>?, permissions: Set<String>) -> Unit)?
     )
-
     fun isFirstHealthConnectRequest(firstRequest: Boolean)
     val isFirstHealthConnectRequest: Boolean
 }

@@ -2,7 +2,10 @@ package sdk.sahha.android.domain.interaction
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
@@ -24,7 +27,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-private const val tag = "PermissionInteractionManager"
+private const val TAG = "PermissionInteractionManager"
 
 internal class PermissionInteractionManager @Inject constructor(
     internal val manager: PermissionManager,
@@ -35,7 +38,51 @@ internal class PermissionInteractionManager @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @MainScope private val mainScope: CoroutineScope,
 ) {
-    private val isAndroid8 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+    private val isBelowOrAndroid9 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
+    private val isAndroid9 = Build.VERSION.SDK_INT == Build.VERSION_CODES.P
+
+    internal suspend fun processMultipleSensors(
+        context: Context, sensors: Set<SahhaSensor>,
+        callback: (error: String?, status: Enum<InternalSensorStatus>) -> Unit
+    ) {
+        val jobs = mutableListOf<Job>()
+        val statuses = mutableListOf<Enum<InternalSensorStatus>>()
+        sensors.forEach { sensor ->
+            jobs += Sahha.di.defaultScope.launch {
+                statuses += awaitSensorStatus(context, sensor)
+            }
+        }
+        jobs.joinAll()
+
+        statuses.forEach { status ->
+            if (statuses.contains(InternalSensorStatus.disabled)) {
+                callback(null, InternalSensorStatus.disabled)
+                return
+            } else if (statuses.contains(InternalSensorStatus.partial)) {
+                callback(null, InternalSensorStatus.partial)
+                return
+            } else if (statuses.contains(InternalSensorStatus.pending)) {
+                callback(null, InternalSensorStatus.pending)
+                return
+            } else if (statuses.contains(InternalSensorStatus.enabled)) {
+                callback(null, InternalSensorStatus.enabled)
+                return
+            } else if (statuses.all { it == InternalSensorStatus.unavailable }) {
+                callback(null, InternalSensorStatus.unavailable)
+                return
+            } else callback(null, InternalSensorStatus.pending)
+        }
+    }
+
+    private suspend fun awaitSensorStatus(
+        context: Context,
+        sensor: SahhaSensor
+    ): Enum<InternalSensorStatus> = suspendCancellableCoroutine { cont ->
+        Sahha.sim.permission.getSensorStatus(context, setOf(sensor)) { error, status ->
+            error?.also { e -> Log.d(TAG, e) }
+            if (cont.isActive) cont.resume(status)
+        }
+    }
 
     fun openAppSettings(context: Context) {
         openAppSettingsUseCase(context)
@@ -55,34 +102,36 @@ internal class PermissionInteractionManager @Inject constructor(
 
             if (Session.onlyDeviceSensorProvided) {
                 manager.enableDeviceOnlySensor { status ->
-                    if (status == SahhaSensorStatus.enabled) {
-                        startNativeTasks(
-                            context,
-                            Sahha.di.sahhaInteractionManager,
-                            status
-                        )
-                        callback(null, status)
-                    }
+                    startNativeTasks(
+                        context,
+                        Sahha.di.sahhaInteractionManager,
+                        status
+                    )
+                    callback(null, status)
                 }
                 return@launch
+            } else if (sensors.contains(SahhaSensor.device_lock)) {
+                manager.enableDeviceOnlySensor()
             }
 
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
-                if (isAndroid8) SahhaSensorStatus.enabled
+                if (isAndroid9) SahhaSensorStatus.enabled
                 else if (containsStepsOrSleep) awaitNativeSensorRequest(context)
                 else SahhaSensorStatus.enabled
             val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
 
-            val status = processStatuses(nativeStatus, healthConnectStatus.second)
-            startTasks(
-                context = context,
-                sim = Sahha.di.sahhaInteractionManager,
-                status = status,
-                previousError = healthConnectStatus.first,
-                callback = callback
-            )
+            processMultipleSensors(context, sensors) { error, status ->
+                error?.also { e -> Log.d(TAG, e) }
+                startTasks(
+                    context = context,
+                    sim = Sahha.di.sahhaInteractionManager,
+                    status = status,
+                    previousError = healthConnectStatus.first,
+                    callback = callback
+                )
+            }
         }
     }
 
@@ -191,7 +240,8 @@ internal class PermissionInteractionManager @Inject constructor(
 
     internal fun processStatuses(
         nativeStatus: Enum<SahhaSensorStatus>,
-        healthConnectStatus: Enum<SahhaSensorStatus>
+        healthConnectStatus: Enum<SahhaSensorStatus>,
+        isBelowOrEqualToAndroid9: Boolean = isBelowOrAndroid9
     ): Enum<InternalSensorStatus> {
         val nativeUnavailable = nativeStatus == SahhaSensorStatus.unavailable
         val nativePending = nativeStatus == SahhaSensorStatus.pending
@@ -208,8 +258,14 @@ internal class PermissionInteractionManager @Inject constructor(
             nativePending -> InternalSensorStatus.pending
             nativeDisabled -> InternalSensorStatus.disabled
 
+            isBelowOrEqualToAndroid9 && nativeEnabled && healthConnectUnavailable ->
+                InternalSensorStatus.unavailable
+
+            isBelowOrEqualToAndroid9 && nativeEnabled && healthConnectPending ->
+                InternalSensorStatus.pending
+
             nativeEnabled && healthConnectUnavailable -> InternalSensorStatus.enabled
-            nativeEnabled && healthConnectPending -> InternalSensorStatus.partial
+            nativeEnabled && healthConnectPending -> InternalSensorStatus.pending
             nativeEnabled && healthConnectDisabled -> InternalSensorStatus.partial
             nativeEnabled && healthConnectEnabled -> InternalSensorStatus.enabled
 
@@ -284,9 +340,9 @@ internal class PermissionInteractionManager @Inject constructor(
     private suspend fun awaitNativeSensorStatus(
         context: Context
     ): Enum<SahhaSensorStatus> {
-        return suspendCoroutine { cont ->
+        return suspendCancellableCoroutine { cont ->
             manager.getNativeSensorStatus(context) { status ->
-                cont.resume(status)
+                if (cont.isActive) cont.resume(status)
             }
         }
     }
@@ -294,13 +350,13 @@ internal class PermissionInteractionManager @Inject constructor(
     fun getSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+        callback: ((error: String?, status: Enum<InternalSensorStatus>) -> Unit)
     ) {
         mainScope.launch {
             Session.sensors = sensors
             val sensorSetEmpty = sensors.isEmpty()
             if (sensorSetEmpty) {
-                callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
+                callback(SahhaErrors.dataTypesUnspecified, InternalSensorStatus.pending)
                 return@launch
             }
 
@@ -312,18 +368,18 @@ internal class PermissionInteractionManager @Inject constructor(
             val containsStepsOrSleep =
                 sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
-                if(isAndroid8) SahhaSensorStatus.enabled
+                if (isAndroid9) SahhaSensorStatus.enabled
                 else if (containsStepsOrSleep) awaitNativeSensorStatus(context)
                 else SahhaSensorStatus.enabled
 
             if (manager.shouldUseHealthConnect())
                 getHealthConnectSensorStatus(context, sensors) { error, status ->
                     val processedStatus = processStatuses(nativeStatus, status)
-                    callback(error, processedStatus.toSahhaSensorStatus())
+                    callback(error, processedStatus)
                 }
             else {
                 val status = processStatuses(nativeStatus, SahhaSensorStatus.unavailable)
-                callback(null, status.toSahhaSensorStatus())
+                callback(null, status)
             }
         }
     }
@@ -332,19 +388,19 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
-        if(!Sahha.isAuthenticated) {
+        if (!Sahha.isAuthenticated) {
             callback?.invoke("Not yet authenticated", false)
             return
         }
 
         if (Session.onlyDeviceSensorProvided) {
             manager.getDeviceOnlySensorStatus { status ->
-                if (status == SahhaSensorStatus.enabled) {
+                if (status == InternalSensorStatus.enabled) {
                     stopWorkers()
                     startNativeTasks(
                         context,
                         Sahha.di.sahhaInteractionManager,
-                        status,
+                        status.toSahhaSensorStatus(),
                     ) { _, _ -> callback?.invoke(null, true) }
                 } else callback?.invoke(null, true)
             }
@@ -352,19 +408,16 @@ internal class PermissionInteractionManager @Inject constructor(
         }
 
         val sensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
-        val containsStepsOrSleep =
-            sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
-        val nativeStatus =
-            if (containsStepsOrSleep) awaitNativeSensorStatus(context) else SahhaSensorStatus.enabled
-        val healthConnectStatus = awaitHealthConnectSensorStatus(context)
-        val status = processStatuses(nativeStatus, healthConnectStatus)
-        stopWorkers()
-        startTasks(
-            context,
-            Sahha.di.sahhaInteractionManager,
-            status // Already processed from internal status
-        ) { error, _ ->
-            error?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
+        processMultipleSensors(context, sensors) { error, status ->
+            error?.also { e -> Log.d(TAG, e) }
+            stopWorkers()
+            startTasks(
+                context = context,
+                sim = Sahha.di.sahhaInteractionManager,
+                status = status,
+            ) { tasksError, _ ->
+                tasksError?.also { e -> callback?.invoke(e, false) } ?: callback?.invoke(null, true)
+            }
         }
     }
 
