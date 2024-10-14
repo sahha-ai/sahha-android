@@ -31,7 +31,8 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
 import java.time.ZonedDateTime
 
-private const val LOOP_INTERVAL = 15 * 60 * 1000L
+//private const val LOOP_INTERVAL = 15 * 60 * 1000L
+private const val LOOP_INTERVAL = 10 * 1000L
 
 internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }

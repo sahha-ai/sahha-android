@@ -48,6 +48,7 @@ import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -497,7 +498,8 @@ internal class BatchDataLogs @Inject constructor(
                     newRecord = record,
                     local = localMatch
                 )
-            localSteps.remove(localMatch)
+//            localSteps.remove(localMatch)
+//            healthConnectRepo.saveStepsHc(localMatch)
         }
         return processedData
     }
@@ -526,7 +528,7 @@ internal class BatchDataLogs @Inject constructor(
         val lastSuccessfulCustomQuery =
             lastSuccessfulCustomQueryEpoch?.let { epoch -> timeManager.epochMillisToISO(epoch) }
         val now = ZonedDateTime.now()
-        val sameDay = now.toInstant().truncatedTo(ChronoUnit.DAYS) == timeManager.ISOToZonedDateTime(newRecord.endDateTime).toInstant().truncatedTo(ChronoUnit.DAYS)
+        val isCurrentDay = now.toInstant().truncatedTo(ChronoUnit.DAYS) == timeManager.ISOToZonedDateTime(newRecord.startDateTime).toInstant().truncatedTo(ChronoUnit.DAYS)
 
         toPost.add(
             local?.let { loc ->
@@ -553,7 +555,7 @@ internal class BatchDataLogs @Inject constructor(
                         newRecord.startDateTime
                     else query
                 } ?: newRecord.startDateTime,
-                endDateTime = if (sameDay) newRecord.modifiedDateTime else newRecord.endDateTime,
+                endDateTime = if (isCurrentDay) newRecord.modifiedDateTime else newRecord.endDateTime,
                 modifiedDateTime = newRecord.modifiedDateTime,
                 recordingMethod = newRecord.recordingMethod,
                 deviceType = newRecord.deviceType,
