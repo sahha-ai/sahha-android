@@ -322,7 +322,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         mutex: Mutex,
         api: SahhaApi,
         chunkManager: PostChunkManager,
-        permissionManager: PermissionManager
+        permissionManager: PermissionManager,
+        timeManager: SahhaTimeManager
     ): SensorRepo {
         return SensorRepoImpl(
             context,
@@ -337,7 +338,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             mutex,
             api,
             chunkManager,
-            permissionManager
+            permissionManager,
+            timeManager
         )
     }
 

@@ -32,6 +32,7 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val calculateBatchLimit: CalculateBatchLimit,
     private val filterActivityOverlaps: FilterActivityOverlaps,
+    private val addSahhaDataLogMetadata: AddSahhaDataLogMetadata
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
@@ -43,8 +44,9 @@ internal class PostBatchData @Inject constructor(
         }
 
         val filtered = filterActivityOverlaps(batchedData)
+        val metadataAdded = addSahhaDataLogMetadata(filtered)
         chunkManager.postAllChunks(
-            allData = filtered,
+            allData = metadataAdded,
             limit = calculateBatchLimit(),
             postData = { chunk ->
                 val token = authRepo.getToken() ?: ""
