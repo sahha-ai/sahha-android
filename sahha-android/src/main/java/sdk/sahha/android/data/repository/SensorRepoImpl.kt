@@ -30,6 +30,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaResponseHandler
+import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
@@ -82,7 +83,8 @@ internal class SensorRepoImpl @Inject constructor(
     private val mutex: Mutex,
     private val api: SahhaApi,
     private val chunkManager: PostChunkManager,
-    private val permissionManager: PermissionManager
+    private val permissionManager: PermissionManager,
+    private val timeManager: SahhaTimeManager,
 ) : SensorRepo {
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val sensorToWorkerAction = mapOf(
@@ -727,7 +729,9 @@ internal class SensorRepoImpl @Inject constructor(
         )
     }
 
-    private suspend fun getPhoneScreenLockResponse(phoneLockData: List<PhoneUsage>): Response<ResponseBody> {
+    private suspend fun getPhoneScreenLockResponse(
+        phoneLockData: List<PhoneUsage>,
+    ): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postDeviceActivityRange(
             TokenBearer(token),

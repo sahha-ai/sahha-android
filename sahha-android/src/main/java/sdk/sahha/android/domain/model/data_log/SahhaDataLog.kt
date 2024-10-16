@@ -20,5 +20,6 @@ internal data class SahhaDataLog(
     val recordingMethod: String = RecordingMethodsHealthConnect.UNKNOWN.name,
     val deviceType: String = Constants.UNKNOWN,
     val additionalProperties: HashMap<String, String>? = null,
+    val metadata: HashMap<String, Any>? = null,
     val parentId: String? = null,
 )

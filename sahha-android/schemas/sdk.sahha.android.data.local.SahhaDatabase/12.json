@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "a550dd8720a69017ee09d2a811aac37d",
+    "identityHash": "9e46ab9b78d979f16b1b0636cd40da5c",
     "entities": [
       {
         "tableName": "RecognisedActivity",
@@ -756,7 +756,7 @@
       },
       {
         "tableName": "SahhaDataLog",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `logType` TEXT NOT NULL, `dataType` TEXT NOT NULL, `value` REAL NOT NULL, `source` TEXT NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `unit` TEXT NOT NULL, `recordingMethod` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `additionalProperties` TEXT, `parentId` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `logType` TEXT NOT NULL, `dataType` TEXT NOT NULL, `value` REAL NOT NULL, `source` TEXT NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `unit` TEXT NOT NULL, `recordingMethod` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `additionalProperties` TEXT, `metadata` TEXT, `parentId` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -825,6 +825,12 @@
             "notNull": false
           },
           {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "parentId",
             "columnName": "parentId",
             "affinity": "TEXT",
@@ -844,7 +850,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a550dd8720a69017ee09d2a811aac37d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9e46ab9b78d979f16b1b0636cd40da5c')"
     ]
   }
 }
