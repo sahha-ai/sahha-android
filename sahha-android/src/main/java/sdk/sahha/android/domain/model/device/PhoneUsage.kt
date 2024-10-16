@@ -13,6 +13,7 @@ internal data class PhoneUsage(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
     val createdAt: String,
+    val metadata: SahhaMetadata? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString()
 )
 
@@ -28,6 +29,7 @@ internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
             "isScreenOn" to if (isScreenOn) "1" else "0"
         ),
         startDateTime = createdAt,
-        endDateTime = createdAt
+        endDateTime = createdAt,
+        metadata = metadata
     )
 }

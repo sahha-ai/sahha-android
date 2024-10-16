@@ -48,6 +48,7 @@ import sdk.sahha.android.data.repository.AppCrashRepoImpl
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.DeviceUsageRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
@@ -64,6 +65,7 @@ import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -314,7 +316,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
         sahhaConfigRepo: SahhaConfigRepo,
-        deviceDao: DeviceUsageDao,
+        deviceUsageRepo: DeviceUsageRepo,
         sleepDao: SleepDao,
         movementDao: MovementDao,
         authRepo: AuthRepo,
@@ -329,7 +331,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             context,
             defaultScope,
             ioScope,
-            deviceDao,
+            deviceUsageRepo,
             sleepDao,
             movementDao,
             authRepo,
@@ -367,6 +369,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         batchedDataDao: BatchedDataDao
     ): BatchedDataRepo {
         return BatchedDataRepoImpl(batchedDataDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideDeviceUsageRepository(
+        deviceUsageDao: DeviceUsageDao
+    ): DeviceUsageRepo {
+        return DeviceUsageRepoImpl(deviceUsageDao)
     }
 
     @Singleton

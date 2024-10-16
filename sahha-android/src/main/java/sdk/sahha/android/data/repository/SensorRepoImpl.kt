@@ -32,7 +32,6 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
-import sdk.sahha.android.data.local.dao.DeviceUsageDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.remote.SahhaApi
@@ -51,6 +50,7 @@ import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
+import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.framework.worker.BackgroundTaskRestarterWorker
@@ -74,7 +74,7 @@ internal class SensorRepoImpl @Inject constructor(
     private val context: Context,
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
-    private val deviceDao: DeviceUsageDao,
+    private val deviceUsageRepo: DeviceUsageRepo,
     private val sleepDao: SleepDao,
     private val movementDao: MovementDao,
     private val authRepo: AuthRepo,
@@ -186,7 +186,7 @@ internal class SensorRepoImpl @Inject constructor(
 
     private suspend fun getDeviceDataSummary(): String {
         var dataSummary = ""
-        deviceDao.getUsages().forEach {
+        deviceUsageRepo.getUsages().forEach {
             dataSummary += "Locked: ${it.isLocked}\nScreen on: ${it.isScreenOn}\nAt: ${it.createdAt}\n\n"
         }
         return dataSummary
@@ -420,7 +420,7 @@ internal class SensorRepoImpl @Inject constructor(
             SahhaSensor.device_lock,
             Constants.DEVICE_LOCK_POST_LIMIT,
             this::getPhoneScreenLockResponse,
-            deviceDao::clearUsages,
+            deviceUsageRepo::clearUsages,
             callback
         )
     }
@@ -656,7 +656,7 @@ internal class SensorRepoImpl @Inject constructor(
                 }
 
                 SahhaSensor.device_lock -> {
-                    postPhoneScreenLockData(deviceDao.getUsages()) { error, successful ->
+                    postPhoneScreenLockData(deviceUsageRepo.getUsages()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
                     }
@@ -710,7 +710,7 @@ internal class SensorRepoImpl @Inject constructor(
     }
 
     private suspend fun clearLocalPhoneScreenLockData() {
-        deviceDao.clearUsages()
+//        deviceDao.clearAllUsages()
     }
 
     private suspend fun getStepResponse(stepData: List<SahhaDataLog>): Response<ResponseBody> {
