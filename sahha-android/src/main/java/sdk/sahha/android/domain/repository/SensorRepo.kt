@@ -61,6 +61,8 @@ internal interface SensorRepo {
         stepSession: StepSession
     )
 
+    suspend fun saveStepSessions(stepSessions: List<StepSession>)
+
     suspend fun getAllStepSessions(): List<StepSession>
 
     suspend fun clearStepSessions(
@@ -90,7 +92,6 @@ internal interface SensorRepo {
         data: String,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
-
     fun checkAndStartWorker(config: SahhaConfiguration, sensorId: Int, startWorker: () -> Unit)
     fun startBatchedDataPostWorker(repeatIntervalMinutes: Long, workerTag: String)
     fun startHealthConnectQueryWorker(repeatIntervalMinutes: Long, workerTag: String)

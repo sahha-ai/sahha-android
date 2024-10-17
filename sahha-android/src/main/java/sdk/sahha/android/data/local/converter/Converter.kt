@@ -4,7 +4,7 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 
 import com.google.gson.reflect.TypeToken
-import sdk.sahha.android.domain.model.data_log.SahhaMetadata
+import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import java.lang.reflect.Type
 
 // Converter for Room Database to handle JSON

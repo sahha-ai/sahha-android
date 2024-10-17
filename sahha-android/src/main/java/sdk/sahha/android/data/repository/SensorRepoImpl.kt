@@ -730,6 +730,12 @@ internal class SensorRepoImpl @Inject constructor(
         movementDao.saveStepSession(stepSession)
     }
 
+    override suspend fun saveStepSessions(stepSessions: List<StepSession>) {
+        stepSessions.forEach { session ->
+            movementDao.saveStepSession(session)
+        }
+    }
+
     override suspend fun getAllStepSessions(): List<StepSession> {
         return movementDao.getAllStepSessions()
     }

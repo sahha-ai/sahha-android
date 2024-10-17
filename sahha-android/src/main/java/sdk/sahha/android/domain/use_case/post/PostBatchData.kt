@@ -15,9 +15,9 @@ import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
-import sdk.sahha.android.domain.use_case.metadata.AddSahhaDataLogMetadata
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
+import sdk.sahha.android.domain.use_case.metadata.AddMetadata
 import sdk.sahha.android.source.Sahha
 import javax.inject.Inject
 
@@ -32,7 +32,7 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val calculateBatchLimit: CalculateBatchLimit,
     private val filterActivityOverlaps: FilterActivityOverlaps,
-    private val addSahhaDataLogMetadata: AddSahhaDataLogMetadata
+    private val addMetadata: AddMetadata
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
@@ -44,7 +44,10 @@ internal class PostBatchData @Inject constructor(
         }
 
         val filtered = filterActivityOverlaps(batchedData)
-        val metadataAdded = addSahhaDataLogMetadata(filtered)
+        val metadataAdded = addMetadata(
+            dataList = filtered,
+            saveData = batchRepo::saveBatchedData
+        )
         chunkManager.postAllChunks(
             allData = metadataAdded,
             limit = calculateBatchLimit(),

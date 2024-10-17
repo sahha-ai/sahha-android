@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
-import sdk.sahha.android.domain.model.data_log.SahhaMetadata
+import sdk.sahha.android.domain.model.metadata.HasMetadata
+import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -15,9 +16,13 @@ internal data class StepSession(
     val count: Int,
     val startDateTime: String,
     val endDateTime: String,
-    val metadata: SahhaMetadata? = null,
+    override val metadata: SahhaMetadata? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
-)
+): HasMetadata<StepSession> {
+    override fun copyWithMetadata(metadata: SahhaMetadata): StepSession {
+        return this.copy(metadata = metadata)
+    }
+}
 
 internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
     return SahhaDataLog(
