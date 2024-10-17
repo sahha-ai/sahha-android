@@ -2,8 +2,7 @@ package sdk.sahha.android.domain.use_case.post
 
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.domain.use_case.AddPhoneUsageMetadata
-import sdk.sahha.android.domain.use_case.AddSahhaDataLogMetadata
+import sdk.sahha.android.domain.use_case.metadata.AddPhoneUsageMetadata
 import javax.inject.Inject
 
 internal class PostDeviceDataUseCase @Inject constructor(

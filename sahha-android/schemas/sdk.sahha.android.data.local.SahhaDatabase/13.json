@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 13,
-    "identityHash": "48d968fea4420ff444e475d794742bfd",
+    "identityHash": "3bdfd453f737a697a6ae00d9c73b4361",
     "entities": [
       {
         "tableName": "RecognisedActivity",
@@ -366,7 +366,7 @@
       },
       {
         "tableName": "SleepDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`durationInMinutes` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `source` TEXT NOT NULL, `sleepStage` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`durationInMinutes` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `source` TEXT NOT NULL, `sleepStage` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `metadata` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "durationInMinutes",
@@ -403,6 +403,12 @@
             "columnName": "createdAt",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "id",
@@ -856,7 +862,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '48d968fea4420ff444e475d794742bfd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3bdfd453f737a697a6ae00d9c73b4361')"
     ]
   }
 }

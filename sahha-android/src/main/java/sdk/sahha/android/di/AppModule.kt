@@ -53,6 +53,7 @@ import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
+import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
@@ -70,6 +71,7 @@ import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
@@ -377,6 +379,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         deviceUsageDao: DeviceUsageDao
     ): DeviceUsageRepo {
         return DeviceUsageRepoImpl(deviceUsageDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSleepRepository(
+        sleepDao: SleepDao
+    ): SleepRepo {
+        return SleepRepoImpl(sleepDao)
     }
 
     @Singleton

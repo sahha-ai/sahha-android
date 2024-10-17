@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.use_case
+package sdk.sahha.android.domain.use_case.metadata
 
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
