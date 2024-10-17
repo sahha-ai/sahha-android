@@ -53,7 +53,6 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
     autoMigrations = [
         AutoMigration(from = 10, to = 11),
         AutoMigration(from = 11, to = 12),
-        AutoMigration(from = 12, to = 13),
     ]
 )
 
