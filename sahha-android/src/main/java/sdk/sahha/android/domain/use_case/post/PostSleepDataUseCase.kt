@@ -2,7 +2,6 @@ package sdk.sahha.android.domain.use_case.post
 
 import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.repository.SensorRepo
-import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.use_case.metadata.AddSleepDtoMetadata
 import javax.inject.Inject
 
@@ -14,7 +13,7 @@ internal class PostSleepDataUseCase @Inject constructor(
         sleepData: List<SleepDto>,
         callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     ) {
-        addSleepDtoMetadata(sleepData)
-        repository.postSleepData(sleepData, callback)
+        val metadataAdded = addSleepDtoMetadata(sleepData)
+        repository.postSleepData(metadataAdded, callback)
     }
 }

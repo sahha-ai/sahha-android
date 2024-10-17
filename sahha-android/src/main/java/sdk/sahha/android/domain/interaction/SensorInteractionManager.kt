@@ -14,7 +14,6 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
-import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
@@ -28,6 +27,7 @@ import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLo
 import sdk.sahha.android.domain.use_case.background.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorData
 import sdk.sahha.android.domain.use_case.background.StartDataCollectionServiceUseCase
+import sdk.sahha.android.domain.use_case.metadata.AddStepSessionMetadata
 import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
@@ -65,6 +65,7 @@ internal class SensorInteractionManager @Inject constructor(
     internal val postStepDataUseCase: PostStepDataUseCase,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
+    internal val addStepSessionMetadata: AddStepSessionMetadata,
     internal val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     fun postSensorData(
@@ -161,7 +162,9 @@ internal class SensorInteractionManager @Inject constructor(
     internal suspend fun postStepSessions(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
-        repository.postStepSessions(repository.getAllStepSessions(), callback)
+        val sessions = repository.getAllStepSessions()
+        val metadataAdded = addStepSessionMetadata(sessions)
+        repository.postStepSessions(metadataAdded, callback)
     }
 
     internal suspend fun queryWithMinimumDelay(

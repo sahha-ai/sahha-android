@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 13,
-    "identityHash": "3bdfd453f737a697a6ae00d9c73b4361",
+    "identityHash": "b6c63a2b368cbf8c4ee93d0928534353",
     "entities": [
       {
         "tableName": "RecognisedActivity",
@@ -572,7 +572,7 @@
       },
       {
         "tableName": "StepSession",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`count` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`count` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `metadata` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "count",
@@ -591,6 +591,12 @@
             "columnName": "endDateTime",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "id",
@@ -862,7 +868,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3bdfd453f737a697a6ae00d9c73b4361')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6c63a2b368cbf8c4ee93d0928534353')"
     ]
   }
 }

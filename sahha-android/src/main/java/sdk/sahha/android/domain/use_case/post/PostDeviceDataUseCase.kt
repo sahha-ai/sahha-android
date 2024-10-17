@@ -13,7 +13,7 @@ internal class PostDeviceDataUseCase @Inject constructor(
         lockData: List<PhoneUsage>,
         callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     ) {
-        val modified = addPhoneUsageMetadata(lockData)
-        repository.postPhoneScreenLockData(modified, callback)
+        val metadataAdded = addPhoneUsageMetadata(lockData)
+        repository.postPhoneScreenLockData(metadataAdded, callback)
     }
 }
