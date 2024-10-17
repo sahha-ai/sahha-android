@@ -700,19 +700,6 @@ internal class SensorRepoImpl @Inject constructor(
         }
     }
 
-    private suspend fun clearLocalStepData() {
-        movementDao.clearAllStepData()
-    }
-
-    private suspend fun clearLocalSleepData() {
-        sleepDao.clearSleepDto()
-        sleepDao.clearSleep()
-    }
-
-    private suspend fun clearLocalPhoneScreenLockData() {
-//        deviceDao.clearAllUsages()
-    }
-
     private suspend fun getStepResponse(stepData: List<SahhaDataLog>): Response<ResponseBody> {
         val token = authRepo.getToken() ?: ""
         return api.postStepDataLog(
