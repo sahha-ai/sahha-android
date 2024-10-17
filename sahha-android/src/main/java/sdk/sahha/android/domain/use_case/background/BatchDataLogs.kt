@@ -424,7 +424,6 @@ internal class BatchDataLogs @Inject constructor(
         if (batchData.isEmpty()) return
 
         batchRepo.saveBatchedData(batchData)
-//        batchRepo.saveBatchedData(queries.map { it.toSahhaDataLogAsParentLog() })
         saveQuery(StepsRecord::class)
         checkAndClearLastMidnightSteps()
     }
@@ -498,8 +497,6 @@ internal class BatchDataLogs @Inject constructor(
                     newRecord = record,
                     local = localMatch
                 )
-//            localSteps.remove(localMatch)
-//            healthConnectRepo.saveStepsHc(localMatch)
         }
         return processedData
     }
