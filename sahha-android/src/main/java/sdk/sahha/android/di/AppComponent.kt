@@ -37,6 +37,8 @@ import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
+import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
+import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 
@@ -85,6 +87,7 @@ internal interface AppComponent {
     val batchedDataRepo: BatchedDataRepo
 
     val batchDataLogs: BatchDataLogs
+    val postBatchData: PostBatchData
 
     @get:MainScope
     val mainScope: CoroutineScope

@@ -559,6 +559,12 @@
             "columnName": "timeZone",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "appVersion",
+            "columnName": "appVersion",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {

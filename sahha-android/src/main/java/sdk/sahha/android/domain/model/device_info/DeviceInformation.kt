@@ -1,6 +1,7 @@
 package sdk.sahha.android.domain.model.device_info
 
 import android.os.Build
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.BuildConfig
@@ -18,7 +19,8 @@ internal data class DeviceInformation(
     val deviceModel: String = "${Build.DEVICE}:${Build.MODEL}",
     val system: String = PLATFORM_NAME,
     val systemVersion: String = "Android SDK: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})",
-    val timeZone: String = Sahha.di.timeManager.getTimezone()
+    val timeZone: String = Sahha.di.timeManager.getTimezone(),
+    val appVersion: String? = null
 )
 
 internal fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDto {
@@ -30,6 +32,7 @@ internal fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDt
         deviceModel,
         system,
         systemVersion,
-        timeZone
+        timeZone,
+        appVersion
     )
 }

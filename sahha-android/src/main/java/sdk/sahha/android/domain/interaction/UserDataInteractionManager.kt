@@ -127,10 +127,11 @@ internal class UserDataInteractionManager @Inject constructor(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
         val framework = sahhaConfigRepo.getConfig().framework
-        val packageName = context.packageManager.getPackageInfo(context.packageName, 0).packageName
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         val currentDeviceInfo = DeviceInformation(
             sdkId = framework,
-            appId = packageName
+            appId = packageInfo.packageName,
+            appVersion = packageInfo.versionName
         )
         sahhaConfigRepo.saveDeviceInformation(currentDeviceInfo)
 
