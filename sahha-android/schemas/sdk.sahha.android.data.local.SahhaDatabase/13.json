@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 13,
-    "identityHash": "b6c63a2b368cbf8c4ee93d0928534353",
+    "identityHash": "566d312578e9d95f909733f5849efd69",
     "entities": [
       {
         "tableName": "RecognisedActivity",
@@ -504,7 +504,7 @@
       },
       {
         "tableName": "DeviceInformation",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sdkId` TEXT NOT NULL, `sdkVersion` TEXT NOT NULL, `appId` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `deviceModel` TEXT NOT NULL, `system` TEXT NOT NULL, `systemVersion` TEXT NOT NULL, `timeZone` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `sdkId` TEXT NOT NULL, `sdkVersion` TEXT NOT NULL, `appId` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `deviceModel` TEXT NOT NULL, `system` TEXT NOT NULL, `systemVersion` TEXT NOT NULL, `timeZone` TEXT NOT NULL, `appVersion` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -874,7 +874,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6c63a2b368cbf8c4ee93d0928534353')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '566d312578e9d95f909733f5849efd69')"
     ]
   }
 }

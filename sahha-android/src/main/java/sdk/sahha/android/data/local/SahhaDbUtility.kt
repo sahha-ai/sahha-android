@@ -129,6 +129,7 @@ internal object SahhaDbUtility {
                 execSQL("ALTER TABLE StepSession ADD COLUMN metadata TEXT")
                 execSQL("ALTER TABLE SleepDto ADD COLUMN metadata TEXT")
                 execSQL("ALTER TABLE PhoneUsage ADD COLUMN metadata TEXT")
+                execSQL("ALTER TABLE DeviceInformation ADD COLUMN appVersion TEXT")
             }
         }
     }
