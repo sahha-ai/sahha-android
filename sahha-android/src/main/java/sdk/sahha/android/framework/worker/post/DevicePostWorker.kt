@@ -33,7 +33,7 @@ internal class DevicePostWorker(private val context: Context, workerParameters: 
                 suspendCancellableCoroutine { cont ->
                     scope.launch {
                         withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
-                            Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.deviceUsageDao.getUsages()) { error, success ->
+                            Sahha.sim.sensor.postDeviceDataUseCase(Sahha.di.deviceUsageRepo.getUsages()) { error, success ->
                                 if (cont.isActive) {
                                     cont.resume(Result.success())
                                 }
