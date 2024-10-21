@@ -22,12 +22,13 @@ internal object SahhaDbUtility {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
-                MIGRATION_9_10
+                MIGRATION_9_10,
+                MIGRATION_12_13
             )
             .build()
     }
 
-    internal val MIGRATION_1_2 = object : Migration(1, 2) {
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("ALTER TABLE SleepDto ADD COLUMN sleepStage TEXT NOT NULL DEFAULT('asleep')")
@@ -36,7 +37,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_2_3 = object : Migration(2, 3) {
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("ALTER TABLE PhoneUsage ADD COLUMN isScreenOn INTEGER NOT NULL DEFAULT(0)")
@@ -44,7 +45,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_3_4 = object : Migration(3, 4) {
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("DROP TABLE LastDetectedSteps")
@@ -54,7 +55,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_4_5 = object : Migration(4, 5) {
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("ALTER TABLE SleepDto ADD COLUMN source TEXT NOT NULL DEFAULT('${Constants.SLEEP_DATA_SOURCE}')")
@@ -62,7 +63,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_5_6 = object : Migration(5, 6) {
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("CREATE TABLE DeviceInformation (id INTEGER NOT NULL, sdkId TEXT NOT NULL, sdkVersion TEXT NOT NULL, appId TEXT NOT NULL, deviceType TEXT NOT NULL, deviceModel TEXT NOT NULL, system TEXT NOT NULL, systemVersion TEXT NOT NULL, timeZone TEXT NOT NULL, PRIMARY KEY(id))")
@@ -70,7 +71,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_6_7 = object : Migration(6, 7) {
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("CREATE TABLE StepSession (id INTEGER NOT NULL, count INTEGER NOT NULL, startDateTime TEXT NOT NULL, endDateTime TEXT NOT NULL, PRIMARY KEY (id))")
@@ -78,7 +79,7 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    private val MIGRATION_7_8 = object : Migration(7, 8) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
                 execSQL("CREATE TABLE HealthConnectQuery (id TEXT NOT NULL, lastSuccessfulTimeStampEpochMillis INTEGER NOT NULL, PRIMARY KEY (id))")
@@ -87,17 +88,20 @@ internal object SahhaDbUtility {
         }
     }
 
-    internal val MIGRATION_9_10 = object : Migration(9, 10) {
+    private val MIGRATION_9_10 = object : Migration(9, 10) {
         override fun migrate(database: SupportSQLiteDatabase) {
             with(database) {
-                execSQL("""
+                execSQL(
+                    """
                     CREATE TABLE ManualPermission (
                         sensorEnum INTEGER NOT NULL,
                         statusEnum INTEGER NOT NULL,
                         PRIMARY KEY (sensorEnum)
                     )
-                """.trimIndent())
-                execSQL("""
+                """.trimIndent()
+                )
+                execSQL(
+                    """
                     CREATE TABLE SahhaDataLog (
                         id TEXT NOT NULL PRIMARY KEY,
                         logType TEXT NOT NULL,
@@ -112,7 +116,20 @@ internal object SahhaDbUtility {
                         additionalProperties TEXT,
                         parentId TEXT
                     )
-                """.trimIndent())
+                """.trimIndent()
+                )
+            }
+        }
+    }
+
+    private val MIGRATION_12_13 = object : Migration(12, 13) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("ALTER TABLE SahhaDataLog ADD COLUMN metadata TEXT")
+                execSQL("ALTER TABLE StepSession ADD COLUMN metadata TEXT")
+                execSQL("ALTER TABLE SleepDto ADD COLUMN metadata TEXT")
+                execSQL("ALTER TABLE PhoneUsage ADD COLUMN metadata TEXT")
+                execSQL("ALTER TABLE DeviceInformation ADD COLUMN appVersion TEXT")
             }
         }
     }

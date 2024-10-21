@@ -34,6 +34,7 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
@@ -75,9 +76,9 @@ internal interface AppComponent {
     val securityDao: SecurityDao
     val movementDao: MovementDao
     val sleepDao: SleepDao
-    val deviceUsageDao: DeviceUsageDao
     val configurationDao: ConfigurationDao
 
+    val deviceUsageRepo: DeviceUsageRepo
     val authRepo: AuthRepo
     val deviceInfoRepo: DeviceInfoRepo
     val userDataRepo: UserDataRepo

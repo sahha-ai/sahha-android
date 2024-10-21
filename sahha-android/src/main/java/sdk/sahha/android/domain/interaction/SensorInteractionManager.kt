@@ -14,7 +14,6 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
-import sdk.sahha.android.di.MainScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
@@ -28,6 +27,7 @@ import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLo
 import sdk.sahha.android.domain.use_case.background.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorData
 import sdk.sahha.android.domain.use_case.background.StartDataCollectionServiceUseCase
+import sdk.sahha.android.domain.use_case.metadata.AddMetadata
 import sdk.sahha.android.domain.use_case.post.PostAllSensorDataUseCase
 import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.domain.use_case.post.PostDeviceDataUseCase
@@ -44,7 +44,6 @@ private const val tag = "SensorInteractionManager"
 
 internal class SensorInteractionManager @Inject constructor(
     @DefaultScope private val scope: CoroutineScope,
-    private val repository: SensorRepo,
     private val healthConnectRepo: HealthConnectRepo,
     private val configRepo: SahhaConfigRepo,
     private val sensorRepo: SensorRepo,
@@ -65,6 +64,7 @@ internal class SensorInteractionManager @Inject constructor(
     internal val postStepDataUseCase: PostStepDataUseCase,
     internal val startCollectingStepDetectorData: StartCollectingStepDetectorData,
     internal val startCollectingPhoneScreenLockDataUseCase: StartCollectingPhoneScreenLockDataUseCase,
+    internal val addMetadata: AddMetadata,
     internal val sahhaErrorLogger: SahhaErrorLogger,
 ) {
     fun postSensorData(
@@ -84,13 +84,13 @@ internal class SensorInteractionManager @Inject constructor(
                     Session.healthConnectPostCallback = callback
 
                     postAllSensorDataUseCase()
-                    repository.startHealthConnectQueryWorker(
+                    sensorRepo.startHealthConnectQueryWorker(
                         Constants.FIFTEEN_MINUTES,
                         Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
                     )
                     return@launch
                 }
-                if (statusDisabled) repository.startHealthConnectQueryWorker(
+                if (statusDisabled) sensorRepo.startHealthConnectQueryWorker(
                     Constants.FIFTEEN_MINUTES,
                     Constants.HEALTH_CONNECT_QUERY_WORKER_TAG
                 )
@@ -101,7 +101,7 @@ internal class SensorInteractionManager @Inject constructor(
     }
 
     internal fun stopAllBackgroundTasks(context: Context) {
-        repository.stopAllWorkers()
+        sensorRepo.stopAllWorkers()
         unregisterExistingReceiversAndListeners(context.applicationContext)
     }
 
@@ -161,7 +161,12 @@ internal class SensorInteractionManager @Inject constructor(
     internal suspend fun postStepSessions(
         callback: (suspend (error: String?, success: Boolean) -> Unit)?
     ) {
-        repository.postStepSessions(repository.getAllStepSessions(), callback)
+        val sessions = sensorRepo.getAllStepSessions()
+        val metadataAdded = addMetadata(
+            dataList = sessions,
+            saveData = sensorRepo::saveStepSessions
+        )
+        sensorRepo.postStepSessions(metadataAdded, callback)
     }
 
     internal suspend fun queryWithMinimumDelay(
