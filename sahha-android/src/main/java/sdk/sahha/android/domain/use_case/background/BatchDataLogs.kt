@@ -525,7 +525,9 @@ internal class BatchDataLogs @Inject constructor(
         val lastSuccessfulCustomQuery =
             lastSuccessfulCustomQueryEpoch?.let { epoch -> timeManager.epochMillisToISO(epoch) }
         val now = ZonedDateTime.now()
-        val isCurrentDay = now.toInstant().truncatedTo(ChronoUnit.DAYS) == timeManager.ISOToZonedDateTime(newRecord.startDateTime).toInstant().truncatedTo(ChronoUnit.DAYS)
+        val nowLocalDate = now.toLocalDate()
+        val startDateTimeLocalDate = timeManager.ISOToZonedDateTime(newRecord.startDateTime).toLocalDate()
+        val isCurrentDay = nowLocalDate == startDateTimeLocalDate
 
         toPost.add(
             local?.let { loc ->
