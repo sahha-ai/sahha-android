@@ -11,5 +11,6 @@ internal data class DeviceInformationDto(
     val deviceModel: String,
     val system: String,
     val systemVersion: String,
-    val timeZone: String
+    val timeZone: String,
+    val appVersion: String?,
 )
