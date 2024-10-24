@@ -97,7 +97,7 @@ internal class UserDataRepoImpl(
                                 val sahhaDemographic = response.body()?.toSahhaDemographic()
 
                                 when (sahhaDemographic) {
-                                    null -> callback?.invoke(SahhaErrors.noDemographics, null)
+                                    null -> callback?.invoke(null, SahhaDemographic())
                                     else -> callback?.invoke(null, sahhaDemographic)
                                 }
 
