@@ -12,7 +12,7 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 @Dao
 internal interface SleepDao {
     // Sleep Dto
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveSleepDto(sleep: SleepDto)
 
     @Query("SELECT * FROM SleepDto")
@@ -25,7 +25,7 @@ internal interface SleepDao {
     suspend fun clearSleepDto(sleep: List<SleepDto>)
 
     // Sleep queue
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveSleep(sleep: SleepQueue)
 
     @Query("SELECT * FROM SleepQueue WHERE startMillis=:startMillis AND endMillis=:endMillis")
