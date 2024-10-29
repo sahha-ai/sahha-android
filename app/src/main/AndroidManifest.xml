@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.health.READ_POWER" />
+    <uses-permission android:name="android.permission.health.READ_SPEED" />
 
     <!-- Oxygen -->
     <uses-permission android:name="android.permission.health.READ_VO2_MAX" />

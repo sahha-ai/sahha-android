@@ -25,6 +25,7 @@ import androidx.health.connect.client.records.PowerRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
+import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -842,6 +843,32 @@ internal fun PowerRecord.Sample.toSahhaDataLogDto(
         dataType = Constants.DataTypes.RUNNING_POWER,
         value = this.power.inWatts,
         unit = Constants.DataUnits.WATTS,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
+    )
+}
+
+internal fun SpeedRecord.Sample.toSahhaDataLogDto(
+    speed: SpeedRecord,
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    val source = speed.metadata.dataOrigin.packageName
+    val startZoneOffset = speed.startZoneOffset
+    val endZoneOffset = speed.endZoneOffset
+    val recordingMethod = mapper.recordingMethod(speed.metadata.recordingMethod)
+    val deviceType = mapper.devices(speed.metadata.device?.type)
+
+    return SahhaDataLog(
+        id = UUID.randomUUID().toString(),
+        parentId = speed.metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.RUNNING_SPEED,
+        value = this.speed.inMetersPerSecond,
+        unit = Constants.DataUnits.METERS_PER_SECOND,
         source = source,
         startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),

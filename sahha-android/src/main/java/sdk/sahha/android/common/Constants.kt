@@ -103,6 +103,7 @@ internal object Constants {
         const val CYCLING_CADENCE = "cycling_cadence"
         const val DISTANCE_WALKING_RUNNING = "distance_walking_running"
         const val RUNNING_POWER = "running_power"
+        const val RUNNING_SPEED = "running_speed"
     }
 
     // Data Units
@@ -128,6 +129,7 @@ internal object Constants {
         const val SECOND = "second"
         const val REVOLUTIONS_PER_MIN = "rpm"
         const val WATTS = "W"
+        const val METERS_PER_SECOND = "m/s"
     }
 
     object DataLogs {
