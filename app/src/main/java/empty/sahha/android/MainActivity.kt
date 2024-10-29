@@ -87,7 +87,6 @@ class MainActivity : ComponentActivity() {
             SahhaSensor.sleep,
             SahhaSensor.heart_rate,
             SahhaSensor.heart_rate_variability_sdnn,
-            SahhaSensor.cycling_cadence,
         )
 
         Sahha.configure(
@@ -214,7 +213,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        sensors
+                                        SahhaSensor.values().toSet()
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"

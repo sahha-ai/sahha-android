@@ -11,6 +11,7 @@ import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -49,7 +50,6 @@ import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -364,11 +364,24 @@ internal class BatchDataLogs @Inject constructor(
                     batchJobs += newBatchJob().launch {
                         val records = detectRecords(recordType)
                         records?.also { r ->
-                            val batched = r.flatMap { cadence ->
-                                listOf((cadence as CyclingPedalingCadenceRecord).toSahhaDataLogDto()) +
-                                        cadence.samples.map { sample -> sample.toSahhaDataLogDto(cadence) }
-                            }
-                            batchRepo.saveBatchedData(batched)
+                            val batched =
+                                r.map { record ->
+                                    (record as CyclingPedalingCadenceRecord).samples.map { sample ->
+                                        sample.toSahhaDataLogDto(record)
+                                    }
+                                }
+                            batchRepo.saveBatchedData(batched.flatten())
+                            saveQuery(recordType)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(DistanceRecord::class) -> {
+                    val recordType = DistanceRecord::class
+                    batchJobs += newBatchJob().launch {
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as DistanceRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }
@@ -412,7 +425,8 @@ internal class BatchDataLogs @Inject constructor(
         val typicalData: List<StepsHealthConnect>
         val dailyTotalsData: List<StepsHealthConnect>
         val localSteps = healthConnectRepo.getAllStepsHc()
-        val queries = records.map { qr -> (qr as StepsRecord).toStepsHealthConnect(mapper, timeManager) }
+        val queries =
+            records.map { qr -> (qr as StepsRecord).toStepsHealthConnect(mapper, timeManager) }
 
         dailyTotalsData =
             filterData(queries) { data ->
@@ -542,7 +556,8 @@ internal class BatchDataLogs @Inject constructor(
             lastSuccessfulCustomQueryEpoch?.let { epoch -> timeManager.epochMillisToISO(epoch) }
         val now = ZonedDateTime.now()
         val nowLocalDate = now.toLocalDate()
-        val startDateTimeLocalDate = timeManager.ISOToZonedDateTime(newRecord.startDateTime).toLocalDate()
+        val startDateTimeLocalDate =
+            timeManager.ISOToZonedDateTime(newRecord.startDateTime).toLocalDate()
         val isCurrentDay = nowLocalDate == startDateTimeLocalDate
 
         toPost.add(

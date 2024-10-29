@@ -101,6 +101,7 @@ internal object Constants {
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
         const val EXERCISE_SESSION = "exercise_session"
         const val CYCLING_CADENCE = "cycling_cadence"
+        const val DISTANCE_WALKING_RUNNING = "distance_walking_running"
     }
 
     // Data Units
