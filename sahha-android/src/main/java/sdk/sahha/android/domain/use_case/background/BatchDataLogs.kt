@@ -25,6 +25,7 @@ import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -414,6 +415,23 @@ internal class BatchDataLogs @Inject constructor(
                             val batched =
                                 r.map { record ->
                                     (record as SpeedRecord).samples.map { sample ->
+                                        sample.toSahhaDataLogDto(record)
+                                    }
+                                }
+                            batchRepo.saveBatchedData(batched.flatten())
+                            saveQuery(recordType)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(StepsCadenceRecord::class) -> {
+                    val recordType = StepsCadenceRecord::class
+                    batchJobs += newBatchJob().launch {
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val batched =
+                                r.map { record ->
+                                    (record as StepsCadenceRecord).samples.map { sample ->
                                         sample.toSahhaDataLogDto(record)
                                     }
                                 }

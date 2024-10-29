@@ -26,6 +26,7 @@ import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -869,6 +870,32 @@ internal fun SpeedRecord.Sample.toSahhaDataLogDto(
         dataType = Constants.DataTypes.RUNNING_SPEED,
         value = this.speed.inMetersPerSecond,
         unit = Constants.DataUnits.METERS_PER_SECOND,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
+    )
+}
+
+internal fun StepsCadenceRecord.Sample.toSahhaDataLogDto(
+    cadence: StepsCadenceRecord,
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    val source = cadence.metadata.dataOrigin.packageName
+    val startZoneOffset = cadence.startZoneOffset
+    val endZoneOffset = cadence.endZoneOffset
+    val recordingMethod = mapper.recordingMethod(cadence.metadata.recordingMethod)
+    val deviceType = mapper.devices(cadence.metadata.device?.type)
+
+    return SahhaDataLog(
+        id = UUID.randomUUID().toString(),
+        parentId = cadence.metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.STEPS_CADENCE,
+        value = this.rate,
+        unit = Constants.DataUnits.COUNT_PER_MIN,
         source = source,
         startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),

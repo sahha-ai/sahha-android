@@ -40,6 +40,7 @@ import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SpeedRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
@@ -273,6 +274,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
         if (sensors.contains(SahhaSensor.running_speed)) permissions.add(
             HealthPermission.getReadPermission(SpeedRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.steps_cadence)) permissions.add(
+            HealthPermission.getReadPermission(StepsCadenceRecord::class)
         )
 
         return permissions
