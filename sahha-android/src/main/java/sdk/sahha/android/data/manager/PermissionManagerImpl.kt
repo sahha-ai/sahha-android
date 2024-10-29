@@ -45,6 +45,7 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.WheelchairPushesRecord
 import kotlinx.coroutines.CoroutineScope
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
@@ -278,6 +279,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
         if (sensors.contains(SahhaSensor.steps_cadence)) permissions.add(
             HealthPermission.getReadPermission(StepsCadenceRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.wheelchair_push_count)) permissions.add(
+            HealthPermission.getReadPermission(WheelchairPushesRecord::class)
         )
 
         return permissions

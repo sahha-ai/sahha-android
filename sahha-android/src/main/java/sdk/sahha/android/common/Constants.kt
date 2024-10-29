@@ -105,6 +105,7 @@ internal object Constants {
         const val RUNNING_POWER = "running_power"
         const val RUNNING_SPEED = "running_speed"
         const val STEPS_CADENCE = "steps_cadence"
+        const val WHEELCHAIR_PUSH_COUNT = "wheelchair_push_count"
     }
 
     // Data Units

@@ -30,6 +30,7 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.WheelchairPushesRecord
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -436,6 +437,17 @@ internal class BatchDataLogs @Inject constructor(
                                     }
                                 }
                             batchRepo.saveBatchedData(batched.flatten())
+                            saveQuery(recordType)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(WheelchairPushesRecord::class) -> {
+                    val recordType = WheelchairPushesRecord::class
+                    batchJobs += newBatchJob().launch {
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            batchRepo.saveBatchedData(r.map { (it as WheelchairPushesRecord).toSahhaDataLogDto() })
                             saveQuery(recordType)
                         }
                     }

@@ -99,5 +99,6 @@ enum class SahhaSensor {
     distance_walking_running,
     running_power,
     running_speed,
-    steps_cadence
+    steps_cadence,
+    wheelchair_push_count,
 }

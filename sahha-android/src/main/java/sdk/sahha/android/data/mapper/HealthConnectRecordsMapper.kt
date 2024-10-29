@@ -31,6 +31,7 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.WheelchairPushesRecord
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
@@ -901,6 +902,25 @@ internal fun StepsCadenceRecord.Sample.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+    )
+}
+
+internal fun WheelchairPushesRecord.toSahhaDataLogDto(
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = UUID.randomUUID().toString(),
+        parentId = metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.WHEELCHAIR_PUSH_COUNT,
+        value = this.count.toDouble(),
+        unit = Constants.DataUnits.COUNT,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
     )
 }
 
