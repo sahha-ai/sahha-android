@@ -21,6 +21,7 @@ import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.PowerRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -820,6 +821,32 @@ internal fun DistanceRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+internal fun PowerRecord.Sample.toSahhaDataLogDto(
+    power: PowerRecord,
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    val source = power.metadata.dataOrigin.packageName
+    val startZoneOffset = power.startZoneOffset
+    val endZoneOffset = power.endZoneOffset
+    val recordingMethod = mapper.recordingMethod(power.metadata.recordingMethod)
+    val deviceType = mapper.devices(power.metadata.device?.type)
+
+    return SahhaDataLog(
+        id = UUID.randomUUID().toString(),
+        parentId = power.metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.RUNNING_POWER,
+        value = this.power.inWatts,
+        unit = Constants.DataUnits.WATTS,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
     )
 }
 

@@ -19,6 +19,7 @@ import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.PowerRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
@@ -382,6 +383,23 @@ internal class BatchDataLogs @Inject constructor(
                         val records = detectRecords(recordType)
                         records?.also { r ->
                             batchRepo.saveBatchedData(r.map { (it as DistanceRecord).toSahhaDataLogDto() })
+                            saveQuery(recordType)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(PowerRecord::class) -> {
+                    val recordType = PowerRecord::class
+                    batchJobs += newBatchJob().launch {
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val batched =
+                                r.map { record ->
+                                    (record as PowerRecord).samples.map { sample ->
+                                        sample.toSahhaDataLogDto(record)
+                                    }
+                                }
+                            batchRepo.saveBatchedData(batched.flatten())
                             saveQuery(recordType)
                         }
                     }

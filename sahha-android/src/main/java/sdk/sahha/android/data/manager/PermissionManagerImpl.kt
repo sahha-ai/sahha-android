@@ -36,6 +36,7 @@ import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
+import androidx.health.connect.client.records.PowerRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
@@ -266,6 +267,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
         if (sensors.contains(SahhaSensor.distance_walking_running)) permissions.add(
             HealthPermission.getReadPermission(DistanceRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.running_power)) permissions.add(
+            HealthPermission.getReadPermission(PowerRecord::class)
         )
 
         return permissions
