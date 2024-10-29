@@ -27,6 +27,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -256,6 +257,10 @@ internal class PermissionManagerImpl @Inject constructor(
 
         if (sensors.contains(SahhaSensor.exercise)) permissions.add(
             HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        )
+
+        if (sensors.contains(SahhaSensor.cycling_cadence)) permissions.add(
+            HealthPermission.getReadPermission(CyclingPedalingCadenceRecord::class)
         )
 
         return permissions

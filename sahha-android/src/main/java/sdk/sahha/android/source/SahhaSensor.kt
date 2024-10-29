@@ -95,4 +95,5 @@ enum class SahhaSensor {
     activity_summary,
     device_lock,
     exercise,
+    cycling_cadence,
 }

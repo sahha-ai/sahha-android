@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseSegment
 import androidx.health.connect.client.records.ExerciseSessionRecord
@@ -772,6 +773,50 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         source = source,
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = recordingMethod,
+        deviceType = deviceType,
+    )
+}
+
+internal fun CyclingPedalingCadenceRecord.toSahhaDataLogDto(
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.CYCLING_CADENCE,
+        value = ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60),
+        unit = Constants.DataUnits.MINUTE,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceType = mapper.devices(metadata.device?.type),
+    )
+}
+
+internal fun CyclingPedalingCadenceRecord.Sample.toSahhaDataLogDto(
+    cyclingPedalingCadence: CyclingPedalingCadenceRecord,
+    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaDataLog {
+    val source = cyclingPedalingCadence.metadata.dataOrigin.packageName
+    val startZoneOffset = cyclingPedalingCadence.startZoneOffset
+    val endZoneOffset = cyclingPedalingCadence.endZoneOffset
+    val recordingMethod = mapper.recordingMethod(cyclingPedalingCadence.metadata.recordingMethod)
+    val deviceType = mapper.devices(cyclingPedalingCadence.metadata.device?.type)
+
+    return SahhaDataLog(
+        id = UUID.randomUUID().toString(),
+        parentId = cyclingPedalingCadence.metadata.id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = Constants.DataTypes.CYCLING_CADENCE,
+        value = this.revolutionsPerMinute,
+        unit = Constants.DataUnits.REVOLUTIONS_PER_MIN,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(time, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(time, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
     )

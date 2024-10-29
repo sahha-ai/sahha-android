@@ -86,7 +86,8 @@ class MainActivity : ComponentActivity() {
             SahhaSensor.step_count,
             SahhaSensor.sleep,
             SahhaSensor.heart_rate,
-            SahhaSensor.heart_rate_variability_sdnn
+            SahhaSensor.heart_rate_variability_sdnn,
+            SahhaSensor.cycling_cadence,
         )
 
         Sahha.configure(

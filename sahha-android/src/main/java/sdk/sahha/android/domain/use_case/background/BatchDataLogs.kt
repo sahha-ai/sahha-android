@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
 import androidx.health.connect.client.records.BodyWaterMassRecord
 import androidx.health.connect.client.records.BoneMassRecord
+import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
@@ -351,6 +352,21 @@ internal class BatchDataLogs @Inject constructor(
                                                 exercise
                                             )
                                         }
+                            }
+                            batchRepo.saveBatchedData(batched)
+                            saveQuery(recordType)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(CyclingPedalingCadenceRecord::class) -> {
+                    val recordType = CyclingPedalingCadenceRecord::class
+                    batchJobs += newBatchJob().launch {
+                        val records = detectRecords(recordType)
+                        records?.also { r ->
+                            val batched = r.flatMap { cadence ->
+                                listOf((cadence as CyclingPedalingCadenceRecord).toSahhaDataLogDto()) +
+                                        cadence.samples.map { sample -> sample.toSahhaDataLogDto(cadence) }
                             }
                             batchRepo.saveBatchedData(batched)
                             saveQuery(recordType)

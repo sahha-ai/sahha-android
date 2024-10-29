@@ -100,6 +100,7 @@ internal object Constants {
         const val BODY_TEMPERATURE = "body_temperature"
         const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
         const val EXERCISE_SESSION = "exercise_session"
+        const val CYCLING_CADENCE = "cycling_cadence"
     }
 
     // Data Units
@@ -123,6 +124,7 @@ internal object Constants {
         const val STEP_PER_MIN = "step/min" // May be used in future - could be changed to count/min
         const val MINUTE = "minute"
         const val SECOND = "second"
+        const val REVOLUTIONS_PER_MIN = "rpm"
     }
 
     object DataLogs {
