@@ -910,8 +910,7 @@ internal fun WheelchairPushesRecord.toSahhaDataLogDto(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
-        parentId = metadata.id,
+        id = metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = Constants.DataTypes.WHEELCHAIR_PUSH_COUNT,
         value = this.count.toDouble(),
