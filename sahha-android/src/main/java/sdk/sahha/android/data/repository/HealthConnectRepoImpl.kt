@@ -114,15 +114,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
     private val mapper: HealthConnectConstantsMapper,
     private val sharedPrefs: SharedPreferences
 ) : HealthConnectRepo {
-    override val permissions =
-        setOf(
-            HealthPermission.getReadPermission(HeartRateRecord::class),
-            HealthPermission.getReadPermission(RestingHeartRateRecord::class),
-            HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(SleepSessionRecord::class),
-            HealthPermission.getReadPermission(BloodPressureRecord::class),
-            HealthPermission.getReadPermission(BloodGlucoseRecord::class),
-        )
     override val successfulQueryTimestamps =
         hashMapOf<String, ZonedDateTime>()
 
@@ -145,6 +136,10 @@ internal class HealthConnectRepoImpl @Inject constructor(
             HealthPermission.getReadPermission(BloodGlucoseRecord::class) -> BloodGlucoseRecord::class
             else -> null
         }
+    }
+
+    override fun getReadPermission(recordType: KClass<out Record>): String {
+        return HealthPermission.getReadPermission(recordType)
     }
 
     override suspend fun getGrantedPermissions(): Set<String> {

@@ -29,7 +29,6 @@ import java.time.ZonedDateTime
 import kotlin.reflect.KClass
 
 internal interface HealthConnectRepo {
-    val permissions: Set<String>
     val successfulQueryTimestamps: HashMap<String, ZonedDateTime>
     fun getHealthConnectCompatibleApps(): Set<CompatibleApps>
     suspend fun getGrantedPermissions(): Set<String>
@@ -160,4 +159,5 @@ internal interface HealthConnectRepo {
     suspend fun clearAllChangeTokens()
     var shouldLoop: Boolean
     fun resetHasMore()
+    fun getReadPermission(recordType: KClass<out Record>): String
 }

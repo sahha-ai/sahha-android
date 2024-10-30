@@ -77,7 +77,7 @@ internal class BatchDataLogs @Inject constructor(
 
         val granted = healthConnectRepo.getGrantedPermissions()
         granted.forEach { grantedPermission ->
-            if (grantedPermission == HealthPermission.getReadPermission(StepsRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(StepsRecord::class)) {
                 val recordType = StepsRecord::class
                 val changesToken = healthConnectRepo.getExistingChangesToken(recordType)
                 batchJobs += newBatchJob().launch {
@@ -89,7 +89,7 @@ internal class BatchDataLogs @Inject constructor(
                     records?.also { batchStepData(records = it) }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(SleepSessionRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(SleepSessionRecord::class)) {
                 val recordType = SleepSessionRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -108,7 +108,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(HeartRateRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(HeartRateRecord::class)) {
                 val recordType = HeartRateRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -125,7 +125,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(RestingHeartRateRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(RestingHeartRateRecord::class)) {
                 val recordType = RestingHeartRateRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -135,7 +135,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(
+            if (grantedPermission == healthConnectRepo.getReadPermission(
                     HeartRateVariabilityRmssdRecord::class
                 )
             ) {
@@ -148,7 +148,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BloodGlucoseRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BloodGlucoseRecord::class)) {
                 val recordType = BloodGlucoseRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -158,7 +158,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BloodPressureRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BloodPressureRecord::class)) {
                 val recordType = BloodPressureRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -173,7 +173,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(ActiveCaloriesBurnedRecord::class)) {
                 val recordType = ActiveCaloriesBurnedRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -183,7 +183,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(TotalCaloriesBurnedRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(TotalCaloriesBurnedRecord::class)) {
                 val recordType = TotalCaloriesBurnedRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -193,7 +193,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(OxygenSaturationRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(OxygenSaturationRecord::class)) {
                 val recordType = OxygenSaturationRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -203,7 +203,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(Vo2MaxRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(Vo2MaxRecord::class)) {
                 val recordType = Vo2MaxRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -213,7 +213,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BasalMetabolicRateRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BasalMetabolicRateRecord::class)) {
                 val recordType = BasalMetabolicRateRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -223,7 +223,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BodyFatRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BodyFatRecord::class)) {
                 val recordType = BodyFatRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -233,7 +233,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BodyWaterMassRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BodyWaterMassRecord::class)) {
                 val recordType = BodyWaterMassRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -243,7 +243,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(LeanBodyMassRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(LeanBodyMassRecord::class)) {
                 val recordType = LeanBodyMassRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -253,7 +253,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(HeightRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(HeightRecord::class)) {
                 val recordType = HeightRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -263,7 +263,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(WeightRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(WeightRecord::class)) {
                 val recordType = WeightRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -273,7 +273,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(RespiratoryRateRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(RespiratoryRateRecord::class)) {
                 val recordType = RespiratoryRateRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -283,7 +283,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BoneMassRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BoneMassRecord::class)) {
                 val recordType = BoneMassRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -293,7 +293,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(FloorsClimbedRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(FloorsClimbedRecord::class)) {
                 val recordType = FloorsClimbedRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -303,7 +303,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BodyTemperatureRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BodyTemperatureRecord::class)) {
                 val recordType = BodyTemperatureRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -313,7 +313,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(BasalBodyTemperatureRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(BasalBodyTemperatureRecord::class)) {
                 val recordType = BasalBodyTemperatureRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -323,7 +323,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(ExerciseSessionRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(ExerciseSessionRecord::class)) {
                 val recordType = ExerciseSessionRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -342,7 +342,10 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(CyclingPedalingCadenceRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(
+                    CyclingPedalingCadenceRecord::class
+                )
+            ) {
                 val recordType = CyclingPedalingCadenceRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -358,7 +361,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(DistanceRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(DistanceRecord::class)) {
                 val recordType = DistanceRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -368,7 +371,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(PowerRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(PowerRecord::class)) {
                 val recordType = PowerRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -384,7 +387,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(SpeedRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(SpeedRecord::class)) {
                 val recordType = SpeedRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -400,7 +403,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(StepsCadenceRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(StepsCadenceRecord::class)) {
                 val recordType = StepsCadenceRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
@@ -416,7 +419,7 @@ internal class BatchDataLogs @Inject constructor(
                     }
                 }
             }
-            if (grantedPermission == HealthPermission.getReadPermission(WheelchairPushesRecord::class)) {
+            if (grantedPermission == healthConnectRepo.getReadPermission(WheelchairPushesRecord::class)) {
                 val recordType = WheelchairPushesRecord::class
                 batchJobs += newBatchJob().launch {
                     val records = detectRecords(recordType)
