@@ -8,7 +8,7 @@ The Sahha SDK provides a convenient way for Android apps to connect to the Sahha
 
 The Sahha Docs provide detailed instructions for installation and usage of the Sahha SDK.
 
-[Sahha Docs](https://developer.sahha.ai/docs)
+[Sahha Docs](https://docs.sahha.ai)
 
 ---
 
