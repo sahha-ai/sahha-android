@@ -7,6 +7,7 @@ import android.os.HandlerThread
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
+import kotlinx.coroutines.sync.Mutex
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaSensor
@@ -29,6 +30,8 @@ internal object Session {
 
     internal var handlerRunning = false
     internal var healthConnectServiceLaunched = false
+
+    internal val authMutex = Mutex()
 
     internal fun shouldBeDevEnvironment(
         context: Context,
