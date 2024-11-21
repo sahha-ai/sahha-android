@@ -9,10 +9,10 @@ import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.interaction.UserDataInteractionManager
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.interaction.UserDataInteractionManager
 import javax.inject.Inject
 
 private const val tag = "SaveTokensUseCase"
@@ -29,10 +29,15 @@ internal class SaveTokensUseCase @Inject constructor(
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        Session.authMutex.withLock {
+        val lockSuccessful = Session.authMutex.tryLock()
+        if (lockSuccessful) {
             try {
                 val response =
-                    repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
+                    repository.getTokensByExternalId(
+                        appId,
+                        appSecret,
+                        ExternalIdSendDto(externalId)
+                    )
 
                 if (ResponseCode.isSuccessful(response.code())) {
                     saveTokensIfAvailable(response, callback)
@@ -42,7 +47,11 @@ internal class SaveTokensUseCase @Inject constructor(
                 callback("${response.code()}: ${response.message()}", false)
             } catch (e: Exception) {
                 callback(e.message, false)
+            } finally {
+                Session.authMutex.unlock()
             }
+        } else {
+            callback("Error: Authentication already in progress", false)
         }
     }
 
