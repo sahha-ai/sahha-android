@@ -5,6 +5,7 @@ import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.app_event.AppEvent
 import sdk.sahha.android.domain.model.app_event.toSahhaDataLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import javax.inject.Inject
 
 internal class LogAppEvent @Inject constructor(
@@ -13,13 +14,11 @@ internal class LogAppEvent @Inject constructor(
     private val mapper: HealthConnectConstantsMapper
 ) {
     suspend operator fun invoke(event: AppEvent) {
-        repo.saveBatchedData(
-            listOf(
-                event.toSahhaDataLog(
-                    context = context,
-                    mapper = mapper
-                )
-            )
+        val appEvent = event.toSahhaDataLog(
+            context = context,
+            mapper = mapper
         )
+        println(SahhaConverterUtility.convertToJsonString(appEvent))
+        repo.saveBatchedData(listOf(appEvent))
     }
 }
