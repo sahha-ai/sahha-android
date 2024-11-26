@@ -108,10 +108,67 @@ object Sahha {
         }
     }
 
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            callback = callback
+        )
+    }
+
+    @JvmName("getBiomarkersDate")
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        dates: Pair<Date, Date>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            dates = dates,
+            callback = callback
+        )
+    }
+
+    @JvmName("getBiomarkersLocalDate")
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        localDates: Pair<LocalDateTime, LocalDateTime>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            localDates = localDates,
+            callback = callback
+        )
+    }
+
 
     fun getScores(
         types: Set<SahhaScoreType>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
         if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)
