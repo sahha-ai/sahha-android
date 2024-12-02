@@ -21,25 +21,25 @@ internal class HostAppLifecycleObserver @Inject constructor(
             when (event) {
                 Lifecycle.Event.ON_CREATE -> {
                     val appEvent = AppEvent(
-                        AppEventEnum.APP_LAUNCH.event,
+                        AppEventEnum.APP_CREATE.event,
                         ZonedDateTime.now(),
                     )
 
                     logAppEvent(event = appEvent)
                 }
 
-                Lifecycle.Event.ON_START -> {
+                Lifecycle.Event.ON_RESUME -> {
                     val appEvent = AppEvent(
-                        AppEventEnum.APP_OPEN.event,
+                        AppEventEnum.APP_RESUME.event,
                         ZonedDateTime.now(),
                     )
 
                     logAppEvent(event = appEvent)
                 }
 
-                Lifecycle.Event.ON_STOP -> {
+                Lifecycle.Event.ON_PAUSE -> {
                     val appEvent = AppEvent(
-                        AppEventEnum.APP_CLOSE.event,
+                        AppEventEnum.APP_PAUSE.event,
                         ZonedDateTime.now(),
                     )
 
@@ -48,7 +48,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
 
                 Lifecycle.Event.ON_DESTROY -> {
                     val appEvent = AppEvent(
-                        AppEventEnum.APP_TERMINATE.event,
+                        AppEventEnum.APP_DESTROY.event,
                         ZonedDateTime.now(),
                     )
 

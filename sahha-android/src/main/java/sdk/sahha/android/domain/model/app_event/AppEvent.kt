@@ -26,7 +26,7 @@ internal fun AppEvent.toSahhaDataLog(
     return SahhaDataLog(
         id = UUID.randomUUID().toString(),
         logType = Constants.DataLogs.DEVICE,
-        dataType = Constants.DataTypes.APP_EVENT,
+        dataType = event,
         source = context.packageName,
         value = 0.0,
         unit = Constants.DataUnits.EMPTY_STRING,
@@ -34,8 +34,5 @@ internal fun AppEvent.toSahhaDataLog(
         endDateTime = dateTimeIso,
         recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
         deviceType = mapper.devices(Device.TYPE_PHONE),
-        additionalProperties = hashMapOf(
-            "name" to event
-        )
     )
 }
