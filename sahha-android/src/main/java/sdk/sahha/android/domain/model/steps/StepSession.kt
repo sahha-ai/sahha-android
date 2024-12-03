@@ -16,11 +16,18 @@ internal data class StepSession(
     val count: Int,
     val startDateTime: String,
     val endDateTime: String,
-    override val metadata: SahhaMetadata? = null,
+    override val postDateTimes: ArrayList<String>? = null,
+    override val modifiedDateTime: String? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 ): HasMetadata<StepSession> {
-    override fun copyWithMetadata(metadata: SahhaMetadata): StepSession {
-        return this.copy(metadata = metadata)
+    override fun copyWithMetadata(
+        postDateTimes: ArrayList<String>?,
+        modifiedDateTime: String?,
+    ): StepSession {
+        return this.copy(
+            postDateTimes = postDateTimes,
+            modifiedDateTime = modifiedDateTime,
+        )
     }
 }
 
@@ -36,6 +43,7 @@ internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
         recordingMethod = RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name,
-        metadata = metadata
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime,
     )
 }

@@ -2,7 +2,6 @@ package sdk.sahha.android.domain.use_case.metadata
 
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.metadata.HasMetadata
-import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import javax.inject.Inject
 
 internal class AddMetadata @Inject constructor(
@@ -14,10 +13,12 @@ internal class AddMetadata @Inject constructor(
         postDateTime: String = timeManager.nowInISO()
     ): List<T> {
         val modifiedData = dataList.map { item ->
-            val postDateTimes = item.metadata?.postDateTime?.toMutableList() ?: mutableListOf()
+            val postDateTimes = item.postDateTimes ?: arrayListOf()
             postDateTimes.add(postDateTime)
-            val newMetadata = SahhaMetadata(postDateTimes)
-            item.copyWithMetadata(newMetadata)
+            item.copyWithMetadata(
+                postDateTimes = postDateTimes,
+                modifiedDateTime = item.modifiedDateTime
+            )
         }
         saveData(modifiedData)
         return modifiedData
