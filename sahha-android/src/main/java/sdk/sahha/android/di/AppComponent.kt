@@ -36,6 +36,7 @@ import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
+import sdk.sahha.android.domain.use_case.GetBiomarkersUseCase
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.post.PostBatchData
@@ -88,6 +89,7 @@ internal interface AppComponent {
 
     val batchDataLogs: BatchDataLogs
     val postBatchData: PostBatchData
+    val getBiomarkersUseCase: GetBiomarkersUseCase
 
     @get:MainScope
     val mainScope: CoroutineScope

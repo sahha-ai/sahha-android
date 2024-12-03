@@ -19,33 +19,24 @@ internal class GetScoresUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         types: Set<SahhaScoreType>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
-        repository.getScores(scoresString = types.map { it.name }, callback = callback)
+        repository.getScores(scoreTypesString = types.map { it.name }, callback = callback)
     }
 
     @JvmName("invokeDate")
     suspend operator fun invoke(
         types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
-                val datesISO = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                val datesISO =
                     Pair(
                         timeManager.dateToISO(dates.first),
                         timeManager.dateToISO(dates.second)
                     )
-                } else {
-                    callback?.also {
-                        it(
-                            SahhaErrors.androidVersionTooLow(7),
-                            null
-                        )
-                    }
-                    return
-                }
 
                 repository.getScores(types.map { it.name }, datesISO, callback)
             } ?: callback?.also {
@@ -74,24 +65,15 @@ internal class GetScoresUseCase @Inject constructor(
     suspend operator fun invoke(
         types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
         try {
             sahhaTimeManager?.also { timeManager ->
-                val datesISO = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val datesISO =
                     Pair(
                         timeManager.localDateTimeToISO(dates.first),
                         timeManager.localDateTimeToISO(dates.second)
                     )
-                } else {
-                    callback?.also {
-                        it(
-                            SahhaErrors.androidVersionTooLow(8),
-                            null
-                        )
-                    }
-                    return
-                }
 
                 repository.getScores(types.map { it.name }, datesISO, callback)
             } ?: callback?.also {
