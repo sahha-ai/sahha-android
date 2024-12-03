@@ -41,6 +41,10 @@ internal class DeviceInfoRepoImpl(
         return configDao.getDeviceInformation()
     }
 
+    override suspend fun clearDeviceInformation() {
+        configDao.clearDeviceInformation()
+    }
+
     override suspend fun putDeviceInformation(
         token: String,
         deviceInformation: DeviceInformation,
