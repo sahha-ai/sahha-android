@@ -5,15 +5,14 @@ import sdk.sahha.android.domain.model.device.PhoneUsage
 
 @Dao
 internal interface DeviceUsageDao {
-    // Phone Usage
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveUsage(usage: PhoneUsage)
+    suspend fun saveUsages(usages: List<PhoneUsage>)
 
     @Query("SELECT * FROM PhoneUsage")
     suspend fun getUsages(): List<PhoneUsage>
 
     @Query("DELETE FROM PhoneUsage")
-    suspend fun clearUsages()
+    suspend fun clearAllUsages()
 
     @Delete
     suspend fun clearUsages(usages: List<PhoneUsage>)

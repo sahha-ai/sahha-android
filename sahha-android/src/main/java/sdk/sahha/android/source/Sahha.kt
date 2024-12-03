@@ -17,10 +17,11 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
+import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import java.time.LocalDateTime
 import java.util.Date
 
-private const val tag = "Sahha"
+private const val TAG = "Sahha"
 
 @Keep
 object Sahha {
@@ -182,7 +183,7 @@ object Sahha {
 
     fun openAppSettings(context: Context) {
         if (!sahhaIsConfigured()) {
-            Log.w(tag, SahhaErrors.sahhaNotConfigured)
+            Log.w(TAG, SahhaErrors.sahhaNotConfigured)
             return
         }
 
@@ -210,6 +211,7 @@ object Sahha {
                 Session.sensors,
                 Session.settings ?: SahhaSettings(environment = SahhaEnvironment.sandbox)
             )
+
             sim.permission.enableSensors(context, callback)
         }
     }
@@ -229,7 +231,11 @@ object Sahha {
             return
         }
 
-        sim.permission.getSensorStatus(context, sensors, callback)
+        di.defaultScope.launch {
+            sim.permission.processMultipleSensors(context, sensors) { error, status ->
+                callback(error, status.toSahhaSensorStatus())
+            }
+        }
     }
 
     fun postError(

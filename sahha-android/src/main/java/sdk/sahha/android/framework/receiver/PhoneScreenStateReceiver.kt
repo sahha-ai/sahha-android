@@ -6,10 +6,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.Sahha
@@ -27,11 +25,13 @@ internal class PhoneScreenStateReceiver : BroadcastReceiver() {
 
     private suspend fun saveScreenStateAsync() {
         Sahha.di.timeManager.also { sahhaTime ->
-            Sahha.di.deviceUsageDao.saveUsage(
-                PhoneUsage(
-                    isLocked = Sahha.di.keyguardManager.isKeyguardLocked,
-                    isScreenOn = Sahha.di.powerManager.isInteractive,
-                    sahhaTime.nowInISO()
+            Sahha.di.deviceUsageRepo.saveUsages(
+                listOf(
+                    PhoneUsage(
+                        isLocked = Sahha.di.keyguardManager.isKeyguardLocked,
+                        isScreenOn = Sahha.di.powerManager.isInteractive,
+                        sahhaTime.nowInISO()
+                    )
                 )
             )
         }

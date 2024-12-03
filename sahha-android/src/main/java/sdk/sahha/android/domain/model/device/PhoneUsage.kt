@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.metadata.HasMetadata
+import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import java.util.UUID
 
 
@@ -12,8 +14,13 @@ internal data class PhoneUsage(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
     val createdAt: String,
+    override val metadata: SahhaMetadata? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString()
-)
+) : HasMetadata<PhoneUsage> {
+    override fun copyWithMetadata(metadata: SahhaMetadata): PhoneUsage {
+        return this.copy(metadata = metadata)
+    }
+}
 
 internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
@@ -27,6 +34,7 @@ internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
             "isScreenOn" to if (isScreenOn) "1" else "0"
         ),
         startDateTime = createdAt,
-        endDateTime = createdAt
+        endDateTime = createdAt,
+        metadata = metadata
     )
 }

@@ -1,5 +1,6 @@
 package empty.sahha.android
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,15 +80,14 @@ class MainActivity : ComponentActivity() {
 //            sensors = setOf()
         )
 
-        val sensors = SahhaSensor.values().toSet()
-//        val sensors = setOf<SahhaSensor>(
-//            SahhaSensor.device_lock,
-//            SahhaSensor.heart_rate,
-//            SahhaSensor.step_count,
-//            SahhaSensor.sleep,
-//            SahhaSensor.total_energy_burned,
-//            SahhaSensor.exercise
-//        )
+//        val sensors = SahhaSensor.values().toSet()
+        val sensors = setOf<SahhaSensor>(
+            SahhaSensor.device_lock,
+            SahhaSensor.step_count,
+            SahhaSensor.sleep,
+            SahhaSensor.heart_rate,
+            SahhaSensor.heart_rate_variability_sdnn
+        )
 
         Sahha.configure(
             this,
@@ -138,6 +139,8 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                PermissionStateTestView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Greeting(greeting)
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -198,7 +201,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        setOf(SahhaSensor.sleep, SahhaSensor.device_lock)
+                                        setOf(SahhaSensor.sleep)
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
@@ -455,6 +458,94 @@ fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
     }
+}
+
+@Composable
+fun PermissionStateTestView() {
+    val context = LocalContext.current
+    var permissionStatus by remember {
+        mutableStateOf("none")
+    }
+    Text(text = permissionStatus)
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(SahhaSensor.device_lock)
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Device Lock")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(SahhaSensor.step_count)
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Step Count")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(SahhaSensor.sleep)
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Sleep")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(SahhaSensor.heart_rate)
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Heart Rate")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(SahhaSensor.heart_rate_variability_sdnn)
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Heart Rate Var Sdnn")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
+    Button(onClick = {
+        Sahha.getSensorStatus(
+            context,
+            setOf<SahhaSensor>(
+                SahhaSensor.device_lock,
+                SahhaSensor.step_count,
+                SahhaSensor.sleep,
+                SahhaSensor.heart_rate,
+                SahhaSensor.heart_rate_variability_sdnn
+            )
+        ) { error, status ->
+            permissionStatus =
+                "${status.name}${error?.let { "\n$it" } ?: ""}"
+        }
+    }) {
+        Text("Grouped")
+    }
+    Spacer(modifier = Modifier.padding(8.dp))
 }
 
 @Composable

@@ -13,7 +13,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "1.0.0"
+def gVersionName = "1.0.4"
 
 android {
     compileSdk 34
@@ -132,6 +132,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.2'
     implementation 'com.squareup.retrofit2:retrofit:2.7.2'
+    testImplementation 'com.squareup.retrofit2:retrofit-mock:2.7.2'
 
     // Health Connect
     implementation "androidx.health.connect:connect-client:1.1.0-alpha07"

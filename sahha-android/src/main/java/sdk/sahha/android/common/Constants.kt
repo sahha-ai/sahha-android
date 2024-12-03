@@ -56,6 +56,9 @@ internal object Constants {
         const val RESTART_BACKGROUND_TASKS = "resetBackgroundTasks"
     }
 
+    // Sahha Metadata
+    const val POST_DATE_TIME = "postDateTime"
+
     // Data Source
     const val SLEEP_DATA_SOURCE = "AndroidSleep"
     const val STEP_COUNTER_DATA_SOURCE = "AndroidStepCounter"

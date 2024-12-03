@@ -48,10 +48,12 @@ import sdk.sahha.android.data.repository.AppCrashRepoImpl
 import sdk.sahha.android.data.repository.AuthRepoImpl
 import sdk.sahha.android.data.repository.BatchedDataRepoImpl
 import sdk.sahha.android.data.repository.DeviceInfoRepoImpl
+import sdk.sahha.android.data.repository.DeviceUsageRepoImpl
 import sdk.sahha.android.data.repository.HealthConnectRepoImpl
 import sdk.sahha.android.data.repository.InsightsRepoImpl
 import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
+import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
@@ -64,10 +66,12 @@ import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
+import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
+import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.LogAppEvent
@@ -316,7 +320,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
         sahhaConfigRepo: SahhaConfigRepo,
-        deviceDao: DeviceUsageDao,
+        deviceUsageRepo: DeviceUsageRepo,
         sleepDao: SleepDao,
         movementDao: MovementDao,
         authRepo: AuthRepo,
@@ -324,13 +328,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         mutex: Mutex,
         api: SahhaApi,
         chunkManager: PostChunkManager,
-        permissionManager: PermissionManager
+        permissionManager: PermissionManager,
+        timeManager: SahhaTimeManager
     ): SensorRepo {
         return SensorRepoImpl(
             context,
             defaultScope,
             ioScope,
-            deviceDao,
+            deviceUsageRepo,
             sleepDao,
             movementDao,
             authRepo,
@@ -339,7 +344,8 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             mutex,
             api,
             chunkManager,
-            permissionManager
+            permissionManager,
+            timeManager
         )
     }
 
@@ -367,6 +373,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         batchedDataDao: BatchedDataDao
     ): BatchedDataRepo {
         return BatchedDataRepoImpl(batchedDataDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideDeviceUsageRepository(
+        deviceUsageDao: DeviceUsageDao
+    ): DeviceUsageRepo {
+        return DeviceUsageRepoImpl(deviceUsageDao)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSleepRepository(
+        sleepDao: SleepDao
+    ): SleepRepo {
+        return SleepRepoImpl(sleepDao)
     }
 
     @Singleton

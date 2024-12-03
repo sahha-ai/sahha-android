@@ -6,6 +6,8 @@ import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.metadata.HasMetadata
+import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -14,8 +16,13 @@ internal data class StepSession(
     val count: Int,
     val startDateTime: String,
     val endDateTime: String,
+    override val metadata: SahhaMetadata? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
-)
+): HasMetadata<StepSession> {
+    override fun copyWithMetadata(metadata: SahhaMetadata): StepSession {
+        return this.copy(metadata = metadata)
+    }
+}
 
 internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
     return SahhaDataLog(
@@ -29,5 +36,6 @@ internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
         recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        metadata = metadata
     )
 }

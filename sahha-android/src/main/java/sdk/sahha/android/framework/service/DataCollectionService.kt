@@ -13,9 +13,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
@@ -35,11 +34,13 @@ private const val LOOP_INTERVAL = 15 * 60 * 1000L
 
 internal class DataCollectionService : Service() {
     private val tag by lazy { "DataCollectionService" }
-    private lateinit var config: SahhaConfiguration
 
-    private val scope by lazy { CoroutineScope(Dispatchers.Default + Job()) }
+    private lateinit var config: SahhaConfiguration
+    private lateinit var sensorSet: Set<SahhaSensor>
+
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
     private val sensors by lazy { Sahha.sim.sensor }
-    private val sensorSet by lazy { runBlocking { Sahha.di.sahhaConfigRepo.getConfig().sensorArray.toSahhaSensorSet() } }
 
     private var killswitched = false
 
@@ -50,16 +51,17 @@ internal class DataCollectionService : Service() {
     override fun onCreate() {
         super.onCreate()
         startForeground(NOTIFICATION_DATA_COLLECTION, createBasicNotification())
+        initializeService()
+    }
 
-        scope.launch {
+    private fun initializeService() {
+        serviceScope.launch {
             try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
                 startForegroundNotification()
 
                 config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
-
-                startTimeZoneChangedReceiver()
-                startDataCollectors(this@DataCollectionService)
+                sensorSet = config.sensorArray.toSahhaSensorSet()
 
                 Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
                 Session.handlerThread.start()
@@ -95,7 +97,7 @@ internal class DataCollectionService : Service() {
                             "Thread: ${Session.handlerThread.threadId}\n\n"
                 )
 
-                scope.launch {
+                serviceScope.launch {
                     queryHealthConnect { _, _ ->
                         Session.handlerRunning = false
                     }
@@ -111,10 +113,12 @@ internal class DataCollectionService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         checkAndKillService(intent)
         checkAndRestartService(intent)
-        scope.launch {
+        serviceScope.launch {
             SahhaReconfigure(this@DataCollectionService)
             config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
             checkAndStartCollectingScreenLockData()
+            startDataCollectors(this@DataCollectionService)
+            startTimeZoneChangedReceiver()
         }
         return START_STICKY
     }
@@ -158,6 +162,7 @@ internal class DataCollectionService : Service() {
 
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
+        serviceJob.cancel()
 
         try {
             Session.handlerThread.quitSafely()
@@ -210,7 +215,7 @@ internal class DataCollectionService : Service() {
         checkAndStartCollectingScreenLockData()
 
         Sahha.di.permissionManager.getNativeSensorStatus(context) { status ->
-            scope.launch {
+            serviceScope.launch {
                 if (status == SahhaSensorStatus.enabled)
                     checkAndStartCollectingPedometerData()
             }
@@ -218,13 +223,14 @@ internal class DataCollectionService : Service() {
     }
 
     private suspend fun startForegroundNotification() {
-        withContext(Dispatchers.Default) {
-            val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-            Sahha.di.sahhaNotificationManager.setNewPersistent(
-                notificationConfig.icon,
-                notificationConfig.title,
-                notificationConfig.shortDescription
-            )
+        val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
+        Sahha.di.sahhaNotificationManager.setNewPersistent(
+            notificationConfig.icon,
+            notificationConfig.title,
+            notificationConfig.shortDescription
+        )
+
+        withContext(Dispatchers.Main) {
             startForegroundService()
         }
     }

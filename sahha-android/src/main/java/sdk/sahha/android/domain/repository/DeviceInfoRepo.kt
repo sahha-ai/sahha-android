@@ -13,4 +13,6 @@ internal interface DeviceInfoRepo {
         deviceInformation: DeviceInformation,
         callback: (suspend (error: String?, success: Boolean) -> Unit)? = null
     )
+
+    suspend fun clearDeviceInformation()
 }

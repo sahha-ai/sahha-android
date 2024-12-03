@@ -34,11 +34,13 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.post.PostHealthConnectDataUseCase
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.background.LogAppAliveState
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
+import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 
@@ -77,9 +79,9 @@ internal interface AppComponent {
     val securityDao: SecurityDao
     val movementDao: MovementDao
     val sleepDao: SleepDao
-    val deviceUsageDao: DeviceUsageDao
     val configurationDao: ConfigurationDao
 
+    val deviceUsageRepo: DeviceUsageRepo
     val authRepo: AuthRepo
     val deviceInfoRepo: DeviceInfoRepo
     val userDataRepo: UserDataRepo
@@ -88,6 +90,7 @@ internal interface AppComponent {
     val batchedDataRepo: BatchedDataRepo
 
     val batchDataLogs: BatchDataLogs
+    val postBatchData: PostBatchData
 
     @get:MainScope
     val mainScope: CoroutineScope

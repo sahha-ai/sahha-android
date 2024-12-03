@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 
 import com.google.gson.reflect.TypeToken
+import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import java.lang.reflect.Type
 
 // Converter for Room Database to handle JSON
@@ -30,5 +31,15 @@ internal class Converter {
     @TypeConverter
     fun fromHashMapToJsonString(hashMap: HashMap<String, String>?): String? {
         return gson.toJson(hashMap)
+    }
+
+    @TypeConverter
+    fun fromJsonStringToSahhaMetadata(value: String?): SahhaMetadata? {
+        return value?.let { gson.fromJson(value, SahhaMetadata::class.java) }
+    }
+
+    @TypeConverter
+    fun fromHashMapAnyToJsonString(metadata: SahhaMetadata?): String? {
+        return gson.toJson(metadata)
     }
 }

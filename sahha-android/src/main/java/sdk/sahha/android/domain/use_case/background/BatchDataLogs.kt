@@ -40,6 +40,7 @@ import sdk.sahha.android.data.mapper.toSahhaDataLog
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
+import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
@@ -47,6 +48,7 @@ import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -58,7 +60,8 @@ import kotlin.reflect.KClass
 internal class BatchDataLogs @Inject constructor(
     private val batchRepo: BatchedDataRepo,
     private val healthConnectRepo: HealthConnectRepo,
-    private val timeManager: SahhaTimeManager
+    private val timeManager: SahhaTimeManager,
+    private val mapper: HealthConnectConstantsMapper,
 ) {
     private var batchJobs = emptyList<Job>()
     private val syncJob = CoroutineScope(Dispatchers.Default + Job())
@@ -388,14 +391,14 @@ internal class BatchDataLogs @Inject constructor(
         )
     }
 
-    private suspend fun batchStepData(records: List<Record>) {
+    internal suspend fun batchStepData(records: List<Record>) {
         var batchData = mutableListOf<SahhaDataLog>()
         val typicalData: List<StepsHealthConnect>
-        val edgeCaseData: List<StepsHealthConnect>
+        val dailyTotalsData: List<StepsHealthConnect>
         val localSteps = healthConnectRepo.getAllStepsHc()
-        val queries = records.map { qr -> (qr as StepsRecord).toStepsHealthConnect() }
+        val queries = records.map { qr -> (qr as StepsRecord).toStepsHealthConnect(mapper, timeManager) }
 
-        edgeCaseData =
+        dailyTotalsData =
             filterData(queries) { data ->
                 isTotalDayTimestamps(data)
             }
@@ -405,8 +408,8 @@ internal class BatchDataLogs @Inject constructor(
             }
 
         // Handles edge cases like daily total steps from Samsung Health
-        batchData = processEdgeCase(
-            edgeCaseData = edgeCaseData, localSteps = localSteps, batchData = batchData
+        batchData = processDailyTotals(
+            dailyTotalsData = dailyTotalsData, locallyStoredSteps = localSteps
         )
 
         // Handles duplicate steps for typical step data
@@ -425,7 +428,7 @@ internal class BatchDataLogs @Inject constructor(
         checkAndClearLastMidnightSteps()
     }
 
-    private fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {
+    internal fun isTotalDayTimestamps(data: StepsHealthConnect): Boolean {
         val start = timeManager.ISOToZonedDateTime(data.startDateTime).toLocalTime()
         val end = timeManager.ISOToZonedDateTime(data.endDateTime).toLocalTime()
         val endOfDay = LocalTime.MIDNIGHT.minus(10, ChronoUnit.MILLIS)
@@ -434,14 +437,14 @@ internal class BatchDataLogs @Inject constructor(
                 && end == endOfDay
     }
 
-    private fun filterData(
+    internal fun filterData(
         data: List<StepsHealthConnect>,
         toCondition: (StepsHealthConnect) -> Boolean
     ): List<StepsHealthConnect> {
         return data.filter { d -> toCondition(d) }
     }
 
-    private suspend fun processSteps(
+    internal suspend fun processSteps(
         queries: List<StepsHealthConnect>,
         localSteps: List<StepsHealthConnect>,
         batchData: MutableList<SahhaDataLog>,
@@ -464,13 +467,13 @@ internal class BatchDataLogs @Inject constructor(
         return processedData
     }
 
-    private suspend fun processEdgeCase(
-        edgeCaseData: List<StepsHealthConnect>,
-        localSteps: List<StepsHealthConnect>,
-        batchData: MutableList<SahhaDataLog>,
+    internal suspend fun processDailyTotals(
+        dailyTotalsData: List<StepsHealthConnect>,
+        locallyStoredSteps: List<StepsHealthConnect>,
     ): MutableList<SahhaDataLog> {
-        var processedData = batchData
-        for (record in edgeCaseData) {
+        var processedData = mutableListOf<SahhaDataLog>()
+        val localSteps = locallyStoredSteps.toMutableList()
+        for (record in dailyTotalsData) {
             val localMatch = localSteps.find { local ->
                 local.metaId == record.metaId
             }
@@ -522,6 +525,9 @@ internal class BatchDataLogs @Inject constructor(
         val lastSuccessfulCustomQuery =
             lastSuccessfulCustomQueryEpoch?.let { epoch -> timeManager.epochMillisToISO(epoch) }
         val now = ZonedDateTime.now()
+        val nowLocalDate = now.toLocalDate()
+        val startDateTimeLocalDate = timeManager.ISOToZonedDateTime(newRecord.startDateTime).toLocalDate()
+        val isCurrentDay = nowLocalDate == startDateTimeLocalDate
 
         toPost.add(
             local?.let { loc ->
@@ -548,7 +554,7 @@ internal class BatchDataLogs @Inject constructor(
                         newRecord.startDateTime
                     else query
                 } ?: newRecord.startDateTime,
-                endDateTime = newRecord.modifiedDateTime,
+                endDateTime = if (isCurrentDay) newRecord.modifiedDateTime else newRecord.endDateTime,
                 modifiedDateTime = newRecord.modifiedDateTime,
                 recordingMethod = newRecord.recordingMethod,
                 deviceType = newRecord.deviceType,
