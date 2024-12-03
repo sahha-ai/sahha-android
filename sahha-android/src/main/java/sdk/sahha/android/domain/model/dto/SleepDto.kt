@@ -19,11 +19,17 @@ internal data class SleepDto(
     val source: String = Constants.SLEEP_DATA_SOURCE,
     val sleepStage: String = Constants.SLEEP_STAGE_IN_BED,
     val createdAt: String = "",
-    override val metadata: SahhaMetadata? = null,
+    override val postDateTimes: ArrayList<String>? = null,
+    override val modifiedDateTime: String? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
 ): HasMetadata<SleepDto> {
-    override fun copyWithMetadata(metadata: SahhaMetadata): SleepDto {
-        return this.copy(metadata = metadata)
+    override fun copyWithMetadata(
+        postDateTimes: ArrayList<String>?,
+        modifiedDateTime: String?,
+    ): SleepDto {
+        return this.copy(
+            postDateTimes = postDateTimes,
+        )
     }
 }
 
@@ -39,6 +45,7 @@ internal fun SleepDto.toSahhaDataLogDto(): SahhaDataLog {
         endDateTime = endDateTime,
         recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
         deviceType = Sahha.di.healthConnectConstantsMapper.devices(Device.TYPE_PHONE),
-        metadata = metadata
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime
     )
 }

@@ -14,11 +14,18 @@ internal data class PhoneUsage(
     val isLocked: Boolean,
     val isScreenOn: Boolean,
     val createdAt: String,
-    override val metadata: SahhaMetadata? = null,
+    override val postDateTimes: ArrayList<String>? = null,
+    override val modifiedDateTime: String? = null,
     @PrimaryKey val id: String = UUID.randomUUID().toString()
 ) : HasMetadata<PhoneUsage> {
-    override fun copyWithMetadata(metadata: SahhaMetadata): PhoneUsage {
-        return this.copy(metadata = metadata)
+    override fun copyWithMetadata(
+        postDateTimes: ArrayList<String>?,
+        modifiedDateTime: String?,
+    ): PhoneUsage {
+        return this.copy(
+            postDateTimes = postDateTimes,
+            modifiedDateTime = modifiedDateTime,
+        )
     }
 }
 
@@ -35,6 +42,7 @@ internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
         ),
         startDateTime = createdAt,
         endDateTime = createdAt,
-        metadata = metadata
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime
     )
 }
