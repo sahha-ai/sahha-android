@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
         )
 
         Sahha.configure(
-            application,
+            this,
             config,
         )
 
@@ -228,7 +228,7 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.configure(
-                                        application,
+                                        this@MainActivity,
                                         config
                                     ) { error, success ->
                                         lifecycleScope.launch {

@@ -39,6 +39,8 @@ import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.GetBiomarkersUseCase
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
+import sdk.sahha.android.domain.use_case.background.LogAppAliveState
+import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.domain.use_case.post.PostBatchData
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
@@ -70,6 +72,7 @@ internal interface AppComponent {
     val postChunkManager: PostChunkManager
     val encryptedSharedPreferences: SharedPreferences
     val sahhaErrorLogger: SahhaErrorLogger
+    val hostAppLifecycleObserver: HostAppLifecycleObserver
 
     val gson: GsonConverterFactory
     val api: SahhaApi
@@ -108,4 +111,5 @@ internal interface AppComponent {
     val healthConnectConstantsMapper: HealthConnectConstantsMapper
 
     val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
+    val logAppAliveState: LogAppAliveState
 }
