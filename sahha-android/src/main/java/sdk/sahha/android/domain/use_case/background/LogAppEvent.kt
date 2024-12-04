@@ -18,7 +18,6 @@ internal class LogAppEvent @Inject constructor(
             context = context,
             mapper = mapper
         )
-        println(SahhaConverterUtility.convertToJsonString(appEvent))
         repo.saveBatchedData(listOf(appEvent))
     }
 }
