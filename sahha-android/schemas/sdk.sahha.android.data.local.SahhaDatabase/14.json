@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 13,
-    "identityHash": "566d312578e9d95f909733f5849efd69",
+    "version": 14,
+    "identityHash": "b6948e2be529d6bea248f094b9174760",
     "entities": [
       {
         "tableName": "RecognisedActivity",
@@ -208,7 +208,7 @@
       },
       {
         "tableName": "PhoneUsage",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`isLocked` INTEGER NOT NULL, `isScreenOn` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `metadata` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`isLocked` INTEGER NOT NULL, `isScreenOn` INTEGER NOT NULL, `createdAt` TEXT NOT NULL, `postDateTimes` TEXT, `modifiedDateTime` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "isLocked",
@@ -229,8 +229,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "metadata",
-            "columnName": "metadata",
+            "fieldPath": "postDateTimes",
+            "columnName": "postDateTimes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modifiedDateTime",
+            "columnName": "modifiedDateTime",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -366,7 +372,7 @@
       },
       {
         "tableName": "SleepDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`durationInMinutes` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `source` TEXT NOT NULL, `sleepStage` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `metadata` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`durationInMinutes` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `source` TEXT NOT NULL, `sleepStage` TEXT NOT NULL, `createdAt` TEXT NOT NULL, `postDateTimes` TEXT, `modifiedDateTime` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "durationInMinutes",
@@ -405,8 +411,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "metadata",
-            "columnName": "metadata",
+            "fieldPath": "postDateTimes",
+            "columnName": "postDateTimes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modifiedDateTime",
+            "columnName": "modifiedDateTime",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -578,7 +590,7 @@
       },
       {
         "tableName": "StepSession",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`count` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `metadata` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`count` INTEGER NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `postDateTimes` TEXT, `modifiedDateTime` TEXT, `id` TEXT NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "count",
@@ -599,8 +611,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "metadata",
-            "columnName": "metadata",
+            "fieldPath": "postDateTimes",
+            "columnName": "postDateTimes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modifiedDateTime",
+            "columnName": "modifiedDateTime",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -780,7 +798,7 @@
       },
       {
         "tableName": "SahhaDataLog",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `logType` TEXT NOT NULL, `dataType` TEXT NOT NULL, `value` REAL NOT NULL, `source` TEXT NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `unit` TEXT NOT NULL, `recordingMethod` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `additionalProperties` TEXT, `parentId` TEXT, `metadata` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `logType` TEXT NOT NULL, `dataType` TEXT NOT NULL, `value` REAL NOT NULL, `source` TEXT NOT NULL, `startDateTime` TEXT NOT NULL, `endDateTime` TEXT NOT NULL, `unit` TEXT NOT NULL, `recordingMethod` TEXT NOT NULL, `deviceType` TEXT NOT NULL, `additionalProperties` TEXT, `parentId` TEXT, `postDateTimes` TEXT, `modifiedDateTime` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -855,8 +873,14 @@
             "notNull": false
           },
           {
-            "fieldPath": "metadata",
-            "columnName": "metadata",
+            "fieldPath": "postDateTimes",
+            "columnName": "postDateTimes",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "modifiedDateTime",
+            "columnName": "modifiedDateTime",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -874,7 +898,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '566d312578e9d95f909733f5849efd69')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6948e2be529d6bea248f094b9174760')"
     ]
   }
 }

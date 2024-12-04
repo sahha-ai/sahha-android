@@ -36,7 +36,7 @@ internal class UserDataInteractionManager @Inject constructor(
 ) {
     fun getScores(
         types: Set<SahhaScoreType>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
         mainScope.launch {
             getScoresUseCase(types, callback)
@@ -48,7 +48,7 @@ internal class UserDataInteractionManager @Inject constructor(
     fun getScores(
         types: Set<SahhaScoreType>,
         dates: Pair<Date, Date>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, value: String?) -> Unit)?,
     ) {
         mainScope.launch {
             getScoresUseCase(types, dates, callback)
@@ -59,7 +59,7 @@ internal class UserDataInteractionManager @Inject constructor(
     fun getScores(
         types: Set<SahhaScoreType>,
         dates: Pair<LocalDateTime, LocalDateTime>,
-        callback: ((error: String?, success: String?) -> Unit)?,
+        callback: ((error: String?, value: String?) -> Unit)?,
     ) {
         mainScope.launch {
             getScoresUseCase(types, dates, callback)

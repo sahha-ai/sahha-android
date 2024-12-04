@@ -35,6 +35,7 @@ internal fun StepsHealthConnect.toSahhaDataLogAsParentLog(): SahhaDataLog {
         unit = Constants.DataUnits.COUNT,
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+        modifiedDateTime = modifiedDateTime
     )
 }
 
@@ -50,6 +51,7 @@ internal fun StepsHealthConnect.toSahhaDataLogAsChildLog(): SahhaDataLog {
         unit = Constants.DataUnits.COUNT,
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+        modifiedDateTime = modifiedDateTime,
         parentId = metaId
     )
 }

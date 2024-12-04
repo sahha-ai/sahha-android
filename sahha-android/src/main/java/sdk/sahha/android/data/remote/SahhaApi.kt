@@ -187,5 +187,14 @@ internal interface SahhaApi {
         @Query("startDateTime") startDateTimeIso: String,
         @Query("endDateTime") endDateTimeIso: String,
     ): Response<ResponseBody>
+
+    @GET("profile/biomarker")
+    suspend fun getBiomarkers(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Query("categories") categories: List<String>,
+        @Query("types") types: List<String>,
+        @Query("startDateTime") startDateTimeIso: String? = null,
+        @Query("endDateTime") endDateTimeIso: String? = null,
+    ): Response<ResponseBody>
 }
 

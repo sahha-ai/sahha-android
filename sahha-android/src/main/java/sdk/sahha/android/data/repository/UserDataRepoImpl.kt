@@ -31,15 +31,41 @@ internal class UserDataRepoImpl(
     override suspend fun getScores(
         scoreTypesString: List<String>,
         dates: Pair<String, String>?,
+        callback: ((error: String?, value: String?) -> Unit)?,
+    ) {
+        getData(
+            getResponse = {
+                getScoreResponse(scoreTypesString, dates)
+            },
+            callback = callback
+        )
+    }
+
+    override suspend fun getBiomarkers(
+        categoriesString: List<String>,
+        typesString: List<String>,
+        dates: Pair<String, String>?,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        getData(
+            getResponse = {
+                getBiomarkersResponse(categoriesString, typesString, dates)
+            },
+            callback = callback
+        )
+    }
+
+    private suspend fun getData(
+        getResponse: suspend () -> Response<ResponseBody>,
         callback: ((error: String?, successful: String?) -> Unit)?,
     ) {
         try {
-            val response = getScoreResponse(scoreTypesString, dates)
+            val response = getResponse()
 
             if (ResponseCode.isUnauthorized(response.code())) {
                 callback?.invoke(SahhaErrors.attemptingTokenRefresh, null)
                 SahhaResponseHandler.checkTokenExpired(response.code()) {
-                    getScores(scoreTypesString, dates, callback)
+                    getData(getResponse, callback)
                 }
                 sahhaErrorLogger.api(
                     response
@@ -61,8 +87,7 @@ internal class UserDataRepoImpl(
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
                 tag,
-                "getScores",
-                dates?.toString()
+                "getData",
             )
             callback?.invoke(e.message, null)
         }
@@ -245,5 +270,27 @@ internal class UserDataRepoImpl(
                 it.second
             )
         } ?: api.getScores(TokenBearer(token), scoreTypesString)
+    }
+
+    private suspend fun getBiomarkersResponse(
+        categoriesString: List<String>,
+        typesString: List<String>,
+        dates: Pair<String, String>? = null
+    ): Response<ResponseBody> {
+        val token = authRepo.getToken() ?: ""
+
+        return dates?.let {
+            api.getBiomarkers(
+                TokenBearer(token),
+                categoriesString,
+                typesString,
+                it.first,
+                it.second
+            )
+        } ?: api.getBiomarkers(
+            TokenBearer(token),
+            categoriesString,
+            typesString
+        )
     }
 }
