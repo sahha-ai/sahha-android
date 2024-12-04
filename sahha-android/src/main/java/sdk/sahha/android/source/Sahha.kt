@@ -159,6 +159,12 @@ object Sahha {
         sim.userData.getDemographic(callback)
     }
 
+    fun getStats(
+
+    ) {
+        TODO("NYI")
+    }
+
     fun postDemographic(
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?
