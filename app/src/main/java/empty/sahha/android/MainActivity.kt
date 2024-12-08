@@ -1,6 +1,5 @@
 package empty.sahha.android
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -139,6 +138,10 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Button(onClick = {
+                                    Sahha.getStats()
+                                }) { Text("Get Stats") }
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 PermissionStateTestView()
                                 Spacer(modifier = Modifier.padding(16.dp))
