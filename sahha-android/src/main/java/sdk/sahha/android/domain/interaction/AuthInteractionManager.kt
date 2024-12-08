@@ -11,6 +11,7 @@ import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.model.security.EncryptUtility
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.repository.DeviceInfoRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.SaveTokensUseCase
@@ -28,6 +29,7 @@ internal class AuthInteractionManager @Inject constructor(
     private val decryptor: Decryptor,
     private val healthConnectRepo: HealthConnectRepo,
     private val batchedDataRepo: BatchedDataRepo,
+    private val deviceInfoRepo: DeviceInfoRepo,
     private val sensorRepo: SensorRepo,
     private val sleepDao: SleepDao,
     private val saveTokensUseCase: SaveTokensUseCase,
@@ -82,6 +84,7 @@ internal class AuthInteractionManager @Inject constructor(
         sleepDao.clearSleepDto()
         sensorRepo.clearAllStepSessions()
         sensorRepo.stopAllWorkers()
+        deviceInfoRepo.clearDeviceInformation()
         killMainService()
     }
 

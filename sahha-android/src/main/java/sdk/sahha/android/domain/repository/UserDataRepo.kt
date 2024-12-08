@@ -10,8 +10,15 @@ internal interface UserDataRepo {
     )
 
     suspend fun getScores(
-        scoresString: List<String>,
+        scoreTypesString: List<String>,
         dates: Pair<String, String>? = null,
-        callback: ((error: String?, successful: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
+    )
+
+    suspend fun getBiomarkers(
+        categoriesString: List<String>,
+        typesString: List<String>,
+        dates: Pair<String, String>?,
+        callback: (error: String?, value: String?) -> Unit
     )
 }

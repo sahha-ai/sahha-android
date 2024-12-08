@@ -1,12 +1,14 @@
 package sdk.sahha.android.source
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.annotation.Keep
+import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
@@ -14,6 +16,7 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import java.time.LocalDateTime
 import java.util.Date
@@ -40,23 +43,30 @@ object Sahha {
         return ::sim.isInitialized
     }
 
+    private suspend fun subscribeToAppEvents(lifecycleOwner: LifecycleOwner) {
+        withContext(Dispatchers.Main) {
+            lifecycleOwner.lifecycle.addObserver(di.hostAppLifecycleObserver)
+        }
+    }
+
     fun configure(
-        application: Application,
+        activity: ComponentActivity,
         sahhaSettings: SahhaSettings,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        saveEnvironment(application, sahhaSettings.environment.ordinal)
+        saveEnvironment(activity, sahhaSettings.environment.ordinal)
 
         if (!diInitialized())
             di = DaggerAppComponent.builder()
                 .appModule(AppModule(sahhaSettings.environment))
-                .context(application)
+                .context(activity)
                 .build()
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
         di.defaultScope.launch {
-            sim.configure(application, sahhaSettings, callback)
+            subscribeToAppEvents(activity)
+            sim.configure(activity.application, sahhaSettings, callback)
         }
     }
 
@@ -108,10 +118,67 @@ object Sahha {
         }
     }
 
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            callback = callback
+        )
+    }
+
+    @JvmName("getBiomarkersDate")
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        dates: Pair<Date, Date>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            dates = dates,
+            callback = callback
+        )
+    }
+
+    @JvmName("getBiomarkersLocalDate")
+    fun getBiomarkers(
+        categories: Set<SahhaBiomarkerCategory>,
+        types: Set<SahhaBiomarkerType>,
+        localDates: Pair<LocalDateTime, LocalDateTime>,
+        callback: ((error: String?, value: String?) -> Unit)
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.getBiomarkersUseCase(
+            categories = categories,
+            types = types,
+            localDates = localDates,
+            callback = callback
+        )
+    }
+
 
     fun getScores(
         types: Set<SahhaScoreType>,
-        callback: ((error: String?, success: String?) -> Unit)?
+        callback: ((error: String?, value: String?) -> Unit)?
     ) {
         if (!sahhaIsConfigured()) {
             callback?.invoke(SahhaErrors.sahhaNotConfigured, null)

@@ -12,13 +12,24 @@ internal class Converter {
     private val gson = Gson()
 
     @TypeConverter
-    fun fromJsonString(value: String?): ArrayList<Int?>? {
+    fun fromJsonStringInt(value: String?): ArrayList<Int?>? {
         val listType: Type = object : TypeToken<ArrayList<Int?>?>() {}.type
         return gson.fromJson(value, listType)
     }
 
     @TypeConverter
-    fun fromArrayList(list: ArrayList<Int?>?): String? {
+    fun fromArrayListInt(list: ArrayList<Int?>?): String? {
+        return gson.toJson(list)
+    }
+
+    @TypeConverter
+    fun fromJsonStringString(value: String?): ArrayList<String?>? {
+        val listType: Type = object : TypeToken<ArrayList<String?>?>() {}.type
+        return gson.fromJson(value, listType)
+    }
+
+    @TypeConverter
+    fun fromArrayListString(list: ArrayList<String?>?): String? {
         return gson.toJson(list)
     }
 

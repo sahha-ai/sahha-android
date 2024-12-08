@@ -3,14 +3,16 @@ package sdk.sahha.android.domain.use_case
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import retrofit2.Response
 import sdk.sahha.android.common.ResponseCode
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.IoScope
+import sdk.sahha.android.domain.interaction.UserDataInteractionManager
 import sdk.sahha.android.domain.model.auth.TokenData
 import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
 import sdk.sahha.android.domain.repository.AuthRepo
-import sdk.sahha.android.domain.interaction.UserDataInteractionManager
 import javax.inject.Inject
 
 private const val tag = "SaveTokensUseCase"
@@ -27,18 +29,29 @@ internal class SaveTokensUseCase @Inject constructor(
         externalId: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        try {
-            val response =
-                repository.getTokensByExternalId(appId, appSecret, ExternalIdSendDto(externalId))
+        val lockSuccessful = Session.authMutex.tryLock()
+        if (lockSuccessful) {
+            try {
+                val response =
+                    repository.getTokensByExternalId(
+                        appId,
+                        appSecret,
+                        ExternalIdSendDto(externalId)
+                    )
 
-            if (ResponseCode.isSuccessful(response.code())) {
-                saveTokensIfAvailable(response, callback)
-                return
+                if (ResponseCode.isSuccessful(response.code())) {
+                    saveTokensIfAvailable(response, callback)
+                    return
+                }
+
+                callback("${response.code()}: ${response.message()}", false)
+            } catch (e: Exception) {
+                callback(e.message, false)
+            } finally {
+                Session.authMutex.unlock()
             }
-
-            callback("${response.code()}: ${response.message()}", false)
-        } catch (e: Exception) {
-            callback(e.message, false)
+        } else {
+            callback("Error: Authentication already in progress", false)
         }
     }
 
@@ -47,21 +60,25 @@ internal class SaveTokensUseCase @Inject constructor(
         refreshToken: String,
         callback: ((error: String?, success: Boolean) -> Unit)
     ) {
-        repository.saveEncryptedTokens(
-            profileToken,
-            refreshToken,
-        ) { error, success ->
-            if (success) {
-                callback(null, true)
-                ioScope.launch {
-                    userData.processAndPutDeviceInfo(
-                        context = context,
-                        isAuthenticating = true,
-                    )
+        ioScope.launch {
+            Session.authMutex.withLock {
+                repository.saveEncryptedTokens(
+                    profileToken,
+                    refreshToken,
+                ) { error, success ->
+                    if (success) {
+                        callback(null, true)
+                        ioScope.launch {
+                            userData.processAndPutDeviceInfo(
+                                context = context,
+                                isAuthenticating = true,
+                            )
+                        }
+                        return@saveEncryptedTokens
+                    }
+                    callback(error, false)
                 }
-                return@saveEncryptedTokens
             }
-            callback(error, false)
         }
     }
 
