@@ -31,8 +31,11 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.insight.InsightData
+import sdk.sahha.android.domain.model.stats.SahhaStat
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaSensor
+import java.time.ZonedDateTime
 import java.util.UUID
 
 // Converted to SahhaDataLogDto later
@@ -395,6 +398,23 @@ internal fun AggregationResultGroupedByDuration.toRestingHeartRateMax(
         }.toString(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+    )
+}
+
+internal fun AggregationResultGroupedByDuration.toSahhaStat(
+    sensor: SahhaSensor,
+    value: Double,
+    unit: String,
+    sources: List<String>? = null
+): SahhaStat {
+    return SahhaStat(
+        id = UUID.randomUUID().toString(),
+        sensor = sensor,
+        value = value,
+        unit = unit,
+        startDate = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
+        endDate = ZonedDateTime.ofInstant(this.endTime, this.zoneOffset),
+        sources = sources
     )
 }
 

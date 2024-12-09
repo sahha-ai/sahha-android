@@ -4,10 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.annotation.Keep
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,12 +15,9 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
-import java.time.Duration
+import sdk.sahha.android.domain.model.stats.SahhaStat
 import java.time.LocalDateTime
-import java.time.Period
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAmount
 import java.util.Date
 
 private const val TAG = "Sahha"
@@ -169,23 +162,19 @@ object Sahha {
     }
 
     fun getStats(
-
+        sensor: SahhaSensor,
+        start: ZonedDateTime,
+        end: ZonedDateTime,
+        interval: SahhaStatInterval,
+        callback: (error: String?, stats: List<SahhaStat>) -> Unit
     ) {
-        val now = ZonedDateTime.now()
         di.defaultScope.launch {
-            val aggregates = di.healthConnectRepo.getAggregateRecordsByDuration(
-                metrics = setOf(
-                    StepsRecord.COUNT_TOTAL,
-                    SleepSessionRecord.SLEEP_DURATION_TOTAL,
-                    HeartRateRecord.BPM_AVG,
-                ),
-                timeRangeFilter = TimeRangeFilter.Companion.between(
-                    startTime = now.minusDays(1).toLocalDateTime(),
-                    endTime = now.toLocalDateTime(),
-                ),
-                interval = Duration.ofHours(1)
+            di.getStatsUseCase(
+                sensor,
+                interval,
+                start,
+                end,
             )
-            aggregates?.forEach { println(SahhaConverterUtility.convertToJsonString(it)) }
         }
     }
 
