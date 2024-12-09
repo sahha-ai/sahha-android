@@ -16,11 +16,9 @@ import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
-import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
 import sdk.sahha.android.domain.model.stats.SahhaStat
 import java.time.LocalDateTime
-import java.time.ZonedDateTime
 import java.util.Date
 
 private const val TAG = "Sahha"
@@ -230,18 +228,66 @@ object Sahha {
 
     fun getStats(
         sensor: SahhaSensor,
-        start: ZonedDateTime,
-        end: ZonedDateTime,
         interval: SahhaStatInterval,
-        callback: (error: String?, stats: List<SahhaStat>) -> Unit
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
     ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
         di.defaultScope.launch {
-            di.getStatsUseCase(
+            val stats = di.getStatsUseCase(
                 sensor,
                 interval,
-                start,
-                end,
             )
+            callback(stats.first, stats.second)
+        }
+    }
+
+    @JvmName("getStatsDate")
+    fun getStats(
+        sensor: SahhaSensor,
+        interval: SahhaStatInterval,
+        dates: Pair<Date, Date>,
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getStatsUseCase(
+                sensor = sensor,
+                interval = interval,
+                dates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
+    @JvmName("getStatsLocalDateTime")
+    fun getStats(
+        sensor: SahhaSensor,
+        interval: SahhaStatInterval,
+        dates: Pair<LocalDateTime, LocalDateTime>,
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getStatsUseCase(
+                sensor = sensor,
+                interval = interval,
+                localDates = dates
+            )
+
+            callback(stats.first, stats.second)
         }
     }
 

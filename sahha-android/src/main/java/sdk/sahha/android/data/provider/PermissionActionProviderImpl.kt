@@ -39,7 +39,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
     private var grantedCached: Set<String>? = null
 
     override val permissionActions:
-            Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> List<SahhaStat>?> =
+            Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?>> =
         mapOf(
             SahhaSensor.step_count to createPermissionAction(
                 sensor = SahhaSensor.step_count,
@@ -185,7 +185,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
         metrics: Set<AggregateMetric<T>>,
         dataUnit: String,
         extractValue: (AggregationResult) -> Double
-    ): suspend (Duration, ZonedDateTime, ZonedDateTime) -> List<SahhaStat>? {
+    ): suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?> {
         return { duration, start, end ->
             val permissionGranted = grantedPermissions().contains(
                 HealthPermission.getReadPermission(recordClass)
@@ -200,7 +200,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     interval = duration
                 )
 
-                aggregates?.map { stat ->
+                val stats = aggregates?.map { stat ->
                     stat.toSahhaStat(
                         sensor,
                         extractValue(stat.result),
@@ -208,7 +208,9 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         stat.result.dataOrigins.map { it.packageName }
                     )
                 }
-            } else null
+
+                Pair(null, stats)
+            } else Pair("Error: HealthConnect permission for this sensor was not granted", null)
         }
     }
 

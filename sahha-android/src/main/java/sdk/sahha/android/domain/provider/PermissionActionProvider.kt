@@ -6,5 +6,5 @@ import java.time.Duration
 import java.time.ZonedDateTime
 
 internal interface PermissionActionProvider {
-    val permissionActions: Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> List<SahhaStat>?>
+    val permissionActions: Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?>>
 }
