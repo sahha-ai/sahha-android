@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,6 +37,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaBiomarkerCategory
+import sdk.sahha.android.source.SahhaBiomarkerType
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
@@ -89,7 +92,7 @@ class MainActivity : ComponentActivity() {
         )
 
         Sahha.configure(
-            application,
+            this,
             config,
         )
 
@@ -142,6 +145,8 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.getStats()
                                 }) { Text("Get Stats") }
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                BiomarkersView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 PermissionStateTestView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -227,7 +232,7 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Button(onClick = {
                                     Sahha.configure(
-                                        application,
+                                        this@MainActivity,
                                         config
                                     ) { error, success ->
                                         lifecycleScope.launch {
@@ -461,6 +466,36 @@ fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
     }
+}
+
+@Composable
+fun BiomarkersView() {
+    var result by remember {
+        mutableStateOf("Pending")
+    }
+
+    fun setResultNoBiomarkers() {
+        result = "No biomarkers"
+    }
+
+    Button(
+        onClick = {
+            result = "Loading..."
+            Sahha.getBiomarkers(
+                categories = SahhaBiomarkerCategory.values().toSet(),
+                types = SahhaBiomarkerType.values().toSet(),
+            ) { error, value ->
+                error?.also { result = it }
+                    ?: value?.also { result = it }
+                    ?: setResultNoBiomarkers()
+            }
+        }
+    ) {
+        Text("Get Biomarkers")
+    }
+    Spacer(modifier = Modifier.size(8.dp))
+    Text(result)
+    Spacer(modifier = Modifier.size(8.dp))
 }
 
 @Composable

@@ -11,7 +11,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.metadata.Device
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.domain.internal_enum.RecordingMethodsHealthConnect
+import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 
 internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
@@ -40,10 +40,10 @@ internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
 
     override fun recordingMethod(constantInt: Int): String {
         return when (constantInt) {
-            Metadata.RECORDING_METHOD_ACTIVELY_RECORDED -> RecordingMethodsHealthConnect.ACTIVELY_RECORDED.name
-            Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED -> RecordingMethodsHealthConnect.AUTOMATICALLY_RECORDED.name
-            Metadata.RECORDING_METHOD_MANUAL_ENTRY -> RecordingMethodsHealthConnect.MANUAL_ENTRY.name
-            else -> RecordingMethodsHealthConnect.UNKNOWN.name
+            Metadata.RECORDING_METHOD_ACTIVELY_RECORDED -> RecordingMethods.ACTIVELY_RECORDED.name
+            Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED -> RecordingMethods.AUTOMATICALLY_RECORDED.name
+            Metadata.RECORDING_METHOD_MANUAL_ENTRY -> RecordingMethods.MANUAL_ENTRY.name
+            else -> RecordingMethods.UNKNOWN.name
         }
     }
 

@@ -120,6 +120,7 @@ internal class DataCollectionService : Service() {
             startDataCollectors(this@DataCollectionService)
             startTimeZoneChangedReceiver()
         }
+
         return START_STICKY
     }
 

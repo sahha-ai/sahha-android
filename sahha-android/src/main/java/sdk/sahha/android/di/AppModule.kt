@@ -74,9 +74,11 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
+import sdk.sahha.android.domain.use_case.background.LogAppEvent
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
+import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -672,6 +674,17 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): CalculateBatchLimit {
         return CalculateBatchLimit(
             batchedDataRepo
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHostAppLifecycleOvserver(
+        logAppEvent: LogAppEvent,
+        @IoScope ioScope: CoroutineScope
+    ): HostAppLifecycleObserver {
+        return HostAppLifecycleObserver(
+            logAppEvent, ioScope
         )
     }
 }

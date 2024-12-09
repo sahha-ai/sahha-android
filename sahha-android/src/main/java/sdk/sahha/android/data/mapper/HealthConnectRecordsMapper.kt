@@ -77,6 +77,7 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -104,6 +105,7 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
         ),
         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
         deviceType = mapper.devices(session.metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(session.metadata.lastModifiedTime, session.endZoneOffset)
     )
 }
 
@@ -131,6 +133,7 @@ internal fun BloodGlucoseRecord.toSahhaDataLogDto(
             "mealType" to (mapper.mealType(mealType) ?: Constants.UNKNOWN),
             "specimenSource" to (mapper.specimenSource(specimenSource) ?: Constants.UNKNOWN)
         ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -158,6 +161,7 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN),
         ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
         parentId = metadata.id
     )
 }
@@ -186,6 +190,7 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
             "measurementLocation" to (mapper.measurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
         ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset),
         parentId = metadata.id
     )
 }
@@ -211,6 +216,7 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
         ),
         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
         deviceType = mapper.devices(record.metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(record.metadata.lastModifiedTime, record.endZoneOffset)
     )
 }
 
@@ -233,6 +239,7 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
         endDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
         ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -433,6 +440,7 @@ internal fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -451,6 +459,7 @@ internal fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -469,6 +478,7 @@ internal fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -487,6 +497,7 @@ internal fun OxygenSaturationRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -505,6 +516,7 @@ internal fun BasalMetabolicRateRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -523,6 +535,7 @@ internal fun BodyFatRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -541,6 +554,7 @@ internal fun BodyWaterMassRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -559,6 +573,7 @@ internal fun LeanBodyMassRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -577,6 +592,7 @@ internal fun BoneMassRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -595,6 +611,7 @@ internal fun HeightRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -613,6 +630,7 @@ internal fun WeightRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -634,7 +652,8 @@ internal fun Vo2MaxRecord.toSahhaDataLogDto(
         additionalProperties = hashMapOf(
             "measurementMethod" to (mapper.measurementMethod(measurementMethod)
                 ?: Constants.UNKNOWN),
-        )
+        ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -653,6 +672,7 @@ internal fun RespiratoryRateRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -671,6 +691,7 @@ internal fun FloorsClimbedRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
         deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -692,7 +713,8 @@ internal fun BodyTemperatureRecord.toSahhaDataLogDto(
         additionalProperties = hashMapOf(
             "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
-        )
+        ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -714,7 +736,8 @@ internal fun BasalBodyTemperatureRecord.toSahhaDataLogDto(
         additionalProperties = hashMapOf(
             "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
                 ?: Constants.UNKNOWN)
-        )
+        ),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
@@ -740,6 +763,7 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -767,6 +791,7 @@ internal fun ExerciseLap.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+        modifiedDateTime = timeManager.instantToIsoTime(exercise.metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
@@ -794,6 +819,7 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
+        modifiedDateTime = timeManager.instantToIsoTime(exercise.metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
