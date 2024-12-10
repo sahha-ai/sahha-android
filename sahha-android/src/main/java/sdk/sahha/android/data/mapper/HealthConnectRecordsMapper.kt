@@ -35,6 +35,7 @@ import sdk.sahha.android.domain.model.stats.SahhaStat
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -105,7 +106,10 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
         ),
         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
         deviceType = mapper.devices(session.metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(session.metadata.lastModifiedTime, session.endZoneOffset)
+        modifiedDateTime = timeManager.instantToIsoTime(
+            session.metadata.lastModifiedTime,
+            session.endZoneOffset
+        )
     )
 }
 
@@ -216,7 +220,10 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
         ),
         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
         deviceType = mapper.devices(record.metadata.device?.type),
-        modifiedDateTime = timeManager.instantToIsoTime(record.metadata.lastModifiedTime, record.endZoneOffset)
+        modifiedDateTime = timeManager.instantToIsoTime(
+            record.metadata.lastModifiedTime,
+            record.endZoneOffset
+        )
     )
 }
 
@@ -414,8 +421,11 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     unit: String,
     sources: List<String>? = null
 ): SahhaStat {
+    val consistentUid = UUID.nameUUIDFromBytes(
+        (startTime.toEpochMilli() + endTime.toEpochMilli()).toString().toByteArray()
+    )
     return SahhaStat(
-        id = UUID.randomUUID().toString(),
+        id = consistentUid.toString(),
         sensor = sensor,
         value = value,
         unit = unit,
@@ -791,7 +801,10 @@ internal fun ExerciseLap.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
-        modifiedDateTime = timeManager.instantToIsoTime(exercise.metadata.lastModifiedTime, endZoneOffset)
+        modifiedDateTime = timeManager.instantToIsoTime(
+            exercise.metadata.lastModifiedTime,
+            endZoneOffset
+        )
     )
 }
 
@@ -819,7 +832,10 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
         deviceType = deviceType,
-        modifiedDateTime = timeManager.instantToIsoTime(exercise.metadata.lastModifiedTime, endZoneOffset)
+        modifiedDateTime = timeManager.instantToIsoTime(
+            exercise.metadata.lastModifiedTime,
+            endZoneOffset
+        )
     )
 }
 

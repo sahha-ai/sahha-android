@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
@@ -46,6 +50,7 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaScoreType
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
+import sdk.sahha.android.source.SahhaStatInterval
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
@@ -142,9 +147,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             item {
                                 Spacer(modifier = Modifier.padding(16.dp))
-                                Button(onClick = {
-                                    Sahha.getStats()
-                                }) { Text("Get Stats") }
+                                StatsView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 BiomarkersView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -466,6 +469,114 @@ fun DefaultPreview() {
     SahhasdkemptyTheme {
         Greeting("Android")
     }
+}
+
+@Composable
+fun StatsView() {
+    var result by remember {
+        mutableStateOf("Pending")
+    }
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    var expandedInterval by remember {
+        mutableStateOf(false)
+    }
+    var sensor by remember {
+        mutableStateOf("Select")
+    }
+    var interval by remember {
+        mutableStateOf("Select")
+    }
+
+    Box {
+        Text(interval, modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clickable { expandedInterval = true })
+        DropdownMenu(expanded = expandedInterval, onDismissRequest = { expandedInterval = false }) {
+            DropdownMenuItem(
+                onClick = {
+                    interval = SahhaStatInterval.hour.name
+                    expandedInterval = false
+                }
+            ) {
+                Text(SahhaStatInterval.hour.name)
+            }
+            DropdownMenuItem(
+                onClick = {
+                    interval = SahhaStatInterval.day.name
+                    expandedInterval = false
+                }
+            ) {
+                Text(SahhaStatInterval.day.name)
+            }
+        }
+    }
+
+    Box {
+        Text(sensor, modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clickable { expanded = true })
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                onClick = {
+                    sensor = SahhaSensor.step_count.name
+                    expanded = false
+                }
+            ) {
+                Text(SahhaSensor.step_count.name)
+            }
+            DropdownMenuItem(
+                onClick = {
+                    sensor = SahhaSensor.sleep.name
+                    expanded = false
+                }
+            ) {
+                Text(SahhaSensor.sleep.name)
+            }
+            DropdownMenuItem(
+                onClick = {
+                    sensor = SahhaSensor.heart_rate.name
+                    expanded = false
+                }
+            ) {
+                Text(SahhaSensor.heart_rate.name)
+            }
+        }
+    }
+
+    Button(
+        onClick = {
+            result = "Loading..."
+            try {
+                Sahha.getStats(
+                    SahhaSensor.valueOf(sensor),
+                    SahhaStatInterval.valueOf(interval),
+                ) { error, stats ->
+                    result = ""
+                    error?.also { result = it }
+                    stats?.forEach {
+                        result += "${it.id}\n" +
+                                "${it.value}\n" +
+                                "${it.unit}\n" +
+                                "${it.startDate}\n" +
+                                "${it.endDate}\n" +
+                                "${it.sources}\n\n"
+                    }
+                }
+            } catch (e: Exception) {
+                println(e.message)
+            }
+        }
+    ) {
+        Text(text = "Get Stats")
+    }
+
+    Spacer(modifier = Modifier.size(8.dp))
+    Text(result)
+    Spacer(modifier = Modifier.size(8.dp))
 }
 
 @Composable

@@ -50,7 +50,7 @@ internal class GetStatsUseCase @Inject constructor(
         ZonedDateTime.of(
             LocalDateTime.of(
                 LocalDate.now().plusDays(1),
-                LocalTime.MIDNIGHT.minusNanos(1)
+                LocalTime.MIDNIGHT
             ),
             zoneId
         )
@@ -71,8 +71,8 @@ internal class GetStatsUseCase @Inject constructor(
         ),
         ZonedDateTime.of(
             LocalDateTime.of(
-                LocalDate.now(),
-                LocalTime.MIDNIGHT.minusNanos(1)
+                LocalDate.now().plusDays(1),
+                LocalTime.MIDNIGHT
             ),
             zoneId
         )
