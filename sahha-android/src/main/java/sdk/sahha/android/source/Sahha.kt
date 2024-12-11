@@ -17,7 +17,7 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
-import sdk.sahha.android.domain.model.stats.SahhaStat
+import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import java.time.LocalDateTime
 import java.util.Date
 
@@ -228,50 +228,6 @@ object Sahha {
 
     fun getStats(
         sensor: SahhaSensor,
-        interval: SahhaStatInterval,
-        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
-    ) {
-        if (!sahhaIsConfigured()) {
-            callback(SahhaErrors.sahhaNotConfigured, null)
-            return
-        }
-
-        di.defaultScope.launch {
-            val stats = di.getStatsUseCase(
-                sensor,
-                interval,
-            )
-            callback(stats.first, stats.second)
-        }
-    }
-
-    @JvmName("getStatsDate")
-    fun getStats(
-        sensor: SahhaSensor,
-        interval: SahhaStatInterval,
-        dates: Pair<Date, Date>,
-        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
-    ) {
-        if (!sahhaIsConfigured()) {
-            callback(SahhaErrors.sahhaNotConfigured, null)
-            return
-        }
-
-        di.defaultScope.launch {
-            val stats = di.getStatsUseCase(
-                sensor = sensor,
-                interval = interval,
-                dates = dates
-            )
-
-            callback(stats.first, stats.second)
-        }
-    }
-
-    @JvmName("getStatsLocalDateTime")
-    fun getStats(
-        sensor: SahhaSensor,
-        interval: SahhaStatInterval,
         dates: Pair<LocalDateTime, LocalDateTime>,
         callback: (error: String?, stats: List<SahhaStat>?) -> Unit
     ) {
@@ -283,8 +239,30 @@ object Sahha {
         di.defaultScope.launch {
             val stats = di.getStatsUseCase(
                 sensor = sensor,
-                interval = interval,
+                interval = SahhaStatInterval.day,
                 localDates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
+    @JvmName("getStatsDate")
+    fun getStats(
+        sensor: SahhaSensor,
+        dates: Pair<Date, Date>,
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getStatsUseCase(
+                sensor = sensor,
+                interval = SahhaStatInterval.day,
+                dates = dates
             )
 
             callback(stats.first, stats.second)

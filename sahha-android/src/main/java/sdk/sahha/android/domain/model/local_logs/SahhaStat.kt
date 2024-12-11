@@ -1,4 +1,4 @@
-package sdk.sahha.android.domain.model.stats
+package sdk.sahha.android.domain.model.local_logs
 
 import sdk.sahha.android.source.SahhaSensor
 import java.time.ZonedDateTime

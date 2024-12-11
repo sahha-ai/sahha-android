@@ -18,8 +18,14 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.toNoon
+import sdk.sahha.android.data.mapper.toSahhaDataLogDto
+import sdk.sahha.android.data.mapper.toSahhaLogEvent
 import sdk.sahha.android.data.mapper.toSahhaStat
-import sdk.sahha.android.domain.model.stats.SahhaStat
+import sdk.sahha.android.data.mapper.toStepsHealthConnect
+import sdk.sahha.android.domain.model.local_logs.SahhaLogEvent
+import sdk.sahha.android.domain.model.local_logs.SahhaStat
+import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.source.SahhaSensor
@@ -38,11 +44,11 @@ internal class PermissionActionProviderImpl @Inject constructor(
     }
     private var grantedCached: Set<String>? = null
 
-    override val permissionActions:
+    override val permissionActionsStats:
             Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?>> =
         mapOf(
-            SahhaSensor.step_count to createPermissionAction(
-                sensor = SahhaSensor.step_count,
+            SahhaSensor.steps to createPermissionActionStats(
+                sensor = SahhaSensor.steps,
                 recordClass = StepsRecord::class,
                 metrics = setOf(StepsRecord.COUNT_TOTAL),
                 dataUnit = Constants.DataUnits.COUNT,
@@ -50,7 +56,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
                 }
             ),
-            SahhaSensor.floor_count to createPermissionAction(
+            SahhaSensor.floor_count to createPermissionActionStats(
                 sensor = SahhaSensor.floor_count,
                 recordClass = FloorsClimbedRecord::class,
                 metrics = setOf(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL),
@@ -59,7 +65,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
                 }
             ),
-            SahhaSensor.sleep to createPermissionAction(
+            SahhaSensor.sleep to createPermissionActionStats(
                 sensor = SahhaSensor.sleep,
                 recordClass = SleepSessionRecord::class,
                 metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
@@ -68,9 +74,10 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[SleepSessionRecord.SLEEP_DURATION_TOTAL]
                         ?.toMillis()?.toDouble()?.div(1000)?.div(60)
                         ?: 0.0
-                }
+                },
+                sliceFromNoon = true
             ),
-            SahhaSensor.active_energy_burned to createPermissionAction(
+            SahhaSensor.active_energy_burned to createPermissionActionStats(
                 sensor = SahhaSensor.active_energy_burned,
                 recordClass = ActiveCaloriesBurnedRecord::class,
                 metrics = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL),
@@ -81,7 +88,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.basal_metabolic_rate to createPermissionAction(
+            SahhaSensor.basal_metabolic_rate to createPermissionActionStats(
                 sensor = SahhaSensor.basal_metabolic_rate,
                 recordClass = BasalMetabolicRateRecord::class,
                 metrics = setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL),
@@ -92,7 +99,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.blood_pressure_diastolic to createPermissionAction(
+            SahhaSensor.blood_pressure_diastolic to createPermissionActionStats(
                 sensor = SahhaSensor.blood_pressure_diastolic,
                 recordClass = BloodPressureRecord::class,
                 metrics = setOf(BloodPressureRecord.DIASTOLIC_AVG),
@@ -103,7 +110,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.blood_pressure_systolic to createPermissionAction(
+            SahhaSensor.blood_pressure_systolic to createPermissionActionStats(
                 sensor = SahhaSensor.blood_pressure_systolic,
                 recordClass = BloodPressureRecord::class,
                 metrics = setOf(BloodPressureRecord.SYSTOLIC_AVG),
@@ -114,7 +121,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.weight to createPermissionAction(
+            SahhaSensor.weight to createPermissionActionStats(
                 sensor = SahhaSensor.weight,
                 recordClass = WeightRecord::class,
                 metrics = setOf(WeightRecord.WEIGHT_AVG),
@@ -125,7 +132,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.height to createPermissionAction(
+            SahhaSensor.height to createPermissionActionStats(
                 sensor = SahhaSensor.height,
                 recordClass = HeightRecord::class,
                 metrics = setOf(HeightRecord.HEIGHT_AVG),
@@ -136,7 +143,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.exercise to createPermissionAction(
+            SahhaSensor.exercise to createPermissionActionStats(
                 sensor = SahhaSensor.exercise,
                 recordClass = ExerciseSessionRecord::class,
                 metrics = setOf(ExerciseSessionRecord.EXERCISE_DURATION_TOTAL),
@@ -148,7 +155,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
-            SahhaSensor.heart_rate to createPermissionAction(
+            SahhaSensor.heart_rate to createPermissionActionStats(
                 sensor = SahhaSensor.heart_rate,
                 recordClass = HeartRateRecord::class,
                 metrics = setOf(HeartRateRecord.BPM_AVG),
@@ -157,7 +164,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[HeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
                 }
             ),
-            SahhaSensor.resting_heart_rate to createPermissionAction(
+            SahhaSensor.resting_heart_rate to createPermissionActionStats(
                 sensor = SahhaSensor.resting_heart_rate,
                 recordClass = RestingHeartRateRecord::class,
                 metrics = setOf(RestingHeartRateRecord.BPM_AVG),
@@ -166,7 +173,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[RestingHeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
                 }
             ),
-            SahhaSensor.total_energy_burned to createPermissionAction(
+            SahhaSensor.total_energy_burned to createPermissionActionStats(
                 sensor = SahhaSensor.total_energy_burned,
                 recordClass = TotalCaloriesBurnedRecord::class,
                 metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
@@ -179,12 +186,35 @@ internal class PermissionActionProviderImpl @Inject constructor(
             ),
         )
 
-    private fun <T : Any, R : Record> createPermissionAction(
+    override val permissionActionsEvents: Map<SahhaSensor, suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaLogEvent>?>> =
+        mapOf(
+            SahhaSensor.sleep to createPermissionActionEvents(
+                recordClass = SleepSessionRecord::class,
+                extractEvent = { record ->
+                    (record as SleepSessionRecord)
+                        .toSahhaDataLogDto()
+                        .toSahhaLogEvent()
+                }
+            ),
+            SahhaSensor.steps to createPermissionActionEvents(
+                recordClass = StepsRecord::class,
+                extractEvent = { record ->
+                    (record as StepsRecord)
+                        .toStepsHealthConnect()
+                        .toSahhaDataLogAsParentLog()
+                        .toSahhaLogEvent()
+                }
+            )
+            // TODO: Add rest of the sensors in the future
+        )
+
+    private fun <T : Any, R : Record> createPermissionActionStats(
         sensor: SahhaSensor,
         recordClass: KClass<R>,
         metrics: Set<AggregateMetric<T>>,
         dataUnit: String,
-        extractValue: (AggregationResult) -> Double
+        extractValue: (AggregationResult) -> Double,
+        sliceFromNoon: Boolean = false
     ): suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?> {
         return { duration, start, end ->
             val permissionGranted = grantedPermissions().contains(
@@ -194,18 +224,20 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 val aggregates = repository.getAggregateRecordsByDuration(
                     metrics = metrics,
                     timeRangeFilter = TimeRangeFilter.between(
-                        startTime = start.toLocalDateTime(),
-                        endTime = end.toLocalDateTime()
+                        startTime = if (sliceFromNoon) start.toNoon(-1)
+                            .toLocalDateTime() else start.toLocalDateTime(),
+                        endTime = if (sliceFromNoon) end.toNoon(-1)
+                            .toLocalDateTime() else end.toLocalDateTime()
                     ),
                     interval = duration
                 )
 
                 val stats = aggregates?.map { stat ->
                     stat.toSahhaStat(
-                        sensor,
-                        extractValue(stat.result),
-                        dataUnit,
-                        stat.result.dataOrigins.map { it.packageName }
+                        sensor = sensor,
+                        value = extractValue(stat.result),
+                        unit = dataUnit,
+                        sources = stat.result.dataOrigins.map { it.packageName }
                     )
                 }
 
@@ -214,4 +246,29 @@ internal class PermissionActionProviderImpl @Inject constructor(
         }
     }
 
+    private fun <R : Record> createPermissionActionEvents(
+        recordClass: KClass<R>,
+        extractEvent: (Record) -> SahhaLogEvent
+    ): suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaLogEvent>?> {
+        return { start, end ->
+            val permissionGranted = grantedPermissions().contains(
+                HealthPermission.getReadPermission(recordClass)
+            )
+            if (permissionGranted) {
+                val records = repository.getRecords(
+                    recordClass,
+                    TimeRangeFilter.Companion.between(
+                        start.toLocalDateTime(),
+                        end.toLocalDateTime()
+                    )
+                )
+
+                val events = records?.map { event ->
+                    extractEvent(event)
+                }
+
+                Pair(null, events)
+            } else Pair("Error: HealthConnect permission for this sensor was not granted", null)
+        }
+    }
 }

@@ -1,7 +1,8 @@
 package sdk.sahha.android.domain.use_case
 
 import sdk.sahha.android.common.SahhaErrors
-import sdk.sahha.android.domain.model.stats.SahhaStat
+import sdk.sahha.android.common.toMidnight
+import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaStatInterval
@@ -38,7 +39,7 @@ internal class GetStatsUseCase @Inject constructor(
         sensor: SahhaSensor,
         duration: Duration,
         zoneId: ZoneId
-    ) = provider.permissionActions[sensor]?.invoke(
+    ) = provider.permissionActionsStats[sensor]?.invoke(
         duration,
         ZonedDateTime.of(
             LocalDateTime.of(
@@ -60,7 +61,7 @@ internal class GetStatsUseCase @Inject constructor(
         sensor: SahhaSensor,
         duration: Duration,
         zoneId: ZoneId
-    ) = provider.permissionActions[sensor]?.invoke(
+    ) = provider.permissionActionsStats[sensor]?.invoke(
         duration,
         ZonedDateTime.of(
             LocalDateTime.of(
@@ -86,10 +87,10 @@ internal class GetStatsUseCase @Inject constructor(
         duration: Duration,
         it: Pair<LocalDateTime, LocalDateTime>,
         zoneId: ZoneId
-    ) = provider.permissionActions[sensor]?.invoke(
+    ) = provider.permissionActionsStats[sensor]?.invoke(
         duration,
-        ZonedDateTime.of(it.first, zoneId),
-        ZonedDateTime.of(it.second, zoneId)
+        ZonedDateTime.of(it.first, zoneId).toMidnight(),
+        ZonedDateTime.of(it.second, zoneId).toMidnight(1)
     ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
 
     private suspend fun getStatsDates(
@@ -97,9 +98,9 @@ internal class GetStatsUseCase @Inject constructor(
         duration: Duration,
         it: Pair<Date, Date>,
         zoneId: ZoneId
-    ) = provider.permissionActions[sensor]?.invoke(
+    ) = provider.permissionActionsStats[sensor]?.invoke(
         duration,
-        ZonedDateTime.ofInstant(it.first.toInstant(), zoneId),
-        ZonedDateTime.ofInstant(it.second.toInstant(), zoneId)
+        ZonedDateTime.ofInstant(it.first.toInstant(), zoneId).toMidnight(),
+        ZonedDateTime.ofInstant(it.second.toInstant(), zoneId).toMidnight(1)
     ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
 }

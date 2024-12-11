@@ -1,6 +1,6 @@
 package sdk.sahha.android.source
 
-enum class SahhaStatInterval {
+internal enum class SahhaStatInterval {
     hour,
     day
 }

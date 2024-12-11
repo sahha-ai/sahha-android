@@ -50,7 +50,6 @@ import sdk.sahha.android.source.SahhaNotificationConfiguration
 import sdk.sahha.android.source.SahhaScoreType
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
-import sdk.sahha.android.source.SahhaStatInterval
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
@@ -90,7 +89,7 @@ class MainActivity : ComponentActivity() {
 //        val sensors = SahhaSensor.values().toSet()
         val sensors = setOf<SahhaSensor>(
             SahhaSensor.device_lock,
-            SahhaSensor.step_count,
+            SahhaSensor.steps,
             SahhaSensor.sleep,
             SahhaSensor.heart_rate,
             SahhaSensor.heart_rate_variability_sdnn
@@ -490,59 +489,20 @@ fun StatsView() {
     }
 
     Box {
-        Text(interval, modifier = Modifier
-            .padding(20.dp)
-            .fillMaxWidth()
-            .clickable { expandedInterval = true })
-        DropdownMenu(expanded = expandedInterval, onDismissRequest = { expandedInterval = false }) {
-            DropdownMenuItem(
-                onClick = {
-                    interval = SahhaStatInterval.hour.name
-                    expandedInterval = false
-                }
-            ) {
-                Text(SahhaStatInterval.hour.name)
-            }
-            DropdownMenuItem(
-                onClick = {
-                    interval = SahhaStatInterval.day.name
-                    expandedInterval = false
-                }
-            ) {
-                Text(SahhaStatInterval.day.name)
-            }
-        }
-    }
-
-    Box {
         Text(sensor, modifier = Modifier
             .padding(20.dp)
             .fillMaxWidth()
             .clickable { expanded = true })
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                onClick = {
-                    sensor = SahhaSensor.step_count.name
-                    expanded = false
+            SahhaSensor.values().forEach {
+                DropdownMenuItem(
+                    onClick = {
+                        sensor = it.name
+                        expanded = false
+                    }
+                ) {
+                    Text(it.name)
                 }
-            ) {
-                Text(SahhaSensor.step_count.name)
-            }
-            DropdownMenuItem(
-                onClick = {
-                    sensor = SahhaSensor.sleep.name
-                    expanded = false
-                }
-            ) {
-                Text(SahhaSensor.sleep.name)
-            }
-            DropdownMenuItem(
-                onClick = {
-                    sensor = SahhaSensor.heart_rate.name
-                    expanded = false
-                }
-            ) {
-                Text(SahhaSensor.heart_rate.name)
             }
         }
     }
@@ -553,7 +513,10 @@ fun StatsView() {
             try {
                 Sahha.getStats(
                     SahhaSensor.valueOf(sensor),
-                    SahhaStatInterval.valueOf(interval),
+                    Pair(
+                        LocalDateTime.now().minusDays(7),
+                        LocalDateTime.now()
+                    )
                 ) { error, stats ->
                     result = ""
                     error?.also { result = it }
@@ -573,7 +536,6 @@ fun StatsView() {
     ) {
         Text(text = "Get Stats")
     }
-
     Spacer(modifier = Modifier.size(8.dp))
     Text(result)
     Spacer(modifier = Modifier.size(8.dp))
@@ -632,7 +594,7 @@ fun PermissionStateTestView() {
     Button(onClick = {
         Sahha.getSensorStatus(
             context,
-            setOf<SahhaSensor>(SahhaSensor.step_count)
+            setOf<SahhaSensor>(SahhaSensor.steps)
         ) { error, status ->
             permissionStatus =
                 "${status.name}${error?.let { "\n$it" } ?: ""}"
@@ -682,7 +644,7 @@ fun PermissionStateTestView() {
             context,
             setOf<SahhaSensor>(
                 SahhaSensor.device_lock,
-                SahhaSensor.step_count,
+                SahhaSensor.steps,
                 SahhaSensor.sleep,
                 SahhaSensor.heart_rate,
                 SahhaSensor.heart_rate_variability_sdnn
