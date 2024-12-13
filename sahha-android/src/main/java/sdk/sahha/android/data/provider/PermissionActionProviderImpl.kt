@@ -38,11 +38,8 @@ internal class PermissionActionProviderImpl @Inject constructor(
     private val repository: HealthConnectRepo
 ) : PermissionActionProvider {
     private val grantedPermissions = suspend {
-        grantedCached ?: repository.getGrantedPermissions().also { granted ->
-            grantedCached = granted
-        }
+        repository.getGrantedPermissions()
     }
-    private var grantedCached: Set<String>? = null
 
     override val permissionActionsStats:
             Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?>> =
