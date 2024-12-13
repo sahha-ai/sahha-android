@@ -313,7 +313,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     sensor: SahhaSensor,
     value: Double,
     unit: String,
-    sources: List<String>? = null
+    sources: List<String> = listOf()
 ): SahhaStat {
     val consistentUid = UUID.nameUUIDFromBytes(
         (startTime.toEpochMilli() + endTime.toEpochMilli()).toString().toByteArray()
