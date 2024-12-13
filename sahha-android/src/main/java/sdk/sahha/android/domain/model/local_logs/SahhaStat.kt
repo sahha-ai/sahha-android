@@ -10,5 +10,5 @@ data class SahhaStat(
     val unit: String,
     val startDate: ZonedDateTime,
     val endDate: ZonedDateTime,
-    val sources: List<String>? = null,
+    val sources: List<String> = emptyList(),
 )
