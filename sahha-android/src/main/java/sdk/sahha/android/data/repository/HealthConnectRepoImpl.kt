@@ -52,12 +52,6 @@ import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.mapper.toActiveCaloriesBurned
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
 import sdk.sahha.android.data.mapper.toBloodPressureSystolic
-import sdk.sahha.android.data.mapper.toHeartRateAvg
-import sdk.sahha.android.data.mapper.toHeartRateMax
-import sdk.sahha.android.data.mapper.toHeartRateMin
-import sdk.sahha.android.data.mapper.toRestingHeartRateAvg
-import sdk.sahha.android.data.mapper.toRestingHeartRateMax
-import sdk.sahha.android.data.mapper.toRestingHeartRateMin
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toTotalCaloriesBurned
@@ -247,102 +241,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun <T : Record> postHeartRateAggregateData(
-        heartRateAggregateData: List<AggregationResultGroupedByDuration>,
-        recordType: KClass<T>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    ) {
-        val getAvgResponse: suspend (List<AggregationResultGroupedByDuration>)
-        -> Response<ResponseBody> = { chunk ->
-            val avg = chunk.map {
-                when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateAvg()
-                    else -> it.toHeartRateAvg()
-                }
-            }
-            getHeartRateDataResponse(avg)
-        }
-
-        val getMinResponse: suspend (List<AggregationResultGroupedByDuration>)
-        -> Response<ResponseBody> = { chunk ->
-            val min = chunk.map {
-                when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateMin()
-                    else -> it.toHeartRateMin()
-                }
-            }
-            getHeartRateDataResponse(min)
-        }
-
-        val getMaxResponse: suspend (List<AggregationResultGroupedByDuration>)
-        -> Response<ResponseBody> = { chunk ->
-            val max = chunk.map {
-                when (recordType) {
-                    RestingHeartRateRecord::class -> it.toRestingHeartRateMax()
-                    else -> it.toHeartRateMax()
-                }
-            }
-            getHeartRateDataResponse(max)
-        }
-
-        val errors = mutableListOf<String>()
-        val successes = mutableListOf<Boolean>()
-        suspendCoroutine { cont ->
-            ioScope.launch {
-                postData(
-                    heartRateAggregateData,
-                    Constants.DEFAULT_POST_LIMIT,
-                    getAvgResponse,
-                    {},
-                ) { error, success ->
-                    error?.also { errors.add(it) }
-                    successes.add(success)
-                    cont.resume(Unit)
-                }
-            }
-        }
-
-        suspendCoroutine { cont ->
-            ioScope.launch {
-                postData(
-                    heartRateAggregateData,
-                    Constants.DEFAULT_POST_LIMIT,
-                    getMinResponse,
-                    {},
-                ) { error, success ->
-                    error?.also { errors.add(it) }
-                    successes.add(success)
-                    cont.resume(Unit)
-                }
-            }
-        }
-
-        suspendCoroutine { cont ->
-            ioScope.launch {
-                postData(
-                    heartRateAggregateData,
-                    Constants.DEFAULT_POST_LIMIT,
-                    getMaxResponse,
-                    {},
-                ) { error, success ->
-                    error?.also { errors.add(it) }
-                    successes.add(success)
-                    cont.resume(Unit)
-                }
-            }
-        }
-
-        callback?.invoke(errors?.toString(), successes.all { it })
-
-        if (!successes.all { it })
-            sahhaErrorLogger.application(
-                errors.toString(),
-                TAG,
-                "postHeartRateAggregateData",
-                heartRateAggregateData.toString()
-            )
-    }
-
     override suspend fun postHeartRateVariabilityRmssdData(
         heartRateVariabilityRmssdData: List<HeartRateVariabilityRmssdRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
@@ -525,7 +423,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                         id = UUID.randomUUID().toString(),
                         parentId = record.metadata.id,
                         logType = Constants.DataLogs.HEART,
-                        dataType = Constants.DataTypes.HEART_RATE,
+                        dataType = SahhaSensor.heart_rate.name,
                         value = sample.beatsPerMinute.toDouble(),
                         unit = Constants.DataUnits.BEAT_PER_MIN,
                         source = record.metadata.dataOrigin.packageName,
@@ -1217,7 +1115,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     SahhaDataLog(
                         id = UUID.randomUUID().toString(),
                         logType = Constants.DataLogs.SLEEP,
-                        dataType = Constants.DataTypes.SLEEP,
+                        dataType = SahhaSensor.sleep.name,
                         source = session.metadata.dataOrigin.packageName,
                         additionalProperties = hashMapOf(
                             "sleepStage" to (mapper.sleepStages(it.key)

@@ -115,7 +115,7 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             val containsStepsOrSleep =
-                sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
+                sensors.contains(SahhaSensor.steps) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
                 if (isAndroid9) SahhaSensorStatus.enabled
                 else if (containsStepsOrSleep) awaitNativeSensorRequest(context)
@@ -366,7 +366,7 @@ internal class PermissionInteractionManager @Inject constructor(
             }
 
             val containsStepsOrSleep =
-                sensors.contains(SahhaSensor.step_count) || sensors.contains(SahhaSensor.sleep)
+                sensors.contains(SahhaSensor.steps) || sensors.contains(SahhaSensor.sleep)
             val nativeStatus =
                 if (isAndroid9) SahhaSensorStatus.enabled
                 else if (containsStepsOrSleep) awaitNativeSensorStatus(context)

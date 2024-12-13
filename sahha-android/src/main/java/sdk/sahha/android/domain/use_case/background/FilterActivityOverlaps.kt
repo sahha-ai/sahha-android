@@ -9,6 +9,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.source.SahhaSensor
 import javax.inject.Inject
 
 internal class FilterActivityOverlaps @Inject constructor(
@@ -32,7 +33,7 @@ internal class FilterActivityOverlaps @Inject constructor(
                     val ignoredLogs = mutableListOf<SahhaDataLog>()
                     val sourceFiltered = mutableListOf<SahhaDataLog>()
                     for (currentInterval in sortedData) {
-                        if(currentInterval.dataType != Constants.DataTypes.STEP) {
+                        if(currentInterval.dataType != SahhaSensor.steps.name) {
                             ignoredLogs.add(currentInterval)
                             continue
                         }

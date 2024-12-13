@@ -35,13 +35,13 @@ internal fun StepData.toSahhaDataLogAsChildLog(): SahhaDataLog {
 private fun getDataType(source: String): String {
     return when (source) {
         Constants.STEP_COUNTER_DATA_SOURCE -> {
-            Constants.DataTypes.STEP_COUNTER
+            "total_steps"
         }
 
         Constants.STEP_DETECTOR_DATA_SOURCE -> {
-            Constants.DataTypes.STEP_DETECTOR
+            "single_step"
         }
 
-        else -> "Unknown"
+        else -> "unknown_steps"
     }
 }

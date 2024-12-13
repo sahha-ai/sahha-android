@@ -9,7 +9,7 @@ enum class SahhaSensor {
     gender,
     date_of_birth,
     sleep,
-    step_count,
+    steps,
     floor_count,
     heart_rate,
     resting_heart_rate,

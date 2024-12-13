@@ -1,6 +1,5 @@
 package sdk.sahha.android.common
 
-import android.icu.util.ULocale
 import android.os.Build
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
@@ -8,11 +7,14 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @Keep
 internal class SahhaTimeManager {
@@ -52,7 +54,10 @@ internal class SahhaTimeManager {
         return (iso)
     }
 
-    fun localDateTimeToISO(localDateTime: LocalDateTime, zoneId: ZoneId? = ZoneId.systemDefault()): String {
+    fun localDateTimeToISO(
+        localDateTime: LocalDateTime,
+        zoneId: ZoneId? = ZoneId.systemDefault()
+    ): String {
         val iso =
             localDateTime.atZone(zoneId)
                 .format(dateTimeFormatter)
@@ -121,4 +126,24 @@ internal class SahhaTimeManager {
     fun calculateDurationFromInstant(start: Instant, end: Instant): Int {
         return ((end.epochSecond - start.epochSecond) / 60).toInt()
     }
+}
+
+fun ZonedDateTime.toMidnight(plusDays: Long = 0): ZonedDateTime {
+    return this
+        .plusDays(plusDays)
+        .withHour(0)
+        .withMinute(0)
+        .withSecond(0)
+        .withNano(0)
+}
+
+fun ZonedDateTime.toNoon(plusDays: Long = 0): ZonedDateTime {
+    val zoneId = ZoneId.systemDefault()
+    return ZonedDateTime.of(
+        LocalDateTime.of(
+            this.toLocalDate().plusDays(plusDays),
+            LocalTime.NOON
+        ),
+        zoneId
+    )
 }
