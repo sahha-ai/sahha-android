@@ -220,28 +220,33 @@ internal class PermissionActionProviderImpl @Inject constructor(
             val permissionGranted = grantedPermissions().contains(
                 HealthPermission.getReadPermission(recordClass)
             )
+            println(permissionGranted)
             if (permissionGranted) {
-                val aggregates = repository.getAggregateRecordsByDuration(
-                    metrics = metrics,
-                    timeRangeFilter = TimeRangeFilter.between(
-                        startTime = if (sliceFromNoon) start.toNoon(-1)
-                            .toLocalDateTime() else start.toLocalDateTime(),
-                        endTime = if (sliceFromNoon) end.toNoon(-1)
-                            .toLocalDateTime() else end.toLocalDateTime()
-                    ),
-                    interval = duration
-                )
-
-                val stats = aggregates?.map { stat ->
-                    stat.toSahhaStat(
-                        sensor = sensor,
-                        value = extractValue(stat.result),
-                        unit = dataUnit,
-                        sources = stat.result.dataOrigins.map { it.packageName }
+                try {
+                    val aggregates = repository.getAggregateRecordsByDuration(
+                        metrics = metrics,
+                        timeRangeFilter = TimeRangeFilter.between(
+                            startTime = if (sliceFromNoon) start.toNoon(-1)
+                                .toLocalDateTime() else start.toLocalDateTime(),
+                            endTime = if (sliceFromNoon) end.toNoon(-1)
+                                .toLocalDateTime() else end.toLocalDateTime()
+                        ),
+                        interval = duration
                     )
-                }
 
-                Pair(null, stats)
+                    val stats = aggregates?.map { stat ->
+                        stat.toSahhaStat(
+                            sensor = sensor,
+                            value = extractValue(stat.result),
+                            unit = dataUnit,
+                            sources = stat.result.dataOrigins.map { it.packageName }
+                        )
+                    }
+
+                    Pair(null, stats)
+                } catch (e: Exception) {
+                    Pair(e.message, null)
+                }
             } else Pair("Error: HealthConnect permission for this sensor was not granted", null)
         }
     }

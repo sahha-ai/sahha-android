@@ -39,7 +39,12 @@ import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaBiomarkerType
@@ -53,6 +58,7 @@ import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
+import kotlin.coroutines.resume
 import kotlin.random.Random
 
 const val SEVEN_DAYS_MILLIS = 604800000L
@@ -507,34 +513,82 @@ fun StatsView() {
         }
     }
 
-    Button(
-        onClick = {
-            result = "Loading..."
-            try {
-                Sahha.getStats(
-                    SahhaSensor.valueOf(sensor),
-                    Pair(
-                        LocalDateTime.now().minusDays(7),
-                        LocalDateTime.now()
-                    )
-                ) { error, stats ->
-                    result = ""
-                    error?.also { result = it }
-                    stats?.forEach {
-                        result += "${it.id}\n" +
-                                "${it.value}\n" +
-                                "${it.unit}\n" +
-                                "${it.startDate}\n" +
-                                "${it.endDate}\n" +
-                                "${it.sources}\n\n"
+    Row {
+        Button(
+            onClick = {
+                result = "Loading..."
+                try {
+                    Sahha.getStats(
+                        SahhaSensor.valueOf(sensor),
+                        Pair(
+                            LocalDateTime.now().minusDays(7),
+                            LocalDateTime.now()
+                        )
+                    ) { error, stats ->
+                        result = ""
+                        error?.also { result = it }
+                        stats?.forEach {
+                            result += "${it.id}\n" +
+                                    "${it.value}\n" +
+                                    "${it.unit}\n" +
+                                    "${it.startDate}\n" +
+                                    "${it.endDate}\n" +
+                                    "${it.sources}\n\n"
+                        }
                     }
+                } catch (e: Exception) {
+                    println(e.message)
                 }
-            } catch (e: Exception) {
-                println(e.message)
             }
+        ) {
+            Text(text = "Get Stats")
         }
-    ) {
-        Text(text = "Get Stats")
+
+        Button(
+            onClick = {
+                result = "Loading..."
+                val scope = CoroutineScope(Dispatchers.Default)
+                scope.launch {
+                    async {
+                        SahhaSensor.values().forEach { s ->
+                            suspendCancellableCoroutine { cont ->
+                                try {
+                                    Sahha.getStats(
+                                        s,
+                                        Pair(
+                                            LocalDateTime.now().minusDays(7),
+                                            LocalDateTime.now()
+                                        )
+                                    ) { error, stats ->
+                                        scope.launch {
+                                            sensor = s.name
+                                            result = ""
+                                            error?.also { result = it }
+                                            stats?.forEach {
+                                                result += "${it.id}\n" +
+                                                        "${it.value}\n" +
+                                                        "${it.unit}\n" +
+                                                        "${it.startDate}\n" +
+                                                        "${it.endDate}\n" +
+                                                        "${it.sources}\n\n"
+                                            }
+                                            delay(250)
+                                            if (cont.isActive) cont.resume(Unit)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println(e.message)
+                                }
+                            }
+                        }
+                        delay(250)
+                        result = "Complete!"
+                    }.await()
+                }
+            }
+        ) {
+            Text(text = "Loop All Stats")
+        }
     }
     Spacer(modifier = Modifier.size(8.dp))
     Text(result)
