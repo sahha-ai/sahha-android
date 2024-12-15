@@ -6,6 +6,7 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.metadata.HasMetadata
 import sdk.sahha.android.domain.model.metadata.SahhaMetadata
+import sdk.sahha.android.source.SahhaSensor
 import java.util.UUID
 
 
@@ -33,7 +34,7 @@ internal fun PhoneUsage.toSahhaDataLogDto(): SahhaDataLog {
     return SahhaDataLog(
         id = id,
         logType = Constants.DataLogs.DEVICE,
-        dataType = Constants.DataTypes.DEVICE_LOCK,
+        dataType = SahhaSensor.device_lock.name,
         source = Constants.PHONE_USAGE_DATA_SOURCE,
         value = if (isLocked) 1.0 else 0.0,
         unit = Constants.DataUnits.BOOLEAN,

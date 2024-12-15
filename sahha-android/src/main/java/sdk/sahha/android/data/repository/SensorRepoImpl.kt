@@ -90,7 +90,7 @@ internal class SensorRepoImpl @Inject constructor(
     private val sensorToWorkerAction = mapOf(
         SahhaSensor.sleep to Pair(SLEEP_POST_WORKER_TAG, ::startSleepPostWorker),
         SahhaSensor.device_lock to Pair(DEVICE_POST_WORKER_TAG, ::startDevicePostWorker),
-        SahhaSensor.step_count to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
+        SahhaSensor.steps to Pair(STEP_POST_WORKER_TAG, ::startStepPostWorker)
     )
 
     override suspend fun startStepDetectorAsync(
@@ -168,7 +168,7 @@ internal class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.step_count -> {
+                SahhaSensor.steps -> {
                     val stepSummary = getStepDataSummary()
                     if (stepSummary.isNotEmpty()) {
                         callback(null, stepSummary)
@@ -371,7 +371,7 @@ internal class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepData,
-            SahhaSensor.step_count,
+            SahhaSensor.steps,
             Constants.STEP_POST_LIMIT,
             getResponse,
             movementDao::clearStepData,
@@ -389,7 +389,7 @@ internal class SensorRepoImpl @Inject constructor(
         }
         postData(
             stepSessions,
-            SahhaSensor.step_count,
+            SahhaSensor.steps,
             Constants.STEP_SESSION_POST_LIMIT,
             getResponse,
             this::clearStepSessions,
@@ -662,7 +662,7 @@ internal class SensorRepoImpl @Inject constructor(
                     }
                 }
 
-                SahhaSensor.step_count -> {
+                SahhaSensor.steps -> {
                     postStepSessions(getAllStepSessions()) { error, successful ->
                         callback(error, successful)
                         deferredResult.complete(Unit)
