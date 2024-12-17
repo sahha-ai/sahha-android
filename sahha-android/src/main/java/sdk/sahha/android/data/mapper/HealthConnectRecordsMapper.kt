@@ -587,7 +587,7 @@ internal fun FloorsClimbedRecord.toSahhaDataLogDto(
     return SahhaDataLog(
         id = metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
-        dataType = SahhaSensor.floors.name,
+        dataType = SahhaSensor.floors_climbed.name,
         value = floors,
         unit = Constants.DataUnits.COUNT,
         source = metadata.dataOrigin.packageName,
