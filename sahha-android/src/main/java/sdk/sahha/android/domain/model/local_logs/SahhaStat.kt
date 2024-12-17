@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 
 data class SahhaStat(
     val id: String,
-    val sensor: SahhaSensor,
+    val type: String,
     val value: Double,
     val unit: String,
     val startDate: ZonedDateTime,
