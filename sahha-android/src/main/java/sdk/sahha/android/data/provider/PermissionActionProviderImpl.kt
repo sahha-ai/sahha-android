@@ -20,10 +20,10 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.toNoon
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
-import sdk.sahha.android.data.mapper.toSahhaLogEvent
+import sdk.sahha.android.data.mapper.toSahhaSample
 import sdk.sahha.android.data.mapper.toSahhaStat
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
-import sdk.sahha.android.domain.model.local_logs.SahhaLogEvent
+import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.provider.PermissionActionProvider
@@ -183,14 +183,14 @@ internal class PermissionActionProviderImpl @Inject constructor(
             ),
         )
 
-    override val permissionActionsEvents: Map<SahhaSensor, suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaLogEvent>?>> =
+    override val permissionActionsSamples: Map<SahhaSensor, suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaSample>?>> =
         mapOf(
             SahhaSensor.sleep to createPermissionActionEvents(
                 recordClass = SleepSessionRecord::class,
                 extractEvent = { record ->
                     (record as SleepSessionRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaLogEvent()
+                        .toSahhaSample()
                 }
             ),
             SahhaSensor.steps to createPermissionActionEvents(
@@ -199,7 +199,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     (record as StepsRecord)
                         .toStepsHealthConnect()
                         .toSahhaDataLogAsParentLog()
-                        .toSahhaLogEvent()
+                        .toSahhaSample()
                 }
             )
             // TODO: Add rest of the sensors in the future
@@ -250,8 +250,8 @@ internal class PermissionActionProviderImpl @Inject constructor(
 
     private fun <R : Record> createPermissionActionEvents(
         recordClass: KClass<R>,
-        extractEvent: (Record) -> SahhaLogEvent
-    ): suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaLogEvent>?> {
+        extractEvent: (Record) -> SahhaSample
+    ): suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaSample>?> {
         return { start, end ->
             val permissionGranted = grantedPermissions().contains(
                 HealthPermission.getReadPermission(recordClass)

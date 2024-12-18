@@ -269,6 +269,49 @@ object Sahha {
         }
     }
 
+    fun getSamples(
+        sensor: SahhaSensor,
+        dates: Pair<LocalDateTime, LocalDateTime>,
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getStatsUseCase(
+                sensor = sensor,
+                interval = SahhaStatInterval.day,
+                localDates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
+    @JvmName("getSamplesDate")
+    fun getSamples(
+        sensor: SahhaSensor,
+        dates: Pair<Date, Date>,
+        callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getStatsUseCase(
+                sensor = sensor,
+                interval = SahhaStatInterval.day,
+                dates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
     fun postDemographic(
         sahhaDemographic: SahhaDemographic,
         callback: ((error: String?, success: Boolean) -> Unit)?

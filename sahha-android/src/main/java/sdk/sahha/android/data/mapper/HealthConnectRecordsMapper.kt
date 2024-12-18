@@ -31,7 +31,7 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.insight.InsightData
-import sdk.sahha.android.domain.model.local_logs.SahhaLogEvent
+import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
@@ -733,20 +733,15 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
     )
 }
 
-internal fun SahhaDataLog.toSahhaLogEvent(): SahhaLogEvent {
-    return SahhaLogEvent(
+internal fun SahhaDataLog.toSahhaSample(): SahhaSample {
+    return SahhaSample(
         id,
-        logType,
         dataType,
         value,
         source,
         startDateTime,
         endDateTime,
         unit,
-        recordingMethod,
-        deviceType,
-        additionalProperties,
-        parentId
     )
 }
 
