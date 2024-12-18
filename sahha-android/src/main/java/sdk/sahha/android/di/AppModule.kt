@@ -42,6 +42,7 @@ import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
+import sdk.sahha.android.data.provider.PermissionActionProviderImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.data.repository.AppCrashRepoImpl
@@ -62,6 +63,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
@@ -679,12 +681,22 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideHostAppLifecycleOvserver(
+    fun provideHostAppLifecycleObserver(
         logAppEvent: LogAppEvent,
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
             logAppEvent, ioScope
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providePermissionActionProvider(
+        healthConnectRepo: HealthConnectRepo
+    ): PermissionActionProvider {
+        return PermissionActionProviderImpl(
+            healthConnectRepo
         )
     }
 }

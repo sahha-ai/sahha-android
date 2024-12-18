@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
@@ -35,7 +39,12 @@ import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaBiomarkerType
@@ -49,6 +58,7 @@ import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Date
+import kotlin.coroutines.resume
 import kotlin.random.Random
 
 const val SEVEN_DAYS_MILLIS = 604800000L
@@ -85,7 +95,7 @@ class MainActivity : ComponentActivity() {
 //        val sensors = SahhaSensor.values().toSet()
         val sensors = setOf<SahhaSensor>(
             SahhaSensor.device_lock,
-            SahhaSensor.step_count,
+            SahhaSensor.steps,
             SahhaSensor.sleep,
             SahhaSensor.heart_rate,
             SahhaSensor.heart_rate_variability_sdnn
@@ -141,6 +151,8 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                StatsView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 BiomarkersView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -465,6 +477,125 @@ fun DefaultPreview() {
 }
 
 @Composable
+fun StatsView() {
+    var result by remember {
+        mutableStateOf("Pending")
+    }
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    var expandedInterval by remember {
+        mutableStateOf(false)
+    }
+    var sensor by remember {
+        mutableStateOf("Select")
+    }
+    var interval by remember {
+        mutableStateOf("Select")
+    }
+
+    Box {
+        Text(sensor, modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clickable { expanded = true })
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            SahhaSensor.values().forEach {
+                DropdownMenuItem(
+                    onClick = {
+                        sensor = it.name
+                        expanded = false
+                    }
+                ) {
+                    Text(it.name)
+                }
+            }
+        }
+    }
+
+    Row {
+        Button(
+            onClick = {
+                result = "Loading..."
+                try {
+                    Sahha.getStats(
+                        SahhaSensor.valueOf(sensor),
+                        Pair(
+                            LocalDateTime.now().minusDays(7),
+                            LocalDateTime.now()
+                        )
+                    ) { error, stats ->
+                        result = ""
+                        error?.also { result = it }
+                        stats?.forEach {
+                            result += "${it.id}\n" +
+                                    "${it.value}\n" +
+                                    "${it.unit}\n" +
+                                    "${it.startDate}\n" +
+                                    "${it.endDate}\n" +
+                                    "${it.sources}\n\n"
+                        }
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        ) {
+            Text(text = "Get Stats")
+        }
+
+        Button(
+            onClick = {
+                result = "Loading..."
+                val scope = CoroutineScope(Dispatchers.Default)
+                scope.launch {
+                    async {
+                        SahhaSensor.values().forEach { s ->
+                            suspendCancellableCoroutine { cont ->
+                                try {
+                                    Sahha.getStats(
+                                        s,
+                                        Pair(
+                                            LocalDateTime.now().minusDays(7),
+                                            LocalDateTime.now()
+                                        )
+                                    ) { error, stats ->
+                                        scope.launch {
+                                            sensor = s.name
+                                            result = ""
+                                            error?.also { result = it }
+                                            stats?.forEach {
+                                                result += "${it.id}\n" +
+                                                        "${it.value}\n" +
+                                                        "${it.unit}\n" +
+                                                        "${it.startDate}\n" +
+                                                        "${it.endDate}\n" +
+                                                        "${it.sources}\n\n"
+                                            }
+                                            delay(250)
+                                            if (cont.isActive) cont.resume(Unit)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println(e.message)
+                                }
+                            }
+                        }
+                        delay(250)
+                        result = "Complete!"
+                    }.await()
+                }
+            }
+        ) {
+            Text(text = "Loop All Stats")
+        }
+    }
+    Spacer(modifier = Modifier.size(8.dp))
+    Text(result)
+    Spacer(modifier = Modifier.size(8.dp))
+}
+
+@Composable
 fun BiomarkersView() {
     var result by remember {
         mutableStateOf("Pending")
@@ -517,7 +648,7 @@ fun PermissionStateTestView() {
     Button(onClick = {
         Sahha.getSensorStatus(
             context,
-            setOf<SahhaSensor>(SahhaSensor.step_count)
+            setOf<SahhaSensor>(SahhaSensor.steps)
         ) { error, status ->
             permissionStatus =
                 "${status.name}${error?.let { "\n$it" } ?: ""}"
@@ -567,7 +698,7 @@ fun PermissionStateTestView() {
             context,
             setOf<SahhaSensor>(
                 SahhaSensor.device_lock,
-                SahhaSensor.step_count,
+                SahhaSensor.steps,
                 SahhaSensor.sleep,
                 SahhaSensor.heart_rate,
                 SahhaSensor.heart_rate_variability_sdnn

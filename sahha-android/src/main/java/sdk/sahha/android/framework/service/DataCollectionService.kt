@@ -246,7 +246,7 @@ internal class DataCollectionService : Service() {
     }
 
     private suspend fun checkAndStartCollectingPedometerData() {
-        if (config.sensorArray.contains(SahhaSensor.step_count.ordinal)) {
+        if (config.sensorArray.contains(SahhaSensor.steps.ordinal)) {
             Sahha.sim.sensor.startCollectingStepDetectorData(
                 this,
                 Sahha.di.movementDao,

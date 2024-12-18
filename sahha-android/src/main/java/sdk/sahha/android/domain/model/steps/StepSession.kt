@@ -35,7 +35,7 @@ internal fun StepSession.toSahhaDataLogAsChildLog(): SahhaDataLog {
     return SahhaDataLog(
         id = id,
         logType = Constants.DataLogs.ACTIVITY,
-        dataType = Constants.DataTypes.SAHHA_STEP_SESSION,
+        dataType = "custom_step_sessions",
         value = count.toDouble(),
         unit = Constants.DataUnits.COUNT,
         startDateTime = startDateTime,

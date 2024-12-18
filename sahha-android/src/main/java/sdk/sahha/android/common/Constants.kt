@@ -65,45 +65,6 @@ internal object Constants {
     const val STEP_DETECTOR_DATA_SOURCE = "AndroidStepDetector"
     const val PHONE_USAGE_DATA_SOURCE = "AndroidScreenStates"
 
-    // Data Type
-    object DataTypes {
-        const val STEP_COUNTER = "total_steps"
-        const val STEP_DETECTOR = "single_step"
-        const val SAHHA_STEP_SESSION = "custom_step_sessions"
-        const val STEP = "step_count"
-        const val SLEEP = "sleep"
-        const val BLOOD_GLUCOSE = "blood_glucose"
-        const val BLOOD_PRESSURE_SYSTOLIC = "blood_pressure_systolic"
-        const val BLOOD_PRESSURE_DIASTOLIC = "blood_pressure_diastolic"
-        const val HEART_RATE = "heart_rate"
-        const val HEART_RATE_AVG = "heart_rate_avg" // Not currently used
-        const val HEART_RATE_MIN = "heart_rate_min" // Not currently used
-        const val HEART_RATE_MAX = "heart_rate_max" // Not currently used
-        const val RESTING_HEART_RATE = "resting_heart_rate"
-        const val RESTING_HEART_RATE_AVG = "resting_heart_rate_avg" // Not currently used
-        const val RESTING_HEART_RATE_MIN = "resting_heart_rate_min" // Not currently used
-        const val RESTING_HEART_RATE_MAX = "resting_heart_rate_max" // Not currently used
-        const val HEART_RATE_VARIABILITY_RMSSD = "heart_rate_variability_rmssd"
-        const val ACTIVE_ENERGY_BURNED = "active_energy_burned"
-        const val TOTAL_ENERGY_BURNED = "total_energy_burned"
-        const val OXYGEN_SATURATION = "oxygen_saturation"
-        const val VO2_MAX = "vo2_max"
-        const val BASAL_METABOLIC_RATE = "basal_metabolic_rate"
-        const val BODY_FAT = "body_fat"
-        const val BODY_WATER_MASS = "body_water_mass"
-        const val LEAN_BODY_MASS = "lean_body_mass"
-        const val HEIGHT = "height"
-        const val WEIGHT = "weight"
-        const val RESPIRATORY_RATE = "respiratory_rate"
-        const val BONE_MASS = "bone_mass"
-        const val DEVICE_LOCK = "device_lock"
-        const val FLOOR_COUNT = "floor_count"
-        const val BODY_TEMPERATURE = "body_temperature"
-        const val BASAL_BODY_TEMPERATURE = "basal_body_temperature"
-        const val EXERCISE_SESSION = "exercise_session"
-        const val APP_EVENT = "app_event"
-    }
-
     // Data Units
     object DataUnits {
         const val EMPTY_STRING = ""

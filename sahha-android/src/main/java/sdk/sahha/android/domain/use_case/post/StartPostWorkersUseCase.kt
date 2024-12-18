@@ -37,7 +37,7 @@ internal class StartPostWorkersUseCase @Inject constructor(
                             Constants.SLEEP_POST_WORKER_TAG
                         )
                     }
-                    sensorRepo.checkAndStartWorker(config, SahhaSensor.step_count.ordinal) {
+                    sensorRepo.checkAndStartWorker(config, SahhaSensor.steps.ordinal) {
                         sensorRepo.startStepPostWorker(
                             Constants.FIFTEEN_MINUTES,
                             Constants.STEP_POST_WORKER_TAG

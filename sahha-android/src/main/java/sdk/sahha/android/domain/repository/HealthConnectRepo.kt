@@ -90,12 +90,6 @@ internal interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun <T : Record> postHeartRateAggregateData(
-        heartRateAggregateData: List<AggregationResultGroupedByDuration>,
-        recordType: KClass<T>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    )
-
     suspend fun postHeartRateVariabilityRmssdData(
         heartRateVariabilityRmssdData: List<HeartRateVariabilityRmssdRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
