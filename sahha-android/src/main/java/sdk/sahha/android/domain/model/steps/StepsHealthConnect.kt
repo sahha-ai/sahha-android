@@ -41,7 +41,11 @@ internal fun StepsHealthConnect.toSahhaDataLogAsParentLog(): SahhaDataLog {
 
 internal fun StepsHealthConnect.toSahhaDataLogAsChildLog(): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
         value = count.toDouble(),

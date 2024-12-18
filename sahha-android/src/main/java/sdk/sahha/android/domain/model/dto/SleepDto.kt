@@ -21,7 +21,11 @@ internal data class SleepDto(
     val createdAt: String = "",
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
 ): HasMetadata<SleepDto> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,

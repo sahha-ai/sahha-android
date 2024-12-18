@@ -18,7 +18,11 @@ internal data class StepSession(
     val endDateTime: String,
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
 ): HasMetadata<StepSession> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,

@@ -24,7 +24,11 @@ internal fun AppEvent.toSahhaDataLog(
     )
 
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.DEVICE,
         dataType = event,
         source = context.packageName,

@@ -90,7 +90,11 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
     val durationInMinutes =
         ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60)
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         parentId = session.metadata.id,
         logType = Constants.DataLogs.SLEEP,
         value = durationInMinutes,
@@ -146,7 +150,11 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (time.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = SahhaSensor.blood_pressure_diastolic.name,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -175,7 +183,11 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (time.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = SahhaSensor.blood_pressure_systolic.name,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -205,7 +217,11 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (time.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         parentId = record.metadata.id,
         logType = Constants.DataLogs.HEART,
         dataType = SahhaSensor.heart_rate.name,
@@ -255,7 +271,11 @@ internal fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.ENERGY,
         dataType = SahhaSensor.active_energy_burned.name,
         value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
@@ -271,7 +291,11 @@ internal fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.ENERGY,
         dataType = SahhaSensor.total_energy_burned.name,
         value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
@@ -684,7 +708,11 @@ internal fun ExerciseLap.toSahhaDataLogDto(
 
     val dataType = "exercise_lap"
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
@@ -715,7 +743,11 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
     val segmentType = (mapper.exerciseSegments(segmentType) ?: Constants.UNKNOWN)
 
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = "segment_type_$segmentType",

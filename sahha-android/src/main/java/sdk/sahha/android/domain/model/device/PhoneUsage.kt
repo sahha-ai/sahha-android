@@ -17,7 +17,11 @@ internal data class PhoneUsage(
     val createdAt: String,
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString()
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString()
 ) : HasMetadata<PhoneUsage> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,

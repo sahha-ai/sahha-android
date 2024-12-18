@@ -370,7 +370,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     ((s.endTime.toEpochMilli() - s.startTime.toEpochMilli()) / 1000 / 60).toDouble()
                 sleepStages.add(
                     SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
+                        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
                         parentId = session.metadata.id,
                         logType = Constants.DataLogs.SLEEP,
                         value = durationInMinutes,
@@ -420,7 +424,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
             record.samples.forEach { sample ->
                 samplesList.add(
                     SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
+                        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
                         parentId = record.metadata.id,
                         logType = Constants.DataLogs.HEART,
                         dataType = SahhaSensor.heart_rate.name,
@@ -1113,7 +1121,11 @@ internal class HealthConnectRepoImpl @Inject constructor(
             summaryHashMap.forEach {
                 sleepStageSummary.add(
                     SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
+                        id = UUID.nameUUIDFromBytes(
+            (startTime.toEpochMilli() + endTime.toEpochMilli())
+                .toString()
+                .toByteArray()
+        ).toString(),
                         logType = Constants.DataLogs.SLEEP,
                         dataType = SahhaSensor.sleep.name,
                         source = session.metadata.dataOrigin.packageName,
