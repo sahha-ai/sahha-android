@@ -320,7 +320,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     )
     return SahhaStat(
         id = consistentUid.toString(),
-        sensor = sensor,
+        type = sensor.name,
         value = value,
         unit = unit,
         startDate = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
@@ -587,7 +587,7 @@ internal fun FloorsClimbedRecord.toSahhaDataLogDto(
     return SahhaDataLog(
         id = metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
-        dataType = SahhaSensor.floor_count.name,
+        dataType = SahhaSensor.floors_climbed.name,
         value = floors,
         unit = Constants.DataUnits.COUNT,
         source = metadata.dataOrigin.packageName,

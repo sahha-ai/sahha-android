@@ -161,7 +161,7 @@ internal class PermissionManagerImpl @Inject constructor(
             HealthPermission.getReadPermission(StepsRecord::class)
         )
 
-        if (sensors.contains(SahhaSensor.floor_count)) permissions.add(
+        if (sensors.contains(SahhaSensor.floors_climbed)) permissions.add(
             HealthPermission.getReadPermission(FloorsClimbedRecord::class)
         )
 

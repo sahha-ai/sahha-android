@@ -53,8 +53,8 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
                 }
             ),
-            SahhaSensor.floor_count to createPermissionActionStats(
-                sensor = SahhaSensor.floor_count,
+            SahhaSensor.floors_climbed to createPermissionActionStats(
+                sensor = SahhaSensor.floors_climbed,
                 recordClass = FloorsClimbedRecord::class,
                 metrics = setOf(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL),
                 dataUnit = Constants.DataUnits.COUNT,
