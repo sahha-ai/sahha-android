@@ -200,7 +200,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
 
     override val permissionActionsSamples: Map<SahhaSensor, suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaSample>?>> =
         mapOf(
-            SahhaSensor.sleep to createPermissionActionEvents(
+            SahhaSensor.sleep to createPermissionActionSamples(
                 recordClass = SleepSessionRecord::class,
                 extractSample = { record ->
                     val sleepRecord = record as SleepSessionRecord
@@ -216,7 +216,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sessionSample) + stageSamples
                 }
             ),
-            SahhaSensor.steps to createPermissionActionEvents(
+            SahhaSensor.steps to createPermissionActionSamples(
                 recordClass = StepsRecord::class,
                 extractSample = { record ->
                     val sample = (record as StepsRecord)
@@ -226,7 +226,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.floors_climbed to createPermissionActionEvents(
+            SahhaSensor.floors_climbed to createPermissionActionSamples(
                 recordClass = FloorsClimbedRecord::class,
                 extractSample = { record ->
                     val sample = (record as FloorsClimbedRecord)
@@ -235,7 +235,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.heart_rate to createPermissionActionEvents(
+            SahhaSensor.heart_rate to createPermissionActionSamples(
                 recordClass = HeartRateRecord::class,
                 extractSample = { record ->
                     (record as HeartRateRecord)
@@ -246,7 +246,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         }
                 }
             ),
-            SahhaSensor.resting_heart_rate to createPermissionActionEvents(
+            SahhaSensor.resting_heart_rate to createPermissionActionSamples(
                 recordClass = RestingHeartRateRecord::class,
                 extractSample = { record ->
                     val sample = (record as RestingHeartRateRecord)
@@ -255,7 +255,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.heart_rate_variability_rmssd to createPermissionActionEvents(
+            SahhaSensor.heart_rate_variability_rmssd to createPermissionActionSamples(
                 recordClass = HeartRateVariabilityRmssdRecord::class,
                 extractSample = { record ->
                     val sample = (record as HeartRateVariabilityRmssdRecord)
@@ -264,7 +264,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.blood_pressure_systolic to createPermissionActionEvents(
+            SahhaSensor.blood_pressure_systolic to createPermissionActionSamples(
                 recordClass = BloodPressureRecord::class,
                 extractSample = { record ->
                     val sample = (record as BloodPressureRecord)
@@ -273,7 +273,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.blood_pressure_diastolic to createPermissionActionEvents(
+            SahhaSensor.blood_pressure_diastolic to createPermissionActionSamples(
                 recordClass = BloodPressureRecord::class,
                 extractSample = { record ->
                     val sample = (record as BloodPressureRecord)
@@ -282,7 +282,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.blood_glucose to createPermissionActionEvents(
+            SahhaSensor.blood_glucose to createPermissionActionSamples(
                 recordClass = BloodGlucoseRecord::class,
                 extractSample = { record ->
                     val sample = (record as BloodGlucoseRecord)
@@ -291,7 +291,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.vo2_max to createPermissionActionEvents(
+            SahhaSensor.vo2_max to createPermissionActionSamples(
                 recordClass = Vo2MaxRecord::class,
                 extractSample = { record ->
                     val sample = (record as Vo2MaxRecord)
@@ -300,7 +300,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.oxygen_saturation to createPermissionActionEvents(
+            SahhaSensor.oxygen_saturation to createPermissionActionSamples(
                 recordClass = OxygenSaturationRecord::class,
                 extractSample = { record ->
                     val sample = (record as OxygenSaturationRecord)
@@ -309,7 +309,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.respiratory_rate to createPermissionActionEvents(
+            SahhaSensor.respiratory_rate to createPermissionActionSamples(
                 recordClass = RespiratoryRateRecord::class,
                 extractSample = { record ->
                     val sample = (record as RespiratoryRateRecord)
@@ -318,7 +318,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.active_energy_burned to createPermissionActionEvents(
+            SahhaSensor.active_energy_burned to createPermissionActionSamples(
                 recordClass = ActiveCaloriesBurnedRecord::class,
                 extractSample = { record ->
                     val sample = (record as ActiveCaloriesBurnedRecord)
@@ -327,7 +327,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.total_energy_burned to createPermissionActionEvents(
+            SahhaSensor.total_energy_burned to createPermissionActionSamples(
                 recordClass = TotalCaloriesBurnedRecord::class,
                 extractSample = { record ->
                     val sample = (record as TotalCaloriesBurnedRecord)
@@ -336,7 +336,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.basal_metabolic_rate to createPermissionActionEvents(
+            SahhaSensor.basal_metabolic_rate to createPermissionActionSamples(
                 recordClass = BasalMetabolicRateRecord::class,
                 extractSample = { record ->
                     val sample = (record as BasalMetabolicRateRecord)
@@ -345,7 +345,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.body_temperature to createPermissionActionEvents(
+            SahhaSensor.body_temperature to createPermissionActionSamples(
                 recordClass = BodyTemperatureRecord::class,
                 extractSample = { record ->
                     val sample = (record as BodyTemperatureRecord)
@@ -354,7 +354,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.basal_body_temperature to createPermissionActionEvents(
+            SahhaSensor.basal_body_temperature to createPermissionActionSamples(
                 recordClass = BasalBodyTemperatureRecord::class,
                 extractSample = { record ->
                     val sample = (record as BasalBodyTemperatureRecord)
@@ -363,7 +363,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.height to createPermissionActionEvents(
+            SahhaSensor.height to createPermissionActionSamples(
                 recordClass = HeightRecord::class,
                 extractSample = { record ->
                     val sample = (record as HeightRecord)
@@ -372,7 +372,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.weight to createPermissionActionEvents(
+            SahhaSensor.weight to createPermissionActionSamples(
                 recordClass = WeightRecord::class,
                 extractSample = { record ->
                     val sample = (record as WeightRecord)
@@ -381,7 +381,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.lean_body_mass to createPermissionActionEvents(
+            SahhaSensor.lean_body_mass to createPermissionActionSamples(
                 recordClass = LeanBodyMassRecord::class,
                 extractSample = { record ->
                     val sample = (record as LeanBodyMassRecord)
@@ -390,7 +390,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.body_fat to createPermissionActionEvents(
+            SahhaSensor.body_fat to createPermissionActionSamples(
                 recordClass = BodyFatRecord::class,
                 extractSample = { record ->
                     val sample = (record as BodyFatRecord)
@@ -399,7 +399,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.body_water_mass to createPermissionActionEvents(
+            SahhaSensor.body_water_mass to createPermissionActionSamples(
                 recordClass = BodyWaterMassRecord::class,
                 extractSample = { record ->
                     val sample = (record as BodyWaterMassRecord)
@@ -408,7 +408,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.bone_mass to createPermissionActionEvents(
+            SahhaSensor.bone_mass to createPermissionActionSamples(
                 recordClass = BoneMassRecord::class,
                 extractSample = { record ->
                     val sample = (record as BoneMassRecord)
@@ -417,7 +417,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.exercise to createPermissionActionEvents(
+            SahhaSensor.exercise to createPermissionActionSamples(
                 recordClass = ExerciseSessionRecord::class,
                 extractSample = { record ->
                     val exerciseSession = record as ExerciseSessionRecord
@@ -480,7 +480,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
         }
     }
 
-    private fun <R : Record> createPermissionActionEvents(
+    private fun <R : Record> createPermissionActionSamples(
         recordClass: KClass<R>,
         extractSample: (Record) -> List<SahhaSample>
     ): suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaSample>?> {
@@ -489,21 +489,25 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 HealthPermission.getReadPermission(recordClass)
             )
             if (permissionGranted) {
-                val records = repository.getRecords(
-                    recordClass,
-                    TimeRangeFilter.Companion.between(
-                        start.toLocalDateTime(),
-                        end.toLocalDateTime()
+                try {
+                    val records = repository.getRecords(
+                        recordClass,
+                        TimeRangeFilter.Companion.between(
+                            start.toLocalDateTime(),
+                            end.toLocalDateTime()
+                        )
                     )
-                )
 
-                val samples = records?.map { sample ->
-                    extractSample(sample)
+                    val samples = records?.map { sample ->
+                        extractSample(sample)
+                    }
+
+                    val flattenedSamples = samples?.flatten()
+
+                    Pair(null, flattenedSamples)
+                } catch (e: Exception) {
+                    Pair(e.message, null)
                 }
-
-                val flattenedSamples = samples?.flatten()
-
-                Pair(null, flattenedSamples)
             } else Pair("Error: HealthConnect permission for this sensor was not granted", null)
         }
     }
