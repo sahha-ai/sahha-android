@@ -4,18 +4,28 @@ import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResult
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
+import androidx.health.connect.client.records.BasalBodyTemperatureRecord
 import androidx.health.connect.client.records.BasalMetabolicRateRecord
+import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyTemperatureRecord
+import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.FloorsClimbedRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import sdk.sahha.android.common.Constants
@@ -272,140 +282,157 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.blood_glucose to createPermissionActionEvents(
+                recordClass = BloodGlucoseRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BloodGlucoseRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.vo2_max to createPermissionActionEvents(
+                recordClass = Vo2MaxRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as Vo2MaxRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.oxygen_saturation to createPermissionActionEvents(
+                recordClass = OxygenSaturationRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as OxygenSaturationRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.respiratory_rate to createPermissionActionEvents(
+                recordClass = RespiratoryRateRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as RespiratoryRateRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.active_energy_burned to createPermissionActionEvents(
+                recordClass = ActiveCaloriesBurnedRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as ActiveCaloriesBurnedRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.total_energy_burned to createPermissionActionEvents(
+                recordClass = TotalCaloriesBurnedRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as TotalCaloriesBurnedRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.basal_metabolic_rate to createPermissionActionEvents(
+                recordClass = BasalMetabolicRateRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BasalMetabolicRateRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.body_temperature to createPermissionActionEvents(
+                recordClass = BodyTemperatureRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BodyTemperatureRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.basal_body_temperature to createPermissionActionEvents(
+                recordClass = BasalBodyTemperatureRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BasalBodyTemperatureRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.height to createPermissionActionEvents(
+                recordClass = HeightRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as HeightRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.weight to createPermissionActionEvents(
+                recordClass = WeightRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as WeightRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.lean_body_mass to createPermissionActionEvents(
+                recordClass = LeanBodyMassRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as LeanBodyMassRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.body_fat to createPermissionActionEvents(
+                recordClass = BodyFatRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BodyFatRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.body_water_mass to createPermissionActionEvents(
+                recordClass = BodyWaterMassRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BodyWaterMassRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.bone_mass to createPermissionActionEvents(
+                recordClass = BoneMassRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val sample = (record as BoneMassRecord)
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
+                    listOf(sample)
                 }
             ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
+            SahhaSensor.exercise to createPermissionActionEvents(
+                recordClass = ExerciseSessionRecord::class,
                 extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
+                    val exerciseSession = record as ExerciseSessionRecord
+                    val sessions = exerciseSession
+                        .toSahhaDataLogDto()
                         .toSahhaSample()
-                }
-            ),
-            SahhaSensor.SENSOR_TYPE to createPermissionActionEvents(
-                recordClass = RECORD_CLASS::class,
-                extractSample = { record ->
-                    (record as RECORD_TYPE)
-                        .toSahhaDataLog()
-                        .toSahhaSample()
+                    val segments = exerciseSession.segments.map {
+                        it.toSahhaDataLogDto(record)
+                            .toSahhaSample()
+                    }
+                    val laps = exerciseSession.laps.map {
+                        it.toSahhaDataLogDto(record)
+                            .toSahhaSample()
+                    }
+                    listOf(sessions) + segments + laps
                 }
             ),
         )

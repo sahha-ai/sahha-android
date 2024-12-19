@@ -91,8 +91,7 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
         ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60)
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (session.metadata.id + startTime + endTime)
                 .toByteArray()
         ).toString(),
         parentId = session.metadata.id,
@@ -151,8 +150,7 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (time.toEpochMilli())
-                .toString()
+            (metadata.id + time)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.BLOOD,
@@ -184,8 +182,7 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (time.toEpochMilli())
-                .toString()
+            (metadata.id + time)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.BLOOD,
@@ -218,8 +215,7 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (time.toEpochMilli())
-                .toString()
+            (record.metadata.id + time)
                 .toByteArray()
         ).toString(),
         parentId = record.metadata.id,
@@ -272,8 +268,7 @@ internal fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (SahhaSensor.active_energy_burned.name + startTime + endTime)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.ENERGY,
@@ -292,8 +287,7 @@ internal fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (SahhaSensor.total_energy_burned.name + startTime + endTime)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.ENERGY,
@@ -340,15 +334,15 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     sources: List<String> = listOf()
 ): SahhaStat {
     val consistentUid = UUID.nameUUIDFromBytes(
-        (startTime.toEpochMilli() + endTime.toEpochMilli()).toString().toByteArray()
+        ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
     )
     return SahhaStat(
         id = consistentUid.toString(),
         type = sensor.name,
         value = value,
         unit = unit,
-        startDate = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
-        endDate = ZonedDateTime.ofInstant(this.endTime, this.zoneOffset),
+        startDateTime = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
+        endDateTime = ZonedDateTime.ofInstant(this.endTime, this.zoneOffset),
         sources = sources
     )
 }
@@ -709,8 +703,7 @@ internal fun ExerciseLap.toSahhaDataLogDto(
     val dataType = "exercise_lap"
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (exercise.metadata.id + startTime + endTime)
                 .toByteArray()
         ).toString(),
         parentId = exercise.metadata.id,
@@ -744,8 +737,7 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (exercise.metadata.id + startTime + endTime)
                 .toByteArray()
         ).toString(),
         parentId = exercise.metadata.id,
@@ -765,15 +757,17 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
     )
 }
 
-internal fun SahhaDataLog.toSahhaSample(): SahhaSample {
+internal fun SahhaDataLog.toSahhaSample(
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaSample {
     return SahhaSample(
-        id,
-        dataType,
-        value,
-        source,
-        startDateTime,
-        endDateTime,
-        unit,
+        id = id,
+        type = dataType,
+        value = value,
+        unit = unit,
+        startDateTime = timeManager.ISOToZonedDateTime(startDateTime),
+        endDateTime = timeManager.ISOToZonedDateTime(endDateTime),
+        source = source,
     )
 }
 

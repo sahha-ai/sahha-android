@@ -39,10 +39,9 @@ import androidx.lifecycle.lifecycleScope
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.source.Sahha
@@ -151,6 +150,8 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                SamplesView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 StatsView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -477,6 +478,132 @@ fun DefaultPreview() {
 }
 
 @Composable
+fun SamplesView() {
+    var result by remember {
+        mutableStateOf("Pending")
+    }
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    var expandedInterval by remember {
+        mutableStateOf(false)
+    }
+    var sensor by remember {
+        mutableStateOf("Select")
+    }
+    var interval by remember {
+        mutableStateOf("Select")
+    }
+
+    Box {
+        Text(sensor, modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clickable { expanded = true })
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            SahhaSensor.values().forEach {
+                DropdownMenuItem(
+                    onClick = {
+                        sensor = it.name
+                        expanded = false
+                    }
+                ) {
+                    Text(it.name)
+                }
+            }
+        }
+    }
+
+    Row {
+        Button(
+            onClick = {
+                result = "Loading..."
+                try {
+                    Sahha.getSamples(
+                        SahhaSensor.valueOf(sensor),
+                        Pair(
+                            LocalDateTime.now().minusDays(7),
+                            LocalDateTime.now()
+                        )
+                    ) { error, samples ->
+                        result = ""
+                        error?.also { result = it }
+                        val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+                        samples?.forEach {
+                            scope.launch {
+                                result += "${it.id}\n" +
+                                        "${it.type}\n" +
+                                        "${it.value}\n" +
+                                        "${it.unit}\n" +
+                                        "${it.startDateTime}\n" +
+                                        "${it.endDateTime}\n" +
+                                        "${it.source}\n\n"
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    println(e.message)
+                }
+            }
+        ) {
+            Text(text = "Get Samples")
+        }
+
+        Button(
+            onClick = {
+                result = "Loading..."
+                val scope = CoroutineScope(Dispatchers.Default)
+                scope.launch {
+                    async {
+                        SahhaSensor.values().forEach { s ->
+                            suspendCancellableCoroutine { cont ->
+                                try {
+                                    Sahha.getSamples(
+                                        s,
+                                        Pair(
+                                            LocalDateTime.now().minusDays(7),
+                                            LocalDateTime.now()
+                                        )
+                                    ) { error, samples ->
+                                        scope.launch {
+                                            sensor = s.name
+                                            result = ""
+                                            error?.also { result = it }
+                                            samples?.forEach {
+                                                scope.launch {
+                                                    result += "${it.id}\n" +
+                                                            "${it.type}\n" +
+                                                            "${it.value}\n" +
+                                                            "${it.unit}\n" +
+                                                            "${it.startDateTime}\n" +
+                                                            "${it.endDateTime}\n" +
+                                                            "${it.source}\n\n"
+                                                }
+                                            }
+                                            delay(250)
+                                            if (cont.isActive) cont.resume(Unit)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    println(e.message)
+                                }
+                            }
+                        }
+                        delay(250)
+                        result = "Complete!"
+                    }.await()
+                }
+            }
+        ) {
+            Text(text = "Loop All Samples")
+        }
+    }
+    Spacer(modifier = Modifier.size(8.dp))
+    Text(result)
+    Spacer(modifier = Modifier.size(8.dp))
+}
+
+@Composable
 fun StatsView() {
     var result by remember {
         mutableStateOf("Pending")
@@ -531,8 +658,8 @@ fun StatsView() {
                             result += "${it.id}\n" +
                                     "${it.value}\n" +
                                     "${it.unit}\n" +
-                                    "${it.startDate}\n" +
-                                    "${it.endDate}\n" +
+                                    "${it.startDateTime}\n" +
+                                    "${it.endDateTime}\n" +
                                     "${it.sources}\n\n"
                         }
                     }
@@ -568,8 +695,8 @@ fun StatsView() {
                                                 result += "${it.id}\n" +
                                                         "${it.value}\n" +
                                                         "${it.unit}\n" +
-                                                        "${it.startDate}\n" +
-                                                        "${it.endDate}\n" +
+                                                        "${it.startDateTime}\n" +
+                                                        "${it.endDateTime}\n" +
                                                         "${it.sources}\n\n"
                                             }
                                             delay(250)

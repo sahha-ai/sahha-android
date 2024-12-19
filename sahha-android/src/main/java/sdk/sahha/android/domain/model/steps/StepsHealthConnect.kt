@@ -3,9 +3,7 @@ package sdk.sahha.android.domain.model.steps
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
-import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
 @Entity
@@ -42,8 +40,7 @@ internal fun StepsHealthConnect.toSahhaDataLogAsParentLog(): SahhaDataLog {
 internal fun StepsHealthConnect.toSahhaDataLogAsChildLog(): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (startTime.toEpochMilli() + endTime.toEpochMilli())
-                .toString()
+            (dataType + startDateTime + endDateTime)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.ACTIVITY,
