@@ -370,7 +370,10 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     ((s.endTime.toEpochMilli() - s.startTime.toEpochMilli()) / 1000 / 60).toDouble()
                 sleepStages.add(
                     SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
+                        id = UUID.nameUUIDFromBytes(
+                            (session.metadata.id + s.startTime + s.endTime)
+                                .toByteArray()
+                        ).toString(),
                         parentId = session.metadata.id,
                         logType = Constants.DataLogs.SLEEP,
                         value = durationInMinutes,
@@ -420,7 +423,10 @@ internal class HealthConnectRepoImpl @Inject constructor(
             record.samples.forEach { sample ->
                 samplesList.add(
                     SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
+                        id = UUID.nameUUIDFromBytes(
+                            (record.metadata.id + sample.time)
+                                .toByteArray()
+                        ).toString(),
                         parentId = record.metadata.id,
                         logType = Constants.DataLogs.HEART,
                         dataType = SahhaSensor.heart_rate.name,
@@ -1094,50 +1100,5 @@ internal class HealthConnectRepoImpl @Inject constructor(
             ?.toLocalDate()
 
         return LocalDateTime.of(timestampDate, LocalTime.MIDNIGHT)
-    }
-
-    // Could potentially use in the future
-    private suspend fun getSummarisedSleepStagesResponse(
-        chunk: List<SleepSessionRecord>
-    ): Response<ResponseBody> {
-        val summaryHashMap = hashMapOf<Int, Long>()
-        val sleepStageSummary = mutableListOf<SahhaDataLog>()
-        val sleepSessions = chunk.map { it.toSahhaDataLogDto() }
-        chunk.forEach { session ->
-            session.stages.forEach { stage ->
-                val duration = stage.endTime.toEpochMilli() - stage.startTime.toEpochMilli()
-                summaryHashMap[stage.stage] =
-                    summaryHashMap[stage.stage]?.let { it + duration } ?: duration
-            }
-
-            summaryHashMap.forEach {
-                sleepStageSummary.add(
-                    SahhaDataLog(
-                        id = UUID.randomUUID().toString(),
-                        logType = Constants.DataLogs.SLEEP,
-                        dataType = SahhaSensor.sleep.name,
-                        source = session.metadata.dataOrigin.packageName,
-                        additionalProperties = hashMapOf(
-                            "sleepStage" to (mapper.sleepStages(it.key)
-                                ?: Constants.SLEEP_STAGE_UNKNOWN),
-                        ),
-                        value = (it.value / 1000 / 60).toDouble(),
-                        unit = Constants.DataUnits.MINUTE,
-                        startDateTime = sahhaTimeManager.instantToIsoTime(
-                            session.startTime, session.startZoneOffset
-                        ),
-                        endDateTime = sahhaTimeManager.instantToIsoTime(
-                            session.endTime, session.endZoneOffset
-                        ),
-                        recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
-                        deviceType = mapper.devices(session.metadata.device?.type),
-                    )
-                )
-            }
-            summaryHashMap.clear()
-        }
-
-        val sessionsAndStages = sleepSessions + sleepStageSummary
-        return getSleepSessionResponse(sessionsAndStages)
     }
 }
