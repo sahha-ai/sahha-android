@@ -17,6 +17,7 @@ import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.DaggerAppComponent
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
 import sdk.sahha.android.domain.internal_enum.toSahhaSensorStatus
+import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import java.time.LocalDateTime
 import java.util.Date
@@ -262,6 +263,47 @@ object Sahha {
             val stats = di.getStatsUseCase(
                 sensor = sensor,
                 interval = SahhaStatInterval.day,
+                dates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
+    fun getSamples(
+        sensor: SahhaSensor,
+        dates: Pair<LocalDateTime, LocalDateTime>,
+        callback: (error: String?, samples: List<SahhaSample>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getSamplesUseCase(
+                sensor = sensor,
+                localDates = dates
+            )
+
+            callback(stats.first, stats.second)
+        }
+    }
+
+    @JvmName("getSamplesDate")
+    fun getSamples(
+        sensor: SahhaSensor,
+        dates: Pair<Date, Date>,
+        callback: (error: String?, samples: List<SahhaSample>?) -> Unit
+    ) {
+        if (!sahhaIsConfigured()) {
+            callback(SahhaErrors.sahhaNotConfigured, null)
+            return
+        }
+
+        di.defaultScope.launch {
+            val stats = di.getSamplesUseCase(
+                sensor = sensor,
                 dates = dates
             )
 

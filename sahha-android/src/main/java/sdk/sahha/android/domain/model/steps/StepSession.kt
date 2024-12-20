@@ -7,7 +7,6 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.metadata.HasMetadata
-import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -18,8 +17,11 @@ internal data class StepSession(
     val endDateTime: String,
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString(),
-): HasMetadata<StepSession> {
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+        "StepSession$startDateTime$endDateTime"
+            .toByteArray()
+    ).toString(),
+) : HasMetadata<StepSession> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,
         modifiedDateTime: String?,

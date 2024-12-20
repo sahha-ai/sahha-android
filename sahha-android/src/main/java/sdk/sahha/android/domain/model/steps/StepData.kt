@@ -14,7 +14,9 @@ internal data class StepData(
     val source: String,
     val count: Int,
     val detectedAt: String,
-    @PrimaryKey val id: String = UUID.randomUUID().toString()
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+        (getDataType(source) + detectedAt).toByteArray()
+    ).toString()
 )
 
 internal fun StepData.toSahhaDataLogAsChildLog(): SahhaDataLog {
