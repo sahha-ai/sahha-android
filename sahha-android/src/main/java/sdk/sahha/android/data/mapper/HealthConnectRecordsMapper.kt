@@ -31,7 +31,7 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.insight.InsightData
-import sdk.sahha.android.domain.model.local_logs.SahhaLogEvent
+import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
@@ -90,7 +90,10 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
     val durationInMinutes =
         ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60)
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (session.metadata.id + startTime + endTime)
+                .toByteArray()
+        ).toString(),
         parentId = session.metadata.id,
         logType = Constants.DataLogs.SLEEP,
         value = durationInMinutes,
@@ -146,7 +149,10 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (metadata.id + time)
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = SahhaSensor.blood_pressure_diastolic.name,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -175,7 +181,10 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (metadata.id + time)
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.BLOOD,
         dataType = SahhaSensor.blood_pressure_systolic.name,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
@@ -205,7 +214,10 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (record.metadata.id + time)
+                .toByteArray()
+        ).toString(),
         parentId = record.metadata.id,
         logType = Constants.DataLogs.HEART,
         dataType = SahhaSensor.heart_rate.name,
@@ -255,7 +267,10 @@ internal fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (SahhaSensor.active_energy_burned.name + startTime + endTime)
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.ENERGY,
         dataType = SahhaSensor.active_energy_burned.name,
         value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
@@ -271,7 +286,10 @@ internal fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaDataLog {
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (SahhaSensor.total_energy_burned.name + startTime + endTime)
+                .toByteArray()
+        ).toString(),
         logType = Constants.DataLogs.ENERGY,
         dataType = SahhaSensor.total_energy_burned.name,
         value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
@@ -316,15 +334,15 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     sources: List<String> = listOf()
 ): SahhaStat {
     val consistentUid = UUID.nameUUIDFromBytes(
-        (startTime.toEpochMilli() + endTime.toEpochMilli()).toString().toByteArray()
+        ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
     )
     return SahhaStat(
         id = consistentUid.toString(),
         type = sensor.name,
         value = value,
         unit = unit,
-        startDate = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
-        endDate = ZonedDateTime.ofInstant(this.endTime, this.zoneOffset),
+        startDateTime = ZonedDateTime.ofInstant(this.startTime, this.zoneOffset),
+        endDateTime = ZonedDateTime.ofInstant(this.endTime, this.zoneOffset),
         sources = sources
     )
 }
@@ -684,7 +702,10 @@ internal fun ExerciseLap.toSahhaDataLogDto(
 
     val dataType = "exercise_lap"
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (exercise.metadata.id + startTime + endTime)
+                .toByteArray()
+        ).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = dataType,
@@ -715,7 +736,10 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
     val segmentType = (mapper.exerciseSegments(segmentType) ?: Constants.UNKNOWN)
 
     return SahhaDataLog(
-        id = UUID.randomUUID().toString(),
+        id = UUID.nameUUIDFromBytes(
+            (exercise.metadata.id + startTime + endTime)
+                .toByteArray()
+        ).toString(),
         parentId = exercise.metadata.id,
         logType = Constants.DataLogs.ACTIVITY,
         dataType = "segment_type_$segmentType",
@@ -733,20 +757,17 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
     )
 }
 
-internal fun SahhaDataLog.toSahhaLogEvent(): SahhaLogEvent {
-    return SahhaLogEvent(
-        id,
-        logType,
-        dataType,
-        value,
-        source,
-        startDateTime,
-        endDateTime,
-        unit,
-        recordingMethod,
-        deviceType,
-        additionalProperties,
-        parentId
+internal fun SahhaDataLog.toSahhaSample(
+    timeManager: SahhaTimeManager = Sahha.di.timeManager
+): SahhaSample {
+    return SahhaSample(
+        id = id,
+        type = dataType,
+        value = value,
+        unit = unit,
+        startDateTime = timeManager.ISOToZonedDateTime(startDateTime),
+        endDateTime = timeManager.ISOToZonedDateTime(endDateTime),
+        source = source,
     )
 }
 

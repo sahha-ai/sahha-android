@@ -7,7 +7,6 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.metadata.HasMetadata
-import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import sdk.sahha.android.source.Sahha
 import java.util.UUID
 
@@ -21,8 +20,10 @@ internal data class SleepDto(
     val createdAt: String = "",
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString(),
-): HasMetadata<SleepDto> {
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+        (sleepStage + startDateTime + endDateTime).toByteArray()
+    ).toString(),
+) : HasMetadata<SleepDto> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,
         modifiedDateTime: String?,

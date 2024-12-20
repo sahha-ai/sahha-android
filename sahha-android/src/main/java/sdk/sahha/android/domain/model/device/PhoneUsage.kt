@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.metadata.HasMetadata
-import sdk.sahha.android.domain.model.metadata.SahhaMetadata
 import sdk.sahha.android.source.SahhaSensor
 import java.util.UUID
 
@@ -17,7 +16,9 @@ internal data class PhoneUsage(
     val createdAt: String,
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null,
-    @PrimaryKey val id: String = UUID.randomUUID().toString()
+    @PrimaryKey val id: String = UUID.nameUUIDFromBytes(
+        ("PhoneUsage$createdAt").toByteArray()
+    ).toString()
 ) : HasMetadata<PhoneUsage> {
     override fun copyWithMetadata(
         postDateTimes: ArrayList<String>?,
