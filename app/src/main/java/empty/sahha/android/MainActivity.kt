@@ -537,6 +537,7 @@ fun SamplesView() {
                                         "${it.unit}\n" +
                                         "${it.startDateTime}\n" +
                                         "${it.endDateTime}\n" +
+                                        "${it.recordingMethod}\n" +
                                         "${it.source}\n\n"
                             }
                         }
