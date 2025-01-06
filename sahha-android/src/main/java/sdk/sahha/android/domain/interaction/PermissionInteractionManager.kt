@@ -4,7 +4,10 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -45,14 +48,11 @@ internal class PermissionInteractionManager @Inject constructor(
         context: Context, sensors: Set<SahhaSensor>,
         callback: (error: String?, status: Enum<InternalSensorStatus>) -> Unit
     ) {
-        val jobs = mutableListOf<Job>()
-        val statuses = mutableListOf<Enum<InternalSensorStatus>>()
-        sensors.forEach { sensor ->
-            jobs += Sahha.di.defaultScope.launch {
-                statuses += awaitSensorStatus(context, sensor)
-            }
+        val statuses = sensors.map { sensor ->
+            Sahha.di.defaultScope.async {
+                awaitSensorStatus(context, sensor)
+            }.await()
         }
-        jobs.joinAll()
 
         statuses.forEach { status ->
             if (statuses.contains(InternalSensorStatus.disabled)) {
