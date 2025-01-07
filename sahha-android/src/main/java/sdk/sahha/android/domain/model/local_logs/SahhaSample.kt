@@ -9,5 +9,6 @@ data class SahhaSample(
     val unit: String,
     val startDateTime: ZonedDateTime,
     val endDateTime: ZonedDateTime,
+    val recordingMethod: String,
     val source: String,
 )
