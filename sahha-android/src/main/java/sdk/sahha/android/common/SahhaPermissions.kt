@@ -87,6 +87,7 @@ internal class SahhaSensorStatusActivity : AppCompatActivity() {
         intent.getStringArrayExtra(PERMISSIONS_KEY)?.let {
             val shouldShowRationale =
                 ActivityCompat.shouldShowRequestPermissionRationale(this, it[0])
+
             if (shouldShowRationale) {
                 sendBroadcast(Intent(PERMISSION_PENDING))
             } else if (Session.onlyDeviceSensorProvided) {
