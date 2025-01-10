@@ -5,13 +5,12 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaReconfigure
-import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import kotlin.coroutines.resume
 
@@ -21,7 +20,8 @@ internal class BatchedDataPostWorker(
     private val context: Context,
     workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
-    private val scope = CoroutineScope(Dispatchers.Default + Job())
+    private val postSupervisorJob = SupervisorJob()
+    private val postScope = CoroutineScope(Dispatchers.Default + postSupervisorJob)
     private val errorLogger = Sahha.di.sahhaErrorLogger
     override suspend fun doWork(): Result {
         SahhaReconfigure(context)
@@ -33,7 +33,7 @@ internal class BatchedDataPostWorker(
         if (!Sahha.isAuthenticated) return Result.success()
 
         return suspendCancellableCoroutine { cont ->
-            scope.launch {
+            postScope.launch {
                 val batchedData = try {
                     Sahha.di.batchedDataRepo.getBatchedData()
                 } catch (e: Exception) {

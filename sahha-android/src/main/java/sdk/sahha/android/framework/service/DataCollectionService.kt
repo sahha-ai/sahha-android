@@ -13,7 +13,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.R
@@ -38,8 +40,9 @@ internal class DataCollectionService : Service() {
     private lateinit var config: SahhaConfiguration
     private lateinit var sensorSet: Set<SahhaSensor>
 
-    private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceJob)
+    private val serviceSupervisorJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Default + serviceSupervisorJob)
+    private var serviceJob: Job? = null
     private val sensors by lazy { Sahha.sim.sensor }
 
     private var killswitched = false
@@ -55,7 +58,8 @@ internal class DataCollectionService : Service() {
     }
 
     private fun initializeService() {
-        serviceScope.launch {
+        serviceJob?.cancel()
+        serviceJob = serviceScope.launch {
             try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
                 startForegroundNotification()
@@ -121,7 +125,7 @@ internal class DataCollectionService : Service() {
             startTimeZoneChangedReceiver()
         }
 
-        return START_STICKY
+        return if (killswitched) START_NOT_STICKY else START_STICKY
     }
 
     private suspend fun restartBackgroundTasks() {
@@ -163,7 +167,7 @@ internal class DataCollectionService : Service() {
 
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
-        serviceJob.cancel()
+        serviceScope.cancel()
 
         try {
             Session.handlerThread.quitSafely()
@@ -237,6 +241,7 @@ internal class DataCollectionService : Service() {
     }
 
     private fun stopService() {
+        Session.chunkPostJobs.forEach { it.cancel() }
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

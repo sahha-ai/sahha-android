@@ -7,6 +7,7 @@ import android.os.HandlerThread
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.source.SahhaEnvironment
@@ -16,6 +17,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 internal object Session {
+    var chunkPostJobs: List<Job> = emptyList()
     var hcQueryInProgress = false
     var tokenRefreshAttempted = false
 
