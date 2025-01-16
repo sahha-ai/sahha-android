@@ -767,6 +767,7 @@ internal fun SahhaDataLog.toSahhaSample(
         unit = unit,
         startDateTime = timeManager.ISOToZonedDateTime(startDateTime),
         endDateTime = timeManager.ISOToZonedDateTime(endDateTime),
+        recordingMethod = recordingMethod,
         source = source,
     )
 }
