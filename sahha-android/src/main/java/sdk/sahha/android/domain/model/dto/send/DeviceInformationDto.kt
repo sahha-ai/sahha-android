@@ -4,6 +4,7 @@ import androidx.annotation.Keep
 
 @Keep
 internal data class DeviceInformationDto(
+    val deviceId: String,
     val sdkId: String,
     val sdkVersion: String,
     val appId: String,
