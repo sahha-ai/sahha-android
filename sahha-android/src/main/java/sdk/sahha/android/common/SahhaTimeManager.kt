@@ -147,3 +147,17 @@ fun ZonedDateTime.toNoon(plusDays: Long = 0): ZonedDateTime {
         zoneId
     )
 }
+
+fun ZonedDateTime.toSpecificHour(
+    hour: Int,
+    plusDays: Long = 0
+): ZonedDateTime {
+    val zoneId = ZoneId.systemDefault()
+    return ZonedDateTime.of(
+        LocalDateTime.of(
+            this.toLocalDate().plusDays(plusDays),
+            LocalTime.of(hour, 0)
+        ),
+        zoneId
+    )
+}
