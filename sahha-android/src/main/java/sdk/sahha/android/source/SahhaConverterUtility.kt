@@ -13,9 +13,6 @@ import okhttp3.ResponseBody
 import okio.Buffer
 import org.json.JSONArray
 import org.json.JSONObject
-import sdk.sahha.android.domain.model.device_info.DeviceInformation
-import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
-import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
 import sdk.sahha.android.domain.model.error_log.SahhaResponseError
 import sdk.sahha.android.domain.model.error_log.SahhaResponseErrorItem
 import java.time.Instant
@@ -137,10 +134,6 @@ object SahhaConverterUtility {
         } catch (e: Exception) {
             null
         }
-    }
-
-    internal fun deviceInfoToDeviceInfoSendDto(deviceInfo: DeviceInformation): DeviceInformationDto {
-        return deviceInfo.toDeviceInformationSendDto()
     }
 
     fun stringToDrawableResource(context: Context, iconString: String?): Int? {

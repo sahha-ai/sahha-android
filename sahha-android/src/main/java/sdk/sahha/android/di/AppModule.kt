@@ -40,6 +40,7 @@ import sdk.sahha.android.data.local.dao.ManualPermissionsDao
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SecurityDao
 import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.data.manager.IdManagerImpl
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
 import sdk.sahha.android.data.provider.PermissionActionProviderImpl
@@ -56,6 +57,7 @@ import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
+import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
@@ -149,15 +151,25 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
+    fun provideIdManager(
+        sharedPreferences: SharedPreferences
+    ): IdManager {
+        return IdManagerImpl(sharedPreferences)
+    }
+
+    @Singleton
+    @Provides
     fun provideDeviceInfoRepo(
         configDao: ConfigurationDao,
         api: SahhaApi,
-        sahhaErrorLogger: SahhaErrorLogger
+        sahhaErrorLogger: SahhaErrorLogger,
+        idManager: IdManager,
     ): DeviceInfoRepo {
         return DeviceInfoRepoImpl(
             configDao,
             api,
-            sahhaErrorLogger
+            sahhaErrorLogger,
+            idManager
         )
     }
 
