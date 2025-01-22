@@ -10,16 +10,19 @@ import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.ConfigurationDao
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
+import sdk.sahha.android.domain.model.device_info.toDeviceInformationSendDto
 import sdk.sahha.android.domain.repository.DeviceInfoRepo
-import sdk.sahha.android.source.SahhaConverterUtility
+import java.util.UUID
 
-private const val tag = "DeviceInfoRepoImpl"
+private const val TAG = "DeviceInfoRepoImpl"
 
 internal class DeviceInfoRepoImpl(
     private val configDao: ConfigurationDao,
     private val api: SahhaApi,
-    private val sahhaErrorLogger: SahhaErrorLogger
+    private val sahhaErrorLogger: SahhaErrorLogger,
+    private val idManager: IdManager,
 ) : DeviceInfoRepo {
     override fun getPlatform(): String {
         return "Android"
@@ -72,17 +75,28 @@ internal class DeviceInfoRepoImpl(
             callback?.invoke(e.message, false)
             sahhaErrorLogger.application(
                 e.message ?: SahhaErrors.somethingWentWrong,
-                tag,
+                TAG,
                 "putDeviceInformation",
                 deviceInformation.toString(),
             )
         }
     }
 
-    private suspend fun putDeviceInformationResponse(token: String, deviceInformation: DeviceInformation): Response<ResponseBody> {
+    private suspend fun putDeviceInformationResponse(
+        token: String,
+        deviceInformation: DeviceInformation
+    ): Response<ResponseBody> {
         return api.putDeviceInformation(
             TokenBearer(token),
-            SahhaConverterUtility.deviceInfoToDeviceInfoSendDto(deviceInformation)
+            deviceInformation.toDeviceInformationSendDto(
+                idManager.getDeviceId() ?: generateAndSaveDeviceId()
+            )
         )
+    }
+
+    private fun generateAndSaveDeviceId(): String {
+        val uuidString = UUID.randomUUID().toString()
+        idManager.saveDeviceId(uuidString)
+        return uuidString
     }
 }

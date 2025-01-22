@@ -23,8 +23,11 @@ internal data class DeviceInformation(
     val appVersion: String? = null
 )
 
-internal fun DeviceInformation.toDeviceInformationSendDto(): DeviceInformationDto {
+internal fun DeviceInformation.toDeviceInformationSendDto(
+    deviceId: String
+): DeviceInformationDto {
     return DeviceInformationDto(
+        deviceId,
         sdkId,
         sdkVersion,
         appId,

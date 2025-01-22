@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.di.MainScope
+import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.device_info.DeviceInformation
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -33,6 +34,7 @@ internal class UserDataInteractionManager @Inject constructor(
     private val getScoresUseCase: GetScoresUseCase,
     private val getDemographicUseCase: GetDemographicUseCase,
     private val postDemographicUseCase: PostDemographicUseCase,
+    private val idManager: IdManager,
 ) {
     fun getScores(
         types: Set<SahhaScoreType>,
