@@ -5,20 +5,27 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
+import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityRecognitionClient
+import com.google.android.gms.location.SleepSegmentRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import sdk.sahha.android.common.Constants
+import sdk.sahha.android.common.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
-import sdk.sahha.android.common.Constants
-import sdk.sahha.android.framework.receiver.ActivityRecognitionReceiver
 import sdk.sahha.android.domain.manager.ReceiverManager
+import sdk.sahha.android.framework.receiver.ActivityRecognitionReceiver
+import sdk.sahha.android.framework.receiver.SleepReceiver
+
+private const val TAG = "ReceiverManagerImpl"
 
 internal class ReceiverManagerImpl(
     private val context: Context,
     private val mainScope: CoroutineScope
-): ReceiverManager {
+) : ReceiverManager {
     private val activityRecognitionIntent by lazy {
         Intent(
             context,
@@ -47,6 +54,14 @@ internal class ReceiverManagerImpl(
         if (Build.VERSION.SDK_INT < 26) return
 
         registerScreenStateReceiver(serviceContext)
+    }
+
+    override fun startSleepReceiver(
+        serviceContext: Context
+    ) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+
+        registerSleepReceiver(serviceContext)
     }
 
     override fun startTimeZoneChangedReceiver(context: Context) {
@@ -108,6 +123,21 @@ internal class ReceiverManagerImpl(
                 addAction(Intent.ACTION_SCREEN_OFF)
             }
         )
+    }
+
+    private fun registerSleepReceiver(serviceContext: Context) {
+        val sleepIntent = Intent(serviceContext, SleepReceiver::class.java)
+        val sleepPendingIntent = PendingIntent.getBroadcast(
+            serviceContext,
+            SLEEP_DATA_REQUEST,
+            sleepIntent,
+            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+        ActivityRecognition.getClient(context).requestSleepSegmentUpdates(
+            sleepPendingIntent,
+            SleepSegmentRequest.getDefaultSleepSegmentRequest()
+        ).addOnSuccessListener { Log.d(TAG, "Successful sleep segment request") }
+            .addOnFailureListener { Log.d(TAG, "Unsuccessful sleep segment request") }
     }
 
     private fun registerTimeZoneChangedReceiver(context: Context) {
