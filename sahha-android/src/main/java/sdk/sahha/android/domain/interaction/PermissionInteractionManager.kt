@@ -4,11 +4,7 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
@@ -88,50 +84,48 @@ internal class PermissionInteractionManager @Inject constructor(
         openAppSettingsUseCase(context)
     }
 
-    fun enableSensors(
+    suspend fun enableSensors(
         context: Context,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
-        defaultScope.launch {
-            val sensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
-            val sensorSetEmpty = sensors.isEmpty()
-            if (sensorSetEmpty) {
-                callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
-                return@launch
-            }
+        val sensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
+        val sensorSetEmpty = sensors.isEmpty()
+        if (sensorSetEmpty) {
+            callback(SahhaErrors.dataTypesUnspecified, SahhaSensorStatus.pending)
+            return
+        }
 
-            if (Session.onlyDeviceSensorProvided) {
-                manager.enableDeviceOnlySensor { status ->
-                    startNativeTasks(
-                        context,
-                        Sahha.di.sahhaInteractionManager,
-                        status
-                    )
-                    callback(null, status)
-                }
-                return@launch
-            } else if (sensors.contains(SahhaSensor.device_lock)) {
-                manager.enableDeviceOnlySensor()
-            }
-
-            val containsStepsOrSleep =
-                sensors.contains(SahhaSensor.steps) || sensors.contains(SahhaSensor.sleep)
-            val nativeStatus =
-                if (isAndroid9) SahhaSensorStatus.enabled
-                else if (containsStepsOrSleep) awaitNativeSensorRequest(context)
-                else SahhaSensorStatus.enabled
-            val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
-
-            processMultipleSensors(context, sensors) { error, status ->
-                error?.also { e -> Log.d(TAG, e) }
-                startTasks(
-                    context = context,
-                    sim = Sahha.di.sahhaInteractionManager,
-                    status = status,
-                    previousError = healthConnectStatus.first,
-                    callback = callback
+        if (Session.onlyDeviceSensorProvided) {
+            manager.enableDeviceOnlySensor { status ->
+                startNativeTasks(
+                    context,
+                    Sahha.di.sahhaInteractionManager,
+                    status
                 )
+                callback(null, status)
             }
+            return
+        } else if (sensors.contains(SahhaSensor.device_lock)) {
+            manager.enableDeviceOnlySensor()
+        }
+
+        val containsStepsOrSleep =
+            sensors.contains(SahhaSensor.steps) || sensors.contains(SahhaSensor.sleep)
+        val nativeStatus =
+            if (isAndroid9) SahhaSensorStatus.enabled
+            else if (containsStepsOrSleep) awaitNativeSensorRequest(context)
+            else SahhaSensorStatus.enabled
+        val healthConnectStatus = awaitHealthConnectSensorRequest(context, nativeStatus)
+
+        processMultipleSensors(context, sensors) { error, status ->
+            error?.also { e -> Log.d(TAG, e) }
+            startTasks(
+                context = context,
+                sim = Sahha.di.sahhaInteractionManager,
+                status = status,
+                previousError = healthConnectStatus.first,
+                callback = callback
+            )
         }
     }
 
