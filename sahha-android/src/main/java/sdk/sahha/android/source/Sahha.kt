@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
+import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.AppComponent
 import sdk.sahha.android.di.AppModule
@@ -348,6 +349,7 @@ object Sahha {
         }
 
         di.defaultScope.launch {
+            SahhaReconfigure(context)
             Session.sensors = sensors
             sim.saveConfiguration(
                 Session.sensors,
