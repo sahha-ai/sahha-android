@@ -24,7 +24,6 @@ import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
-import sdk.sahha.android.domain.use_case.background.StartCollectingSleepDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorData
 import sdk.sahha.android.domain.use_case.background.StartDataCollectionServiceUseCase
 import sdk.sahha.android.domain.use_case.metadata.AddMetadata
@@ -52,7 +51,6 @@ internal class SensorInteractionManager @Inject constructor(
     private val notificationManager: SahhaNotificationManager,
     private val sensorManager: SensorManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
-    private val startCollectingSleepDataUseCase: StartCollectingSleepDataUseCase,
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
     private val getSensorDataUseCase: GetSensorDataUseCase,
@@ -150,10 +148,6 @@ internal class SensorInteractionManager @Inject constructor(
         context: Context,
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ) {
-        if (configRepo.getConfig().sensorArray.contains(SahhaSensor.sleep.ordinal)) {
-            startCollectingSleepDataUseCase(context)
-        }
-
         // Pedometer/device checkers are in the service
         startDataCollectionServiceUseCase(callback = callback)
     }
