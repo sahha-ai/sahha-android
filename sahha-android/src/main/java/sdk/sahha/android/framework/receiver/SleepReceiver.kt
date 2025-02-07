@@ -5,9 +5,7 @@ import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.google.android.gms.location.SleepSegmentEvent
 import com.sahha.android.model.SleepQueue
 import com.sahha.android.model.SleepQueueHistory
@@ -21,7 +19,6 @@ import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
 
-@RequiresApi(Build.VERSION_CODES.Q)
 internal class SleepReceiver : BroadcastReceiver() {
     private val tag = "SleepReceiver"
 
