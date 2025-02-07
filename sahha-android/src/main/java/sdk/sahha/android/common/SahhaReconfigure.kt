@@ -25,11 +25,8 @@ internal object SahhaReconfigure {
 
             saveEnv(context, env)
 
-            if (!Sahha.diInitialized())
-                Sahha.di = getDaggerAppComponent(context, env)
-
-            if (!Sahha.simInitialized())
-                Sahha.sim = Sahha.di.sahhaInteractionManager
+            Sahha.di = getDaggerAppComponent(context, env)
+            Sahha.sim = Sahha.di.sahhaInteractionManager
 
             try {
                 val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()

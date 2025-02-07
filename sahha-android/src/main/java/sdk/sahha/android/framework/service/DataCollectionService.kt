@@ -6,10 +6,12 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,6 +122,7 @@ internal class DataCollectionService : Service() {
         serviceScope.launch {
             SahhaReconfigure(this@DataCollectionService)
             config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
+            checkAndStartCollectingSleepData()
             checkAndStartCollectingScreenLockData()
             startDataCollectors(this@DataCollectionService)
             startTimeZoneChangedReceiver()
@@ -263,6 +266,23 @@ internal class DataCollectionService : Service() {
             { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
             { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) }
         ))
+    }
+
+    private fun checkAndStartCollectingSleepData() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                unregisterReceiver(SahhaReceiversAndListeners.sleepSegments)
+            }
+        } catch (e: Exception) {
+            Log.w(tag, e.message ?: "Could not unregister receiver or listener")
+        }
+
+        if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
+            Sahha.di.receiverManager.startSleepReceiver(
+                this@DataCollectionService.applicationContext,
+            )
+            return
+        }
     }
 
     private fun checkAndStartCollectingScreenLockData() {

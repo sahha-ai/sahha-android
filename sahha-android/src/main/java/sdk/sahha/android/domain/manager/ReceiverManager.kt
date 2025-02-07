@@ -8,4 +8,5 @@ internal interface ReceiverManager {
         serviceContext: Context,
     )
     fun startTimeZoneChangedReceiver(context: Context)
+    fun startSleepReceiver(serviceContext: Context)
 }
