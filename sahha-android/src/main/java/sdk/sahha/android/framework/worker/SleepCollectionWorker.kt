@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.Task
 import sdk.sahha.android.common.Constants.SLEEP_DATA_REQUEST
 import sdk.sahha.android.framework.receiver.SleepReceiver
 
+@Deprecated("No longer used")
 @RequiresApi(Build.VERSION_CODES.Q)
 internal class SleepCollectionWorker(private val context: Context, workerParameters: WorkerParameters) :
     CoroutineWorker(context, workerParameters) {

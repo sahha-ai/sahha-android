@@ -12,7 +12,6 @@ import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.domain.model.device.PhoneUsage
 import sdk.sahha.android.source.Sahha
 
-@RequiresApi(Build.VERSION_CODES.O)
 internal class PhoneScreenStateReceiver : BroadcastReceiver() {
     private val ioScope by lazy { CoroutineScope(IO) }
 

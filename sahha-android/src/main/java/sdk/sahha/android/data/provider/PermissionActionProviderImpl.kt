@@ -29,7 +29,7 @@ import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.time.TimeRangeFilter
 import sdk.sahha.android.common.Constants
-import sdk.sahha.android.common.toNoon
+import sdk.sahha.android.common.toSpecificHour
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
 import sdk.sahha.android.data.mapper.toBloodPressureSystolic
 import sdk.sahha.android.data.mapper.toSahhaDataLog
@@ -87,7 +87,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?.toMillis()?.toDouble()?.div(1000)?.div(60)
                         ?: 0.0
                 },
-                sliceFromNoon = true
+                sliceFrom6pm = true
             ),
             SahhaSensor.active_energy_burned to createPermissionActionStats(
                 sensor = SahhaSensor.active_energy_burned,
@@ -443,7 +443,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
         metrics: Set<AggregateMetric<T>>,
         dataUnit: String,
         extractValue: (AggregationResult) -> Double,
-        sliceFromNoon: Boolean = false
+        sliceFrom6pm: Boolean = false
     ): suspend (Duration, ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaStat>?> {
         return { duration, start, end ->
             val permissionGranted = grantedPermissions().contains(
@@ -455,10 +455,12 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     val aggregates = repository.getAggregateRecordsByDuration(
                         metrics = metrics,
                         timeRangeFilter = TimeRangeFilter.between(
-                            startTime = if (sliceFromNoon) start.toNoon(-1)
-                                .toLocalDateTime() else start.toLocalDateTime(),
-                            endTime = if (sliceFromNoon) end.toNoon(-1)
-                                .toLocalDateTime() else end.toLocalDateTime()
+                            startTime = if (sliceFrom6pm) start.toSpecificHour(18, -1)
+                                .toLocalDateTime()
+                            else start.toLocalDateTime(),
+                            endTime = if (sliceFrom6pm) end.toSpecificHour(18, -1)
+                                .toLocalDateTime()
+                            else end.toLocalDateTime()
                         ),
                         interval = duration
                     )
