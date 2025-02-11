@@ -137,16 +137,6 @@ internal interface HealthConnectRepo {
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
-    suspend fun postAggregateActiveCaloriesBurned(
-        activeCalBurnedData: List<AggregationResultGroupedByDuration>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    )
-
-    suspend fun postAggregateTotalCaloriesBurned(
-        totalCalBurnedData: List<AggregationResultGroupedByDuration>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    )
-
     suspend fun saveCustomSuccessfulQuery(customId: String, timeStamp: ZonedDateTime)
     suspend fun getLastCustomQuery(customId: String): HealthConnectQuery?
     suspend fun <T: Record> getExistingChangesToken(recordType: KClass<T>): String?

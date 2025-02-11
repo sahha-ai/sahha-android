@@ -1,7 +1,6 @@
 package sdk.sahha.android.domain.model.device_info
 
 import android.os.Build
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import sdk.sahha.android.BuildConfig

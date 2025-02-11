@@ -34,6 +34,8 @@ import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.MovementDao
 import sdk.sahha.android.data.local.dao.SleepDao
+import sdk.sahha.android.data.mapper.toSahhaDataLogAsChildLog
+import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
@@ -43,12 +45,9 @@ import sdk.sahha.android.domain.model.config.SahhaConfiguration
 import sdk.sahha.android.domain.model.config.toSetOfSensors
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.device.PhoneUsage
-import sdk.sahha.android.domain.model.device.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.dto.SleepDto
-import sdk.sahha.android.domain.model.dto.toSahhaDataLogDto
 import sdk.sahha.android.domain.model.steps.StepData
 import sdk.sahha.android.domain.model.steps.StepSession
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.DeviceUsageRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
