@@ -532,6 +532,7 @@ fun SamplesView() {
                         samples?.forEach {
                             scope.launch {
                                 result += "${it.id}\n" +
+                                        "${it.category}\n" +
                                         "${it.type}\n" +
                                         "${it.value}\n" +
                                         "${it.unit}\n" +

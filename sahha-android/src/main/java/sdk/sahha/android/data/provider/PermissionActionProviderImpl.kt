@@ -159,11 +159,11 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 sensor = SahhaSensor.exercise,
                 recordClass = ExerciseSessionRecord::class,
                 metrics = setOf(ExerciseSessionRecord.EXERCISE_DURATION_TOTAL),
-                dataUnit = Constants.DataUnits.SECOND,
+                dataUnit = Constants.DataUnits.MINUTE,
                 extractValue = { result ->
                     result[ExerciseSessionRecord.EXERCISE_DURATION_TOTAL]
                         ?.toMillis()
-                        ?.toDouble()?.div(1000)
+                        ?.toDouble()?.div(1000)?.div(60)
                         ?: 0.0
                 }
             ),

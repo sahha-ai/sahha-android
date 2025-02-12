@@ -762,6 +762,7 @@ internal fun SahhaDataLog.toSahhaSample(
 ): SahhaSample {
     return SahhaSample(
         id = id,
+        category = logType,
         type = dataType,
         value = value,
         unit = unit,
