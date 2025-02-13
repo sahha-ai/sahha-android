@@ -2,7 +2,6 @@ package sdk.sahha.android.data.repository
 
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
@@ -49,24 +48,22 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.local.dao.HealthConnectConfigDao
 import sdk.sahha.android.data.local.dao.MovementDao
-import sdk.sahha.android.data.mapper.toActiveCaloriesBurned
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
 import sdk.sahha.android.data.mapper.toBloodPressureSystolic
+import sdk.sahha.android.data.mapper.toSahhaDataLogAsChildLog
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toSahhaLogDto
-import sdk.sahha.android.data.mapper.toTotalCaloriesBurned
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.CompatibleApps
+import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.manager.PostChunkManager
-import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.health_connect.HealthConnectChangeToken
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
@@ -94,7 +91,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
     @DefaultScope private val defaultScope: CoroutineScope,
     @IoScope private val ioScope: CoroutineScope,
     private val chunkManager: PostChunkManager,
-    private val notificationManager: SahhaNotificationManager,
     private val configRepo: SahhaConfigRepo,
     private val authRepo: AuthRepo,
     private val sensorRepo: SensorRepo,
@@ -106,7 +102,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
     private val healthConnectConfigDao: HealthConnectConfigDao,
     private val movementDao: MovementDao,
     private val mapper: HealthConnectConstantsMapper,
-    private val sharedPrefs: SharedPreferences
+    private val idManager: IdManager,
 ) : HealthConnectRepo {
     override val permissions =
         setOf(
@@ -388,6 +384,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                             s.endTime, session.endZoneOffset
                         ),
                         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
+                        deviceId = idManager.getDeviceId(),
                         deviceType = mapper.devices(session.metadata.device?.type),
                     )
                 )
@@ -440,6 +437,7 @@ internal class HealthConnectRepoImpl @Inject constructor(
                             sample.time, record.endZoneOffset
                         ),
                         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
+                        deviceId = idManager.getDeviceId(),
                         deviceType = mapper.devices(record.metadata.device?.type),
                     )
                 )
@@ -510,52 +508,6 @@ internal class HealthConnectRepoImpl @Inject constructor(
                     sahhaTimeManager.ISOToZonedDateTime(last.endDateTime)
                 )
             },
-            callback
-        )
-    }
-
-    override suspend fun postAggregateActiveCaloriesBurned(
-        activeCalBurnedData: List<AggregationResultGroupedByDuration>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    ) {
-        val getResponse: suspend (List<AggregationResultGroupedByDuration>) -> Response<ResponseBody> =
-            { chunk ->
-                val token = authRepo.getToken() ?: ""
-                val activeCalsBurned = chunk.map { it.toActiveCaloriesBurned() }
-                api.postActiveCaloriesBurned(
-                    TokenBearer(token),
-                    activeCalsBurned
-                )
-            }
-
-        postData(
-            activeCalBurnedData,
-            Constants.DEFAULT_POST_LIMIT,
-            getResponse,
-            {},
-            callback
-        )
-    }
-
-    override suspend fun postAggregateTotalCaloriesBurned(
-        totalCalBurnedData: List<AggregationResultGroupedByDuration>,
-        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
-    ) {
-        val getResponse: suspend (List<AggregationResultGroupedByDuration>) -> Response<ResponseBody> =
-            { chunk ->
-                val token = authRepo.getToken() ?: ""
-                val totalCalsBurned = chunk.map { it.toTotalCaloriesBurned() }
-                api.postTotalCaloriesBurned(
-                    TokenBearer(token),
-                    totalCalsBurned
-                )
-            }
-
-        postData(
-            totalCalBurnedData,
-            Constants.DEFAULT_POST_LIMIT,
-            getResponse,
-            {},
             callback
         )
     }
