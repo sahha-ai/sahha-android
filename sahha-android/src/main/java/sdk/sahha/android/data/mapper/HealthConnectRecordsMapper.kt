@@ -28,6 +28,7 @@ import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.domain.internal_enum.SahhaLocalCategory
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.insight.InsightData
@@ -328,6 +329,7 @@ internal fun AggregationResultGroupedByDuration.toTotalEnergyInsight(
 }
 
 internal fun AggregationResultGroupedByDuration.toSahhaStat(
+    category: SahhaLocalCategory,
     sensor: SahhaSensor,
     value: Double,
     unit: String,
@@ -338,6 +340,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     )
     return SahhaStat(
         id = consistentUid.toString(),
+        category = category.value,
         type = sensor.name,
         value = value,
         unit = unit,
@@ -758,11 +761,12 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 }
 
 internal fun SahhaDataLog.toSahhaSample(
+    category: SahhaLocalCategory,
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaSample {
     return SahhaSample(
         id = id,
-        category = logType,
+        category = category.value,
         type = dataType,
         value = value,
         unit = unit,

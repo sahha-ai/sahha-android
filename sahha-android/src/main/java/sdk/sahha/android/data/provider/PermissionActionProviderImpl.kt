@@ -38,6 +38,7 @@ import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toSahhaSample
 import sdk.sahha.android.data.mapper.toSahhaStat
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
+import sdk.sahha.android.domain.mapper.category
 import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
@@ -206,12 +207,12 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     val sleepRecord = record as SleepSessionRecord
                     val sessionSample = sleepRecord
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.sleep.category)
                     val stageSamples = sleepRecord
                         .stages
                         .map {
                             it.toSahhaDataLog(record)
-                                .toSahhaSample()
+                                .toSahhaSample(SahhaSensor.sleep.category)
                         }
                     listOf(sessionSample) + stageSamples
                 }
@@ -222,7 +223,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     val sample = (record as StepsRecord)
                         .toStepsHealthConnect()
                         .toSahhaDataLogAsParentLog()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.steps.category)
                     listOf(sample)
                 }
             ),
@@ -231,7 +232,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as FloorsClimbedRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.floors_climbed.category)
                     listOf(sample)
                 }
             ),
@@ -242,7 +243,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         .samples.map { heartSample ->
                             heartSample
                                 .toSahhaDataLog(record)
-                                .toSahhaSample()
+                                .toSahhaSample(SahhaSensor.heart_rate.category)
                         }
                 }
             ),
@@ -251,7 +252,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as RestingHeartRateRecord)
                         .toSahhaLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.resting_heart_rate.category)
                     listOf(sample)
                 }
             ),
@@ -260,7 +261,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as HeartRateVariabilityRmssdRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.heart_rate_variability_rmssd.category)
                     listOf(sample)
                 }
             ),
@@ -269,7 +270,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BloodPressureRecord)
                         .toBloodPressureSystolic()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.blood_pressure_systolic.category)
                     listOf(sample)
                 }
             ),
@@ -278,7 +279,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BloodPressureRecord)
                         .toBloodPressureDiastolic()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.blood_pressure_diastolic.category)
                     listOf(sample)
                 }
             ),
@@ -287,7 +288,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BloodGlucoseRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.blood_glucose.category)
                     listOf(sample)
                 }
             ),
@@ -296,7 +297,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as Vo2MaxRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.vo2_max.category)
                     listOf(sample)
                 }
             ),
@@ -305,7 +306,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as OxygenSaturationRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.oxygen_saturation.category)
                     listOf(sample)
                 }
             ),
@@ -314,7 +315,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as RespiratoryRateRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.respiratory_rate.category)
                     listOf(sample)
                 }
             ),
@@ -323,7 +324,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as ActiveCaloriesBurnedRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.active_energy_burned.category)
                     listOf(sample)
                 }
             ),
@@ -332,7 +333,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as TotalCaloriesBurnedRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.total_energy_burned.category)
                     listOf(sample)
                 }
             ),
@@ -341,7 +342,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BasalMetabolicRateRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.basal_metabolic_rate.category)
                     listOf(sample)
                 }
             ),
@@ -350,7 +351,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BodyTemperatureRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.body_temperature.category)
                     listOf(sample)
                 }
             ),
@@ -359,7 +360,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BasalBodyTemperatureRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.basal_body_temperature.category)
                     listOf(sample)
                 }
             ),
@@ -368,7 +369,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as HeightRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.height.category)
                     listOf(sample)
                 }
             ),
@@ -377,7 +378,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as WeightRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.weight.category)
                     listOf(sample)
                 }
             ),
@@ -386,7 +387,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as LeanBodyMassRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.lean_body_mass.category)
                     listOf(sample)
                 }
             ),
@@ -395,7 +396,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BodyFatRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.body_fat.category)
                     listOf(sample)
                 }
             ),
@@ -404,7 +405,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BodyWaterMassRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.body_water_mass.category)
                     listOf(sample)
                 }
             ),
@@ -413,7 +414,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 extractSample = { record ->
                     val sample = (record as BoneMassRecord)
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.bone_mass.category)
                     listOf(sample)
                 }
             ),
@@ -423,14 +424,14 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     val exerciseSession = record as ExerciseSessionRecord
                     val sessions = exerciseSession
                         .toSahhaDataLogDto()
-                        .toSahhaSample()
+                        .toSahhaSample(SahhaSensor.exercise.category)
                     val segments = exerciseSession.segments.map {
                         it.toSahhaDataLogDto(record)
-                            .toSahhaSample()
+                            .toSahhaSample(SahhaSensor.exercise.category)
                     }
                     val laps = exerciseSession.laps.map {
                         it.toSahhaDataLogDto(record)
-                            .toSahhaSample()
+                            .toSahhaSample(SahhaSensor.exercise.category)
                     }
                     listOf(sessions) + segments + laps
                 }
@@ -467,6 +468,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
 
                     val stats = aggregates?.map { stat ->
                         stat.toSahhaStat(
+                            category = sensor.category,
                             sensor = sensor,
                             value = extractValue(stat.result),
                             unit = dataUnit,

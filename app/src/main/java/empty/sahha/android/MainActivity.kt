@@ -574,11 +574,13 @@ fun SamplesView() {
                                             samples?.forEach {
                                                 scope.launch {
                                                     result += "${it.id}\n" +
+                                                            "${it.category}\n" +
                                                             "${it.type}\n" +
                                                             "${it.value}\n" +
                                                             "${it.unit}\n" +
                                                             "${it.startDateTime}\n" +
                                                             "${it.endDateTime}\n" +
+                                                            "${it.recordingMethod}\n" +
                                                             "${it.source}\n\n"
                                                 }
                                             }
@@ -658,6 +660,8 @@ fun StatsView() {
                         error?.also { result = it }
                         stats?.forEach {
                             result += "${it.id}\n" +
+                                    "${it.category}\n" +
+                                    "${it.type}\n" +
                                     "${it.value}\n" +
                                     "${it.unit}\n" +
                                     "${it.startDateTime}\n" +
@@ -695,6 +699,8 @@ fun StatsView() {
                                             error?.also { result = it }
                                             stats?.forEach {
                                                 result += "${it.id}\n" +
+                                                        "${it.category}\n" +
+                                                        "${it.type}\n" +
                                                         "${it.value}\n" +
                                                         "${it.unit}\n" +
                                                         "${it.startDateTime}\n" +

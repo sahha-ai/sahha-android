@@ -14,4 +14,5 @@ data class SahhaSample(
     val endDateTime: ZonedDateTime,
     val recordingMethod: String,
     val source: String,
+    val stats: List<SahhaStat> = emptyList()
 )
