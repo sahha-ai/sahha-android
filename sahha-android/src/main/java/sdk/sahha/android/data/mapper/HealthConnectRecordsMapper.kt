@@ -1,5 +1,6 @@
 package sdk.sahha.android.data.mapper
 
+import android.content.Context
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
@@ -26,25 +27,35 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Device
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
+import sdk.sahha.android.domain.internal_enum.RecordingMethods
+import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
+import sdk.sahha.android.domain.model.app_event.AppEvent
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
-import sdk.sahha.android.domain.model.insight.InsightData
+import sdk.sahha.android.domain.model.device.PhoneUsage
+import sdk.sahha.android.domain.model.dto.SleepDto
 import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
+import sdk.sahha.android.domain.model.steps.StepData
+import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
+import sdk.sahha.android.domain.model.steps.getDataType
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaSensor
 import java.time.ZonedDateTime
 import java.util.UUID
 
+private val defaults = Sahha.di.mapperDefaults
+
 // Converted to SahhaDataLogDto later
 // Parameters are for unit tests
 internal fun StepsRecord.toStepsHealthConnect(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager
 ): StepsHealthConnect {
     return StepsHealthConnect(
         metaId = metadata.id,
@@ -64,9 +75,52 @@ internal fun StepsRecord.toStepsHealthConnect(
     )
 }
 
+internal fun StepsHealthConnect.toSahhaDataLogAsParentLog(
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = metaId,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = dataType,
+        value = count.toDouble(),
+        source = source,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        unit = Constants.DataUnits.COUNT,
+        recordingMethod = recordingMethod,
+        deviceId = idManager.getDeviceId(),
+        deviceType = deviceType,
+        modifiedDateTime = modifiedDateTime
+    )
+}
+
+internal fun StepsHealthConnect.toSahhaDataLogAsChildLog(
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = UUID.nameUUIDFromBytes(
+            (dataType + startDateTime + endDateTime)
+                .toByteArray()
+        ).toString(),
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = dataType,
+        value = count.toDouble(),
+        source = source,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        unit = Constants.DataUnits.COUNT,
+        recordingMethod = recordingMethod,
+        deviceId = idManager.getDeviceId(),
+        deviceType = deviceType,
+        modifiedDateTime = modifiedDateTime,
+        parentId = metaId
+    )
+}
+
 internal fun SleepSessionRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -78,6 +132,7 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
@@ -85,8 +140,9 @@ internal fun SleepSessionRecord.toSahhaDataLogDto(
 
 internal fun SleepSessionRecord.Stage.toSahhaDataLog(
     session: SleepSessionRecord,
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     val durationInMinutes =
         ((endTime.toEpochMilli() - startTime.toEpochMilli()).toDouble() / 1000 / 60)
@@ -109,6 +165,7 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
             endTime, session.endZoneOffset
         ),
         recordingMethod = mapper.recordingMethod(session.metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(session.metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(
             session.metadata.lastModifiedTime,
@@ -118,8 +175,9 @@ internal fun SleepSessionRecord.Stage.toSahhaDataLog(
 }
 
 internal fun BloodGlucoseRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -135,6 +193,7 @@ internal fun BloodGlucoseRecord.toSahhaDataLogDto(
         ),
         unit = Constants.DataUnits.MMOL_PER_LITRE,
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         additionalProperties = hashMapOf(
             "relationToMeal" to (mapper.relationToMeal(relationToMeal) ?: Constants.UNKNOWN),
@@ -146,8 +205,9 @@ internal fun BloodGlucoseRecord.toSahhaDataLogDto(
 }
 
 internal fun BloodPressureRecord.toBloodPressureDiastolic(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
@@ -160,6 +220,7 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
         value = diastolic.inMillimetersOfMercury,
         unit = Constants.DataUnits.MMHG,
         source = metadata.dataOrigin.packageName,
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
@@ -178,8 +239,9 @@ internal fun BloodPressureRecord.toBloodPressureDiastolic(
 }
 
 internal fun BloodPressureRecord.toBloodPressureSystolic(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
@@ -192,6 +254,7 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
         value = systolic.inMillimetersOfMercury,
         unit = Constants.DataUnits.MMHG,
         source = metadata.dataOrigin.packageName,
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
@@ -211,8 +274,9 @@ internal fun BloodPressureRecord.toBloodPressureSystolic(
 
 internal fun HeartRateRecord.Sample.toSahhaDataLog(
     record: HeartRateRecord,
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
@@ -232,6 +296,7 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
             time, record.endZoneOffset
         ),
         recordingMethod = mapper.recordingMethod(record.metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(record.metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(
             record.metadata.lastModifiedTime,
@@ -241,8 +306,9 @@ internal fun HeartRateRecord.Sample.toSahhaDataLog(
 }
 
 internal fun RestingHeartRateRecord.toSahhaLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -252,6 +318,7 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
         value = beatsPerMinute.toDouble(),
         unit = Constants.DataUnits.BEAT_PER_MIN,
         source = metadata.dataOrigin.packageName,
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         startDateTime = timeManager.instantToIsoTime(
             time, zoneOffset
@@ -260,71 +327,6 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
             time, zoneOffset
         ),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
-    )
-}
-
-internal fun AggregationResultGroupedByDuration.toActiveCaloriesBurned(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
-): SahhaDataLog {
-    return SahhaDataLog(
-        id = UUID.nameUUIDFromBytes(
-            (SahhaSensor.active_energy_burned.name + startTime + endTime)
-                .toByteArray()
-        ).toString(),
-        logType = Constants.DataLogs.ENERGY,
-        dataType = SahhaSensor.active_energy_burned.name,
-        value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
-        unit = Constants.DataUnits.KILOCALORIE,
-        source = result.dataOrigins.map { it.packageName }.toString(),
-        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
-        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
-    )
-}
-
-internal fun AggregationResultGroupedByDuration.toTotalCaloriesBurned(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
-): SahhaDataLog {
-    return SahhaDataLog(
-        id = UUID.nameUUIDFromBytes(
-            (SahhaSensor.total_energy_burned.name + startTime + endTime)
-                .toByteArray()
-        ).toString(),
-        logType = Constants.DataLogs.ENERGY,
-        dataType = SahhaSensor.total_energy_burned.name,
-        value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories
-            ?: 0.0,
-        unit = Constants.DataUnits.KILOCALORIE,
-        source = result.dataOrigins.map { it.packageName }.toString(),
-        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
-        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
-    )
-}
-
-internal fun AggregationResultGroupedByDuration.toActiveEnergyInsight(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
-): InsightData {
-    return InsightData(
-        name = Constants.INSIGHT_NAME_ACTIVE_ENERGY,
-        value = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories ?: 0.0,
-        unit = Constants.DataUnits.KILOCALORIE,
-        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
-        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset)
-    )
-}
-
-internal fun AggregationResultGroupedByDuration.toTotalEnergyInsight(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
-): InsightData {
-    return InsightData(
-        name = Constants.INSIGHT_NAME_TOTAL_ENERGY,
-        value = result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]?.inKilocalories ?: 0.0,
-        unit = Constants.DataUnits.KILOCALORIE,
-        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
-        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset)
     )
 }
 
@@ -351,8 +353,9 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
 }
 
 internal fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -364,14 +367,16 @@ internal fun HeartRateVariabilityRmssdRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -383,14 +388,16 @@ internal fun ActiveCaloriesBurnedRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
 internal fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -402,14 +409,16 @@ internal fun TotalCaloriesBurnedRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
 internal fun OxygenSaturationRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -421,14 +430,16 @@ internal fun OxygenSaturationRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun BasalMetabolicRateRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -440,14 +451,16 @@ internal fun BasalMetabolicRateRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun BodyFatRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -459,14 +472,16 @@ internal fun BodyFatRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun BodyWaterMassRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -478,14 +493,16 @@ internal fun BodyWaterMassRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun LeanBodyMassRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -497,14 +514,16 @@ internal fun LeanBodyMassRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun BoneMassRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -516,14 +535,16 @@ internal fun BoneMassRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun HeightRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -535,14 +556,16 @@ internal fun HeightRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun WeightRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -554,14 +577,16 @@ internal fun WeightRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun Vo2MaxRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -573,6 +598,7 @@ internal fun Vo2MaxRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         additionalProperties = hashMapOf(
             "measurementMethod" to (mapper.measurementMethod(measurementMethod)
@@ -583,8 +609,9 @@ internal fun Vo2MaxRecord.toSahhaDataLogDto(
 }
 
 internal fun RespiratoryRateRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -596,14 +623,16 @@ internal fun RespiratoryRateRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, zoneOffset)
     )
 }
 
 internal fun FloorsClimbedRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -615,14 +644,16 @@ internal fun FloorsClimbedRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
 internal fun BodyTemperatureRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -634,6 +665,7 @@ internal fun BodyTemperatureRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         additionalProperties = hashMapOf(
             "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
@@ -644,8 +676,9 @@ internal fun BodyTemperatureRecord.toSahhaDataLogDto(
 }
 
 internal fun BasalBodyTemperatureRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     return SahhaDataLog(
         id = metadata.id,
@@ -657,6 +690,7 @@ internal fun BasalBodyTemperatureRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(time, zoneOffset),
         recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(metadata.device?.type),
         additionalProperties = hashMapOf(
             "measurementLocation" to (mapper.bodyTempMeasurementLocation(measurementLocation)
@@ -667,8 +701,9 @@ internal fun BasalBodyTemperatureRecord.toSahhaDataLogDto(
 }
 
 internal fun ExerciseSessionRecord.toSahhaDataLogDto(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     val exerciseType = (mapper.exerciseTypes(exerciseType) ?: Constants.UNKNOWN)
     val source = metadata.dataOrigin.packageName
@@ -687,6 +722,7 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
+        deviceId = idManager.getDeviceId(),
         deviceType = deviceType,
         modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
@@ -694,8 +730,9 @@ internal fun ExerciseSessionRecord.toSahhaDataLogDto(
 
 internal fun ExerciseLap.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord,
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     val source = exercise.metadata.dataOrigin.packageName
     val startZoneOffset = exercise.startZoneOffset
@@ -718,6 +755,7 @@ internal fun ExerciseLap.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
+        deviceId = idManager.getDeviceId(),
         deviceType = deviceType,
         modifiedDateTime = timeManager.instantToIsoTime(
             exercise.metadata.lastModifiedTime,
@@ -728,8 +766,9 @@ internal fun ExerciseLap.toSahhaDataLogDto(
 
 internal fun ExerciseSegment.toSahhaDataLogDto(
     exercise: ExerciseSessionRecord,
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
 ): SahhaDataLog {
     val source = exercise.metadata.dataOrigin.packageName
     val startZoneOffset = exercise.startZoneOffset
@@ -752,6 +791,7 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
         startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
         recordingMethod = recordingMethod,
+        deviceId = idManager.getDeviceId(),
         deviceType = deviceType,
         modifiedDateTime = timeManager.instantToIsoTime(
             exercise.metadata.lastModifiedTime,
@@ -762,7 +802,7 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 
 internal fun SahhaDataLog.toSahhaSample(
     category: SahhaBiomarkerCategory,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    timeManager: SahhaTimeManager = defaults.timeManager
 ): SahhaSample {
     return SahhaSample(
         id = id,
@@ -777,9 +817,120 @@ internal fun SahhaDataLog.toSahhaSample(
     )
 }
 
+internal fun AppEvent.toSahhaDataLog(
+    context: Context,
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    val dateTimeIso = Sahha.di.timeManager.instantToIsoTime(
+        dateTime.toInstant()
+    )
+
+    return SahhaDataLog(
+        id = UUID.nameUUIDFromBytes(
+            (event + dateTime)
+                .toByteArray()
+        ).toString(),
+        logType = Constants.DataLogs.DEVICE,
+        dataType = event,
+        source = context.packageName,
+        value = 0.0,
+        unit = Constants.DataUnits.EMPTY_STRING,
+        startDateTime = dateTimeIso,
+        endDateTime = dateTimeIso,
+        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(Device.TYPE_PHONE),
+    )
+}
+
+internal fun PhoneUsage.toSahhaDataLogDto(
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = id,
+        logType = Constants.DataLogs.DEVICE,
+        dataType = SahhaSensor.device_lock.name,
+        source = Constants.PHONE_USAGE_DATA_SOURCE,
+        value = if (isLocked) 1.0 else 0.0,
+        unit = Constants.DataUnits.BOOLEAN,
+        additionalProperties = hashMapOf(
+            "isScreenOn" to if (isScreenOn) "1" else "0"
+        ),
+        startDateTime = createdAt,
+        endDateTime = createdAt,
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime,
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(Device.TYPE_PHONE)
+    )
+}
+
+internal fun SleepDto.toSahhaDataLogDto(
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = id,
+        logType = Constants.DataLogs.SLEEP,
+        dataType = sleepStage,
+        source = source,
+        value = durationInMinutes.toDouble(),
+        unit = Constants.DataUnits.MINUTE,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(Device.TYPE_PHONE),
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime,
+    )
+}
+
+internal fun StepData.toSahhaDataLogAsChildLog(
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = getDataType(source),
+        value = count.toDouble(),
+        unit = Constants.DataUnits.COUNT,
+        source = source,
+        startDateTime = detectedAt,
+        endDateTime = detectedAt,
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(Device.TYPE_PHONE),
+        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+    )
+}
+
+internal fun StepSession.toSahhaDataLogAsChildLog(
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    idManager: IdManager = defaults.idManager,
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = id,
+        logType = Constants.DataLogs.ACTIVITY,
+        dataType = "custom_step_sessions",
+        value = count.toDouble(),
+        unit = Constants.DataUnits.COUNT,
+        startDateTime = startDateTime,
+        endDateTime = endDateTime,
+        source = Constants.STEP_DETECTOR_DATA_SOURCE,
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(Device.TYPE_PHONE),
+        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        postDateTimes = postDateTimes,
+        modifiedDateTime = modifiedDateTime,
+    )
+}
+
 private fun Double.toDecimalPercentage(
-    mapper: HealthConnectConstantsMapper = Sahha.di.healthConnectConstantsMapper,
-    timeManager: SahhaTimeManager = Sahha.di.timeManager
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager
 ): Double {
     return this / 100
 }

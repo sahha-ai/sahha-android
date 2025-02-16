@@ -20,39 +20,3 @@ internal data class StepsHealthConnect(
     val deviceManufacturer: String,
     val deviceModel: String,
 )
-
-internal fun StepsHealthConnect.toSahhaDataLogAsParentLog(): SahhaDataLog {
-    return SahhaDataLog(
-        id = metaId,
-        logType = Constants.DataLogs.ACTIVITY,
-        dataType = dataType,
-        value = count.toDouble(),
-        source = source,
-        startDateTime = startDateTime,
-        endDateTime = endDateTime,
-        unit = Constants.DataUnits.COUNT,
-        recordingMethod = recordingMethod,
-        deviceType = deviceType,
-        modifiedDateTime = modifiedDateTime
-    )
-}
-
-internal fun StepsHealthConnect.toSahhaDataLogAsChildLog(): SahhaDataLog {
-    return SahhaDataLog(
-        id = UUID.nameUUIDFromBytes(
-            (dataType + startDateTime + endDateTime)
-                .toByteArray()
-        ).toString(),
-        logType = Constants.DataLogs.ACTIVITY,
-        dataType = dataType,
-        value = count.toDouble(),
-        source = source,
-        startDateTime = startDateTime,
-        endDateTime = endDateTime,
-        unit = Constants.DataUnits.COUNT,
-        recordingMethod = recordingMethod,
-        deviceType = deviceType,
-        modifiedDateTime = modifiedDateTime,
-        parentId = metaId
-    )
-}

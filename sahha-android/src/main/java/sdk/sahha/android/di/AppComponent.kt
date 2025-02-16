@@ -17,6 +17,7 @@ import sdk.sahha.android.common.security.Decryptor
 import sdk.sahha.android.common.security.Encryptor
 import sdk.sahha.android.data.local.SahhaDatabase
 import sdk.sahha.android.data.local.dao.*
+import sdk.sahha.android.data.mapper.HealthConnectMapperDefaults
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.manager.PermissionManager
@@ -97,6 +98,8 @@ internal interface AppComponent {
     val getStatsUseCase: GetStatsUseCase
     val getSamplesUseCase: GetSamplesUseCase
     val getBiomarkersUseCase: GetBiomarkersUseCase
+
+    val mapperDefaults: HealthConnectMapperDefaults
 
     @get:MainScope
     val mainScope: CoroutineScope

@@ -33,6 +33,7 @@ import sdk.sahha.android.common.toSpecificHour
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
 import sdk.sahha.android.data.mapper.toBloodPressureSystolic
 import sdk.sahha.android.data.mapper.toSahhaDataLog
+import sdk.sahha.android.data.mapper.toSahhaDataLogAsParentLog
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toSahhaSample
@@ -41,7 +42,6 @@ import sdk.sahha.android.data.mapper.toStepsHealthConnect
 import sdk.sahha.android.domain.mapper.category
 import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.source.SahhaSensor
