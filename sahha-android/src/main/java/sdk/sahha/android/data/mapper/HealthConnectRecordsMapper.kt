@@ -44,6 +44,7 @@ import sdk.sahha.android.domain.model.steps.StepSession
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.model.steps.getDataType
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaSensor
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -330,6 +331,7 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
 }
 
 internal fun AggregationResultGroupedByDuration.toSahhaStat(
+    category: SahhaBiomarkerCategory,
     sensor: SahhaSensor,
     value: Double,
     unit: String,
@@ -340,6 +342,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     )
     return SahhaStat(
         id = consistentUid.toString(),
+        category = category.name,
         type = sensor.name,
         value = value,
         unit = unit,
@@ -798,10 +801,12 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 }
 
 internal fun SahhaDataLog.toSahhaSample(
+    category: SahhaBiomarkerCategory,
     timeManager: SahhaTimeManager = defaults.timeManager
 ): SahhaSample {
     return SahhaSample(
         id = id,
+        category = category.name,
         type = dataType,
         value = value,
         unit = unit,
