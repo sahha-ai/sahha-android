@@ -1,16 +1,16 @@
 package sdk.sahha.android.domain.mapper
 
-import sdk.sahha.android.domain.internal_enum.SahhaLocalCategory
+import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaSensor
 
-internal val SahhaSensor.category: SahhaLocalCategory
+internal val SahhaSensor.category: SahhaBiomarkerCategory
     get() = when (this) {
         SahhaSensor.gender,
         SahhaSensor.date_of_birth,
-            -> SahhaLocalCategory.CHARACTERISTIC
+            -> SahhaBiomarkerCategory.characteristic
 
         SahhaSensor.sleep ->
-            SahhaLocalCategory.SLEEP
+            SahhaBiomarkerCategory.sleep
 
         SahhaSensor.steps,
         SahhaSensor.floors_climbed,
@@ -23,7 +23,7 @@ internal val SahhaSensor.category: SahhaLocalCategory
         SahhaSensor.stand_time,
         SahhaSensor.move_time,
         SahhaSensor.exercise_time,
-            -> SahhaLocalCategory.ACTIVITY
+            -> SahhaBiomarkerCategory.activity
 
         SahhaSensor.heart_rate,
         SahhaSensor.resting_heart_rate,
@@ -39,7 +39,7 @@ internal val SahhaSensor.category: SahhaLocalCategory
         SahhaSensor.heart_rate_variability_sdnn,
         SahhaSensor.walking_heart_rate_average,
         SahhaSensor.sleeping_wrist_temperature,
-            -> SahhaLocalCategory.VITALS
+            -> SahhaBiomarkerCategory.vitals
 
         SahhaSensor.height,
         SahhaSensor.weight,
@@ -49,11 +49,11 @@ internal val SahhaSensor.category: SahhaLocalCategory
         SahhaSensor.bone_mass,
         SahhaSensor.body_mass_index,
         SahhaSensor.waist_circumference,
-            -> SahhaLocalCategory.BODY
+            -> SahhaBiomarkerCategory.body
 
         SahhaSensor.device_lock
-            -> SahhaLocalCategory.DEVICE
+            -> SahhaBiomarkerCategory.device
 
         SahhaSensor.exercise
-            -> SahhaLocalCategory.EXERCISE
+            -> SahhaBiomarkerCategory.exercise
     }

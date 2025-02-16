@@ -1,6 +1,7 @@
 package empty.sahha.android
 
 import android.os.Bundle
+import android.util.JsonWriter
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,6 +37,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializer
 import empty.sahha.android.ui.theme.SahhasdkemptyTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,9 +49,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.json.JSONObject
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaBiomarkerType
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
@@ -56,6 +63,7 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.Date
 import kotlin.coroutines.resume
 import kotlin.random.Random
@@ -66,6 +74,16 @@ private const val MY_SHARED_PREFS = "my_shared_prefs"
 private const val APP_ID = "my_app_id"
 private const val APP_SECRET = "my_app_secret"
 private const val EXTERNAL_ID = "my_external_id"
+
+private val gson = GsonBuilder()
+    .registerTypeAdapter(
+        ZonedDateTime::class.java,
+        JsonSerializer<ZonedDateTime> { src, _, _ ->
+            JsonPrimitive(src.toString())
+        }
+    )
+    .setPrettyPrinting()
+    .create()
 
 class MainActivity : ComponentActivity() {
     private val mainScope = CoroutineScope(Dispatchers.Main)
@@ -531,15 +549,7 @@ fun SamplesView() {
                         val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
                         samples?.forEach {
                             scope.launch {
-                                result += "${it.id}\n" +
-                                        "${it.category}\n" +
-                                        "${it.type}\n" +
-                                        "${it.value}\n" +
-                                        "${it.unit}\n" +
-                                        "${it.startDateTime}\n" +
-                                        "${it.endDateTime}\n" +
-                                        "${it.recordingMethod}\n" +
-                                        "${it.source}\n\n"
+                                result += "${gson.toJson(it)}\n\n"
                             }
                         }
                     }
@@ -573,15 +583,7 @@ fun SamplesView() {
                                             error?.also { result = it }
                                             samples?.forEach {
                                                 scope.launch {
-                                                    result += "${it.id}\n" +
-                                                            "${it.category}\n" +
-                                                            "${it.type}\n" +
-                                                            "${it.value}\n" +
-                                                            "${it.unit}\n" +
-                                                            "${it.startDateTime}\n" +
-                                                            "${it.endDateTime}\n" +
-                                                            "${it.recordingMethod}\n" +
-                                                            "${it.source}\n\n"
+                                                    result += "${gson.toJson(it)}\n\n"
                                                 }
                                             }
                                             delay(250)
@@ -659,14 +661,7 @@ fun StatsView() {
                         result = ""
                         error?.also { result = it }
                         stats?.forEach {
-                            result += "${it.id}\n" +
-                                    "${it.category}\n" +
-                                    "${it.type}\n" +
-                                    "${it.value}\n" +
-                                    "${it.unit}\n" +
-                                    "${it.startDateTime}\n" +
-                                    "${it.endDateTime}\n" +
-                                    "${it.sources}\n\n"
+                            result += "${gson.toJson(it)}\n\n"
                         }
                     }
                 } catch (e: Exception) {
@@ -698,14 +693,7 @@ fun StatsView() {
                                             result = ""
                                             error?.also { result = it }
                                             stats?.forEach {
-                                                result += "${it.id}\n" +
-                                                        "${it.category}\n" +
-                                                        "${it.type}\n" +
-                                                        "${it.value}\n" +
-                                                        "${it.unit}\n" +
-                                                        "${it.startDateTime}\n" +
-                                                        "${it.endDateTime}\n" +
-                                                        "${it.sources}\n\n"
+                                                result += "${gson.toJson(it)}\n\n"
                                             }
                                             delay(250)
                                             if (cont.isActive) cont.resume(Unit)

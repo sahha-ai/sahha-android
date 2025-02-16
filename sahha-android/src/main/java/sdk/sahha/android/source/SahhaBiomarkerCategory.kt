@@ -7,4 +7,6 @@ enum class SahhaBiomarkerCategory {
     reproductive,
     sleep,
     vitals,
+    device,
+    exercise,
 }

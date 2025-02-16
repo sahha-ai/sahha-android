@@ -28,7 +28,6 @@ import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.domain.internal_enum.SahhaLocalCategory
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.insight.InsightData
@@ -36,6 +35,7 @@ import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaSensor
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -329,7 +329,7 @@ internal fun AggregationResultGroupedByDuration.toTotalEnergyInsight(
 }
 
 internal fun AggregationResultGroupedByDuration.toSahhaStat(
-    category: SahhaLocalCategory,
+    category: SahhaBiomarkerCategory,
     sensor: SahhaSensor,
     value: Double,
     unit: String,
@@ -340,7 +340,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaStat(
     )
     return SahhaStat(
         id = consistentUid.toString(),
-        category = category.value,
+        category = category.name,
         type = sensor.name,
         value = value,
         unit = unit,
@@ -761,12 +761,12 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
 }
 
 internal fun SahhaDataLog.toSahhaSample(
-    category: SahhaLocalCategory,
+    category: SahhaBiomarkerCategory,
     timeManager: SahhaTimeManager = Sahha.di.timeManager
 ): SahhaSample {
     return SahhaSample(
         id = id,
-        category = category.value,
+        category = category.name,
         type = dataType,
         value = value,
         unit = unit,
