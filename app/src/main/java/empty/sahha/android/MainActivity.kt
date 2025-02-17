@@ -212,7 +212,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.getSensorStatus(
                                         this@MainActivity,
-                                        sensors
+                                        SahhaSensor.values().toSet()
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
@@ -248,7 +248,7 @@ class MainActivity : ComponentActivity() {
                                 Button(onClick = {
                                     Sahha.enableSensors(
                                         this@MainActivity,
-                                        sensors
+                                        SahhaSensor.values().toSet()
                                     ) { error, status ->
                                         permissionStatus =
                                             "${status.name}${error?.let { "\n$it" } ?: ""}"
