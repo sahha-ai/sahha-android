@@ -19,6 +19,7 @@ internal data class SahhaDataLog(
     val endDateTime: String,
     val unit: String,
     val recordingMethod: String = RecordingMethods.UNKNOWN.name,
+    val deviceId: String?,
     val deviceType: String = Constants.UNKNOWN,
     val additionalProperties: HashMap<String, String>? = null,
     val parentId: String? = null,

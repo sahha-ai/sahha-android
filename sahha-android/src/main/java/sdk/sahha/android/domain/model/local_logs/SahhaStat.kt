@@ -6,6 +6,7 @@ import java.time.ZonedDateTime
 @Keep
 data class SahhaStat(
     val id: String,
+    val category: String,
     val type: String,
     val value: Double,
     val unit: String,

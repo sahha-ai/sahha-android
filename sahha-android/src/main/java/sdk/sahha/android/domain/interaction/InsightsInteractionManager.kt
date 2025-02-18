@@ -15,8 +15,6 @@ import kotlinx.coroutines.withTimeout
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
-import sdk.sahha.android.data.mapper.toActiveEnergyInsight
-import sdk.sahha.android.data.mapper.toTotalEnergyInsight
 import sdk.sahha.android.di.IoScope
 import sdk.sahha.android.domain.internal_enum.InsightPermission
 import sdk.sahha.android.domain.model.insight.InsightData
@@ -34,6 +32,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+@Deprecated("No longer used")
 internal class InsightsInteractionManager @Inject constructor(
     private val authRepo: AuthRepo,
     private val insightsRepo: InsightsRepo,
@@ -231,13 +230,5 @@ internal class InsightsInteractionManager @Inject constructor(
             TimeRangeFilter.between(start.toInstant(zoneOffset), end.toInstant(zoneOffset)),
             duration
         )
-
-        activeEnergy?.forEach { record ->
-            insights.add(record.toActiveEnergyInsight())
-        }
-
-        totalEnergy?.forEach { record ->
-            insights.add(record.toTotalEnergyInsight())
-        }
     }
 }

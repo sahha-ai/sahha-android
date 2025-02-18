@@ -37,6 +37,8 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.data.mapper.toBloodPressureDiastolic
 import sdk.sahha.android.data.mapper.toBloodPressureSystolic
 import sdk.sahha.android.data.mapper.toSahhaDataLog
+import sdk.sahha.android.data.mapper.toSahhaDataLogAsChildLog
+import sdk.sahha.android.data.mapper.toSahhaDataLogAsParentLog
 import sdk.sahha.android.data.mapper.toSahhaDataLogDto
 import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
@@ -44,11 +46,8 @@ import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsChildLog
-import sdk.sahha.android.domain.model.steps.toSahhaDataLogAsParentLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
-import sdk.sahha.android.source.SahhaConverterUtility
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

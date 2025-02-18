@@ -34,7 +34,6 @@ internal class UserDataInteractionManager @Inject constructor(
     private val getScoresUseCase: GetScoresUseCase,
     private val getDemographicUseCase: GetDemographicUseCase,
     private val postDemographicUseCase: PostDemographicUseCase,
-    private val idManager: IdManager,
 ) {
     fun getScores(
         types: Set<SahhaScoreType>,
