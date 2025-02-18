@@ -34,29 +34,31 @@ internal class BatchedDataPostWorker(
 
         return suspendCancellableCoroutine { cont ->
             postScope.launch {
-                val batchedData = try {
-                    Sahha.di.batchedDataRepo.getBatchedData()
-                } catch (e: Exception) {
-                    errorLogger.application(
-                        e.message ?: "Something went wrong reading batched data",
-                        tag,
-                        "postDataLogs"
-                    )
-                    if (cont.isActive) cont.resume(Result.retry())
-                    emptyList()
-                }
+                do {
+                    val batchedData = try {
+                        Sahha.di.batchedDataRepo.getBatchedData()
+                    } catch (e: Exception) {
+                        errorLogger.application(
+                            e.message ?: "Something went wrong reading batched data",
+                            tag,
+                            "postDataLogs"
+                        )
+                        if (cont.isActive) cont.resume(Result.retry())
+                        emptyList()
+                    }
 
-                withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
-                    Sahha.sim.sensor.postBatchData(
-                        batchedData
-                    ) { _, successful ->
-                        if (successful) {
-                            if (cont.isActive) cont.resume(Result.success())
-                        } else {
-                            if (cont.isActive) cont.resume(Result.retry())
+                    withTimeout(Constants.POST_TIMEOUT_LIMIT_MILLIS) {
+                        Sahha.sim.sensor.postBatchData(
+                            batchedData
+                        ) { _, successful ->
+                            if (successful) {
+                                if (cont.isActive) cont.resume(Result.success())
+                            } else {
+                                if (cont.isActive) cont.resume(Result.retry())
+                            }
                         }
                     }
-                }
+                } while (Sahha.di.batchedDataRepo.getBatchedData().isNotEmpty())
             }
         }
     }

@@ -12,7 +12,7 @@ internal interface BatchedDataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveBatchedData(data: List<SahhaDataLog>)
 
-    @Query("SELECT * FROM SahhaDataLog")
+    @Query("SELECT * FROM SahhaDataLog LIMIT 1000")
     suspend fun getBatchedData(): List<SahhaDataLog>
 
     @Delete

@@ -14,12 +14,12 @@ internal class CalculateBatchLimit @Inject constructor(
         batchedData: List<SahhaDataLog> = runBlocking { batchedDataRepo.getBatchedData() },
         chunkBytes: Int = Constants.DATA_LOG_LIMIT_BYTES
     ): Int {
-        val avgLogSize = 210
+        val avgLogSize = 522
         if (batchedData.isEmpty()) return chunkBytes / avgLogSize
 
         val sample = batchedData.random()
-        val approximateBytesPerLog =
-            SahhaConverterUtility.convertToJsonString(sample).toByteArray().size
-        return chunkBytes / approximateBytesPerLog
+        val approximateBytesPerLog = sample.toString().toByteArray().size
+        val batchLimit = chunkBytes / approximateBytesPerLog
+        return batchLimit
     }
 }
