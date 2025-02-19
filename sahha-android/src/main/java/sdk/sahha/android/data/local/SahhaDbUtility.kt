@@ -24,7 +24,8 @@ internal object SahhaDbUtility {
                 MIGRATION_7_8,
                 MIGRATION_9_10,
                 MIGRATION_12_13,
-                MIGRATION_13_14
+                MIGRATION_13_14,
+                MIGRATION_14_15
             )
             .build()
     }
@@ -248,6 +249,48 @@ internal object SahhaDbUtility {
 
                 execSQL("DROP TABLE SleepDto")
                 execSQL("ALTER TABLE SleepDto_new RENAME TO SleepDto")
+            }
+        }
+    }
+
+    private val MIGRATION_14_15 = object : Migration(14, 15) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            with(database) {
+                execSQL("""
+                CREATE TABLE IF NOT EXISTS SahhaDataLog_new (
+                    id TEXT NOT NULL PRIMARY KEY,
+                    logType TEXT NOT NULL,
+                    dataType TEXT NOT NULL,
+                    value REAL NOT NULL,
+                    source TEXT NOT NULL,
+                    startDateTime TEXT NOT NULL,
+                    endDateTime TEXT NOT NULL,
+                    unit TEXT NOT NULL,
+                    recordingMethod TEXT NOT NULL DEFAULT 'UNKNOWN',
+                    deviceId TEXT,
+                    deviceType TEXT NOT NULL DEFAULT 'UNKNOWN',
+                    additionalProperties TEXT,
+                    parentId TEXT,
+                    postDateTimes TEXT,
+                    modifiedDateTime TEXT
+                )
+            """.trimIndent())
+
+                execSQL("""
+                INSERT INTO SahhaDataLog_new (
+                    id, logType, dataType, value, source,
+                    startDateTime, endDateTime, unit, recordingMethod,
+                    deviceType, additionalProperties, parentId
+                )
+                SELECT
+                    id, logType, dataType, value, source,
+                    startDateTime, endDateTime, unit, recordingMethod,
+                    deviceType, additionalProperties, parentId
+                FROM SahhaDataLog
+            """.trimIndent())
+
+                execSQL("DROP TABLE SahhaDataLog")
+                execSQL("ALTER TABLE SahhaDataLog_new RENAME TO SahhaDataLog")
             }
         }
     }

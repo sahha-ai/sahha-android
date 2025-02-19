@@ -43,6 +43,7 @@ import sdk.sahha.android.data.local.dao.SleepDao
 import sdk.sahha.android.data.manager.IdManagerImpl
 import sdk.sahha.android.data.manager.PermissionManagerImpl
 import sdk.sahha.android.data.manager.PostChunkManagerImpl
+import sdk.sahha.android.data.mapper.HealthConnectMapperDefaults
 import sdk.sahha.android.data.provider.PermissionActionProviderImpl
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
@@ -600,7 +601,6 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @DefaultScope defaultScope: CoroutineScope,
         @IoScope ioScope: CoroutineScope,
         chunkManager: PostChunkManager,
-        notificationManager: SahhaNotificationManager,
         configRepo: SahhaConfigRepo,
         authRepo: AuthRepo,
         sensorRepo: SensorRepo,
@@ -612,26 +612,25 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         healthConnectConfigDao: HealthConnectConfigDao,
         movementDao: MovementDao,
         constantsMapper: HealthConnectConstantsMapper,
-        sharedPrefs: SharedPreferences
+        idManager: IdManager
     ): HealthConnectRepo {
         return HealthConnectRepoImpl(
-            context,
-            defaultScope,
-            ioScope,
-            chunkManager,
-            notificationManager,
-            configRepo,
-            authRepo,
-            sensorRepo,
-            workManager,
-            api,
-            client,
-            sahhaErrorLogger,
-            sahhaTimeManager,
-            healthConnectConfigDao,
-            movementDao,
-            constantsMapper,
-            sharedPrefs
+            context = context,
+            defaultScope = defaultScope,
+            ioScope = ioScope,
+            chunkManager = chunkManager,
+            configRepo = configRepo,
+            authRepo = authRepo,
+            sensorRepo = sensorRepo,
+            workManager = workManager,
+            api = api,
+            client = client,
+            sahhaErrorLogger = sahhaErrorLogger,
+            sahhaTimeManager = sahhaTimeManager,
+            healthConnectConfigDao = healthConnectConfigDao,
+            movementDao = movementDao,
+            mapper = constantsMapper,
+            idManager = idManager
         )
     }
 
@@ -709,6 +708,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): PermissionActionProvider {
         return PermissionActionProviderImpl(
             healthConnectRepo
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideHealthConnectMapperDefaults(
+        mapper: HealthConnectConstantsMapper,
+        timeManager: SahhaTimeManager,
+        idManager: IdManager
+    ): HealthConnectMapperDefaults {
+        return HealthConnectMapperDefaults(
+            mapper, timeManager, idManager
         )
     }
 }
