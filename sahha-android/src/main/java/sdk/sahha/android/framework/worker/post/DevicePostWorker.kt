@@ -1,6 +1,7 @@
 package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.CoroutineScope
@@ -42,7 +43,12 @@ internal class DevicePostWorker(private val context: Context, workerParameters: 
                     }
                 }
             } finally {
-                Sahha.di.mutex.unlock()
+                try {
+                    Sahha.di.mutex.unlock()
+                } catch (e: Exception) {
+                    Log.w(tag, e.message ?: "Failed to unlock mutex")
+                    Result.retry()
+                }
             }
         } else Result.retry()
     }

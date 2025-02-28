@@ -39,7 +39,7 @@ internal object Constants {
     const val DEFAULT_ALARM_INTERVAL_MINS = 15L
 
     // Post limits
-    private const val DATA_LOG_SIZE_BYTES = 292 // bytes
+    private const val DATA_LOG_SIZE_BYTES = 522 // bytes
     const val DATA_LOG_LIMIT_BYTES = 32 * 1024
     const val DEFAULT_POST_LIMIT = (DATA_LOG_LIMIT_BYTES + DATA_LOG_SIZE_BYTES) / DATA_LOG_SIZE_BYTES
     const val SLEEP_POST_LIMIT = 46

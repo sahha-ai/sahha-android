@@ -1,6 +1,7 @@
 package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.internal.resumeCancellableWith
@@ -37,7 +38,12 @@ internal class SleepPostWorker(private val context: Context, workerParameters: W
                     }
                 }
             } finally {
-                Sahha.di.mutex.unlock()
+                try {
+                    Sahha.di.mutex.unlock()
+                } catch (e: Exception) {
+                    Log.w(tag, e.message ?: "Failed to unlock mutex")
+                    Result.retry()
+                }
             }
         } else {
             Result.retry()
