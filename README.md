@@ -63,6 +63,8 @@ You must be able to justify reasons behind requiring the sensor permissions, [th
 
 </docgen-index>
 
+<docgen-api>
+
 ### configure(...)
 
 ```kotlin
@@ -187,7 +189,7 @@ ExampleWebView(
 
 ```kotlin
 fun getDemographic(
-    callback: ((error: String?, demographic: SahhaDemographic?) -> Unit?)
+    callback: ((error: String?, demographic: SahhaDemographic?) -> Unit)?
 )
 ```
 
@@ -285,6 +287,425 @@ Sahha.enableSensors(
     }
 }
 ```
+
+---
+
+### getScores(...)
+
+```kotlin
+fun getScores(
+    types: Set<SahhaScoreType>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+
+// or specify dates
+
+fun getScores(
+    types: Set<SahhaScoreType>,
+    dates: Pair<LocalDateTime, LocalDateTime>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+
+// or
+
+fun getScores(
+    types: Set<SahhaScoreType>,
+    dates: Pair<Date, Date>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+```
+
+**Example usage**:
+```kotlin
+val types = setOf(
+    SahhaScoreType.activity,
+    SahhaScoreType.sleep,
+)
+
+// E.g. Last 2 weeks
+Sahha.getScores(
+    types = types,
+    dates = Pair(
+        LocalDateTime.now().minusDays(14), // start date time
+        LocalDateTime.now() // end date time
+    )
+) { error: String?, value: String? ->
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, value) // value is in the form of a JSON array
+}
+```
+
+---
+
+### getBiomarkers(...)
+
+```kotlin
+fun getBiomarkers(
+    categories: Set<SahhaBiomarkerCategory>,
+    types: Set<SahhaBiomarkerType>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+
+// or specify dates
+
+fun getBiomarkers(
+    categories: Set<SahhaBiomarkerCategory>,
+    types: Set<SahhaBiomarkerType>,
+    dates: Pair<LocalDateTime, LocalDateTime>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+
+// or
+
+fun getBiomarkers(
+    categories: Set<SahhaBiomarkerCategory>,
+    types: Set<SahhaBiomarkerType>,
+    dates: Pair<Date, Date>,
+    callback: ((error: String?, value: String?) -> Unit)?
+)
+```
+
+**Example usage**:
+
+```kotlin
+val categories = setOf(
+    SahhaBiomarkerCategory.activity,
+    SahhaBiomarkerCategory.sleep
+)
+
+val types = setOf(
+    SahhaBiomarkerType.steps,
+    SahhaBiomarkerType.sleep_start_time,
+    SahhaBiomarkerType.sleep_end_time,
+    SahhaBiomarkerType.sleep_duration,
+)
+
+// E.g. Last 2 weeks
+Sahha.getBiomarkers(
+    categories = categories,
+    types = types,
+    dates = Pair(
+        LocalDateTime.now().minusDays(14), // start date time
+        LocalDateTime.now() // end date time
+    )
+) { error: String?, value: String? ->
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, value) // value is in the form of a JSON array
+}
+```
+
+---
+
+### getStats(...)
+
+```kotlin
+fun getStats(
+    sensor: SahhaSensor,
+    dates: Pair<LocalDateTime, LocalDateTime>,
+    callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+)
+
+// or
+
+fun getStats(
+    sensor: SahhaSensor,
+    dates: Pair<Date, Date>,
+    callback: (error: String?, stats: List<SahhaStat>?) -> Unit
+) 
+```
+
+**Example usage**:
+
+```kotlin
+Sahha.getStats(
+    SahhaSensor.steps,
+    Pair(
+        LocalDateTime.now().minusDays(14), // start date time
+        LocalDateTime.now() // end date time
+    )
+) { error: String?, stats: List<SahhaStat>? -> 
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, stats) // stats are returned as a list of SahhaStat object
+}
+```
+
+---
+
+### getSamples(...)
+
+```kotlin
+fun getSamples(
+    sensor: SahhaSensor,
+    dates: Pair<LocalDateTime, LocalDateTime>,
+    callback: (error: String?, samples: List<SahhaSample>?) -> Unit
+)
+
+// or
+
+fun getSamples(
+    sensor: SahhaSensor,
+    dates: Pair<Date, Date>,
+    callback: (error: String?, samples: List<SahhaSample>?) -> Unit
+) 
+```
+
+**Example usage**:
+
+```kotlin
+Sahha.getSamples(
+    SahhaSensor.steps,
+    Pair(
+        LocalDateTime.now().minusDays(14), // start date time
+        LocalDateTime.now() // end date time
+    )
+) { error: String?, samples: List<SahhaSample>? -> 
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, samples) // stats are returned as a list of SahhaSample object
+}
+```
+
+---
+
+### openAppSettings()
+
+```kotlin
+fun openAppSettings()
+```
+
+**Example usage**:
+```kotlin
+// This method is useful when the user denies permissions multiple times -- where the prompt will no longer show
+if (status == SahhaSensorStatus.disabled) {
+    Sahha.openAppSettings()
+}
+```
+
+---
+
+### Interfaces
+
+#### SahhaSettings
+
+```kotlin
+class SahhaSettings(
+    val environment: Enum<SahhaEnvironment>,
+    val notificationSettings: SahhaNotificationConfiguration?,
+    val framework: SahhaFramework = SahhaFramework.android_kotlin,
+)
+```
+
+#### SahhaDemographic
+
+```kotlin
+data class SahhaDemographic(
+    val age: Int?,
+    val gender: String?,
+    val country: String?,
+    val birthCountry: String?,
+    val ethnicity: String?,
+    val occupation: String?,
+    val industry: String?,
+    val incomeRange: String?,
+    val education: String?,
+    val relationship: String?,
+    val locale: String?,
+    val livingArrangement: String?,
+    val birthDate: String?
+)
+```
+
+#### SahhaStat
+
+```kotlin
+data class SahhaStat(
+    val id: String,
+    val category: String,
+    val type: String,
+    val value: Double,
+    val unit: String,
+    val startDateTime: ZonedDateTime,
+    val endDateTime: ZonedDateTime,
+    val sources: List<String>,
+)
+```
+
+#### SahhaSample
+
+```kotlin
+data class SahhaSample(
+    val id: String,
+    val category: String,
+    val type: String,
+    val value: Double,
+    val unit: String,
+    val startDateTime: ZonedDateTime,
+    val endDateTime: ZonedDateTime,
+    val recordingMethod: String,
+    val source: String,
+    val stats: List<SahhaStat>
+)
+```
+
+### Enums
+
+#### SahhaEnvironment
+
+```kotlin
+enum class SahhaEnvironment {
+    sandbox,
+    production
+}
+```
+
+
+#### SahhaSensor
+
+```kotlin
+enum class SahhaSensor {
+    gender,
+    date_of_birth,
+    sleep,
+    steps,
+    floors_climbed,
+    heart_rate,
+    resting_heart_rate,
+    walking_heart_rate_average, // iOS only
+    heart_rate_variability_sdnn, // iOS only
+    heart_rate_variability_rmssd,
+    blood_pressure_systolic,
+    blood_pressure_diastolic,
+    blood_glucose,
+    vo2_max,
+    oxygen_saturation,
+    respiratory_rate,
+    active_energy_burned,
+    basal_energy_burned, // iOS only
+    total_energy_burned,
+    basal_metabolic_rate,
+    time_in_daylight, // iOS only
+    body_temperature,
+    basal_body_temperature,
+    sleeping_wrist_temperature, // iOS only
+    height,
+    weight,
+    lean_body_mass,
+    body_mass_index, // iOS only
+    body_fat,
+    body_water_mass,
+    bone_mass,
+    waist_circumference, // iOS only
+    stand_time, // iOS only
+    move_time, // iOS only
+    exercise_time, // iOS only
+    activity_summary,
+    device_lock,
+    exercise,
+}
+```
+
+#### SahhaSensorStatus
+
+```kotlin
+enum class SahhaSensorStatus {
+    pending,
+    unavailable,
+    disabled,
+    enabled,
+}
+```
+
+
+#### SahhaScoreType
+
+```kotlin
+enum class SahhaScoreType {
+    wellbeing,
+    activity,
+    sleep,
+    readiness,
+    mental_wellbeing,
+}
+```
+
+
+#### SahhaBiomarkerCategory
+
+```kotlin
+enum class SahhaBiomarkerCategory {
+    activity,
+    body,
+    characteristic,
+    reproductive,
+    sleep,
+    vitals,
+    device,
+    exercise,
+}
+```
+
+#### SahhaBiomarkerType
+
+```kotlin
+enum class SahhaBiomarkerType {
+    steps,
+    floors_climbed,
+    active_hours,
+    active_duration,
+    activity_low_intensity_duration,
+    activity_mid_intensity_duration,
+    activity_high_intensity_duration,
+    activity_sedentary_duration,
+    active_energy_burned,
+    total_energy_burned,
+    height,
+    weight,
+    body_mass_index,
+    body_fat,
+    fat_mass,
+    lean_mass,
+    waist_circumference,
+    resting_energy_burned,
+    age,
+    biological_sex,
+    date_of_birth,
+    menstrual_cycle_length,
+    menstrual_cycle_start_date,
+    menstrual_cycle_end_date,
+    menstrual_phase,
+    menstrual_phase_start_date,
+    menstrual_phase_end_date,
+    menstrual_phase_length,
+    sleep_start_time,
+    sleep_end_time,
+    sleep_duration,
+    sleep_debt,
+    sleep_interruptions,
+    sleep_in_bed_duration,
+    sleep_awake_duration,
+    sleep_light_duration,
+    sleep_rem_duration,
+    sleep_deep_duration,
+    sleep_regularity,
+    sleep_latency,
+    sleep_efficiency,
+    heart_rate_resting,
+    heart_rate_sleep,
+    heart_rate_variability_sdnn,
+    heart_rate_variability_rmssd,
+    respiratory_rate,
+    respiratory_rate_sleep,
+    oxygen_saturation,
+    oxygen_saturation_sleep,
+    vo2_max,
+    blood_glucose,
+    blood_pressure_systolic,
+    blood_pressure_diastolic,
+    body_temperature_basal,
+    skin_temperature_sleep,
+}
+```
+
+</docgen-api>
 
 ---
 
