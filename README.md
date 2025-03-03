@@ -30,7 +30,10 @@ dependencies {
 ```
 
 
-In the `AndroidManifest.xml` file, declare Google Health Connect data types if required, e.g. Sleep and step count. More data types are available such as heart rate, workout / exercise, please refer to the links below for more information.
+In the `AndroidManifest.xml` file, declare Google Health Connect data types if required, e.g. Sleep and step count.
+
+More data types are available such as heart rate, workout / exercise, please refer to the links below for more information.
+
 ```xml
 <!-- Sleep -->
 <uses-permission android:name="android.permission.health.READ_SLEEP" />
