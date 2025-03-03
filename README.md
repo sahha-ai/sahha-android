@@ -30,7 +30,7 @@ dependencies {
 ```
 
 
-In the `AndroidManifest.xml` file, declare HealthConnect data types if required
+In the `AndroidManifest.xml` file, declare Google Health Connect data types if required, e.g. Sleep and step count. More data types are available such as heart rate, workout / exercise, please refer to the links below for more information.
 ```xml
 <!-- Sleep -->
 <uses-permission android:name="android.permission.health.READ_SLEEP" />
@@ -40,6 +40,7 @@ In the `AndroidManifest.xml` file, declare HealthConnect data types if required
 <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
 ```
 
+This is recommended if you'd like to retrieve data from other health apps such as WHOOP, Garmin, Samsung Health etc.
 
 To declare other sensor permissions, please refer to [this](https://docs.sahha.ai/docs/data-flow/sdk/setup#step-2-review-sensor-permissions) page.
 
@@ -62,7 +63,7 @@ You must be able to justify reasons behind requiring the sensor permissions, [th
 ### configure(...)
 
 ```kotlin
-configure(
+fun configure(
   activity: ComponentActivity,
   sahhaSettings: SahhaSettings,
   callback: ((error: String?, success: Boolean) -> Unit)? = null
@@ -79,7 +80,7 @@ val settings = SahhaSettings(environment = SahhaEnvironment.sandbox)
 Sahha.configure(this, settings)
 
 // With optional callback
-Sahha.configure(this, settings) { error, success ->
+Sahha.configure(this, settings) { error: String?, success: Boolean ->
   error?.also { e -> Log.e(TAG, e) }
   Log.d(TAG, success)
 }
@@ -87,17 +88,15 @@ Sahha.configure(this, settings) { error, success ->
 
 ---
 
-### isAuthenticated()
+### isAuthenticated
 
 ```kotlin
-isAuthenticated(): Boolean
+val isAuthenticated: Boolean
 ```
 
 **Example usage**:
 ```kotlin
-val isAuthenticated = Sahha.isAuthenticated()
-
-if (isAuthenticated == false) {
+if (Sahha.isAuthenticated == false) {
   // E.g. Authenticate the user
 }
 ```
@@ -107,11 +106,19 @@ if (isAuthenticated == false) {
 ### authenticate(...)
 
 ```kotlin
-authenticate(
+fun authenticate(
   appId: String,
   appSecret: String,
   externalId: String,
   callback: (error: String?, success: boolean) -> Unit
+)
+
+//or
+
+fun authenticate(
+    profileToken: String,
+    refreshToken: String,
+    callback: (error: String?, success: Boolean) -> Unit
 )
 ```
 
@@ -121,12 +128,158 @@ Sahha.authenticate(
   APP_ID,
   APP_SECRET,
   EXTERNAL_ID, // Some unique identifier for the user
-) { error, success ->
+) { error: String?, success: Boolean ->
   if (success) {
     // E.g. Continue onboarding flow
   } else {
     error?.also { e -> Log.e(TAG, e) }
   }
+}
+```
+
+---
+
+### deauthenticate()
+
+```kotlin
+fun deauthenticate(
+    callback: (suspend (error: String?, success: Boolean) -> Unit)
+)
+```
+
+**Example usage**:
+```kotlin
+deauthenticate { error: String?, success: Boolean ->
+    if (success) {
+        // E.g. Continue logic for successful deauthentication
+    } else {
+        error?.also { e -> Log.e(TAG, e) }
+    }
+}
+```
+
+---
+
+### profileToken
+
+```kotlin
+val profileToken: String?
+```
+
+**Example usage**:
+```kotlin
+val httpHeader = Sahha.profileToken?.let { token: String ->
+    mapOf(Pair("Authorization", token))
+}
+
+ExampleWebView(
+    httpHeader = httpHeader,
+    url = WEBVIEW_URL
+)
+```
+
+---
+
+### getDemographic()
+
+```kotlin
+fun getDemographic(
+    callback: ((error: String?, demographic: SahhaDemographic?) -> Unit?)
+)
+```
+
+**Example usage**
+```kotlin
+Sahha.getDemographic { error: String?, demographic: SahhaDemographic? ->
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, demographic)
+}
+```
+
+---
+
+### postDemographic()
+
+```kotlin
+fun postDemographic(
+    sahhaDemographic: SahhaDemographic,
+    callback: ((error: String?, success: Boolean) -> Unit)?
+)
+```
+
+**Example usage**:
+```kotlin
+val age = 123
+val gender = "Male"
+val demographic = SahhaDemographic(
+    age = age,
+    gender = gender
+)
+
+Sahha.postDemographic(demographic) { error: String?, success: Boolean ->
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, success)
+}
+```
+
+---
+
+### getSensorStatus(...)
+
+```kotlin
+fun getSensorStatus(
+    context: Context,
+    sensors: Set<SahhaSensor>,
+    callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+)
+```
+
+**Example usage**:
+```kotlin
+val sensors = setOf(
+    SahhaSensor.steps,
+    SahhaSensor.sleep,
+)
+
+Sahha.getSensorStatus(
+    context = context,
+    sensors = sensors,
+) { error: String?, status: Enum<SahhaSensorStatus> ->
+    error?.also { e -> Log.e(TAG, e) }
+    Log.d(TAG, status.name)
+}
+```
+
+---
+
+### enableSensors(...)
+
+```kotlin
+fun enableSensors(
+    context: Context,
+    sensors: Set<SahhaSensor>,
+    callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+)
+```
+
+**Example usage**:
+```kotlin
+val sensors = setOf(
+    SahhaSensor.steps,
+    SahhaSensor.sleep,
+)
+
+Sahha.enableSensors(
+    context = context,
+    sensors = sensors,
+) { error: String?, status: Enum<SahhaSensorStatus> ->
+    error?.also { e -> Log.e(TAG, e) }
+    
+    if (status == SahhaSensorStatus.unavailable) {
+        // E.g. Inform user the sensors are unavailable  
+    } else { // enabled, disabled (cannot be pending after enableSensors is called)
+        // E.g. Continue flow (disabled can mean some permissions were granted and some were not (partially granted))
+    }
 }
 ```
 
