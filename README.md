@@ -61,7 +61,7 @@ You must be able to justify reasons behind requiring the sensor permissions, [th
 * [`isAuthenticated`](#isauthenticated)
 * [`authenticate()`](#authenticate)
 * [`deauthenticate()`](#deauthenticate)
-* [`profileToken`](#getprofiletoken)
+* [`profileToken`](#profiletoken)
 * [`getDemographic()`](#getdemographic)
 * [`postDemographic(...)`](#postdemographic)
 * [`getSensorStatus(...)`](#getsensorstatus)
