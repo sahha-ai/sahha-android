@@ -473,7 +473,7 @@ Sahha.getSamples(
     )
 ) { error: String?, samples: List<SahhaSample>? -> 
     error?.also { e -> Log.e(TAG, e) }
-    Log.d(TAG, samples) // stats are returned as a list of SahhaSample object
+    Log.d(TAG, samples) // samples are returned as a list of SahhaSample object
 }
 ```
 
