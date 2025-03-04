@@ -295,7 +295,7 @@ Sahha.enableSensors(
     
     if (status == SahhaSensorStatus.unavailable) {
         // E.g. Inform user the sensors are unavailable  
-    } else { // enabled, disabled (cannot be pending after enableSensors is called)
+    } else if (status == SahhaSensorStatus.enabled || status == SahhaSensorStatus.disabled) { // enabled or disabled
         // E.g. Continue flow (disabled can mean some permissions were granted and some were not (partially granted))
     }
 }
