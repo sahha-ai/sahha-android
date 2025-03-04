@@ -43,7 +43,7 @@ More data types are available such as heart rate, workout / exercise, please ref
 <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
 ```
 
-This is recommended if you'd like to retrieve data from other health apps such as WHOOP, Garmin, Samsung Health etc.
+This is recommended if you'd like to retrieve Health Connect data from other health apps such as WHOOP, Garmin, Samsung Health etc.
 
 To declare other sensor permissions, please refer to [this](https://docs.sahha.ai/docs/data-flow/sdk/setup#step-2-review-sensor-permissions) page.
 
