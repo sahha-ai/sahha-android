@@ -58,8 +58,21 @@ You must be able to justify reasons behind requiring the sensor permissions, [th
 <docgen-index>
 
 * [`configure(...)`](#configure)
-* [`isAuthenticated()`](#isauthenticated)
+* [`isAuthenticated`](#isauthenticated)
 * [`authenticate()`](#authenticate)
+* [`deauthenticate()`](#deauthenticate)
+* [`profileToken`](#getprofiletoken)
+* [`getDemographic()`](#getdemographic)
+* [`postDemographic(...)`](#postdemographic)
+* [`getSensorStatus(...)`](#getsensorstatus)
+* [`enableSensors(...)`](#enablesensors)
+* [`getScores(...)`](#getscores)
+* [`getBiomarkers(...)`](#getbiomarkers)
+* [`getStats(...)`](#getstats)
+* [`getSamples(...)`](#getsamples)
+* [`openAppSettings()`](#openappsettings)
+* [Interfaces](#interfaces)
+* [Enums](#enums)
 
 </docgen-index>
 
@@ -490,7 +503,7 @@ if (status == SahhaSensorStatus.disabled) {
 class SahhaSettings(
     val environment: Enum<SahhaEnvironment>,
     val notificationSettings: SahhaNotificationConfiguration?,
-    val framework: SahhaFramework = SahhaFramework.android_kotlin,
+    val framework: SahhaFramework,
 )
 ```
 
