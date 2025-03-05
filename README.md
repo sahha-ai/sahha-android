@@ -22,7 +22,9 @@ The Sahha Demo App provides a convenient way to try the features of the Sahha SD
 
 ---
 
-## Integrations
+## Health Data Source Integrations
+
+Sahha supports integration with the following health data sources:
 
 - [Google Fit](https://sahha.notion.site/Google-Fit-131b2f553bbf804a8ee6fef7bc1f4edb?pvs=25)
 - [Samsung Health](https://sahha.notion.site/Samsung-Health-d3f76840fad142469f5e724a54c24ead?pvs=25)
