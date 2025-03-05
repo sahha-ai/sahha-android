@@ -38,13 +38,13 @@ Sahha supports integration with the following health data sources:
 - [Strava](https://sahha.notion.site/Strava-12db2f553bbf80c48312c2bf6aa5ac65?pvs=25)
 - [Sleep as Android](https://sahha.notion.site/Sleep-as-Android-Smart-alarm-131b2f553bbf802eb7e4dca6baab1049?pvs=25)
 
-& many more! Please visit our [integrations](https://sahha.notion.site/data-integrations?v=17eb2f553bbf80e0b0b3000c0983ab01) page for more information
+& many more! Please visit our [integrations](https://sahha.notion.site/data-integrations?v=17eb2f553bbf80e0b0b3000c0983ab01) page for more information.
 
 ---
 
 ## Install
 
-In the **app** level `build.gradle` file
+In the **app** level `build.gradle` file.
 ```groovy
 dependencies {
   implementation 'ai.sahha:sahha-android:1.1.4'
