@@ -2,7 +2,9 @@
 
 The Sahha SDK provides a convenient way for Android apps to connect to the Sahha API.
 
-For more information on Sahha please visit https://sahha.ai
+Sahha lets your project seamlessly collect health and lifestyle data from smartphones and wearables via Apple Health, Google Health Connect, and a variety of other sources.
+
+For more information on Sahha please visit https://sahha.ai.
 
 ---
 
