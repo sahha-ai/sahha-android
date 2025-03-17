@@ -45,6 +45,7 @@ import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.background.LogAppAliveState
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.domain.use_case.post.PostBatchData
+import sdk.sahha.android.framework.runnable.DataBatcherRunnable
 import sdk.sahha.android.source.SahhaEnvironment
 import javax.inject.Singleton
 
@@ -76,6 +77,7 @@ internal interface AppComponent {
     val encryptedSharedPreferences: SharedPreferences
     val sahhaErrorLogger: SahhaErrorLogger
     val hostAppLifecycleObserver: HostAppLifecycleObserver
+    val dataBatcherRunnable: DataBatcherRunnable
 
     val gson: GsonConverterFactory
     val api: SahhaApi

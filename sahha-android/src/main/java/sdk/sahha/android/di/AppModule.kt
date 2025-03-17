@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -58,6 +59,7 @@ import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
+import sdk.sahha.android.domain.interaction.SensorInteractionManager
 import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
@@ -84,6 +86,7 @@ import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
+import sdk.sahha.android.framework.runnable.DataBatcherRunnable
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -720,6 +723,24 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): HealthConnectMapperDefaults {
         return HealthConnectMapperDefaults(
             mapper, timeManager, idManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideDatBatcherRunnable(
+        context: Context,
+        permissionManager: PermissionManager,
+        sensorManager: SensorInteractionManager,
+        configRepo: SahhaConfigRepo,
+        @DefaultScope defaultScope: CoroutineScope
+    ): DataBatcherRunnable {
+        return DataBatcherRunnable(
+            context,
+            permissionManager,
+            sensorManager,
+            configRepo,
+            defaultScope
         )
     }
 }

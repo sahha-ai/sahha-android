@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,19 +27,14 @@ import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.model.config.SahhaConfiguration
-import sdk.sahha.android.domain.model.config.toSahhaSensorSet
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
-import java.time.ZonedDateTime
 
-private const val LOOP_INTERVAL = 15 * 60 * 1000L
+private const val TAG = "DataCollectionService"
 
 internal class DataCollectionService : Service() {
-    private val tag by lazy { "DataCollectionService" }
-
     private lateinit var config: SahhaConfiguration
-    private lateinit var sensorSet: Set<SahhaSensor>
 
     private val serviceSupervisorJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.Default + serviceSupervisorJob)
@@ -67,54 +61,19 @@ internal class DataCollectionService : Service() {
                 startForegroundNotification()
 
                 config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
-                sensorSet = config.sensorArray.toSahhaSensorSet()
 
                 Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
                 Session.handlerThread.start()
                 Session.serviceHandler = Handler(Session.handlerThread.looper)
-                Session.serviceHandler.post(periodicTask)
+                Session.serviceHandler.post(Sahha.di.dataBatcherRunnable)
             } catch (e: Exception) {
                 stopService()
-                Log.w(tag, e.message ?: "Something went wrong")
+                Log.w(TAG, e.message ?: "Something went wrong")
             }
         }
     }
 
-    private val periodicTask = object : Runnable {
-        override fun run() {
-            Sahha.di.permissionManager.getHealthConnectSensorStatus(
-                context = this@DataCollectionService,
-                sensors = sensorSet
-            ) { _, status ->
-                val isEnabledOrDisabled =
-                    status == SahhaSensorStatus.enabled || status == SahhaSensorStatus.disabled
-                if (!isEnabledOrDisabled) Session.handlerThread.quitSafely()
-            }
-
-            if (Session.handlerRunning) {
-                Log.d(tag, "Handler is running, exiting task")
-                return
-            }
-
-            try {
-                Session.handlerRunning = true
-                Log.d(
-                    tag, "Handler task started at ${ZonedDateTime.now().toLocalTime()}\n" +
-                            "Thread: ${Session.handlerThread.threadId}\n\n"
-                )
-
-                serviceScope.launch {
-                    queryHealthConnect { _, _ ->
-                        Session.handlerRunning = false
-                    }
-                }
-                Session.serviceHandler.postDelayed(this, LOOP_INTERVAL)
-            } catch (e: Exception) {
-                Session.handlerRunning = false
-                Log.e(tag, "Periodic task failed", e)
-            }
-        }
-    }
+//    private val periodicTask = object :
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         checkAndKillService(intent)
@@ -135,38 +94,17 @@ internal class DataCollectionService : Service() {
         try {
             Sahha.sim.permission.startHcOrNativeDataCollection(applicationContext)
         } catch (e: Exception) {
-            Log.e(tag, e.message, e)
+            Log.e(TAG, e.message, e)
             Sahha.di.sahhaErrorLogger
                 .application(
                     e.message ?: SahhaErrors.somethingWentWrong,
-                    tag,
+                    TAG,
                     "restartBackgroundTasks",
                     e.stackTraceToString()
                 )
         }
     }
 
-    private suspend fun queryHealthConnect(
-        onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
-    ) {
-        Sahha.di
-            .sahhaInteractionManager
-            .sensor
-            .queryWithMinimumDelay(
-                afterTimer = {}
-            ) { error, successful ->
-                Session.healthConnectPostCallback?.invoke(error, successful)
-                Session.healthConnectPostCallback = null
-
-                onComplete?.invoke(error, successful)
-
-                error?.also { e ->
-                    Sahha.di.sahhaErrorLogger.application(
-                        e, tag, "queryHealthConnect"
-                    )
-                }
-            }
-    }
 
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
@@ -175,7 +113,7 @@ internal class DataCollectionService : Service() {
         try {
             Session.handlerThread.quitSafely()
         } catch (e: Exception) {
-            Log.d(tag, e.message ?: "Handler thread is not yet initialized")
+            Log.d(TAG, e.message ?: "Handler thread is not yet initialized")
         }
         Session.handlerRunning = false
 
@@ -262,10 +200,11 @@ internal class DataCollectionService : Service() {
             return
         }
 
-        SahhaErrors.wrapMultipleFunctionTryCatch(tag, "Could not unregister listener", listOf(
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
-            { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) }
-        ))
+        SahhaErrors.wrapMultipleFunctionTryCatch(
+            TAG, "Could not unregister listener", listOf(
+                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepCounter) },
+                { Sahha.di.sensorManager.unregisterListener(SahhaReceiversAndListeners.stepDetector) }
+            ))
     }
 
     private fun checkAndStartCollectingSleepData() {
@@ -274,7 +213,7 @@ internal class DataCollectionService : Service() {
                 unregisterReceiver(SahhaReceiversAndListeners.sleepSegments)
             }
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener")
+            Log.w(TAG, e.message ?: "Could not unregister receiver or listener")
         }
 
         if (config.sensorArray.contains(SahhaSensor.sleep.ordinal)) {
@@ -289,7 +228,7 @@ internal class DataCollectionService : Service() {
         try {
             unregisterReceiver(SahhaReceiversAndListeners.screenLocks)
         } catch (e: Exception) {
-            Log.w(tag, e.message ?: "Could not unregister receiver or listener")
+            Log.w(TAG, e.message ?: "Could not unregister receiver or listener")
         }
 
         if (config.sensorArray.contains(SahhaSensor.device_lock.ordinal)) {
