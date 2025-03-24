@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.use_case.background
 
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
@@ -25,6 +26,7 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,6 +50,7 @@ import sdk.sahha.android.domain.model.health_connect.HealthConnectQuery
 import sdk.sahha.android.domain.model.steps.StepsHealthConnect
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -81,7 +84,10 @@ internal class BatchDataLogs @Inject constructor(
                             changesToken
                         )
                             ?: healthConnectRepo.getCurrentDayRecords(recordType)
-                        records?.also { batchStepData(records = it) }
+
+                        records?.also {
+                            batchStepData(records = it)
+                        }
                     }
                 }
 

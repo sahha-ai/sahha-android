@@ -40,6 +40,7 @@ import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.use_case.GetStatsUseCase
 import sdk.sahha.android.domain.use_case.GetBiomarkersUseCase
 import sdk.sahha.android.domain.use_case.GetSamplesUseCase
+import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.background.LogAppAliveState
@@ -121,4 +122,5 @@ internal interface AppComponent {
 
     val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
     val logAppAliveState: LogAppAliveState
+    val batchAggregateLogs: BatchAggregateLogs
 }

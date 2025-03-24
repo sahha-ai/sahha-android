@@ -330,6 +330,43 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
     )
 }
 
+internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
+    category: SahhaBiomarkerCategory,
+    sensor: SahhaSensor,
+    value: Double,
+    unit: String,
+    periodicity: String,
+    aggregation: String,
+    postDateTime: String?,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    val consistentUid = UUID.nameUUIDFromBytes(
+        ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
+    )
+
+    return SahhaDataLog(
+        id = consistentUid.toString(),
+        logType = category.name,
+        dataType = sensor.name,
+        value = value,
+        source = Constants.UNKNOWN,
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+        unit = unit,
+        recordingMethod = Constants.UNKNOWN,
+        deviceId = idManager.getDeviceId(),
+        deviceType = Constants.UNKNOWN,
+        additionalProperties = hashMapOf(
+            "periodicity" to periodicity,
+            "aggregation" to aggregation
+        ),
+        parentId = null,
+        postDateTimes = postDateTime?.let { arrayListOf(it) },
+        modifiedDateTime = null,
+    )
+}
+
 internal fun AggregationResultGroupedByDuration.toSahhaStat(
     category: SahhaBiomarkerCategory,
     sensor: SahhaSensor,

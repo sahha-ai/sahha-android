@@ -20,7 +20,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -81,10 +80,12 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
+import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
 import sdk.sahha.android.domain.use_case.background.LogAppEvent
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
+import sdk.sahha.android.framework.mapper.SensorToHealthConnectMetricMapper
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.framework.runnable.DataBatcherRunnable
 import sdk.sahha.android.source.SahhaEnvironment
@@ -741,6 +742,24 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             sensorManager,
             configRepo,
             defaultScope
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideSensorToHealthConnectMetricMapper(): SensorToHealthConnectMetricMapper {
+        return SensorToHealthConnectMetricMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideBatchAggregateLogs(
+        timeManager: SahhaTimeManager,
+        provider: PermissionActionProvider
+    ): BatchAggregateLogs {
+        return BatchAggregateLogs(
+            timeManager = timeManager,
+            provider = provider
         )
     }
 }
