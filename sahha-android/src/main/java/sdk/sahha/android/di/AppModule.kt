@@ -59,6 +59,7 @@ import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.interaction.SensorInteractionManager
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
@@ -82,6 +83,7 @@ import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
 import sdk.sahha.android.domain.use_case.background.LogAppEvent
+import sdk.sahha.android.framework.manager.AndroidConnectionStateManager
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
@@ -764,4 +766,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             repository = healthConnectRepo
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideConnectionStateManager(
+        context: Context
+    ): ConnectionStateManager {
+        return AndroidConnectionStateManager(context)
+    }
 }
+

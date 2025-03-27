@@ -11,6 +11,7 @@ import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -32,12 +33,18 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val calculateBatchLimit: CalculateBatchLimit,
     private val filterActivityOverlaps: FilterActivityOverlaps,
-    private val addMetadata: AddMetadata
+    private val addMetadata: AddMetadata,
+    private val connectionStateManager: ConnectionStateManager,
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)? = null
     ) {
+        if (connectionStateManager.isInternetAvailable() == false) {
+            callback?.invoke("No network found", false)
+            return
+        }
+
         if (batchedData.isEmpty()) {
             callback?.invoke("No data found", true)
             return

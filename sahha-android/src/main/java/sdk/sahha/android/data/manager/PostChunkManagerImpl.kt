@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -37,8 +38,6 @@ internal class PostChunkManagerImpl @Inject constructor(
                 Session.chunkPostJobs += try {
                     chunkScope.launch {
                         val successful = postData(chunk)
-                        if (!successful) callback?.invoke("Could not post data", false)
-
                         results.add(successful)
                         ++postedChunkCount
                     }
