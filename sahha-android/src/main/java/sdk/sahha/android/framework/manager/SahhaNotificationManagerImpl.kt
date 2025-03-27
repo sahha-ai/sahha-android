@@ -120,6 +120,21 @@ internal class SahhaNotificationManagerImpl(
         setSahhaNotification(notification)
     }
 
+    override fun getNewPersistent(
+        icon: Int?, title: String?, shortDescription: String?,
+    ): Notification {
+        return getNewNotification(
+            context,
+            "insights",
+            "Health Insights",
+            NotificationManager.IMPORTANCE_MIN,
+            title ?: Constants.NOTIFICATION_TITLE_DEFAULT,
+            shortDescription ?: Constants.NOTIFICATION_DESC_DEFAULT,
+            true,
+            icon ?: R.drawable.ic_sahha_no_bg
+        )
+    }
+
     override fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
         createNotificationWithIntent(
             context,

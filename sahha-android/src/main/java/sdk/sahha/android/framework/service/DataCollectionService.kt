@@ -73,8 +73,6 @@ internal class DataCollectionService : Service() {
         }
     }
 
-//    private val periodicTask = object :
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         checkAndKillService(intent)
         checkAndRestartService(intent)
@@ -170,14 +168,14 @@ internal class DataCollectionService : Service() {
 
     private suspend fun startForegroundNotification() {
         val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
-        Sahha.di.sahhaNotificationManager.setNewPersistent(
+        val notification = Sahha.di.sahhaNotificationManager.getNewPersistent(
             notificationConfig.icon,
             notificationConfig.title,
             notificationConfig.shortDescription
         )
 
         withContext(Dispatchers.Main) {
-            startForegroundService()
+            startForegroundService(notification)
         }
     }
 
@@ -243,6 +241,13 @@ internal class DataCollectionService : Service() {
         startForeground(
             NOTIFICATION_DATA_COLLECTION,
             Sahha.di.sahhaNotificationManager.notification
+        )
+    }
+
+    private fun startForegroundService(notification: Notification) {
+        startForeground(
+            NOTIFICATION_DATA_COLLECTION,
+            notification
         )
     }
 }

@@ -39,4 +39,6 @@ internal interface SahhaNotificationManager {
         serviceClass: Class<T>,
         intent: Intent = Intent(context.applicationContext, serviceClass)
     )
+
+    fun getNewPersistent(icon: Int?, title: String?, shortDescription: String?): Notification
 }

@@ -58,6 +58,7 @@ import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
+import sdk.sahha.android.domain.interaction.PermissionInteractionManager
 import sdk.sahha.android.domain.interaction.SensorInteractionManager
 import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.IdManager
@@ -699,11 +700,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideHostAppLifecycleObserver(
+        context: Context,
         logAppEvent: LogAppEvent,
+        permissionInteractionManager: PermissionInteractionManager,
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
-            logAppEvent, ioScope
+            context, logAppEvent, permissionInteractionManager, ioScope
         )
     }
 
