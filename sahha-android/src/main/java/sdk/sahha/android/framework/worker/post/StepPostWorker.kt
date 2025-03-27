@@ -1,6 +1,7 @@
 package sdk.sahha.android.framework.worker.post
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.launch
@@ -36,7 +37,12 @@ internal class StepPostWorker(private val context: Context, workerParameters: Wo
                     }
                 }
             } finally {
-                Sahha.di.mutex.unlock()
+                try {
+                    Sahha.di.mutex.unlock()
+                } catch (e: Exception) {
+                    Log.w(tag, e.message ?: "Failed to unlock mutex")
+                    Result.retry()
+                }
             }
         } else {
             Result.retry()
