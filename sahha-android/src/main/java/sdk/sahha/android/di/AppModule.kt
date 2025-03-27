@@ -307,14 +307,14 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.API_PROD)
+                .baseUrl(BuildConfig.API_SANDBOX)
                 .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
                 .create(apiClass)
         } else {
             Retrofit.Builder()
-                .baseUrl(BuildConfig.API_SANDBOX)
+                .baseUrl(BuildConfig.API_DEV)
                 .client(okHttpClient)
                 .addConverterFactory(gson)
                 .build()
