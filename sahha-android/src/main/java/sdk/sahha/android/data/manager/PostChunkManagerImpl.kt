@@ -37,6 +37,8 @@ internal class PostChunkManagerImpl @Inject constructor(
                 Session.chunkPostJobs += try {
                     chunkScope.launch {
                         val successful = postData(chunk)
+                        if (!successful) callback?.invoke("Could not post data", false)
+
                         results.add(successful)
                         ++postedChunkCount
                     }
