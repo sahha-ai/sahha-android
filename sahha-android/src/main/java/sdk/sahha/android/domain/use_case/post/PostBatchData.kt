@@ -14,6 +14,7 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.dto.send.toSahhaDataLogDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
@@ -60,13 +61,17 @@ internal class PostBatchData @Inject constructor(
             limit = calculateBatchLimit(),
             postData = { chunk ->
                 val token = authRepo.getToken() ?: ""
+                val chunkDto = chunk.map { it.toSahhaDataLogDto() }
 
                 try {
-                    val response = api.postSahhaDataLogs(TokenBearer(token), chunk)
+                    val response = api.postSahhaDataLogDto(
+                        TokenBearer(token), chunkDto
+                    )
+
                     handleResponse(
                         context = context,
                         response = response,
-                        retryLogic = { api.postSahhaDataLogs(TokenBearer(token), chunk) },
+                        retryLogic = { api.postSahhaDataLogDto(TokenBearer(token), chunkDto) },
                         successfulLogic = {
                             batchRepo.deleteBatchedData(chunk)
                         },
