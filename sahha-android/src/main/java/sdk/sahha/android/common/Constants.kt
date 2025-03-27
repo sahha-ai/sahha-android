@@ -16,6 +16,8 @@ internal object Constants {
     // Query
     const val CUSTOM_STEPS_QUERY_ID = "custom.healthconnect.steps.query"
     const val APP_ALIVE_QUERY_ID = "sahha.app.alive.query"
+    const val AGGREGATE_QUERY_ID_DAY = "sahha.aggregate.query.day"
+    const val AGGREGATE_QUERY_ID_HOUR = "sahha.aggregate.query.hour"
     const val PAGE_TOKEN_SUFFIX = ".initial.query.page.token"
 
     // Configs

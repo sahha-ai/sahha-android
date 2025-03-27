@@ -94,6 +94,11 @@ internal class SahhaTimeManager {
         return zdt.format(dateTimeFormatter)
     }
 
+    fun epochMillisToZdt(epochMillis: Long): ZonedDateTime {
+        val instant = Instant.ofEpochMilli(epochMillis)
+        return ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).withFixedOffsetZone()
+    }
+
     fun ISOToZonedDateTime(iso: String): ZonedDateTime {
         return ZonedDateTime.parse(iso, dateTimeFormatter)
             .withFixedOffsetZone()

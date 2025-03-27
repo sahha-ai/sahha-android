@@ -5,6 +5,8 @@ import android.content.Intent
 import android.hardware.SensorManager
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -16,12 +18,15 @@ import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.model.dto.QueryTime
+import sdk.sahha.android.domain.model.dto.toQueryTime
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.GetSensorDataUseCase
+import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
 import sdk.sahha.android.domain.use_case.background.BatchDataLogs
 import sdk.sahha.android.domain.use_case.background.StartCollectingPhoneScreenLockDataUseCase
 import sdk.sahha.android.domain.use_case.background.StartCollectingStepDetectorData
@@ -36,6 +41,8 @@ import sdk.sahha.android.domain.use_case.post.StartPostWorkersUseCase
 import sdk.sahha.android.framework.service.DataCollectionService
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
+import sdk.sahha.android.source.SahhaStatInterval
+import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -55,6 +62,7 @@ internal class SensorInteractionManager @Inject constructor(
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
     private val getSensorDataUseCase: GetSensorDataUseCase,
     private val calculateBatchLimit: CalculateBatchLimit,
+    private val batchAggregateLogs: BatchAggregateLogs,
     internal val batchDataLogs: BatchDataLogs,
     internal val postBatchData: PostBatchData,
     internal val postSleepDataUseCase: PostSleepDataUseCase,
@@ -163,7 +171,7 @@ internal class SensorInteractionManager @Inject constructor(
         sensorRepo.postStepSessions(metadataAdded, callback)
     }
 
-    internal suspend fun queryWithMinimumDelay(
+    internal fun queryWithMinimumDelay(
         afterTimer: () -> Unit,
         callback: (error: String?, successful: Boolean) -> Unit
     ) {
@@ -171,6 +179,8 @@ internal class SensorInteractionManager @Inject constructor(
         scope.launch {
             try {
                 result = awaitHealthConnectQuery()
+                batchDailyAndHourlyAggregatesAsync()
+
                 sensorRepo.startOneTimeBatchedDataPostWorker(
                     Constants.SAHHA_DATA_LOG_WORKER_TAG
                 )
@@ -199,6 +209,49 @@ internal class SensorInteractionManager @Inject constructor(
                 val hasMore = batchDataLogs()
             } while (hasMore)
             if (cont.isActive) cont.resume(Pair(null, true))
+        }
+    }
+
+    private suspend fun batchDailyAndHourlyAggregatesAsync() {
+        val tasks = listOf(
+            scope.async {
+                batchAggregateLogsAllSensors(SahhaStatInterval.hour)
+            },
+            scope.async {
+                batchAggregateLogsAllSensors(SahhaStatInterval.day)
+            }
+        )
+
+        tasks.awaitAll()
+    }
+
+    private suspend fun batchAggregateLogsAllSensors(interval: SahhaStatInterval) {
+        val last30DaysEpochMilli = ZonedDateTime.now().minusDays(30).toInstant().toEpochMilli()
+        val queryTime =
+            if (interval == SahhaStatInterval.hour)
+                healthConnectRepo.getLastCustomQuery(Constants.AGGREGATE_QUERY_ID_HOUR)
+                    ?.toQueryTime()
+                    ?: QueryTime(
+                        id = Constants.AGGREGATE_QUERY_ID_HOUR,
+                        timeEpochMilli = last30DaysEpochMilli
+                    )
+            else
+                healthConnectRepo.getLastCustomQuery(Constants.AGGREGATE_QUERY_ID_DAY)
+                    ?.toQueryTime() ?: QueryTime(
+                    id = Constants.AGGREGATE_QUERY_ID_DAY,
+                    timeEpochMilli = last30DaysEpochMilli
+                )
+
+        SahhaSensor.values().forEach { sensor ->
+            val result = batchAggregateLogs(
+                sensor,
+                interval,
+                queryTime,
+            )
+
+            result.second?.also { logs ->
+                batchedDataRepo.saveBatchedData(logs)
+            }
         }
     }
 }

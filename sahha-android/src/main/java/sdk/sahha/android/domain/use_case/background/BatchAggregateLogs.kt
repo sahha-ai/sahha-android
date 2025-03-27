@@ -1,9 +1,12 @@
 package sdk.sahha.android.domain.use_case.background
 
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.dto.QueryTime
 import sdk.sahha.android.domain.provider.PermissionActionProvider
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaStatInterval
 import java.time.Duration
@@ -13,68 +16,57 @@ import javax.inject.Inject
 
 internal class BatchAggregateLogs @Inject constructor(
     private val timeManager: SahhaTimeManager,
-    private val provider: PermissionActionProvider
+    private val provider: PermissionActionProvider,
+    private val repository: HealthConnectRepo
 ) {
     suspend operator fun invoke(
         sensor: SahhaSensor,
         interval: SahhaStatInterval,
-        dates: Pair<ZonedDateTime, ZonedDateTime>,
+        lastQueryTime: QueryTime,
     ): Pair<String?, List<SahhaDataLog>?> {
         val now = ZonedDateTime.now()
-        val duration =
-            if (interval == SahhaStatInterval.day) Duration.ofDays(1)
-            else Duration.ofHours(1)
+        val nowIso = timeManager.localDateTimeToISO(now.toLocalDateTime(), now.zone)
+        val nowHour = now.truncatedTo(ChronoUnit.HOURS)
+        val nowDay = now.truncatedTo(ChronoUnit.DAYS)
+        val lastQuery = timeManager.epochMillisToZdt(lastQueryTime.timeEpochMilli)
+        val lastQueryHour = lastQuery.truncatedTo(ChronoUnit.HOURS)
+        val lastQueryDay = lastQuery.truncatedTo(ChronoUnit.DAYS)
 
-        return provider.permissionActionsLogs[sensor]?.invoke(
-            duration,
-            dates.first,
-            dates.second,
-            timeManager.nowInISO(),
-            interval.name,
-        ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
-    }
+        val intervalIsDay = interval == SahhaStatInterval.day
+        val intervalIsHour = interval == SahhaStatInterval.hour
+        val isNewHour = lastQueryHour < nowHour
+        val isNewDay = lastQueryDay < nowDay
 
-    suspend fun explicitQuery(
-        logs: List<SahhaDataLog>,
-        interval: SahhaStatInterval,
-    ): List<SahhaDataLog> {
-        val hourlyMap = mutableMapOf<String, MutableSet<SahhaSensor>>()
-        for (log in logs) {
-            val truncated =
-                timeManager.localDateTimeToISO(
-                    timeManager.ISOToZonedDateTime(log.startDateTime)
-                        .truncatedTo(ChronoUnit.HOURS)
-                        .toLocalDateTime()
+        return if (intervalIsDay) {
+            if (isNewDay) {
+                repository.saveCustomSuccessfulQuery(
+                    Constants.AGGREGATE_QUERY_ID_DAY,
+                    now
                 )
 
-            try {
-                hourlyMap.getOrPut(truncated) { mutableSetOf() }
-                    .add(SahhaSensor.valueOf(log.dataType))
-            } catch (e: Exception) {
-                println(e.message)
-                continue
-            }
-        }
-
-        val aggregateLogs = mutableSetOf<SahhaDataLog>()
-        val duration = if (interval == SahhaStatInterval.hour) Duration.ofHours(1) else Duration.ofDays(1)
-        val postDateTime = timeManager.nowInISO()
-        hourlyMap.forEach {
-            for (sensor in it.value) {
-                val start = timeManager.ISOToZonedDateTime(it.key)
-                val end = start.plusHours(1)
-                if (end > ZonedDateTime.now()) continue // Ignore incomplete hour
-
-                aggregateLogs += provider.permissionActionsLogs[sensor]?.invoke(
-                    duration,
-                    start,
-                    end,
-                    postDateTime,
+                provider.permissionActionsLogs[sensor]?.invoke(
+                    Duration.ofDays(1),
+                    lastQueryDay,
+                    nowDay,
+                    nowIso,
                     interval.name
-                )?.second?.toSet() ?: setOf()
-            }
-        }
+                ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
+            } else Pair(SahhaErrors.sensorHasNoStats, null)
+        } else if (intervalIsHour) {
+            if (isNewHour) {
+                repository.saveCustomSuccessfulQuery(
+                    Constants.AGGREGATE_QUERY_ID_HOUR,
+                    now
+                )
 
-        return aggregateLogs.toList()
+                provider.permissionActionsLogs[sensor]?.invoke(
+                    Duration.ofHours(1),
+                    lastQueryHour,
+                    nowHour,
+                    nowIso,
+                    interval.name
+                ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
+            } else Pair(SahhaErrors.sensorHasNoStats, null)
+        } else Pair(SahhaErrors.sensorHasNoStats, null)
     }
 }

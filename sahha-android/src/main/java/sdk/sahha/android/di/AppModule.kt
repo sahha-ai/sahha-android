@@ -296,12 +296,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         okHttpClient: OkHttpClient,
         apiClass: Class<T>
     ): T {
-//        return Retrofit.Builder()
-//            .baseUrl(BuildConfig.API_DEV)
-//            .client(okHttpClient)
-//            .addConverterFactory(gson)
-//            .build()
-//            .create(apiClass)
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.API_DEV)
+            .client(okHttpClient)
+            .addConverterFactory(gson)
+            .build()
+            .create(apiClass)
 
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
@@ -755,11 +755,13 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideBatchAggregateLogs(
         timeManager: SahhaTimeManager,
-        provider: PermissionActionProvider
+        provider: PermissionActionProvider,
+        healthConnectRepo: HealthConnectRepo,
     ): BatchAggregateLogs {
         return BatchAggregateLogs(
             timeManager = timeManager,
-            provider = provider
+            provider = provider,
+            repository = healthConnectRepo
         )
     }
 }

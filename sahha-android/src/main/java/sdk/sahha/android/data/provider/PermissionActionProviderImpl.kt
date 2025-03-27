@@ -691,7 +691,6 @@ internal class PermissionActionProviderImpl @Inject constructor(
             val permissionGranted = grantedPermissions().contains(
                 HealthPermission.getReadPermission(recordClass)
             )
-            println(permissionGranted)
             if (permissionGranted) {
                 try {
                     val aggregates = repository.getAggregateRecordsByDuration(

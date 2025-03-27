@@ -62,7 +62,7 @@ internal class DataBatcherRunnable @Inject constructor(
         }
     }
 
-    private suspend fun queryHealthConnect(
+    private fun queryHealthConnect(
         onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
     ) {
         sensorManager
