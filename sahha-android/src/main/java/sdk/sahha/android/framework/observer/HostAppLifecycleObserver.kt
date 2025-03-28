@@ -1,11 +1,11 @@
 package sdk.sahha.android.framework.observer
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.di.IoScope
@@ -43,6 +43,7 @@ internal class HostAppLifecycleObserver @Inject constructor(
                     )
 
                     logAppEvent(event = appEvent)
+
                     permissionInteractionManager.startHcOrNativeDataCollection(context) { error, successful ->
                         error?.also { e -> Log.d(TAG, e) }
                         if (successful) Log.d(TAG, "Restarted foreground service")

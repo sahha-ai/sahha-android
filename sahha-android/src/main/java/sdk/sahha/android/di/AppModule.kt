@@ -706,7 +706,10 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
-            context, logAppEvent, permissionInteractionManager, ioScope
+            context,
+            logAppEvent,
+            permissionInteractionManager,
+            ioScope
         )
     }
 
