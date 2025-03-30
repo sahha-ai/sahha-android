@@ -21,7 +21,7 @@ internal data class SahhaDataLog(
     val recordingMethod: String = RecordingMethods.UNKNOWN.name,
     val deviceId: String?,
     val deviceType: String = Constants.UNKNOWN,
-    val additionalProperties: HashMap<String, String>? = null,
+    val additionalProperties: HashMap<String, Any>? = null,
     val parentId: String? = null,
     override val postDateTimes: ArrayList<String>? = null,
     override val modifiedDateTime: String? = null

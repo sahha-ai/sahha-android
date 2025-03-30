@@ -359,7 +359,8 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
         deviceType = Constants.UNKNOWN,
         additionalProperties = hashMapOf(
             "periodicity" to periodicity,
-            "aggregation" to aggregation
+            "aggregation" to aggregation,
+            "sources" to result.dataOrigins,
         ),
         parentId = null,
         postDateTimes = postDateTime?.let { arrayListOf(it) },
