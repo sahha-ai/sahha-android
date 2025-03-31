@@ -66,6 +66,7 @@ import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.AggregationDataTypeMapper
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
@@ -81,6 +82,7 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
 import sdk.sahha.android.domain.use_case.background.LogAppEvent
@@ -779,6 +781,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         context: Context
     ): ConnectionStateManager {
         return AndroidConnectionStateManager(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAggregationDataTypeMapper(): AggregationDataTypeMapper {
+        return AggregationDataTypeMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideDataLogTransformer(mapper: AggregationDataTypeMapper): AggregateDataLogTransformer {
+        return AggregateDataLogTransformer(mapper)
     }
 }
 

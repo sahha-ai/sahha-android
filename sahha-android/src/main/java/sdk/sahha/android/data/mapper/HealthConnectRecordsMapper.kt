@@ -344,13 +344,17 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
     val consistentUid = UUID.nameUUIDFromBytes(
         ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
     )
+    val sources = mutableSetOf<String>()
+    result.dataOrigins.forEach {
+        sources.add(it.packageName)
+    }
 
     return SahhaDataLog(
         id = consistentUid.toString(),
         logType = category.name,
         dataType = sensor.name,
         value = value,
-        source = Constants.UNKNOWN,
+        source = if (sources.count() > 1) "mixed" else sources.first(),
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
         unit = unit,
@@ -360,7 +364,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
         additionalProperties = hashMapOf(
             "periodicity" to periodicity,
             "aggregation" to aggregation,
-            "sources" to result.dataOrigins,
+            "sources" to sources,
         ),
         parentId = null,
         postDateTimes = postDateTime?.let { arrayListOf(it) },
@@ -876,7 +880,7 @@ internal fun AppEvent.toSahhaDataLog(
         unit = Constants.DataUnits.EMPTY_STRING,
         startDateTime = dateTimeIso,
         endDateTime = dateTimeIso,
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
     )
@@ -918,7 +922,7 @@ internal fun SleepDto.toSahhaDataLogDto(
         unit = Constants.DataUnits.MINUTE,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
         postDateTimes = postDateTimes,
@@ -941,7 +945,7 @@ internal fun StepData.toSahhaDataLogAsChildLog(
         endDateTime = detectedAt,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
     )
 }
 
@@ -960,7 +964,7 @@ internal fun StepSession.toSahhaDataLogAsChildLog(
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         postDateTimes = postDateTimes,
         modifiedDateTime = modifiedDateTime,
     )

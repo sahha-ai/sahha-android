@@ -11,7 +11,7 @@ internal data class SleepSendDto(
     val sleepStage: String? = Constants.SLEEP_STAGE_SLEEPING,
     val startDateTime: String,
     val endDateTime: String,
-    val recordingMethod: String = RecordingMethods.UNKNOWN.name,
+    val recordingMethod: String = RecordingMethods.unknown.name,
     val deviceType: String = Constants.UNKNOWN,
     val modifiedDateTime: String = endDateTime,
     val deviceManufacturer: String = Constants.UNKNOWN,

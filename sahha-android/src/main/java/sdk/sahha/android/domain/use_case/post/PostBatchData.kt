@@ -14,9 +14,9 @@ import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
-import sdk.sahha.android.domain.model.dto.send.toSahhaDataLogDto
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.metadata.AddMetadata
@@ -36,6 +36,7 @@ internal class PostBatchData @Inject constructor(
     private val filterActivityOverlaps: FilterActivityOverlaps,
     private val addMetadata: AddMetadata,
     private val connectionStateManager: ConnectionStateManager,
+    private val dataLogTransformer: AggregateDataLogTransformer
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
@@ -61,7 +62,7 @@ internal class PostBatchData @Inject constructor(
             limit = calculateBatchLimit(),
             postData = { chunk ->
                 val token = authRepo.getToken() ?: ""
-                val chunkDto = chunk.map { it.toSahhaDataLogDto() }
+                val chunkDto = chunk.map { log -> dataLogTransformer.transformDataLog(log) }
 
                 try {
                     val response = api.postSahhaDataLogDto(

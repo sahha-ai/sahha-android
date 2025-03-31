@@ -17,7 +17,7 @@ internal data class SahhaDataLogDto(
     val startDateTime: String,
     val endDateTime: String,
     val unit: String,
-    val recordingMethod: String = RecordingMethods.UNKNOWN.name,
+    val recordingMethod: String = RecordingMethods.unknown.name,
     val deviceId: String?,
     val deviceType: String = Constants.UNKNOWN,
     val additionalProperties: Map<String, Any>? = null,
@@ -28,7 +28,9 @@ internal data class SahhaDataLogDto(
     val modifiedDateTime: String? = null
 )
 
-internal fun SahhaDataLog.toSahhaDataLogDto(): SahhaDataLogDto {
+internal fun SahhaDataLog.toSahhaDataLogDto(
+    dataType: String? = null
+): SahhaDataLogDto {
     val addProps: MutableMap<String, Any>? = additionalProperties
 
     // in case of other additional properties
@@ -47,7 +49,7 @@ internal fun SahhaDataLog.toSahhaDataLogDto(): SahhaDataLogDto {
     return SahhaDataLogDto(
         id = id,
         logType = logType,
-        dataType = dataType,
+        dataType = dataType ?: this.dataType,
         value = value,
         source = source,
         startDateTime = startDateTime,

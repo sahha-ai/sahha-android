@@ -40,10 +40,10 @@ internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
 
     override fun recordingMethod(constantInt: Int): String {
         return when (constantInt) {
-            Metadata.RECORDING_METHOD_ACTIVELY_RECORDED -> RecordingMethods.ACTIVELY_RECORDED.name
-            Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED -> RecordingMethods.AUTOMATICALLY_RECORDED.name
-            Metadata.RECORDING_METHOD_MANUAL_ENTRY -> RecordingMethods.MANUAL_ENTRY.name
-            else -> RecordingMethods.UNKNOWN.name
+            Metadata.RECORDING_METHOD_ACTIVELY_RECORDED -> RecordingMethods.actively_recorded.name
+            Metadata.RECORDING_METHOD_AUTOMATICALLY_RECORDED -> RecordingMethods.automatically_recorded.name
+            Metadata.RECORDING_METHOD_MANUAL_ENTRY -> RecordingMethods.manual_entry.name
+            else -> RecordingMethods.unknown.name
         }
     }
 
