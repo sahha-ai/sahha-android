@@ -30,7 +30,7 @@ internal interface SensorRepo {
 
     suspend fun getSensorData(
         sensor: SahhaSensor,
-        callback: ((error: String?, successful: String?) -> Unit)
+        callback: (suspend (error: String?, successful: String?) -> Unit)
     )
 
     suspend fun postSleepData(

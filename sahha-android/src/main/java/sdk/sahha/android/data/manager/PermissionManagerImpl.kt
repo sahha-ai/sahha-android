@@ -379,10 +379,10 @@ internal class PermissionManagerImpl @Inject constructor(
         callback?.invoke(SahhaSensorStatus.enabled)
     }
 
-    override fun getHealthConnectSensorStatus(
+    override suspend fun getHealthConnectSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+        callback: suspend ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         SahhaPermissions.getSensorStatusHealthConnect(context, sensors, callback)
     }

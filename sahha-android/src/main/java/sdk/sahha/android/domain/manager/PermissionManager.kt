@@ -32,12 +32,11 @@ internal interface PermissionManager {
     suspend fun getDeviceOnlySensorStatus(callback: (status: Enum<InternalSensorStatus>) -> Unit)
     suspend fun enableDeviceOnlySensor(callback: ((status: Enum<SahhaSensorStatus>) -> Unit)? = null)
 
-    fun getHealthConnectSensorStatus(
+    suspend fun getHealthConnectSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+        callback: suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     )
-
     suspend fun getTrimmedHcPermissions(
         manifestPermissions: Set<String>?,
         sensors: Set<SahhaSensor>,

@@ -24,6 +24,7 @@ import sdk.sahha.android.data.mapper.HealthConnectMapperDefaults
 import sdk.sahha.android.data.remote.SahhaApi
 import sdk.sahha.android.data.remote.SahhaErrorApi
 import sdk.sahha.android.domain.interaction.SahhaInteractionManager
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
@@ -39,6 +40,7 @@ import sdk.sahha.android.domain.repository.InsightsRepo
 import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.GetBiomarkersUseCase
 import sdk.sahha.android.domain.use_case.GetSamplesUseCase
 import sdk.sahha.android.domain.use_case.GetStatsUseCase
@@ -125,4 +127,7 @@ internal interface AppComponent {
     val postHealthConnectDataUseCase: PostHealthConnectDataUseCase
     val logAppAliveState: LogAppAliveState
     val batchAggregateLogs: BatchAggregateLogs
+
+    val connectionStateManager: ConnectionStateManager
+    val dataLogTransformer: AggregateDataLogTransformer
 }

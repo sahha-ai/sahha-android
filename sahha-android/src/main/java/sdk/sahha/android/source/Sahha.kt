@@ -7,6 +7,7 @@ import androidx.annotation.Keep
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import sdk.sahha.android.common.Constants
@@ -27,6 +28,8 @@ private const val TAG = "Sahha"
 
 @Keep
 object Sahha {
+    private val sahhaScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    
     internal lateinit var sim: SahhaInteractionManager
     internal lateinit var di: AppComponent
     internal val notificationManager by lazy { di.sahhaNotificationManager }
@@ -66,7 +69,7 @@ object Sahha {
 
         if (!simInitialized()) sim = di.sahhaInteractionManager
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             subscribeToAppEvents(activity)
             sim.configure(activity.application, sahhaSettings, callback)
         }
@@ -108,9 +111,7 @@ object Sahha {
     fun deauthenticate(
         callback: (suspend (error: String?, success: Boolean) -> Unit)
     ) {
-        val scope = CoroutineScope(Dispatchers.IO)
-
-        scope.launch {
+        sahhaScope.launch {
             if (!sahhaIsConfigured()) {
                 callback(SahhaErrors.sahhaNotConfigured, false)
                 return@launch
@@ -238,7 +239,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             val stats = di.getStatsUseCase(
                 sensor = sensor,
                 interval = SahhaStatInterval.day,
@@ -260,7 +261,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             val stats = di.getStatsUseCase(
                 sensor = sensor,
                 interval = SahhaStatInterval.day,
@@ -281,7 +282,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             val stats = di.getSamplesUseCase(
                 sensor = sensor,
                 localDates = dates
@@ -302,7 +303,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             val stats = di.getSamplesUseCase(
                 sensor = sensor,
                 dates = dates
@@ -348,7 +349,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             SahhaReconfigure(context)
             Session.sensors = sensors
             sim.saveConfiguration(
@@ -375,7 +376,7 @@ object Sahha {
             return
         }
 
-        di.defaultScope.launch {
+        sahhaScope.launch {
             sim.permission.processMultipleSensors(context, sensors) { error, status ->
                 callback(error, status.toSahhaSensorStatus())
             }
