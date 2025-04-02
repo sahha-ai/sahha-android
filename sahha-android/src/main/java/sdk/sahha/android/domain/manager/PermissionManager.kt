@@ -22,9 +22,9 @@ internal interface PermissionManager {
     fun enableNotifications(activity: AppCompatActivity, callback: ActivityResultCallback<Boolean>)
     fun shouldUseHealthConnect(buildVersion: Int = Build.VERSION.SDK_INT): Boolean
     fun requestNativeSensors(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)
-    fun requestHealthConnectSensors(
+    suspend fun requestHealthConnectSensors(
         context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+        callback: suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     )
 
     fun getNativeSensorStatus(context: Context, callback: (status: Enum<SahhaSensorStatus>) -> Unit)

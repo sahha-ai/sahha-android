@@ -5,6 +5,7 @@ import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import sdk.sahha.android.common.SahhaErrors
@@ -285,14 +286,20 @@ internal class PermissionInteractionManager @Inject constructor(
                 return@suspendCancellableCoroutine
             }
 
-            manager.requestHealthConnectSensors(context) { _, _ ->
-                manager.isFirstHealthConnectRequest(false)
-                manager.getHealthConnectSensorStatus(
-                    context,
-                    Session.sensors ?: setOf()
-                ) { error, status ->
-                    if (cont.isActive) cont.resume(Pair(error, status))
+            val requestJob = CoroutineScope(cont.context).launch {
+                manager.requestHealthConnectSensors(context) { _, _ ->
+                    manager.isFirstHealthConnectRequest(false)
+                    manager.getHealthConnectSensorStatus(
+                        context,
+                        Session.sensors ?: setOf()
+                    ) { error, status ->
+                        if (cont.isActive) cont.resume(Pair(error, status))
+                    }
                 }
+            }
+
+            cont.invokeOnCancellation {
+                requestJob.cancel()
             }
         }
     }
@@ -307,23 +314,11 @@ internal class PermissionInteractionManager @Inject constructor(
         }
     }
 
-    private suspend fun awaitHealthConnectSensorStatus(context: Context): Enum<SahhaSensorStatus> {
-        val storedSensors = configRepo.getConfig().sensorArray.toSahhaSensorSet()
-        return suspendCancellableCoroutine { cont ->
-            manager.getHealthConnectSensorStatus(
-                context = context,
-                sensors = Session.sensors ?: storedSensors
-            ) { _, status ->
-                if (cont.isActive) cont.resume(status)
-            }
-        }
-    }
-
-    private fun getHealthConnectSensorStatus(
+    private suspend fun getHealthConnectSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
         callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
-    ) {
+    ) = coroutineScope {
         manager.getHealthConnectSensorStatus(
             context = context,
             sensors = sensors,

@@ -107,6 +107,7 @@ internal class DataCollectionService : Service() {
     override fun onDestroy() {
         sensors.unregisterExistingReceiversAndListeners(this)
         serviceScope.cancel()
+        Sahha.di.dataBatcherRunnable.runnableScope.cancel()
 
         try {
             Session.handlerThread.quitSafely()

@@ -351,9 +351,9 @@ internal class PermissionManagerImpl @Inject constructor(
         SahhaPermissions.enableSensor(context, callback)
     }
 
-    override fun requestHealthConnectSensors(
+    override suspend fun requestHealthConnectSensors(
         context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+        callback: suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
         healthConnectClient?.also {
             permissionHandler.activityCallback.statusCallback = callback

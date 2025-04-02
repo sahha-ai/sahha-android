@@ -3,6 +3,9 @@ package sdk.sahha.android.framework.runnable
 import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.di.DefaultScope
@@ -23,10 +26,11 @@ internal class DataBatcherRunnable @Inject constructor(
     private val permissionManager: PermissionManager,
     private val sensorManager: SensorInteractionManager,
     private val configRepository: SahhaConfigRepo,
-    @DefaultScope private val defaultScope: CoroutineScope,
 ) : Runnable {
+    val runnableScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
     override fun run() {
-        defaultScope.launch {
+        runnableScope.launch {
             val config = configRepository.getConfig() ?: return@launch
             val sensorSet = config.sensorArray.toSahhaSensorSet()
 
@@ -62,9 +66,9 @@ internal class DataBatcherRunnable @Inject constructor(
         }
     }
 
-    private fun queryHealthConnect(
+    private suspend fun queryHealthConnect(
         onComplete: ((error: String?, successful: Boolean) -> Unit)? = null
-    ) {
+    ) = coroutineScope {
         sensorManager
             .queryWithMinimumDelay(
                 afterTimer = {}
