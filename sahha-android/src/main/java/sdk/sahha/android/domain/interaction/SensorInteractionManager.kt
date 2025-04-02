@@ -230,7 +230,7 @@ internal class SensorInteractionManager @Inject constructor(
 
         val jobs = mutableListOf<Job>()
         SahhaSensor.values().forEach { sensor ->
-            jobs += launch {
+            jobs += launch(Dispatchers.IO) {
                 val result = batchAggregateLogs(
                     sensor,
                     interval,
