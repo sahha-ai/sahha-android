@@ -50,8 +50,8 @@ internal class BatchAggregateLogs @Inject constructor(
                     nowDay,
                     nowIso,
                     interval.name
-                ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
-            } else Pair(SahhaErrors.sensorHasNoStats, null)
+                ) ?: Pair(SahhaErrors.sensorNoStatsFound, null)
+            } else Pair(SahhaErrors.sensorNoStatsFound, null)
         } else if (intervalIsHour) {
             if (isNewHour) {
                 repository.saveCustomSuccessfulQuery(
@@ -65,8 +65,8 @@ internal class BatchAggregateLogs @Inject constructor(
                     nowHour,
                     nowIso,
                     interval.name
-                ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
-            } else Pair(SahhaErrors.sensorHasNoStats, null)
-        } else Pair(SahhaErrors.sensorHasNoStats, null)
+                ) ?: Pair(SahhaErrors.sensorNoStatsFound, null)
+            } else Pair(SahhaErrors.sensorNoStatsFound, null)
+        } else Pair(SahhaErrors.sensorNoStatsFound, null)
     }
 }

@@ -21,7 +21,7 @@ internal class SleepPostWorker(private val context: Context, workerParameters: W
         return postSleepData()
     }
 
-    internal suspend fun postSleepData(lockTester: (() -> Unit)? = null): Result {
+    internal suspend fun postSleepData(lockTester: (suspend () -> Unit)? = null): Result {
         // Guard: Return and do nothing if there is no auth data
         if (!Sahha.isAuthenticated) return Result.success()
 

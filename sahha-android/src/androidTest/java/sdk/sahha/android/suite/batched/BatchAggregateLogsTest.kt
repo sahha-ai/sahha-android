@@ -83,7 +83,9 @@ class BatchAggregateLogsTest {
             )
 
             val json = result.second?.let { SahhaConverterUtility.convertToJsonString(it) }
-            println(json)
+
+            if (result.first != null) println(result.first)
+            else println(json)
         }
 
     }

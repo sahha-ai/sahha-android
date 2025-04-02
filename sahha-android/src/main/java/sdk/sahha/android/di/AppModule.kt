@@ -744,14 +744,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         permissionManager: PermissionManager,
         sensorManager: SensorInteractionManager,
         configRepo: SahhaConfigRepo,
-        @DefaultScope defaultScope: CoroutineScope
     ): DataBatcherRunnable {
         return DataBatcherRunnable(
             context,
             permissionManager,
             sensorManager,
             configRepo,
-            defaultScope
         )
     }
 

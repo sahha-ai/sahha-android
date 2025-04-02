@@ -20,7 +20,7 @@ internal class StepPostWorker(private val context: Context, workerParameters: Wo
         return postStepSessions()
     }
 
-    internal suspend fun postStepSessions(lockTester: (() -> Unit)? = null): Result {
+    internal suspend fun postStepSessions(lockTester: (suspend () -> Unit)? = null): Result {
         // Guard: Return and do nothing if there is no auth data
         if (!Sahha.isAuthenticated) return Result.success()
 

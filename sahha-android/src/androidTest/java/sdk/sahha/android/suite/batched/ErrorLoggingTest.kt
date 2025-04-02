@@ -2,6 +2,7 @@ package sdk.sahha.android.suite.batched
 
 import androidx.activity.ComponentActivity
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -107,14 +108,16 @@ class ErrorLoggingTest {
         saveInvalidSensorData()
 
         suspendCoroutine<Unit> { cont ->
-            Sahha.sim.sensor.postSensorData(activity) { err, success ->
-                Sahha.di.defaultScope.launch {
-                    delay(1500)
-                    Assert.assertEquals(true, err?.isNotEmpty())
-                    Assert.assertEquals(false, success)
-                    println(err)
-                    clearSensorData()
-                    cont.resume(Unit)
+            CoroutineScope(cont.context).launch {
+                Sahha.sim.sensor.postSensorData(activity) { err, success ->
+                    Sahha.di.defaultScope.launch {
+                        delay(1500)
+                        Assert.assertEquals(true, err?.isNotEmpty())
+                        Assert.assertEquals(false, success)
+                        println(err)
+                        clearSensorData()
+                        cont.resume(Unit)
+                    }
                 }
             }
         }

@@ -24,7 +24,7 @@ internal class DevicePostWorker(private val context: Context, workerParameters: 
         return postDeviceData()
     }
 
-    internal suspend fun postDeviceData(lockTester: (() -> Unit)? = null): Result {
+    internal suspend fun postDeviceData(lockTester: (suspend () -> Unit)? = null): Result {
         // Guard: Return and do nothing if there is no auth data
         if (!Sahha.isAuthenticated) return Result.success()
 

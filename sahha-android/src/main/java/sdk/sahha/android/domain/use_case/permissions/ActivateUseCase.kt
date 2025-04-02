@@ -8,7 +8,7 @@ import javax.inject.Inject
 internal class ActivateUseCase @Inject constructor (
     private val repository: PermissionManager
 ) {
-    operator fun invoke(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
+    suspend operator fun invoke(context: Context, callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)) {
         repository.activate(context, callback)
     }
 }

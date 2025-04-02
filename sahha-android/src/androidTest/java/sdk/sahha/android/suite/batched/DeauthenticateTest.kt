@@ -4,6 +4,8 @@ import androidx.activity.ComponentActivity
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker
 import androidx.work.testing.TestListenableWorkerBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.runTest
@@ -116,10 +118,12 @@ class DeauthenticateTest {
     private suspend fun postData(
         callback: ((error: String?, success: Boolean) -> Unit)? = null
     ): Boolean = suspendCancellableCoroutine { cont ->
-        Sahha.sim.sensor.postSensorData(activity) { err, success ->
-            callback?.invoke(err, success)
-            if (cont.isActive)
-                cont.resume(success)
+        CoroutineScope(cont.context).launch {
+            Sahha.sim.sensor.postSensorData(activity) { err, success ->
+                callback?.invoke(err, success)
+                if (cont.isActive)
+                    cont.resume(success)
+            }
         }
     }
 

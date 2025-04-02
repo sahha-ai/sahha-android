@@ -29,6 +29,8 @@ import sdk.sahha.android.data.repository.MockSleepRepoImpl
 import sdk.sahha.android.data.repository.MockUserDataRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
 import sdk.sahha.android.domain.interaction.UserDataInteractionManager
+import sdk.sahha.android.domain.mapper.AggregationDataTypeMapper
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.GetDemographicUseCase
 import sdk.sahha.android.domain.use_case.GetScoresUseCase
@@ -150,4 +152,6 @@ internal object AppModule {
     )
 
     val mockConnectionStateManager = AndroidConnectionStateManager(context = mockk())
+    val mockAggregationDataTypeMapper = AggregationDataTypeMapper()
+    val mockDataLogTransformer = AggregateDataLogTransformer(mockAggregationDataTypeMapper)
 }
