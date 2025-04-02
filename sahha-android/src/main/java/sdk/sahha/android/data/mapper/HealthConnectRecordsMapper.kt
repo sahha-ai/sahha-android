@@ -348,13 +348,20 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
     result.dataOrigins.forEach {
         sources.add(it.packageName)
     }
+    val source =
+        if (sources.isEmpty()) Constants.UNKNOWN
+        else {
+            if (sources.count() > 1) "mixed"
+            else sources.first()
+        }
+
 
     return SahhaDataLog(
         id = consistentUid.toString(),
         logType = category.name,
         dataType = sensor.name,
         value = value,
-        source = if (sources.count() > 1) "mixed" else sources.first(),
+        source = source,
         startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
         endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
         unit = unit,

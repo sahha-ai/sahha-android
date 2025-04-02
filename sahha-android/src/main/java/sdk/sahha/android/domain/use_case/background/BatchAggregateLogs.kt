@@ -1,5 +1,6 @@
 package sdk.sahha.android.domain.use_case.background
 
+import kotlinx.coroutines.coroutineScope
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaTimeManager
@@ -23,7 +24,7 @@ internal class BatchAggregateLogs @Inject constructor(
         sensor: SahhaSensor,
         interval: SahhaStatInterval,
         lastQueryTime: QueryTime,
-    ): Pair<String?, List<SahhaDataLog>?> {
+    ): Pair<String?, List<SahhaDataLog>?> = coroutineScope {
         val now = ZonedDateTime.now()
         val nowIso = timeManager.localDateTimeToISO(now.toLocalDateTime(), now.zone)
         val nowHour = now.truncatedTo(ChronoUnit.HOURS)
@@ -37,7 +38,7 @@ internal class BatchAggregateLogs @Inject constructor(
         val isNewHour = lastQueryHour < nowHour
         val isNewDay = lastQueryDay < nowDay
 
-        return if (intervalIsDay) {
+        return@coroutineScope if (intervalIsDay) {
             if (isNewDay) {
                 repository.saveCustomSuccessfulQuery(
                     Constants.AGGREGATE_QUERY_ID_DAY,
