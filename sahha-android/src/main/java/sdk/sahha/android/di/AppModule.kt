@@ -66,6 +66,7 @@ import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.model.processor.AppEventProcessor
 import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -79,11 +80,11 @@ import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
-import sdk.sahha.android.domain.use_case.background.LogAppEvent
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
+import sdk.sahha.android.framework.processor.AppEventProcessorImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -292,12 +293,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         okHttpClient: OkHttpClient,
         apiClass: Class<T>
     ): T {
-//        return Retrofit.Builder()
-//            .baseUrl(BuildConfig.API_DEV)
-//            .client(okHttpClient)
-//            .addConverterFactory(gson)
-//            .build()
-//            .create(apiClass)
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.API_DEV)
+            .client(okHttpClient)
+            .addConverterFactory(gson)
+            .build()
+            .create(apiClass)
 
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
@@ -693,11 +694,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideHostAppLifecycleObserver(
-        logAppEvent: LogAppEvent,
+        processor: AppEventProcessor,
+        repository: BatchedDataRepo,
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
-            logAppEvent, ioScope
+            processor, repository, ioScope
         )
     }
 
@@ -720,6 +722,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     ): HealthConnectMapperDefaults {
         return HealthConnectMapperDefaults(
             mapper, timeManager, idManager
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppEventProessor(
+        context: Context,
+        mapper: HealthConnectConstantsMapper,
+        idManager: IdManager
+    ): AppEventProcessor {
+        return AppEventProcessorImpl(
+            context, mapper, idManager
         )
     }
 }
