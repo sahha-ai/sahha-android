@@ -66,8 +66,7 @@ internal class BatchDataLogs @Inject constructor(
     private val mapper: HealthConnectConstantsMapper,
 ) {
     private var batchJobs = emptyList<Job>()
-    private val syncJob = CoroutineScope(Dispatchers.Default + Job())
-    private val existingBatch by lazy { runBlocking { batchRepo.getBatchedData() } }
+
     suspend operator fun invoke(): Boolean {
         if (Session.hcQueryInProgress) return false
         healthConnectRepo.resetHasMore()

@@ -204,8 +204,8 @@ internal class SensorInteractionManager @Inject constructor(
 
     private suspend fun batchDailyAndHourlyAggregatesAsync() = coroutineScope {
         val tasks = listOf(
-            launch { batchAggregateLogsAllSensors(SahhaStatInterval.hour) },
-            launch { batchAggregateLogsAllSensors(SahhaStatInterval.day) }
+            launch(Dispatchers.IO) { batchAggregateLogsAllSensors(SahhaStatInterval.hour) },
+            launch(Dispatchers.IO) { batchAggregateLogsAllSensors(SahhaStatInterval.day) }
         )
 
         tasks.joinAll()

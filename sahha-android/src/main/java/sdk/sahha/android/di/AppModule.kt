@@ -301,12 +301,12 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
         okHttpClient: OkHttpClient,
         apiClass: Class<T>
     ): T {
-//        return Retrofit.Builder()
-//            .baseUrl(BuildConfig.API_DEV)
-//            .client(okHttpClient)
-//            .addConverterFactory(gson)
-//            .build()
-//            .create(apiClass)
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.API_DEV)
+            .client(okHttpClient)
+            .addConverterFactory(gson)
+            .build()
+            .create(apiClass)
 
         return if (environment == SahhaEnvironment.production) {
             Retrofit.Builder()
