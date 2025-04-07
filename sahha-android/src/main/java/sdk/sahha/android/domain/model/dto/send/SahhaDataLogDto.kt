@@ -31,19 +31,19 @@ internal data class SahhaDataLogDto(
 internal fun SahhaDataLog.toSahhaDataLogDto(
     dataType: String? = null
 ): SahhaDataLogDto {
-    val addProps: MutableMap<String, Any>? = additionalProperties
+    val addProps: MutableMap<String, String>? = additionalProperties
 
     // in case of other additional properties
     // remove aggregation from additional properties to add as its own param
     val aggregation = additionalProperties?.get(AGGREGATION_KEY)?.let { aggr ->
         addProps?.remove(AGGREGATION_KEY)
-        return@let aggr as String
+        return@let aggr
     }
 
     // remove periodicity from additional properties to add as its own param
     val periodicity = additionalProperties?.get(PERIODICITY_KEY)?.let { per ->
         addProps?.remove(PERIODICITY_KEY)
-        return@let per as String
+        return@let per
     }
 
     return SahhaDataLogDto(

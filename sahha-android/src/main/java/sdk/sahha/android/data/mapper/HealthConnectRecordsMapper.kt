@@ -344,10 +344,17 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
     val consistentUid = UUID.nameUUIDFromBytes(
         ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
     )
-    val sources = mutableSetOf<String>()
+    val sources = mutableListOf<String>()
     result.dataOrigins.forEach {
         sources.add(it.packageName)
     }
+    var sourcesString = ""
+    val lastElement = sources.count() - 1
+    for (i in 0 until sources.count()) {
+        if (i == lastElement) sources += sources[i]
+        else sourcesString += "${sources[i]},"
+    }
+
     val source =
         if (sources.isEmpty()) Constants.UNKNOWN
         else {
@@ -371,7 +378,7 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
         additionalProperties = hashMapOf(
             "periodicity" to periodicity,
             "aggregation" to aggregation,
-            "sources" to sources,
+            "sources" to sourcesString,
         ),
         parentId = null,
         postDateTimes = postDateTime?.let { arrayListOf(it) },
