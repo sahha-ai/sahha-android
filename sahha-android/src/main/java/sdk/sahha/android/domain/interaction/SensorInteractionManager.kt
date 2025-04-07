@@ -16,6 +16,7 @@ import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.SahhaReceiversAndListeners
 import sdk.sahha.android.common.Session
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
 import sdk.sahha.android.domain.model.dto.QueryTime
@@ -55,6 +56,7 @@ internal class SensorInteractionManager @Inject constructor(
     private val permissionManager: PermissionManager,
     private val notificationManager: SahhaNotificationManager,
     private val sensorManager: SensorManager,
+    private val connectionStateManager: ConnectionStateManager,
     private val startPostWorkersUseCase: StartPostWorkersUseCase,
     private val startDataCollectionServiceUseCase: StartDataCollectionServiceUseCase,
     private val postAllSensorDataUseCase: PostAllSensorDataUseCase,
@@ -173,10 +175,7 @@ internal class SensorInteractionManager @Inject constructor(
         try {
             result = awaitHealthConnectQuery()
             batchDailyAndHourlyAggregatesAsync()
-
-            sensorRepo.startOneTimeBatchedDataPostWorker(
-                Constants.SAHHA_DATA_LOG_WORKER_TAG
-            )
+            tryStartPostWorker()
         } catch (e: Exception) {
             result = Pair(e.message, false)
             Log.e(tag, e.message ?: "Something went wrong querying Health Connect data")
@@ -187,6 +186,13 @@ internal class SensorInteractionManager @Inject constructor(
             Thread.sleep(Constants.TEMP_FOREGROUND_NOTIFICATION_DURATION_MILLIS)
             afterTimer()
         }
+    }
+
+    private fun tryStartPostWorker() {
+        if (connectionStateManager.isInternetAvailable())
+            sensorRepo.startOneTimeBatchedDataPostWorker(
+                Constants.SAHHA_DATA_LOG_WORKER_TAG
+            )
     }
 
     private fun batchLimitReached(
