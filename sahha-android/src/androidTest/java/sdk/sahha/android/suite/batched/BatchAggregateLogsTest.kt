@@ -1,6 +1,7 @@
 package sdk.sahha.android.suite.batched
 
 import androidx.activity.ComponentActivity
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.test.core.app.ActivityScenario
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -11,6 +12,7 @@ import sdk.sahha.android.common.SahhaSetupUtil
 import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.dto.QueryTime
+import sdk.sahha.android.domain.model.dto.send.toSahhaDataLogDto
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaConverterUtility
@@ -28,9 +30,12 @@ class BatchAggregateLogsTest {
         @BeforeClass
         @JvmStatic
         fun beforeClass() = runTest {
-            ActivityScenario.launch(ComponentActivity::class.java).onActivity {
+            ActivityScenario.launch(ComponentActivity::class.java).onActivity { activity ->
                 launch {
-                    SahhaSetupUtil.configureSahha(it, SahhaSettings(SahhaEnvironment.sandbox))
+                    SahhaSetupUtil.configureSahha(activity, SahhaSettings(SahhaEnvironment.sandbox))
+                    Sahha.enableSensors(activity, SahhaSensor.values().toSet()) { error, status ->
+                        println(status.name)
+                    }
                 }
             }
         }
@@ -70,10 +75,15 @@ class BatchAggregateLogsTest {
     }
 
     @Test
+    fun mapping() = runTest {
+    }
+
+    @Test
     fun observe_day() = runTest {
         SahhaSensor.values().forEach {
             val result = Sahha.di.batchAggregateLogs(
                 it,
+//                SahhaSensor.heart_rate,
                 SahhaStatInterval.day,
                 QueryTime(
                     Constants.AGGREGATE_QUERY_ID_DAY,
@@ -82,7 +92,7 @@ class BatchAggregateLogsTest {
                 )
             )
 
-            val json = result.second?.let { SahhaConverterUtility.convertToJsonString(it) }
+            val json = result.second?.let { SahhaConverterUtility.convertToJsonString(it.map { it.toSahhaDataLogDto() }) }
 
             if (result.first != null) println(result.first)
             else println(json)

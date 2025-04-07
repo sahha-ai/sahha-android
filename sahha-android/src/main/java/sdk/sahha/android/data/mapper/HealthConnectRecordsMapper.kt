@@ -375,10 +375,14 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
         recordingMethod = Constants.UNKNOWN,
         deviceId = idManager.getDeviceId(),
         deviceType = Constants.UNKNOWN,
-        additionalProperties = hashMapOf(
+        additionalProperties =
+        if (sourcesString.isNotEmpty()) hashMapOf(
             "periodicity" to periodicity,
             "aggregation" to aggregation,
             "sources" to sourcesString,
+        ) else hashMapOf(
+            "periodicity" to periodicity,
+            "aggregation" to aggregation,
         ),
         parentId = null,
         postDateTimes = postDateTime?.let { arrayListOf(it) },

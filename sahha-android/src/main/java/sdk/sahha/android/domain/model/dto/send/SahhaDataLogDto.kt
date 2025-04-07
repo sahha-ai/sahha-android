@@ -58,7 +58,7 @@ internal fun SahhaDataLog.toSahhaDataLogDto(
         recordingMethod = recordingMethod,
         deviceId = deviceId,
         deviceType = deviceType,
-        additionalProperties = addProps, // use the additional properties with aggregation and periodicity removed
+        additionalProperties = addProps?.let { it.ifEmpty { null } }, // use the additional properties with aggregation and periodicity removed
         aggregation = aggregation,
         periodicity = periodicity,
         parentId = parentId,
