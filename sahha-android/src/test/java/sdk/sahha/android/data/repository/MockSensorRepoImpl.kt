@@ -47,7 +47,7 @@ internal class MockSensorRepoImpl: SensorRepo {
 
     override suspend fun getSensorData(
         sensor: SahhaSensor,
-        callback: (error: String?, successful: String?) -> Unit
+        callback: suspend (error: String?, successful: String?) -> Unit
     ) {
         TODO("Not yet implemented")
     }

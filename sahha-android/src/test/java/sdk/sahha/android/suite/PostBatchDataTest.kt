@@ -32,7 +32,6 @@ internal class PostBatchDataTest {
         calculateBatchLimit = CalculateBatchLimit(MockBatchedDataRepoImpl()),
         filterActivityOverlaps = AppModule.filterOverlaps,
         addMetadata = AppModule.addMetadata,
-        connectionStateManager = AppModule.mockConnectionStateManager,
         dataLogTransformer = AppModule.mockDataLogTransformer
 
 //        addPostDateMetadata = mockk(),

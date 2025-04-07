@@ -321,7 +321,6 @@ internal class PostBatchData {
         calculateBatchLimit = CalculateBatchLimit(Sahha.di.batchedDataRepo),
         filterActivityOverlaps = FilterActivityOverlaps(Sahha.di.batchedDataRepo, Sahha.di.timeManager),
         addMetadata = AddMetadata(Sahha.di.timeManager),
-        connectionStateManager = Sahha.di.connectionStateManager,
         dataLogTransformer = Sahha.di.dataLogTransformer
     )
 
