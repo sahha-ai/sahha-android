@@ -13,6 +13,7 @@ import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.dto.QueryTime
 import sdk.sahha.android.domain.model.dto.send.toSahhaDataLogDto
+import sdk.sahha.android.domain.repository.HealthConnectRepo
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaConverterUtility
@@ -26,13 +27,19 @@ import java.util.UUID
 import kotlin.random.Random
 
 class BatchAggregateLogsTest {
+    private val now = ZonedDateTime.now()
+
     companion object {
+        private lateinit var repository: HealthConnectRepo
+
         @BeforeClass
         @JvmStatic
         fun beforeClass() = runTest {
             ActivityScenario.launch(ComponentActivity::class.java).onActivity { activity ->
                 launch {
                     SahhaSetupUtil.configureSahha(activity, SahhaSettings(SahhaEnvironment.sandbox))
+                    repository = Sahha.di.healthConnectClient
+
                     Sahha.enableSensors(activity, SahhaSensor.values().toSet()) { error, status ->
                         println(status.name)
                     }
@@ -75,7 +82,18 @@ class BatchAggregateLogsTest {
     }
 
     @Test
-    fun mapping() = runTest {
+    fun logWithNoSources_isUnknown() = runTest {
+        val log = repository.getAggregateRecordsByDuration()
+    }
+
+    @Test
+    fun logWithOneSource_isSourceName() = runTest {
+
+    }
+
+    @Test
+    fun logWithMultipleSources_isMixed() = runTest {
+
     }
 
     @Test
