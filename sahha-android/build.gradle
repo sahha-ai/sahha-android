@@ -13,7 +13,7 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "1.1.5-devsand-localtest03"
+def gVersionName = "1.1.5"
 
 android {
     compileSdk 35
