@@ -3,6 +3,9 @@ package sdk.sahha.android.common
 internal object Constants {
     const val UNKNOWN = "UNKNOWN"
 
+    // Custom data types
+    const val APP_SESSION = "app_session"
+
     // Prefs
     const val HEALTH_CONNECT_SERVICE_LAUNCHED_KEY = "health.connect.service.launched"
     const val FIRST_HC_REQUEST_KEY = "first.hc.request.key"
