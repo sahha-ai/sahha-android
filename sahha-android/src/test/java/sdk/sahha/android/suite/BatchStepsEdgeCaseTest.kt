@@ -54,11 +54,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_0",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_0",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).toInstant()
+//            ),
             count = 1000,
         )
 
@@ -67,11 +68,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = now.minusMinutes(15).toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_1",
-                dataOrigin = DataOrigin("com.placeholder.source.non.daily"),
-                lastModifiedTime = now.minusMinutes(15).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_1",
+//                dataOrigin = DataOrigin("com.placeholder.source.non.daily"),
+//                lastModifiedTime = now.minusMinutes(15).toInstant()
+//            ),
             count = 100,
         )
 
@@ -80,11 +82,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = now.toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_2",
-                dataOrigin = DataOrigin("com.placeholder.source.non.daily"),
-                lastModifiedTime = now.toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_2",
+//                dataOrigin = DataOrigin("com.placeholder.source.non.daily"),
+//                lastModifiedTime = now.toInstant()
+//            ),
             count = 100,
         )
 
@@ -93,11 +96,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.minusDays(3).toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_3",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_3",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).toInstant()
+//            ),
             count = 1000,
         )
 
@@ -110,11 +114,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_0",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).plusMinutes(15).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_0",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).plusMinutes(15).toInstant()
+//            ),
             count = 1050,
         )
 
@@ -123,11 +128,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.minusDays(2).toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_4",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_4",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).toInstant()
+//            ),
             count = 1000,
         )
 
@@ -140,11 +146,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_0",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).plusMinutes(30).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_0",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).plusMinutes(30).toInstant()
+//            ),
             count = 1100,
         )
 
@@ -153,11 +160,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.minusDays(1).toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_5",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_5",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).toInstant()
+//            ),
             count = 1000,
         )
 
@@ -170,11 +178,12 @@ internal class BatchStepsEdgeCaseTest {
             startZoneOffset = start.offset,
             endTime = end.toInstant(),
             endZoneOffset = end.offset,
-            metadata = Metadata(
-                id = "placeholder_0",
-                dataOrigin = DataOrigin("com.placeholder.source"),
-                lastModifiedTime = start.plusHours(8).plusMinutes(45).toInstant()
-            ),
+            metadata = Metadata.manualEntry(),
+//            metadata = Metadata(
+//                id = "placeholder_0",
+//                dataOrigin = DataOrigin("com.placeholder.source"),
+//                lastModifiedTime = start.plusHours(8).plusMinutes(45).toInstant()
+//            ),
             count = 1150,
         )
 

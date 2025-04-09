@@ -1,5 +1,6 @@
 package sdk.sahha.android.di
 
+import androidx.health.connect.client.testing.FakeHealthConnectClient
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -154,4 +155,5 @@ internal object AppModule {
     val mockConnectionStateManager = AndroidConnectionStateManager(context = mockk())
     val mockAggregationDataTypeMapper = AggregationDataTypeMapper()
     val mockDataLogTransformer = AggregateDataLogTransformer(mockAggregationDataTypeMapper)
+    val mockHealthConnectClient = FakeHealthConnectClient()
 }

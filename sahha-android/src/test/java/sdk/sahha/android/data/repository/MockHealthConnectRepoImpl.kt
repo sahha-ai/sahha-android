@@ -1,12 +1,12 @@
 package sdk.sahha.android.data.repository
 
 import androidx.health.connect.client.aggregate.AggregateMetric
-import androidx.health.connect.client.aggregate.AggregationResult
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -15,6 +15,9 @@ import androidx.health.connect.client.records.RestingHeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
+import androidx.health.connect.client.testing.AggregationResult
+import androidx.health.connect.client.testing.FakeHealthConnectClient
 import androidx.health.connect.client.time.TimeRangeFilter
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -43,7 +46,8 @@ internal class MockHealthConnectRepoImpl: HealthConnectRepo {
     }
 
     override suspend fun getGrantedPermissions(): Set<String> {
-        TODO("Not yet implemented")
+        val client = FakeHealthConnectClient()
+        return client.permissionController.getGrantedPermissions()
     }
 
     override suspend fun <T> postData(
@@ -72,7 +76,75 @@ internal class MockHealthConnectRepoImpl: HealthConnectRepo {
         timeRangeFilter: TimeRangeFilter,
         interval: Duration
     ): List<AggregationResultGroupedByDuration>? {
-        return listOf()
+        // Create a fake result.
+        val now = ZonedDateTime.now()
+        val singleSource =
+            AggregationResult(
+                dataOrigins = setOf(DataOrigin("TEST_PACKAGE_NAME_1")),
+                metrics =
+                buildMap {
+                    put(HeartRateRecord.BPM_AVG, 74.0)
+                    put(HeartRateRecord.BPM_AVG, 74L)
+                    put(
+                        ExerciseSessionRecord.EXERCISE_DURATION_TOTAL,
+                        Duration.ofMinutes(30)
+                    )
+                }
+            )
+        val multipleSources =
+            AggregationResult(
+                dataOrigins = setOf(
+                    DataOrigin("TEST_PACKAGE_NAME_1"),
+                    DataOrigin("TEST_PACKAGE_NAME_2")
+                ),
+                metrics =
+                buildMap {
+                    put(HeartRateRecord.BPM_AVG, 99.0)
+                    put(HeartRateRecord.BPM_AVG, 99L)
+                    put(
+                        ExerciseSessionRecord.EXERCISE_DURATION_TOTAL,
+                        Duration.ofMinutes(30)
+                    )
+                }
+            )
+        val noSource =
+            AggregationResult(
+                metrics = buildMap {
+                    put(HeartRateRecord.BPM_AVG, 123.4)
+                    put(HeartRateRecord.BPM_AVG, 123L)
+                    put(
+                        ExerciseSessionRecord.EXERCISE_DURATION_TOTAL,
+                        Duration.ofMinutes(30)
+                    )
+                }
+            )
+
+        return buildList {
+            add(
+                AggregationResultGroupedByDuration(
+                    singleSource,
+                    now.minusMinutes(30).toInstant(),
+                    now.toInstant(),
+                    now.offset
+                )
+            )
+            add(
+                AggregationResultGroupedByDuration(
+                    multipleSources,
+                    now.minusMinutes(60).toInstant(),
+                    now.minusMinutes(30).toInstant(),
+                    now.offset
+                )
+            )
+            add(
+                AggregationResultGroupedByDuration(
+                    noSource,
+                    now.minusMinutes(90).toInstant(),
+                    now.minusMinutes(60).toInstant(),
+                    now.offset
+                )
+            )
+        }
     }
 
     override suspend fun getAggregateRecordsByPeriod(

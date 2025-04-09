@@ -1,7 +1,6 @@
 package sdk.sahha.android.suite.batched
 
 import androidx.activity.ComponentActivity
-import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.test.core.app.ActivityScenario
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -27,8 +26,6 @@ import java.util.UUID
 import kotlin.random.Random
 
 class BatchAggregateLogsTest {
-    private val now = ZonedDateTime.now()
-
     companion object {
         private lateinit var repository: HealthConnectRepo
 
@@ -38,7 +35,7 @@ class BatchAggregateLogsTest {
             ActivityScenario.launch(ComponentActivity::class.java).onActivity { activity ->
                 launch {
                     SahhaSetupUtil.configureSahha(activity, SahhaSettings(SahhaEnvironment.sandbox))
-                    repository = Sahha.di.healthConnectClient
+                    repository = Sahha.di.healthConnectRepo
 
                     Sahha.enableSensors(activity, SahhaSensor.values().toSet()) { error, status ->
                         println(status.name)
@@ -82,26 +79,10 @@ class BatchAggregateLogsTest {
     }
 
     @Test
-    fun logWithNoSources_isUnknown() = runTest {
-        val log = repository.getAggregateRecordsByDuration()
-    }
-
-    @Test
-    fun logWithOneSource_isSourceName() = runTest {
-
-    }
-
-    @Test
-    fun logWithMultipleSources_isMixed() = runTest {
-
-    }
-
-    @Test
     fun observe_day() = runTest {
         SahhaSensor.values().forEach {
             val result = Sahha.di.batchAggregateLogs(
                 it,
-//                SahhaSensor.heart_rate,
                 SahhaStatInterval.day,
                 QueryTime(
                     Constants.AGGREGATE_QUERY_ID_DAY,

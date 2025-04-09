@@ -345,13 +345,13 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
         ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
     )
     val sources = mutableListOf<String>()
-    result.dataOrigins.forEach {
+    this.result.dataOrigins.forEach {
         sources.add(it.packageName)
     }
     var sourcesString = ""
     val lastElement = sources.count() - 1
     for (i in 0 until sources.count()) {
-        if (i == lastElement) sources += sources[i]
+        if (i == lastElement) sourcesString += sources[i]
         else sourcesString += "${sources[i]},"
     }
 

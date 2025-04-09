@@ -16,7 +16,7 @@ secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 def gVersionName = "1.1.5-devsand-localtest03"
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdk 26

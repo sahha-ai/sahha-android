@@ -141,7 +141,7 @@ internal class PermissionManagerImpl @Inject constructor(
             val packageInfo =
                 context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
             val requestedPermissions = packageInfo.requestedPermissions
-            requestedPermissions.toSet()
+            requestedPermissions?.toSet()
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
             null

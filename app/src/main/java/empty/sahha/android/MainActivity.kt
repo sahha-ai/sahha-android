@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,8 +60,11 @@ import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSettings
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.random.Random
 
@@ -164,6 +168,8 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             item {
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                TimeZoneTestView()
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 SamplesView()
                                 Spacer(modifier = Modifier.padding(16.dp))
@@ -712,6 +718,26 @@ fun StatsView() {
     Spacer(modifier = Modifier.size(8.dp))
     Text(result)
     Spacer(modifier = Modifier.size(8.dp))
+}
+
+@Composable
+fun TimeZoneTestView() {
+    var nowIso by remember { mutableStateOf("Pending") }
+    val formatterPattern = "yyyy-MM-dd'T'HH:mm:ss.SSZZZZZ"
+    val dateTimeFormatter = DateTimeFormatter.ofPattern(formatterPattern, Locale.US)
+    Column {
+        Text(nowIso)
+        Row {
+            Button(onClick = {
+                val now = ZonedDateTime.now()
+                nowIso = now.format(dateTimeFormatter)
+            }) { Text("Now ISO") }
+            Button(onClick = {
+                val now = ZonedDateTime.now(ZoneId.systemDefault()).withFixedOffsetZone()
+                nowIso = now.format(dateTimeFormatter)
+            }) { Text("Now ISO fixed offset") }
+        }
+    }
 }
 
 @Composable
