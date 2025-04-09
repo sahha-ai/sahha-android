@@ -350,15 +350,16 @@ internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
     }
     var sourcesString = ""
     val lastElement = sources.count() - 1
-    for (i in 0 until sources.count()) {
-        if (i == lastElement) sourcesString += sources[i]
-        else sourcesString += "${sources[i]},"
-    }
+    if (sources.count() > 1)
+        for (i in 0 until sources.count()) {
+            if (i == lastElement) sourcesString += sources[i]
+            else sourcesString += "${sources[i]},"
+        }
 
     val source =
         if (sources.isEmpty()) Constants.UNKNOWN
         else {
-            if (sources.count() > 1) "mixed"
+            if (sources.count() > 1) Constants.SOURCE_MIXED
             else sources.first()
         }
 

@@ -8,7 +8,9 @@ import sdk.sahha.android.common.Constants
 import sdk.sahha.android.di.AppModule
 import sdk.sahha.android.di.MockAppComponent
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
+import sdk.sahha.android.domain.model.dto.send.toSahhaDataLogDto
 import sdk.sahha.android.source.Sahha
+import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaStatInterval
 import java.time.Duration
@@ -41,12 +43,48 @@ internal class BatchAggregateLogsTest {
     }
 
     @Test
+    fun logWithNoSources_hasNoAdditionalProperties() = runTest {
+        val log = testLogs?.get(2)
+        val logString = SahhaConverterUtility.convertToJsonString(log?.toSahhaDataLogDto())
+        println(logString)
+
+        Assert.assertEquals(false, log?.additionalProperties?.containsKey("sources"))
+    }
+
+    @Test
     fun logWithOneSource_isSourceName() = runTest {
         Assert.assertEquals("TEST_PACKAGE_NAME_1", testLogs?.get(0)?.source)
     }
 
     @Test
+    fun logWithOneSource_hasNoAdditionalProperties() = runTest {
+        val log = testLogs?.get(0)
+        val logString = SahhaConverterUtility.convertToJsonString(log?.toSahhaDataLogDto())
+        println(logString)
+
+        Assert.assertEquals(null, log?.additionalProperties?.get("sources"))
+    }
+
+    @Test
     fun logWithMultipleSources_isMixed() = runTest {
-        Assert.assertEquals("mixed", testLogs?.get(1)?.source)
+        val log = testLogs?.get(1)
+        val logString = SahhaConverterUtility.convertToJsonString(log?.toSahhaDataLogDto())
+        println(logString)
+
+        Assert.assertEquals(Constants.SOURCE_MIXED, log?.source)
+    }
+
+    @Test
+    fun logWithMultipleSources_containsBothSourcesAdditionalProperties() = runTest {
+        Assert.assertEquals(2, testLogs?.get(1)?.additionalProperties?.get("sources")?.split(',')?.count())
+    }
+
+    @Test
+    fun logWithManyMultipleSources_containsAllSourcesAdditionalProperties() = runTest {
+        val log = testLogs?.get(3)
+        val logString = SahhaConverterUtility.convertToJsonString(log?.toSahhaDataLogDto())
+        println(logString)
+
+        Assert.assertEquals(5, log?.additionalProperties?.get("sources")?.split(',')?.count())
     }
 }

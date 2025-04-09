@@ -118,6 +118,25 @@ internal class MockHealthConnectRepoImpl: HealthConnectRepo {
                     )
                 }
             )
+        val manyMultipleSources =
+            AggregationResult(
+                dataOrigins = setOf(
+                    DataOrigin("TEST_PACKAGE_NAME_1"),
+                    DataOrigin("TEST_PACKAGE_NAME_2"),
+                    DataOrigin("TEST_PACKAGE_NAME_3"),
+                    DataOrigin("TEST_PACKAGE_NAME_4"),
+                    DataOrigin("TEST_PACKAGE_NAME_5"),
+                ),
+                metrics =
+                buildMap {
+                    put(HeartRateRecord.BPM_AVG, 77.7)
+                    put(HeartRateRecord.BPM_AVG, 77L)
+                    put(
+                        ExerciseSessionRecord.EXERCISE_DURATION_TOTAL,
+                        Duration.ofMinutes(30)
+                    )
+                }
+            )
 
         return buildList {
             add(
@@ -141,6 +160,14 @@ internal class MockHealthConnectRepoImpl: HealthConnectRepo {
                     noSource,
                     now.minusMinutes(90).toInstant(),
                     now.minusMinutes(60).toInstant(),
+                    now.offset
+                )
+            )
+            add(
+                AggregationResultGroupedByDuration(
+                    manyMultipleSources,
+                    now.minusMinutes(120).toInstant(),
+                    now.minusMinutes(90).toInstant(),
                     now.offset
                 )
             )
