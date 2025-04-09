@@ -24,24 +24,6 @@ internal class HostAppLifecycleObserver @Inject constructor(
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         scope.launch {
             when (event) {
-                Lifecycle.Event.ON_CREATE -> {
-                    val appEvent = AppEvent(
-                        AppEventEnum.APP_CREATE,
-                        ZonedDateTime.now(),
-                    )
-
-                    processor.process(appEvent)
-                }
-
-                Lifecycle.Event.ON_START -> {
-                    val appEvent = AppEvent(
-                        AppEventEnum.APP_START,
-                        ZonedDateTime.now(),
-                    )
-
-                    processor.process(appEvent)
-                }
-
                 Lifecycle.Event.ON_RESUME -> {
                     val appEvent = AppEvent(
                         AppEventEnum.APP_RESUME,
@@ -59,29 +41,6 @@ internal class HostAppLifecycleObserver @Inject constructor(
 
                     val log = processor.process(appEvent)
                     log?.also { repository.saveBatchedData(listOf(it)) }
-                }
-
-                Lifecycle.Event.ON_STOP -> {
-                    val appEvent = AppEvent(
-                        AppEventEnum.APP_STOP,
-                        ZonedDateTime.now(),
-                    )
-
-                    val log = processor.process(appEvent)
-                    log?.also { repository.saveBatchedData(listOf(it)) }
-                }
-
-                Lifecycle.Event.ON_DESTROY -> {
-                    val appEvent = AppEvent(
-                        AppEventEnum.APP_DESTROY,
-                        ZonedDateTime.now(),
-                    )
-
-                    val log = processor.process(appEvent)
-                    log?.also {
-                        Log.d(TAG, "DESTROY event log found")
-                        repository.saveBatchedData(listOf(it))
-                    }
                 }
 
                 else -> {}
