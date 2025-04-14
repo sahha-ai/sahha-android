@@ -1,6 +1,6 @@
 package sdk.sahha.android.domain.internal_enum
 
-internal enum class AppEventEnum(val event: String) {
+internal enum class AppEventEnum(val value: String) {
     APP_CREATE("app_create"),
     APP_START("app_start"),
     APP_RESUME("app_resume"),

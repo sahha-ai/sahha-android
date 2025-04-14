@@ -37,7 +37,7 @@ internal class LogAppAliveState @Inject constructor(
         val now = ZonedDateTime.now()
         logAppEvent(
             AppEvent(
-                AppEventEnum.APP_ALIVE.event,
+                AppEventEnum.APP_ALIVE,
                 now
             )
         )
