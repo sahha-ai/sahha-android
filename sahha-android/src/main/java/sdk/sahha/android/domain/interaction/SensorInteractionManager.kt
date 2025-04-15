@@ -174,7 +174,7 @@ internal class SensorInteractionManager @Inject constructor(
         var result: Pair<String?, Boolean> = Pair(SahhaErrors.failedToPostAllData, false)
         try {
             result = awaitHealthConnectQuery()
-            batchDailyAndHourlyAggregatesAsync()
+//            batchDailyAndHourlyAggregatesAsync() //TODO: Re-enable when back-end is ready for aggregates
             tryStartPostWorker()
         } catch (e: Exception) {
             result = Pair(e.message, false)
