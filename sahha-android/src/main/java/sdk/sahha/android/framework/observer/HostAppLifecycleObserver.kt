@@ -21,7 +21,8 @@ private const val TAG = "HostAppLifecycleObserver"
 
 internal class HostAppLifecycleObserver @Inject constructor(
     private val context: Context,
-    private val logAppEvent: LogAppEvent,
+    private val processor: AppEventProcessor,
+    private val repository: BatchedDataRepo,
     private val permissionInteractionManager: PermissionInteractionManager,
     @IoScope private val scope: CoroutineScope,
 ) : LifecycleEventObserver {

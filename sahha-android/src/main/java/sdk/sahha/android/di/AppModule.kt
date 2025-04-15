@@ -705,13 +705,15 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideHostAppLifecycleObserver(
         context: Context,
-        logAppEvent: LogAppEvent,
+        processor: AppEventProcessor,
+        repository: BatchedDataRepo,
         permissionInteractionManager: PermissionInteractionManager,
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
             context,
-            logAppEvent,
+            processor,
+            repository,
             permissionInteractionManager,
             ioScope
           )
@@ -793,6 +795,18 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Provides
     fun provideDataLogTransformer(mapper: AggregationDataTypeMapper): AggregateDataLogTransformer {
         return AggregateDataLogTransformer(mapper)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppEventProcessor(
+        context: Context,
+        mapper: HealthConnectConstantsMapper,
+        manager: IdManager
+    ): AppEventProcessor {
+        return AppEventProcessorImpl(
+            context, mapper, manager
+        )
     }
 }
 

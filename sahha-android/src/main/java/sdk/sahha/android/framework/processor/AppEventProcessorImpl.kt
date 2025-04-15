@@ -90,7 +90,7 @@ internal class AppEventProcessorImpl @Inject constructor(
             unit = Constants.DataUnits.SECOND,
             startDateTime = startIso,
             endDateTime = endIso,
-            recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+            recordingMethod = RecordingMethods.automatically_recorded.name,
             deviceId = manager.getDeviceId(),
             deviceType = mapper.devices(Device.TYPE_PHONE),
         )
