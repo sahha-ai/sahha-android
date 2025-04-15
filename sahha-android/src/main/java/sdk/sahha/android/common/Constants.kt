@@ -129,14 +129,14 @@ internal object Constants {
     const val SLEEP_STAGE_IN_BED = "sleep_stage_in_bed"
 
     // Device types
-    const val DEVICE_TYPE_WATCH = "WATCH"
-    const val DEVICE_TYPE_PHONE = "PHONE"
-    const val DEVICE_TYPE_SCALE = "SCALE"
-    const val DEVICE_TYPE_RING = "RING"
-    const val DEVICE_TYPE_HEAD_MOUNTED = "HEAD_MOUNTED"
-    const val DEVICE_TYPE_FITNESS_BAND = "FITNESS_BAND"
-    const val DEVICE_TYPE_CHEST_STRAP = "CHEST_STRAP"
-    const val DEVICE_TYPE_SMART_DISPLAY = "SMART_DISPLAY"
+    const val DEVICE_TYPE_WATCH = "watch"
+    const val DEVICE_TYPE_PHONE = "phone"
+    const val DEVICE_TYPE_SCALE = "scale"
+    const val DEVICE_TYPE_RING = "ring"
+    const val DEVICE_TYPE_HEAD_MOUNTED = "head_mounted"
+    const val DEVICE_TYPE_FITNESS_BAND = "fitness_band"
+    const val DEVICE_TYPE_CHEST_STRAP = "chest_strap"
+    const val DEVICE_TYPE_SMART_DISPLAY = "smart_display"
 
     // Insights
     const val INSIGHT_NAME_TIME_ASLEEP = "time_asleep_daily_total"
