@@ -5,5 +5,9 @@ import androidx.annotation.Keep
 @Keep
 enum class SahhaEnvironment {
     sandbox,
-    production
+    production,
+    @Deprecated(
+        message = "Internal use only"
+    )
+    development
 }
