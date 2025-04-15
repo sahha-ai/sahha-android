@@ -1,10 +1,12 @@
 package sdk.sahha.android.data.repository
 
-import kotlinx.coroutines.flow.Flow
+import android.util.Log
 import sdk.sahha.android.data.local.dao.BatchedDataDao
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.BatchedDataRepo
 import javax.inject.Inject
+
+private const val TAG = "BatchedDataRepoImpl"
 
 internal class BatchedDataRepoImpl @Inject constructor(
     val dao: BatchedDataDao
@@ -15,6 +17,7 @@ internal class BatchedDataRepoImpl @Inject constructor(
 
     override suspend fun saveBatchedData(data: List<SahhaDataLog>) {
         dao.saveBatchedData(data)
+        Log.d(TAG, "Logs batched successfully")
     }
 
     override suspend fun deleteBatchedData(data: List<SahhaDataLog>) {

@@ -889,11 +889,11 @@ internal fun AppEvent.toSahhaDataLog(
 
     return SahhaDataLog(
         id = UUID.nameUUIDFromBytes(
-            (event + dateTime)
+            (event.value + dateTime)
                 .toByteArray()
         ).toString(),
         logType = Constants.DataLogs.DEVICE,
-        dataType = event,
+        dataType = event.value,
         source = context.packageName,
         value = 0.0,
         unit = Constants.DataUnits.EMPTY_STRING,

@@ -70,6 +70,7 @@ import sdk.sahha.android.domain.mapper.AggregationDataTypeMapper
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
+import sdk.sahha.android.domain.model.processor.AppEventProcessor
 import sdk.sahha.android.domain.provider.PermissionActionProvider
 import sdk.sahha.android.domain.repository.AppCrashRepo
 import sdk.sahha.android.domain.repository.AuthRepo
@@ -93,6 +94,7 @@ import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
 import sdk.sahha.android.framework.mapper.SensorToHealthConnectMetricMapper
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
 import sdk.sahha.android.framework.runnable.DataBatcherRunnable
+import sdk.sahha.android.framework.processor.AppEventProcessorImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -712,7 +714,7 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
             logAppEvent,
             permissionInteractionManager,
             ioScope
-        )
+          )
     }
 
     @Singleton
