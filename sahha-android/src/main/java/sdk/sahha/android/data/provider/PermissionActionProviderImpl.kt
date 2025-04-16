@@ -2,7 +2,6 @@ package sdk.sahha.android.data.provider
 
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResult
-import androidx.health.connect.client.impl.platform.records.toAggregationType
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BasalBodyTemperatureRecord
@@ -449,7 +448,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = StepsRecord::class,
                 metrics = setOf(StepsRecord.COUNT_TOTAL),
                 dataUnit = Constants.DataUnits.COUNT,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
                 }
@@ -459,7 +458,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = FloorsClimbedRecord::class,
                 metrics = setOf(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL),
                 dataUnit = Constants.DataUnits.COUNT,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
                 }
@@ -469,7 +468,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = SleepSessionRecord::class,
                 metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
                 dataUnit = Constants.DataUnits.MINUTE,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[SleepSessionRecord.SLEEP_DURATION_TOTAL]
                         ?.toMillis()?.toDouble()?.div(1000)?.div(60)
@@ -481,7 +480,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = ActiveCaloriesBurnedRecord::class,
                 metrics = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL),
                 dataUnit = Constants.DataUnits.KILOCALORIE,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
                         ?.inKilocalories
@@ -493,7 +492,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = BasalMetabolicRateRecord::class,
                 metrics = setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL),
                 dataUnit = Constants.DataUnits.KILOCALORIE,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]
                         ?.inKilocalories
@@ -505,7 +504,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = BloodPressureRecord::class,
                 metrics = setOf(BloodPressureRecord.DIASTOLIC_AVG),
                 dataUnit = Constants.DataUnits.MMHG,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[BloodPressureRecord.DIASTOLIC_AVG]
                         ?.inMillimetersOfMercury
@@ -517,7 +516,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = BloodPressureRecord::class,
                 metrics = setOf(BloodPressureRecord.SYSTOLIC_AVG),
                 dataUnit = Constants.DataUnits.MMHG,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[BloodPressureRecord.SYSTOLIC_AVG]
                         ?.inMillimetersOfMercury
@@ -529,7 +528,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = WeightRecord::class,
                 metrics = setOf(WeightRecord.WEIGHT_AVG),
                 dataUnit = Constants.DataUnits.KILOGRAM,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[WeightRecord.WEIGHT_AVG]
                         ?.inKilograms
@@ -541,7 +540,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = HeightRecord::class,
                 metrics = setOf(HeightRecord.HEIGHT_AVG),
                 dataUnit = Constants.DataUnits.METRE,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[HeightRecord.HEIGHT_AVG]
                         ?.inMeters
@@ -553,7 +552,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = ExerciseSessionRecord::class,
                 metrics = setOf(ExerciseSessionRecord.EXERCISE_DURATION_TOTAL),
                 dataUnit = Constants.DataUnits.MINUTE,
-                aggregation = AggregationType.TOTAL.value,
+                aggregation = AggregationType.SUM.value,
                 extractValue = { result ->
                     result[ExerciseSessionRecord.EXERCISE_DURATION_TOTAL]
                         ?.toMillis()
@@ -566,7 +565,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = HeartRateRecord::class,
                 metrics = setOf(HeartRateRecord.BPM_AVG),
                 dataUnit = Constants.DataUnits.BEAT_PER_MIN,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[HeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
                 }
@@ -576,7 +575,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = RestingHeartRateRecord::class,
                 metrics = setOf(RestingHeartRateRecord.BPM_AVG),
                 dataUnit = Constants.DataUnits.BEAT_PER_MIN,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[RestingHeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
                 }
@@ -586,7 +585,7 @@ internal class PermissionActionProviderImpl @Inject constructor(
                 recordClass = TotalCaloriesBurnedRecord::class,
                 metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
                 dataUnit = Constants.DataUnits.KILOCALORIE,
-                aggregation = AggregationType.AVERAGE.value,
+                aggregation = AggregationType.AVG.value,
                 extractValue = { result ->
                     result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
                         ?.inKilocalories
