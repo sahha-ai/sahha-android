@@ -93,7 +93,7 @@ class MainActivity : ComponentActivity() {
         val sharedPrefs = getSharedPreferences(MY_SHARED_PREFS, MODE_PRIVATE)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.sandbox,
+            environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
 //                title = "Foreground Service",
