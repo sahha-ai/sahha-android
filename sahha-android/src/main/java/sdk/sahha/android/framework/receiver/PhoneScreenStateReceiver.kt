@@ -3,8 +3,6 @@ package sdk.sahha.android.framework.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -17,7 +15,7 @@ internal class PhoneScreenStateReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         ioScope.launch {
-            SahhaReconfigure(context)
+            if (!Sahha.diInitialized()) SahhaReconfigure(context)
             saveScreenStateAsync()
         }
     }

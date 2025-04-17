@@ -58,11 +58,15 @@ import sdk.sahha.android.data.repository.SahhaConfigRepoImpl
 import sdk.sahha.android.data.repository.SensorRepoImpl
 import sdk.sahha.android.data.repository.SleepRepoImpl
 import sdk.sahha.android.data.repository.UserDataRepoImpl
+import sdk.sahha.android.domain.interaction.PermissionInteractionManager
+import sdk.sahha.android.domain.interaction.SensorInteractionManager
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.IdManager
 import sdk.sahha.android.domain.manager.PermissionManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.manager.ReceiverManager
 import sdk.sahha.android.domain.manager.SahhaNotificationManager
+import sdk.sahha.android.domain.mapper.AggregationDataTypeMapper
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 import sdk.sahha.android.domain.model.callbacks.ActivityCallback
 import sdk.sahha.android.domain.model.categories.PermissionHandler
@@ -79,11 +83,17 @@ import sdk.sahha.android.domain.repository.SahhaConfigRepo
 import sdk.sahha.android.domain.repository.SensorRepo
 import sdk.sahha.android.domain.repository.SleepRepo
 import sdk.sahha.android.domain.repository.UserDataRepo
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
+import sdk.sahha.android.domain.use_case.background.BatchAggregateLogs
+import sdk.sahha.android.domain.use_case.background.LogAppEvent
+import sdk.sahha.android.framework.manager.AndroidConnectionStateManager
 import sdk.sahha.android.framework.manager.ReceiverManagerImpl
 import sdk.sahha.android.framework.manager.SahhaNotificationManagerImpl
 import sdk.sahha.android.framework.mapper.HealthConnectConstantsMapperImpl
+import sdk.sahha.android.framework.mapper.SensorToHealthConnectMetricMapper
 import sdk.sahha.android.framework.observer.HostAppLifecycleObserver
+import sdk.sahha.android.framework.runnable.DataBatcherRunnable
 import sdk.sahha.android.framework.processor.AppEventProcessorImpl
 import sdk.sahha.android.source.SahhaEnvironment
 import java.util.concurrent.TimeUnit
@@ -694,13 +704,19 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
     @Singleton
     @Provides
     fun provideHostAppLifecycleObserver(
+        context: Context,
         processor: AppEventProcessor,
         repository: BatchedDataRepo,
+        permissionInteractionManager: PermissionInteractionManager,
         @IoScope ioScope: CoroutineScope
     ): HostAppLifecycleObserver {
         return HostAppLifecycleObserver(
-            processor, repository, ioScope
-        )
+            context,
+            processor,
+            repository,
+            permissionInteractionManager,
+            ioScope
+          )
     }
 
     @Singleton
@@ -727,13 +743,70 @@ internal class AppModule(private val sahhaEnvironment: Enum<SahhaEnvironment>) {
 
     @Singleton
     @Provides
-    fun provideAppEventProessor(
+    fun provideDatBatcherRunnable(
+        context: Context,
+        permissionManager: PermissionManager,
+        sensorManager: SensorInteractionManager,
+        configRepo: SahhaConfigRepo,
+    ): DataBatcherRunnable {
+        return DataBatcherRunnable(
+            context,
+            permissionManager,
+            sensorManager,
+            configRepo,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideSensorToHealthConnectMetricMapper(): SensorToHealthConnectMetricMapper {
+        return SensorToHealthConnectMetricMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideBatchAggregateLogs(
+        timeManager: SahhaTimeManager,
+        provider: PermissionActionProvider,
+        healthConnectRepo: HealthConnectRepo,
+    ): BatchAggregateLogs {
+        return BatchAggregateLogs(
+            timeManager = timeManager,
+            provider = provider,
+            repository = healthConnectRepo
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideConnectionStateManager(
+        context: Context
+    ): ConnectionStateManager {
+        return AndroidConnectionStateManager(context)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAggregationDataTypeMapper(): AggregationDataTypeMapper {
+        return AggregationDataTypeMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun provideDataLogTransformer(mapper: AggregationDataTypeMapper): AggregateDataLogTransformer {
+        return AggregateDataLogTransformer(mapper)
+    }
+
+    @Singleton
+    @Provides
+    fun provideAppEventProcessor(
         context: Context,
         mapper: HealthConnectConstantsMapper,
-        idManager: IdManager
+        manager: IdManager
     ): AppEventProcessor {
         return AppEventProcessorImpl(
-            context, mapper, idManager
+            context, mapper, manager
         )
     }
 }
+

@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import sdk.sahha.android.common.SahhaReconfigure
 import sdk.sahha.android.common.Session
@@ -47,7 +48,7 @@ internal class SahhaHealthConnectStatusActivity : AppCompatActivity() {
 
     }
 
-    private fun healthConnectUnavailable() {
+    private suspend fun healthConnectUnavailable() = coroutineScope {
         permissionHandler.activityCallback.statusCallback
             ?.invoke(null, SahhaSensorStatus.unavailable)
         finish()

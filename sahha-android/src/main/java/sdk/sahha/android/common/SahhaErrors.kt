@@ -32,8 +32,9 @@ internal object SahhaErrors {
     const val noHealthConnectApp = "Error: The Health Connect app was not found"
     const val dataTypesUnspecified = "Error: Health data types not specified"
     const val sensorSetEmpty = "Error: Sensor set must not be empty"
-    const val sensorHasNoStats = "Error: Stats not supported for this sensor"
-    const val sensorHasNoSamples = "Error: Samples not supported for this sensor"
+    const val sensorStatsNotSupported = "Error: Stats not supported for this sensor"
+    const val sensorNoStatsFound = "Error: No stats found for this sensor"
+    const val sensorSamplesNotSupported = "Error: Samples not supported for this sensor"
 
     fun sensorNotEnabled(sensor: Enum<SahhaSensor>): String {
         return "Error: The ${sensor.name.lowercase()} sensor is not enabled."

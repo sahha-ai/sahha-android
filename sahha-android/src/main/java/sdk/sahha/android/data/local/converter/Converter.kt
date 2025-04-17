@@ -35,7 +35,7 @@ internal class Converter {
 
     @TypeConverter
     fun fromJsonStringToHashMap(value: String?): HashMap<String, String>? {
-        val type: Type = object : TypeToken<HashMap<String, String>?>() {}.type
+        val type: Type = object : TypeToken<HashMap<String, Any>?>() {}.type
         return gson.fromJson(value, type)
     }
 

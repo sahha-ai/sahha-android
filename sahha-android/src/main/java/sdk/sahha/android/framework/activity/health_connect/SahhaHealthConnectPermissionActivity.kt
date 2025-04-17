@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -34,8 +34,8 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        healthConnectClient?.also { client ->
-            lifecycleScope.launch {
+        lifecycleScope.launch {
+            healthConnectClient?.also { client ->
                 Sahha.di.permissionManager.getTrimmedHcPermissions(
                     Sahha.di.permissionManager.getManifestPermissions(context = this@SahhaHealthConnectPermissionActivity),
                     Session.sensors ?: setOf()
@@ -43,8 +43,8 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
                     permissions = hcPermissions
                     checkPermissionsAndRun(client)
                 }
-            }
-        } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
+            } ?: returnStatusAndFinish(SahhaSensorStatus.unavailable)
+        }
     }
 
     override fun onResume() {
@@ -54,8 +54,10 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
             return
         }
 
-        // Else
-        enabledStatus()
+        lifecycleScope.launch {
+            // Else
+            enabledStatus()
+        }
     }
 
     private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
@@ -70,7 +72,7 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
         requestPermissions.launch(permissions)
     }
 
-    private fun enabledStatus() {
+    private suspend fun enabledStatus() = coroutineScope {
         permissionHandler.activityCallback.statusCallback?.invoke(
             null, status
         )
@@ -78,7 +80,7 @@ internal class SahhaHealthConnectPermissionActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun returnStatusAndFinish(status: Enum<SahhaSensorStatus>) {
+    private suspend fun returnStatusAndFinish(status: Enum<SahhaSensorStatus>) = coroutineScope {
         permissionHandler.activityCallback.statusCallback
             ?.invoke(null, status)
         finish()

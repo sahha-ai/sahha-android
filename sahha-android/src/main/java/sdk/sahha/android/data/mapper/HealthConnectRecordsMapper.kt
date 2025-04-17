@@ -330,6 +330,67 @@ internal fun RestingHeartRateRecord.toSahhaLogDto(
     )
 }
 
+internal fun AggregationResultGroupedByDuration.toSahhaDataLog(
+    category: SahhaBiomarkerCategory,
+    sensor: SahhaSensor,
+    value: Double,
+    unit: String,
+    periodicity: String,
+    aggregation: String,
+    postDateTime: String?,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    val consistentUid = UUID.nameUUIDFromBytes(
+        ("Aggregate${sensor.name}" + startTime + endTime).toByteArray()
+    )
+    val sources = mutableListOf<String>()
+    this.result.dataOrigins.forEach {
+        sources.add(it.packageName)
+    }
+    var sourcesString = ""
+    val lastElement = sources.count() - 1
+    if (sources.count() > 1)
+        for (i in 0 until sources.count()) {
+            if (i == lastElement) sourcesString += sources[i]
+            else sourcesString += "${sources[i]},"
+        }
+
+    val source =
+        if (sources.isEmpty()) Constants.UNKNOWN
+        else {
+            if (sources.count() > 1) Constants.SOURCE_MIXED
+            else sources.first()
+        }
+
+
+    return SahhaDataLog(
+        id = consistentUid.toString(),
+        logType = category.name,
+        dataType = sensor.name,
+        value = value,
+        source = source,
+        startDateTime = timeManager.instantToIsoTime(startTime, zoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, zoneOffset),
+        unit = unit,
+        recordingMethod = Constants.UNKNOWN,
+        deviceId = idManager.getDeviceId(),
+        deviceType = Constants.UNKNOWN,
+        additionalProperties =
+        if (sourcesString.isNotEmpty()) hashMapOf(
+            "periodicity" to periodicity,
+            "aggregation" to aggregation,
+            "sources" to sourcesString,
+        ) else hashMapOf(
+            "periodicity" to periodicity,
+            "aggregation" to aggregation,
+        ),
+        parentId = null,
+        postDateTimes = postDateTime?.let { arrayListOf(it) },
+        modifiedDateTime = null,
+    )
+}
+
 internal fun AggregationResultGroupedByDuration.toSahhaStat(
     category: SahhaBiomarkerCategory,
     sensor: SahhaSensor,
@@ -838,7 +899,7 @@ internal fun AppEvent.toSahhaDataLog(
         unit = Constants.DataUnits.EMPTY_STRING,
         startDateTime = dateTimeIso,
         endDateTime = dateTimeIso,
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
     )
@@ -880,7 +941,7 @@ internal fun SleepDto.toSahhaDataLogDto(
         unit = Constants.DataUnits.MINUTE,
         startDateTime = startDateTime,
         endDateTime = endDateTime,
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
         postDateTimes = postDateTimes,
@@ -903,7 +964,7 @@ internal fun StepData.toSahhaDataLogAsChildLog(
         endDateTime = detectedAt,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
     )
 }
 
@@ -922,7 +983,7 @@ internal fun StepSession.toSahhaDataLogAsChildLog(
         source = Constants.STEP_DETECTOR_DATA_SOURCE,
         deviceId = idManager.getDeviceId(),
         deviceType = mapper.devices(Device.TYPE_PHONE),
-        recordingMethod = RecordingMethods.AUTOMATICALLY_RECORDED.name,
+        recordingMethod = RecordingMethods.automatically_recorded.name,
         postDateTimes = postDateTimes,
         modifiedDateTime = modifiedDateTime,
     )

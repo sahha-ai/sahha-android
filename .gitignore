@@ -16,3 +16,4 @@ local.properties
 .idea/deploymentTargetDropDown.xml
 .idea/androidTestResultsUserPreferences.xml
 sahha-android/maven-signing.properties
+sahha-android/src/androidTest/java/sdk/sahha/android/common/Constants.kt

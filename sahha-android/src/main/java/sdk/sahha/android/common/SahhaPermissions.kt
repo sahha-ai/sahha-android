@@ -12,7 +12,9 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.health.connect.client.HealthConnectClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaSensor
 import sdk.sahha.android.source.SahhaSensorStatus
@@ -171,7 +173,7 @@ internal object SahhaPermissions : BroadcastReceiver() {
         context: Context,
         healthConnectClient: HealthConnectClient,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         val granted = healthConnectClient.permissionController.getGrantedPermissions()
         Sahha.di.permissionManager.getTrimmedHcPermissions(
@@ -197,17 +199,17 @@ internal object SahhaPermissions : BroadcastReceiver() {
         }
     }
 
-    private fun healthConnectUnavailable(callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?) {
+    private suspend fun healthConnectUnavailable(callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?) {
         callback?.invoke(null, SahhaSensorStatus.unavailable)
     }
 
-    fun getSensorStatusHealthConnect(
+    suspend fun getSensorStatusHealthConnect(
         context: Context,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)?
     ) {
         healthConnectClient?.also { client ->
-            mainScope.launch {
+            withContext(Dispatchers.Main) {
                 checkPermissions(context, client, sensors, callback)
             }
         } ?: healthConnectUnavailable(callback)

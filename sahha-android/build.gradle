@@ -13,10 +13,10 @@ def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
 def secretsProperties = new Properties()
 secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 
-def gVersionName = "1.1.4"
+def gVersionName = "1.1.5"
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdk 26
@@ -136,6 +136,7 @@ dependencies {
 
     // Health Connect
     implementation "androidx.health.connect:connect-client:1.1.0-alpha07"
+    testImplementation "androidx.health.connect:connect-testing:1.0.0-alpha02"
 
     // Mocking
     testImplementation 'org.mockito:mockito-core:3.12.4'

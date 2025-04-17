@@ -12,7 +12,7 @@ internal data class StepDto(
     val source: String,
     val startDateTime: String,
     val endDateTime: String,
-    val recordingMethod: String = RecordingMethods.UNKNOWN.name,
+    val recordingMethod: String = RecordingMethods.unknown.name,
     val deviceType: String = Constants.UNKNOWN,
     val modifiedDateTime: String,
     val deviceManufacturer: String? = null,

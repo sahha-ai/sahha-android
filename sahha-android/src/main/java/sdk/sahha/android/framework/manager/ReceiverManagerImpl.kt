@@ -51,8 +51,6 @@ internal class ReceiverManagerImpl(
     override fun startPhoneScreenReceivers(
         serviceContext: Context,
     ) {
-        if (Build.VERSION.SDK_INT < 26) return
-
         registerScreenStateReceiver(serviceContext)
     }
 

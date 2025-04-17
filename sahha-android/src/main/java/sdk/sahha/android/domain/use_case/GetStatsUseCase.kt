@@ -55,7 +55,7 @@ internal class GetStatsUseCase @Inject constructor(
             ),
             zoneId
         )
-    ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
+    ) ?: Pair(SahhaErrors.sensorStatsNotSupported, null)
 
     private suspend fun getStatsDailyWeek(
         sensor: SahhaSensor,
@@ -78,7 +78,7 @@ internal class GetStatsUseCase @Inject constructor(
             zoneId
         )
     ) ?: Pair(
-        SahhaErrors.sensorHasNoStats,
+        SahhaErrors.sensorStatsNotSupported,
         null
     )
 
@@ -91,7 +91,7 @@ internal class GetStatsUseCase @Inject constructor(
         duration,
         ZonedDateTime.of(it.first, zoneId).toMidnight(),
         ZonedDateTime.of(it.second, zoneId).toMidnight(1)
-    ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
+    ) ?: Pair(SahhaErrors.sensorStatsNotSupported, null)
 
     private suspend fun getStatsDates(
         sensor: SahhaSensor,
@@ -102,5 +102,5 @@ internal class GetStatsUseCase @Inject constructor(
         duration,
         ZonedDateTime.ofInstant(it.first.toInstant(), zoneId).toMidnight(),
         ZonedDateTime.ofInstant(it.second.toInstant(), zoneId).toMidnight(1)
-    ) ?: Pair(SahhaErrors.sensorHasNoStats, null)
+    ) ?: Pair(SahhaErrors.sensorStatsNotSupported, null)
 }

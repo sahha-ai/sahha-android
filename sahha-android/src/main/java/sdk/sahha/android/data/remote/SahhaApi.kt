@@ -3,16 +3,26 @@ package sdk.sahha.android.data.remote
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Query
 import sdk.sahha.android.common.Constants.APP_ID_HEADER
 import sdk.sahha.android.common.Constants.APP_SECRET_HEADER
 import sdk.sahha.android.common.Constants.AUTHORIZATION_HEADER
 import sdk.sahha.android.domain.model.auth.TokenData
-import sdk.sahha.android.domain.model.dto.DemographicDto
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
-import sdk.sahha.android.domain.model.dto.send.*
+import sdk.sahha.android.domain.model.dto.DemographicDto
+import sdk.sahha.android.domain.model.dto.send.DeviceInformationDto
+import sdk.sahha.android.domain.model.dto.send.ExternalIdSendDto
+import sdk.sahha.android.domain.model.dto.send.RefreshTokenSendDto
+import sdk.sahha.android.domain.model.dto.send.SahhaDataLogDto
 import sdk.sahha.android.domain.model.insight.InsightData
 import sdk.sahha.android.source.SahhaDemographic
+
 internal interface SahhaApi {
     @POST("oauth/profile/token")
     suspend fun postProfileIdForToken(
@@ -149,6 +159,12 @@ internal interface SahhaApi {
     suspend fun postSahhaDataLogs(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body sahhaDataLogs: List<SahhaDataLog>
+    ): Response<ResponseBody>
+
+    @POST("profile/data/log")
+    suspend fun postSahhaDataLogDto(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body sahhaDataLogDto: List<SahhaDataLogDto>
     ): Response<ResponseBody>
 
     @GET("profile/demographic")
