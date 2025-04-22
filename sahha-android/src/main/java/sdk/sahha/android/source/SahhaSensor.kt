@@ -95,17 +95,82 @@ enum class SahhaSensor {
     activity_summary,
     device_lock,
     exercise,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     running_speed,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     running_power,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     running_ground_contact_time,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     running_stride_length,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     running_vertical_oscillation,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     six_minute_walk_test_distance,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     stair_ascent_speed,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     stair_descent_speed,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     walking_speed,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     walking_steadiness,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     walking_asymmetry_percentage,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     walking_double_support_percentage,
+
+    @Deprecated(
+        message = IOS_ONLY,
+        level = DeprecationLevel.WARNING
+    )
     walking_step_length,
 }
