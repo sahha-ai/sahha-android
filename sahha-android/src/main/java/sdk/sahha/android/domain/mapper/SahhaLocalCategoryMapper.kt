@@ -3,6 +3,7 @@ package sdk.sahha.android.domain.mapper
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaSensor
 
+// Helps assign the appropriate category to the sensor types
 internal val SahhaSensor.category: SahhaBiomarkerCategory
     get() = when (this) {
         SahhaSensor.gender,
@@ -23,6 +24,19 @@ internal val SahhaSensor.category: SahhaBiomarkerCategory
         SahhaSensor.stand_time,
         SahhaSensor.move_time,
         SahhaSensor.exercise_time,
+        SahhaSensor.running_speed,
+        SahhaSensor.running_power,
+        SahhaSensor.running_ground_contact_time,
+        SahhaSensor.running_stride_length,
+        SahhaSensor.running_vertical_oscillation,
+        SahhaSensor.six_minute_walk_test_distance,
+        SahhaSensor.stair_ascent_speed,
+        SahhaSensor.stair_descent_speed,
+        SahhaSensor.walking_speed,
+        SahhaSensor.walking_steadiness,
+        SahhaSensor.walking_asymmetry_percentage,
+        SahhaSensor.walking_double_support_percentage,
+        SahhaSensor.walking_step_length,
             -> SahhaBiomarkerCategory.activity
 
         SahhaSensor.heart_rate,
