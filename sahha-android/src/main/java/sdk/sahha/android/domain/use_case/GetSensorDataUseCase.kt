@@ -7,7 +7,7 @@ import javax.inject.Inject
 internal class GetSensorDataUseCase @Inject constructor (private val repository: SensorRepo) {
     suspend operator fun invoke(
         sensor: SahhaSensor,
-        callback: ((error: String?, success: String?) -> Unit)
+        callback: (suspend (error: String?, success: String?) -> Unit)
     ) {
         repository.getSensorData(
             sensor = sensor,

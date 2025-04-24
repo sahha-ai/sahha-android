@@ -5,10 +5,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrors
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.domain.manager.PostChunkManager
@@ -18,7 +20,7 @@ import javax.inject.Named
 private const val tag = "PostChunkManagerImpl"
 
 internal class PostChunkManagerImpl @Inject constructor(
-    @Named("BatchMutex") private val mutex: Mutex
+    @Named("BatchMutex") private val mutex: Mutex,
 ) : PostChunkManager {
     private val chunkSupervisorJob = SupervisorJob()
     private val chunkScope = CoroutineScope(Dispatchers.Default + chunkSupervisorJob)
@@ -31,7 +33,9 @@ internal class PostChunkManagerImpl @Inject constructor(
     ) {
         mutex.withLock {
             resetCount()
-            val chunkedData = allData.chunked(limit)
+            val chunkLimit = if (limit < 1) Constants.DEFAULT_POST_LIMIT else limit
+
+            val chunkedData = allData.chunked(chunkLimit)
             val results = mutableListOf<Boolean>()
             for (chunk in chunkedData) {
                 Session.chunkPostJobs += try {

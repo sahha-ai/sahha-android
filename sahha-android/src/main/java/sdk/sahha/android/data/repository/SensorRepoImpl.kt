@@ -147,7 +147,7 @@ internal class SensorRepoImpl @Inject constructor(
 
     override suspend fun getSensorData(
         sensor: SahhaSensor,
-        callback: ((error: String?, successful: String?) -> Unit)
+        callback: suspend (error: String?, successful: String?) -> Unit
     ) {
         try {
             when (sensor) {
@@ -245,7 +245,7 @@ internal class SensorRepoImpl @Inject constructor(
         val workRequest: OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<BatchedDataPostWorker>()
                 .addTag(workerTag)
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.SECONDS)
+                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
                 .build()
         startOneTimeWork(workRequest, workerTag)
     }

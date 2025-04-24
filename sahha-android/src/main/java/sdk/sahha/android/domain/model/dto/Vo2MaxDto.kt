@@ -11,7 +11,7 @@ internal data class Vo2MaxDto(
     val source: String,
     val startDateTime: String,
     val endDateTime: String,
-    val recordingMethod: String? = RecordingMethods.UNKNOWN.name,
+    val recordingMethod: String? = RecordingMethods.unknown.name,
     val unit: String? = null,
     val measurementMethod: String = Constants.UNKNOWN,
     val deviceType: String = Constants.UNKNOWN,

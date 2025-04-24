@@ -11,10 +11,12 @@ import sdk.sahha.android.common.SahhaResponseHandler
 import sdk.sahha.android.common.Session
 import sdk.sahha.android.common.TokenBearer
 import sdk.sahha.android.data.remote.SahhaApi
+import sdk.sahha.android.domain.manager.ConnectionStateManager
 import sdk.sahha.android.domain.manager.PostChunkManager
 import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.repository.AuthRepo
 import sdk.sahha.android.domain.repository.BatchedDataRepo
+import sdk.sahha.android.domain.transformer.AggregateDataLogTransformer
 import sdk.sahha.android.domain.use_case.CalculateBatchLimit
 import sdk.sahha.android.domain.use_case.background.FilterActivityOverlaps
 import sdk.sahha.android.domain.use_case.metadata.AddMetadata
@@ -32,7 +34,8 @@ internal class PostBatchData @Inject constructor(
     private val sahhaErrorLogger: SahhaErrorLogger,
     private val calculateBatchLimit: CalculateBatchLimit,
     private val filterActivityOverlaps: FilterActivityOverlaps,
-    private val addMetadata: AddMetadata
+    private val addMetadata: AddMetadata,
+    private val dataLogTransformer: AggregateDataLogTransformer
 ) {
     suspend operator fun invoke(
         batchedData: List<SahhaDataLog>,
@@ -53,13 +56,17 @@ internal class PostBatchData @Inject constructor(
             limit = calculateBatchLimit(),
             postData = { chunk ->
                 val token = authRepo.getToken() ?: ""
+                val chunkDto = chunk.map { log -> dataLogTransformer.transformDataLog(log) }
 
                 try {
-                    val response = api.postSahhaDataLogs(TokenBearer(token), chunk)
+                    val response = api.postSahhaDataLogDto(
+                        TokenBearer(token), chunkDto
+                    )
+
                     handleResponse(
                         context = context,
                         response = response,
-                        retryLogic = { api.postSahhaDataLogs(TokenBearer(token), chunk) },
+                        retryLogic = { api.postSahhaDataLogDto(TokenBearer(token), chunkDto) },
                         successfulLogic = {
                             batchRepo.deleteBatchedData(chunk)
                         },

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import sdk.sahha.android.domain.model.categories.PermissionHandler
 import sdk.sahha.android.source.SahhaSensorStatus
 import sdk.sahha.android.ui.theme.SahhasdkemptyTheme
@@ -40,8 +42,11 @@ internal class SahhaPermissionActivity @Inject constructor(
         return registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
             val status = convertToActivityStatus(enabled)
             permissionHandler.sensorStatus = status
-            permissionHandler.activityCallback.statusCallback?.invoke(null, status)
-            finish()
+
+            lifecycleScope.launch {
+                permissionHandler.activityCallback.statusCallback?.invoke(null, status)
+                finish()
+            }
         }
     }
 

@@ -39,7 +39,9 @@ import sdk.sahha.android.data.mapper.toSahhaLogDto
 import sdk.sahha.android.data.mapper.toSahhaSample
 import sdk.sahha.android.data.mapper.toSahhaStat
 import sdk.sahha.android.data.mapper.toStepsHealthConnect
+import sdk.sahha.android.domain.internal_enum.AggregationType
 import sdk.sahha.android.domain.mapper.category
+import sdk.sahha.android.domain.model.data_log.SahhaDataLog
 import sdk.sahha.android.domain.model.local_logs.SahhaSample
 import sdk.sahha.android.domain.model.local_logs.SahhaStat
 import sdk.sahha.android.domain.provider.PermissionActionProvider
@@ -438,6 +440,161 @@ internal class PermissionActionProviderImpl @Inject constructor(
             ),
         )
 
+    override val permissionActionsLogs:
+            Map<SahhaSensor, suspend (Duration, ZonedDateTime, ZonedDateTime, String, String) -> Pair<String?, List<SahhaDataLog>?>> =
+        mapOf(
+            SahhaSensor.steps to createPermissionActionLogs(
+                sensor = SahhaSensor.steps,
+                recordClass = StepsRecord::class,
+                metrics = setOf(StepsRecord.COUNT_TOTAL),
+                dataUnit = Constants.DataUnits.COUNT,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
+                }
+            ),
+            SahhaSensor.floors_climbed to createPermissionActionLogs(
+                sensor = SahhaSensor.floors_climbed,
+                recordClass = FloorsClimbedRecord::class,
+                metrics = setOf(FloorsClimbedRecord.FLOORS_CLIMBED_TOTAL),
+                dataUnit = Constants.DataUnits.COUNT,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[StepsRecord.COUNT_TOTAL]?.toDouble() ?: 0.0
+                }
+            ),
+            SahhaSensor.sleep to createPermissionActionLogs(
+                sensor = SahhaSensor.sleep,
+                recordClass = SleepSessionRecord::class,
+                metrics = setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL),
+                dataUnit = Constants.DataUnits.MINUTE,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[SleepSessionRecord.SLEEP_DURATION_TOTAL]
+                        ?.toMillis()?.toDouble()?.div(1000)?.div(60)
+                        ?: 0.0
+                },
+            ),
+            SahhaSensor.active_energy_burned to createPermissionActionLogs(
+                sensor = SahhaSensor.active_energy_burned,
+                recordClass = ActiveCaloriesBurnedRecord::class,
+                metrics = setOf(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.basal_metabolic_rate to createPermissionActionLogs(
+                sensor = SahhaSensor.basal_metabolic_rate,
+                recordClass = BasalMetabolicRateRecord::class,
+                metrics = setOf(BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[BasalMetabolicRateRecord.BASAL_CALORIES_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.blood_pressure_diastolic to createPermissionActionLogs(
+                sensor = SahhaSensor.blood_pressure_diastolic,
+                recordClass = BloodPressureRecord::class,
+                metrics = setOf(BloodPressureRecord.DIASTOLIC_AVG),
+                dataUnit = Constants.DataUnits.MMHG,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[BloodPressureRecord.DIASTOLIC_AVG]
+                        ?.inMillimetersOfMercury
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.blood_pressure_systolic to createPermissionActionLogs(
+                sensor = SahhaSensor.blood_pressure_systolic,
+                recordClass = BloodPressureRecord::class,
+                metrics = setOf(BloodPressureRecord.SYSTOLIC_AVG),
+                dataUnit = Constants.DataUnits.MMHG,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[BloodPressureRecord.SYSTOLIC_AVG]
+                        ?.inMillimetersOfMercury
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.weight to createPermissionActionLogs(
+                sensor = SahhaSensor.weight,
+                recordClass = WeightRecord::class,
+                metrics = setOf(WeightRecord.WEIGHT_AVG),
+                dataUnit = Constants.DataUnits.KILOGRAM,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[WeightRecord.WEIGHT_AVG]
+                        ?.inKilograms
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.height to createPermissionActionLogs(
+                sensor = SahhaSensor.height,
+                recordClass = HeightRecord::class,
+                metrics = setOf(HeightRecord.HEIGHT_AVG),
+                dataUnit = Constants.DataUnits.METRE,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[HeightRecord.HEIGHT_AVG]
+                        ?.inMeters
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.exercise to createPermissionActionLogs(
+                sensor = SahhaSensor.exercise,
+                recordClass = ExerciseSessionRecord::class,
+                metrics = setOf(ExerciseSessionRecord.EXERCISE_DURATION_TOTAL),
+                dataUnit = Constants.DataUnits.MINUTE,
+                aggregation = AggregationType.SUM.value,
+                extractValue = { result ->
+                    result[ExerciseSessionRecord.EXERCISE_DURATION_TOTAL]
+                        ?.toMillis()
+                        ?.toDouble()?.div(1000)?.div(60)
+                        ?: 0.0
+                }
+            ),
+            SahhaSensor.heart_rate to createPermissionActionLogs(
+                sensor = SahhaSensor.heart_rate,
+                recordClass = HeartRateRecord::class,
+                metrics = setOf(HeartRateRecord.BPM_AVG),
+                dataUnit = Constants.DataUnits.BEAT_PER_MIN,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[HeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
+                }
+            ),
+            SahhaSensor.resting_heart_rate to createPermissionActionLogs(
+                sensor = SahhaSensor.resting_heart_rate,
+                recordClass = RestingHeartRateRecord::class,
+                metrics = setOf(RestingHeartRateRecord.BPM_AVG),
+                dataUnit = Constants.DataUnits.BEAT_PER_MIN,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[RestingHeartRateRecord.BPM_AVG]?.toDouble() ?: 0.0
+                }
+            ),
+            SahhaSensor.total_energy_burned to createPermissionActionLogs(
+                sensor = SahhaSensor.total_energy_burned,
+                recordClass = TotalCaloriesBurnedRecord::class,
+                metrics = setOf(TotalCaloriesBurnedRecord.ENERGY_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[TotalCaloriesBurnedRecord.ENERGY_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            ),
+        )
+
+
     private fun <T : Any, R : Record> createPermissionActionStats(
         sensor: SahhaSensor,
         recordClass: KClass<R>,
@@ -509,6 +666,55 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     val flattenedSamples = samples?.flatten()
 
                     Pair(null, flattenedSamples)
+                } catch (e: Exception) {
+                    Pair(e.message, null)
+                }
+            } else Pair("Error: HealthConnect permission for this sensor was not granted", null)
+        }
+    }
+
+    private fun <T : Any, R : Record> createPermissionActionLogs(
+        sensor: SahhaSensor,
+        recordClass: KClass<R>,
+        metrics: Set<AggregateMetric<T>>,
+        dataUnit: String,
+        aggregation: String,
+        extractValue: (AggregationResult) -> Double,
+    ): suspend (
+        duration: Duration,
+        start: ZonedDateTime,
+        end: ZonedDateTime,
+        postDateTime: String,
+        periodicity: String
+    ) -> Pair<String?, List<SahhaDataLog>?> {
+        return { duration, start, end, postDateTime, periodicity ->
+            val permissionGranted = grantedPermissions().contains(
+                HealthPermission.getReadPermission(recordClass)
+            )
+            if (permissionGranted) {
+                try {
+                    val aggregates = repository.getAggregateRecordsByDuration(
+                        metrics = metrics,
+                        timeRangeFilter = TimeRangeFilter.between(
+                            startTime = start.toLocalDateTime(),
+                            endTime = end.toLocalDateTime()
+                        ),
+                        interval = duration
+                    )
+
+                    val logs = aggregates?.map { aggregate ->
+                        aggregate.toSahhaDataLog(
+                            category = sensor.category,
+                            sensor = sensor,
+                            value = extractValue(aggregate.result),
+                            unit = dataUnit,
+                            periodicity = periodicity,
+                            aggregation = aggregation,
+                            postDateTime = postDateTime
+                        )
+                    }?.filter { it.value > 0.0 }
+
+                    Pair(null, logs)
                 } catch (e: Exception) {
                     Pair(e.message, null)
                 }

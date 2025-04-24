@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Health Connect -->
+    <!-- Heart -->
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
+
+    <!-- Blood -->
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
+
+    <!-- Sleep -->
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+
+    <!-- Activity -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
+
+    <!-- Oxygen -->
+    <uses-permission android:name="android.permission.health.READ_VO2_MAX" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+
+    <!-- Exercise -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+
+    <!-- Energy -->
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+
+    <!-- Body -->
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_HEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+
+    <!-- Temperature -->
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_BODY_TEMPERATURE" />
+
+    <!-- Health Connect -->
+    <!-- Heart -->
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.WRITE_RESTING_HEART_RATE" />
+
+    <!-- Blood -->
+    <uses-permission android:name="android.permission.health.WRITE_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.WRITE_BLOOD_PRESSURE" />
+
+    <!-- Sleep -->
+    <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
+
+    <!-- Activity -->
+    <uses-permission android:name="android.permission.health.WRITE_STEPS" />
+    <uses-permission android:name="android.permission.health.WRITE_FLOORS_CLIMBED" />
+
+    <!-- Oxygen -->
+    <uses-permission android:name="android.permission.health.WRITE_VO2_MAX" />
+    <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE" />
+
+    <!-- Exercise -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+
+    <!-- Energy -->
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
+
+    <!-- Body -->
+    <uses-permission android:name="android.permission.health.WRITE_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.WRITE_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_HEIGHT" />
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+
+    <!-- Temperature -->
+    <uses-permission android:name="android.permission.health.WRITE_BODY_TEMPERATURE" />
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_BODY_TEMPERATURE" />
+
+    <!-- Alarms -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"
+        android:minSdkVersion="33"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32"/>
+    <application>
+        <activity
+            android:name=".common.SahhaSensorPermissionActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sahha_permission"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <activity
+            android:name=".common.SahhaSensorStatusActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sahha_permission"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <activity
+            android:name=".framework.activity.SahhaNotificationPermissionActivity"
+            android:exported="false"
+            android:label="SahhaNotificationPermissionActivity"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <service
+            android:name=".framework.service.DataCollectionService"
+            android:exported="false"
+            android:foregroundServiceType="health" />
+
+        <!-- Activity to show rationale of Health Connect permissions -->
+        <activity
+            android:name=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
+            <!-- Handle intent -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".RequestAllPermissionsActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".framework.activity.health_connect.SahhaHealthConnectPermissionActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name="ViewPermissionUsageActivityWrite"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".RequestAllPermissionsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name=".framework.activity.health_connect.SahhaHealthConnectStatusActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Transparent.NoActionBar" />
+
+        <receiver
+            android:name=".framework.receiver.SleepReceiver"
+            android:attributionTags="com.sahha.android:sleep_receiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.ACTIVITY_RECOGNITION"
+            tools:targetApi="s" />
+
+
+<!--        <receiver-->
+<!--            android:name=".framework.receiver.AutoStartReceiver"-->
+<!--            android:attributionTags="com.sahha.android:auto_start_receiver"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="true"-->
+<!--            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"-->
+<!--            tools:targetApi="s">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />-->
+<!--                <action android:name="android.intent.action.BOOT_COMPLETED" />-->
+<!--                <action android:name="android.intent.action.QUICKBOOT_POWERON" />-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
+    </application>
+
+    <!-- Check whether these apps are installed or not -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+        <package android:name="com.sec.android.app.shealth" />
+        <package android:name="com.ouraring.oura" />
+        <package android:name="com.fitbit.FitbitMobile" />
+    </queries>
+</manifest>

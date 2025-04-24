@@ -33,7 +33,7 @@ internal class GetSamplesUseCase @Inject constructor(
     ) = provider.permissionActionsSamples[sensor]?.invoke(
         ZonedDateTime.of(it.first, zoneId),
         ZonedDateTime.of(it.second, zoneId)
-    ) ?: Pair(SahhaErrors.sensorHasNoSamples, null)
+    ) ?: Pair(SahhaErrors.sensorSamplesNotSupported, null)
 
     private suspend fun getSamplesDates(
         sensor: SahhaSensor,
@@ -42,12 +42,12 @@ internal class GetSamplesUseCase @Inject constructor(
     ) = provider.permissionActionsSamples[sensor]?.invoke(
         ZonedDateTime.ofInstant(it.first.toInstant(), zoneId),
         ZonedDateTime.ofInstant(it.second.toInstant(), zoneId)
-    ) ?: Pair(SahhaErrors.sensorHasNoSamples, null)
+    ) ?: Pair(SahhaErrors.sensorSamplesNotSupported, null)
 
     private suspend fun getSamplesForToday(
         sensor: SahhaSensor,
     ) = provider.permissionActionsSamples[sensor]?.invoke(
         ZonedDateTime.now().toMidnight(),
         ZonedDateTime.now().toMidnight(1).minusNanos(1)
-    ) ?: Pair(SahhaErrors.sensorHasNoSamples, null)
+    ) ?: Pair(SahhaErrors.sensorSamplesNotSupported, null)
 }

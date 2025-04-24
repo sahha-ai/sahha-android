@@ -40,7 +40,10 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.Vo2MaxRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import sdk.sahha.android.common.Constants
 import sdk.sahha.android.common.SahhaErrorLogger
 import sdk.sahha.android.common.SahhaErrors
@@ -138,7 +141,7 @@ internal class PermissionManagerImpl @Inject constructor(
             val packageInfo =
                 context.packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
             val requestedPermissions = packageInfo.requestedPermissions
-            requestedPermissions.toSet()
+            requestedPermissions?.toSet()
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
             null
@@ -285,7 +288,10 @@ internal class PermissionManagerImpl @Inject constructor(
         permission =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { enabled ->
                 val status = convertToActivityStatus(enabled)
-                permissionHandler.activityCallback.statusCallback?.let { it(null, status) }
+
+                activity.lifecycleScope.launch {
+                    permissionHandler.activityCallback.statusCallback?.invoke(null, status)
+                }
             }
     }
 
@@ -311,15 +317,15 @@ internal class PermissionManagerImpl @Inject constructor(
         context.startActivity(intent)
     }
 
-    override fun activate(
+    override suspend fun activate(
         context: Context,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
-    ) {
+        callback: (suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+    ) = coroutineScope {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             val status = SahhaSensorStatus.unavailable
             callback(SahhaErrors.androidVersionTooLow(9), status)
             permissionHandler.sensorStatus = status
-            return
+            return@coroutineScope
         }
 
         try {
@@ -351,9 +357,9 @@ internal class PermissionManagerImpl @Inject constructor(
         SahhaPermissions.enableSensor(context, callback)
     }
 
-    override fun requestHealthConnectSensors(
+    override suspend fun requestHealthConnectSensors(
         context: Context,
-        callback: (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
+        callback: suspend (error: String?, status: Enum<SahhaSensorStatus>) -> Unit
     ) {
         healthConnectClient?.also {
             permissionHandler.activityCallback.statusCallback = callback
@@ -379,10 +385,10 @@ internal class PermissionManagerImpl @Inject constructor(
         callback?.invoke(SahhaSensorStatus.enabled)
     }
 
-    override fun getHealthConnectSensorStatus(
+    override suspend fun getHealthConnectSensorStatus(
         context: Context,
         sensors: Set<SahhaSensor>,
-        callback: ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
+        callback: suspend ((error: String?, status: Enum<SahhaSensorStatus>) -> Unit)
     ) {
         SahhaPermissions.getSensorStatusHealthConnect(context, sensors, callback)
     }

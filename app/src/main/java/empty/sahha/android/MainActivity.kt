@@ -1,7 +1,6 @@
 package empty.sahha.android
 
 import android.os.Bundle
-import android.util.JsonWriter
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,7 +36,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializer
@@ -49,11 +47,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import org.json.JSONObject
 import sdk.sahha.android.source.Sahha
 import sdk.sahha.android.source.SahhaBiomarkerCategory
 import sdk.sahha.android.source.SahhaBiomarkerType
-import sdk.sahha.android.source.SahhaConverterUtility
 import sdk.sahha.android.source.SahhaDemographic
 import sdk.sahha.android.source.SahhaEnvironment
 import sdk.sahha.android.source.SahhaFramework
@@ -93,7 +89,7 @@ class MainActivity : ComponentActivity() {
         val sharedPrefs = getSharedPreferences(MY_SHARED_PREFS, MODE_PRIVATE)
 
         val config = SahhaSettings(
-            environment = SahhaEnvironment.sandbox,
+            environment = SahhaEnvironment.development,
             notificationSettings = SahhaNotificationConfiguration(
                 icon = androidx.appcompat.R.drawable.abc_btn_check_to_on_mtrl_015,
 //                title = "Foreground Service",

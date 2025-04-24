@@ -11,7 +11,9 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sdk.sahha.android.BuildConfig
 import sdk.sahha.android.R
 import sdk.sahha.android.common.Constants
@@ -81,10 +83,12 @@ internal class SahhaNotificationManagerImpl(
             )
 
             try {
-                ContextCompat.startForegroundService(
-                    context,
-                    Intent(context.applicationContext, DataCollectionService::class.java)
-                )
+                withContext(Dispatchers.Main) {
+                    ContextCompat.startForegroundService(
+                        context,
+                        Intent(context.applicationContext, DataCollectionService::class.java)
+                    )
+                }
                 callback?.invoke(null, true)
             } catch (e: Exception) {
                 callback?.also { it(e.message, false) }
@@ -114,6 +118,21 @@ internal class SahhaNotificationManagerImpl(
         )
 
         setSahhaNotification(notification)
+    }
+
+    override fun getNewPersistent(
+        icon: Int?, title: String?, shortDescription: String?,
+    ): Notification {
+        return getNewNotification(
+            context,
+            "insights",
+            "Health Insights",
+            NotificationManager.IMPORTANCE_MIN,
+            title ?: Constants.NOTIFICATION_TITLE_DEFAULT,
+            shortDescription ?: Constants.NOTIFICATION_DESC_DEFAULT,
+            true,
+            icon ?: R.drawable.ic_sahha_no_bg
+        )
     }
 
     override fun notifyWithSettingsIntent(title: String?, shortDescription: String?) {
