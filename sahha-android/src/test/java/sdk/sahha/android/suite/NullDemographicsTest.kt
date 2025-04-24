@@ -3,9 +3,6 @@
 //import kotlinx.coroutines.launch
 //import kotlinx.coroutines.suspendCancellableCoroutine
 //import kotlinx.coroutines.test.runTest
-//import okhttp3.mockwebserver.MockResponse
-//import okhttp3.mockwebserver.MockWebServer
-//import org.junit.After
 //import org.junit.Assert
 //import org.junit.Before
 //import org.junit.Test
@@ -13,7 +10,6 @@
 //import org.mockito.Mockito.mock
 //import retrofit2.Call
 //import retrofit2.Response
-//import sdk.sahha.android.data.remote.SahhaApi
 //import sdk.sahha.android.data.repository.UserDataRepoImpl
 //import sdk.sahha.android.di.AppModule
 //import sdk.sahha.android.domain.model.dto.DemographicDto
