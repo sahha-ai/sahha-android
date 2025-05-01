@@ -67,7 +67,7 @@ internal class ReceiverManagerImpl(
     }
 
     private fun setActivityRecognitionClient() {
-        activityRecognitionClient = ActivityRecognitionClient(context)
+        activityRecognitionClient = ActivityRecognition.getClient(context)
     }
 
     private fun setActivityRecognitionPendingIntent(callback: ((error: String?, success: Boolean) -> Unit)?) {
