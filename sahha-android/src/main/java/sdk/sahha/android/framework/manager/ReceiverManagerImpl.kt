@@ -86,16 +86,23 @@ internal class ReceiverManagerImpl(
     }
 
     private fun requestActivityRecognitionUpdates(callback: ((error: String?, success: Boolean) -> Unit)?) {
-        activityRecognitionClient.requestActivityUpdates(
-            Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS,
-            activityRecognitionPendingIntent
-        ).addOnSuccessListener {
-            activityRecognitionReceiverRegistered = true
-            callback?.also { it(null, true) }
-        }.addOnFailureListener { e ->
-            callback?.also { it(e.message, false) }
-            displayErrorToast(e)
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            activityRecognitionClient.requestActivityUpdates(
+                Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS,
+                activityRecognitionPendingIntent
+            ).addOnSuccessListener {
+                activityRecognitionReceiverRegistered = true
+                callback?.invoke(null, true)
+            }.addOnFailureListener { e ->
+                callback?.invoke(e.message, false)
+                displayErrorToast(e)
+            }
         }
+        callback?.invoke("Permission not granted", false)
     }
 
     private fun displayErrorToast(e: Exception) {
