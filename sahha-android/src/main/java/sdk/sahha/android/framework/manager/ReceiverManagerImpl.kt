@@ -1,12 +1,15 @@
 package sdk.sahha.android.framework.manager
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityRecognitionClient
 import com.google.android.gms.location.SleepSegmentRequest
@@ -83,16 +86,23 @@ internal class ReceiverManagerImpl(
     }
 
     private fun requestActivityRecognitionUpdates(callback: ((error: String?, success: Boolean) -> Unit)?) {
-        activityRecognitionClient.requestActivityUpdates(
-            Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS,
-            activityRecognitionPendingIntent
-        ).addOnSuccessListener {
-            activityRecognitionReceiverRegistered = true
-            callback?.also { it(null, true) }
-        }.addOnFailureListener { e ->
-            callback?.also { it(e.message, false) }
-            displayErrorToast(e)
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            activityRecognitionClient.requestActivityUpdates(
+                Constants.ACTIVITY_RECOGNITION_UPDATE_INTERVAL_MILLIS,
+                activityRecognitionPendingIntent
+            ).addOnSuccessListener {
+                activityRecognitionReceiverRegistered = true
+                callback?.invoke(null, true)
+            }.addOnFailureListener { e ->
+                callback?.invoke(e.message, false)
+                displayErrorToast(e)
+            }
         }
+        callback?.invoke("Permission not granted", false)
     }
 
     private fun displayErrorToast(e: Exception) {
@@ -131,11 +141,18 @@ internal class ReceiverManagerImpl(
             sleepIntent,
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
         )
-        ActivityRecognition.getClient(context).requestSleepSegmentUpdates(
-            sleepPendingIntent,
-            SleepSegmentRequest.getDefaultSleepSegmentRequest()
-        ).addOnSuccessListener { Log.d(TAG, "Successful sleep segment request") }
-            .addOnFailureListener { Log.d(TAG, "Unsuccessful sleep segment request") }
+
+        if (ActivityCompat.checkSelfPermission(
+                serviceContext,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityRecognition.getClient(context).requestSleepSegmentUpdates(
+                sleepPendingIntent,
+                SleepSegmentRequest.getDefaultSleepSegmentRequest()
+            ).addOnSuccessListener { Log.d(TAG, "Successful sleep segment request") }
+                .addOnFailureListener { Log.d(TAG, "Unsuccessful sleep segment request") }
+        }
     }
 
     private fun registerTimeZoneChangedReceiver(context: Context) {
