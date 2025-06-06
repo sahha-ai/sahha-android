@@ -145,8 +145,8 @@ class MainActivity : ComponentActivity() {
                     var start by remember { mutableStateOf("") }
                     var authStatus by remember { mutableStateOf("Pending") }
 
-                    appId = sharedPrefs.getString(APP_ID, null) ?: ""
-                    appSecret = sharedPrefs.getString(APP_SECRET, null) ?: ""
+                    appId = sharedPrefs.getString(APP_ID, null) ?: "tRAyXbbcfmht3u5ysH6Z0kDo7PAG6ZJc"
+                    appSecret = sharedPrefs.getString(APP_SECRET, null) ?: "kVDA5fhbGSWR27k3s1vFnkkgvbFOYg2ysc9UAjkAyiaGeknVrcEgYb9RkEuWzrXc"
                     externalId = sharedPrefs.getString(EXTERNAL_ID, null) ?: ""
 
                     Sahha.getSensorStatus(
