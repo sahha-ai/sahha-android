@@ -70,4 +70,7 @@ internal val SahhaSensor.category: SahhaBiomarkerCategory
 
         SahhaSensor.exercise
             -> SahhaBiomarkerCategory.exercise
+
+        SahhaSensor.energy_consumed
+            -> SahhaBiomarkerCategory.nutrition
     }

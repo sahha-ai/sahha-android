@@ -111,6 +111,7 @@ class MainActivity : ComponentActivity() {
             SahhaSensor.steps,
             SahhaSensor.sleep,
             SahhaSensor.heart_rate,
+            SahhaSensor.energy_consumed,
             SahhaSensor.heart_rate_variability_sdnn
         )
 
