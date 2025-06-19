@@ -173,4 +173,6 @@ enum class SahhaSensor {
         level = DeprecationLevel.WARNING
     )
     walking_step_length,
+
+    energy_consumed
 }

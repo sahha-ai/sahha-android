@@ -19,6 +19,7 @@ import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.RespiratoryRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
@@ -858,6 +859,27 @@ internal fun ExerciseSegment.toSahhaDataLogDto(
             exercise.metadata.lastModifiedTime,
             endZoneOffset
         )
+    )
+}
+
+internal fun NutritionRecord.toSahhaDataLogDto(
+    mapper: HealthConnectConstantsMapper = defaults.mapper,
+    timeManager: SahhaTimeManager = defaults.timeManager,
+    idManager: IdManager = defaults.idManager
+): SahhaDataLog {
+    return SahhaDataLog(
+        id = metadata.id,
+        logType = Constants.DataLogs.NUTRITION,
+        dataType = SahhaSensor.energy_consumed.name,
+        value = energy?.inKilocalories ?: 0.0,
+        unit = Constants.DataUnits.KILOCALORIE,
+        source = metadata.dataOrigin.packageName,
+        startDateTime = timeManager.instantToIsoTime(startTime, startZoneOffset),
+        endDateTime = timeManager.instantToIsoTime(endTime, endZoneOffset),
+        recordingMethod = mapper.recordingMethod(metadata.recordingMethod),
+        deviceId = idManager.getDeviceId(),
+        deviceType = mapper.devices(metadata.device?.type),
+        modifiedDateTime = timeManager.instantToIsoTime(metadata.lastModifiedTime, endZoneOffset)
     )
 }
 
