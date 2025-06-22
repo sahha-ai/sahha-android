@@ -15,6 +15,8 @@ import sdk.sahha.android.domain.internal_enum.RecordingMethods
 import sdk.sahha.android.domain.mapper.HealthConnectConstantsMapper
 
 internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
+
+    @SuppressLint("RestrictedApi")
     override fun sleepStages(constantInt: Int): String? {
         val sleepStagePrefix = "sleep_stage_"
 
@@ -52,18 +54,22 @@ internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
         return MealType.MEAL_TYPE_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun relationToMeal(constantInt: Int): String? {
         return BloodGlucoseRecord.RELATION_TO_MEAL_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun specimenSource(constantInt: Int): String? {
         return BloodGlucoseRecord.SPECIMEN_SOURCE_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun bodyPosition(constantInt: Int): String? {
         return BloodPressureRecord.BODY_POSITION_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun measurementLocation(constantInt: Int): String? {
         return BloodPressureRecord.MEASUREMENT_LOCATION_INT_TO_STRING_MAP[constantInt]
     }
@@ -73,10 +79,12 @@ internal class HealthConnectConstantsMapperImpl : HealthConnectConstantsMapper {
         return BodyTemperatureMeasurementLocation.MEASUREMENT_LOCATION_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun measurementMethod(constantInt: Int): String? {
         return Vo2MaxRecord.MEASUREMENT_METHOD_INT_TO_STRING_MAP[constantInt]
     }
 
+    @SuppressLint("RestrictedApi")
     override fun exerciseTypes(constantInt: Int): String? {
         return ExerciseSessionRecord.EXERCISE_TYPE_INT_TO_STRING_MAP[constantInt]
     }

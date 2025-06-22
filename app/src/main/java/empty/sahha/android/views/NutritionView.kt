@@ -28,7 +28,7 @@ import java.time.Instant
 import java.time.ZonedDateTime
 
 @Composable
-fun EnergyConsumedView(context: Context) {
+fun NutritionView(context: Context) {
     var caloriesInput by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("Ready to add energy consumed data") }
     var isLoading by remember { mutableStateOf(false) }
