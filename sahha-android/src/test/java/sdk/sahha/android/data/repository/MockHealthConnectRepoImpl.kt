@@ -319,7 +319,7 @@ internal class MockHealthConnectRepoImpl: HealthConnectRepo {
         TODO("Not yet implemented")
     }
 
-    override suspend fun postEnergyConsumedData(
+    override suspend fun postEnergyConsumed(
         energyConsumedData: List<NutritionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     ) {
