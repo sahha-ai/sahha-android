@@ -131,6 +131,13 @@ internal class MockSahhaApi(
         TODO("Not yet implemented")
     }
 
+    override suspend fun postEnergyConsumed(
+        profileToken: String,
+        energyConsumedData: List<SahhaDataLog>
+    ): Response<ResponseBody> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun postRespiratoryRate(
         profileToken: String,
         respiratoryRate: List<SahhaDataLog>
