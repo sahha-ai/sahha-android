@@ -18,6 +18,7 @@ import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
@@ -199,6 +200,17 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
+            SahhaSensor.energy_consumed to createPermissionActionStats(
+                sensor = SahhaSensor.energy_consumed,
+                recordClass = NutritionRecord::class,
+                metrics = setOf(NutritionRecord.ENERGY_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                extractValue = { result ->
+                    result[NutritionRecord.ENERGY_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            )
         )
 
     override val permissionActionsSamples: Map<SahhaSensor, suspend (ZonedDateTime, ZonedDateTime) -> Pair<String?, List<SahhaSample>?>> =
@@ -438,6 +450,15 @@ internal class PermissionActionProviderImpl @Inject constructor(
                     listOf(sessions) + segments + laps
                 }
             ),
+            SahhaSensor.energy_consumed to createPermissionActionSamples(
+                recordClass = NutritionRecord::class,
+                extractSample = { record ->
+                    val sample = (record as NutritionRecord)
+                        .toSahhaDataLogDto()
+                        .toSahhaSample(SahhaSensor.energy_consumed.category)
+                    listOf(sample)
+                }
+            )
         )
 
     override val permissionActionsLogs:
@@ -592,6 +613,18 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
+            SahhaSensor.energy_consumed to createPermissionActionLogs(
+                sensor = SahhaSensor.energy_consumed,
+                recordClass = NutritionRecord::class,
+                metrics = setOf(NutritionRecord.ENERGY_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[NutritionRecord.ENERGY_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            )
         )
 
 

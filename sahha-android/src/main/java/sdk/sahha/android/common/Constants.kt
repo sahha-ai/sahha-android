@@ -104,6 +104,7 @@ internal object Constants {
         const val SLEEP = "sleep"
         const val BLOOD = "blood"
         const val HEART = "heart"
+        const val NUTRITION = "nutrition"
         const val ENERGY = "energy"
         const val OXYGEN = "oxygen"
         const val BODY = "body"
