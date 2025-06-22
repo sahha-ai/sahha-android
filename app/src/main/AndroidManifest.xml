@@ -46,7 +46,11 @@
 
     <!-- Nutrition -->
     <uses-permission android:name="android.permission.health.READ_NUTRITION" />
+    <uses-permission android:name="android.permission.health.WRITE_NUTRITION" />
 
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -62,10 +66,21 @@
             android:theme="@style/Theme.Sahhasdkempty">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
     </application>
 

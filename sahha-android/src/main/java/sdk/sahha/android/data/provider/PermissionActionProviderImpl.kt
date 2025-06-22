@@ -613,6 +613,18 @@ internal class PermissionActionProviderImpl @Inject constructor(
                         ?: 0.0
                 }
             ),
+            SahhaSensor.energy_consumed to createPermissionActionLogs(
+                sensor = SahhaSensor.energy_consumed,
+                recordClass = NutritionRecord::class,
+                metrics = setOf(NutritionRecord.ENERGY_TOTAL),
+                dataUnit = Constants.DataUnits.KILOCALORIE,
+                aggregation = AggregationType.AVG.value,
+                extractValue = { result ->
+                    result[NutritionRecord.ENERGY_TOTAL]
+                        ?.inKilocalories
+                        ?: 0.0
+                }
+            )
         )
 
 

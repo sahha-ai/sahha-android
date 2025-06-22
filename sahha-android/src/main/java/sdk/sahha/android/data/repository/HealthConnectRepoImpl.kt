@@ -14,6 +14,7 @@ import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
@@ -622,6 +623,35 @@ internal class HealthConnectRepoImpl @Inject constructor(
                 saveLastSuccessfulQuery(
                     Vo2MaxRecord::class,
                     last.time.atZone(last.zoneOffset)
+                )
+            },
+            callback
+        )
+    }
+
+    override suspend fun postEnergyConsumed(
+        energyConsumedData: List<NutritionRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    ) {
+        val getResponse: suspend (List<NutritionRecord>) -> Response<ResponseBody> =
+            { chunk ->
+                val token = authRepo.getToken() ?: ""
+                val energyConsumed = chunk.map { it.toSahhaDataLogDto() }
+                api.postEnergyConsumed(
+                    TokenBearer(token),
+                    energyConsumed
+                )
+            }
+
+        postData(
+            energyConsumedData,
+            Constants.DEFAULT_POST_LIMIT,
+            getResponse,
+            { chunk ->
+                val last = chunk.last()
+                saveLastSuccessfulQuery(
+                    NutritionRecord::class,
+                    last.endTime.atZone(last.endZoneOffset)
                 )
             },
             callback

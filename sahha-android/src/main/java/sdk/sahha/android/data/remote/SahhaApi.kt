@@ -114,6 +114,12 @@ internal interface SahhaApi {
     ): Response<ResponseBody>
 
     @POST("profile/data/log")
+    suspend fun postEnergyConsumed(
+        @Header(AUTHORIZATION_HEADER) profileToken: String,
+        @Body energyConsumedData: List<SahhaDataLog>
+    ): Response<ResponseBody>
+
+    @POST("profile/data/log")
     suspend fun postRespiratoryRate(
         @Header(AUTHORIZATION_HEADER) profileToken: String,
         @Body respiratoryRate: List<SahhaDataLog>
