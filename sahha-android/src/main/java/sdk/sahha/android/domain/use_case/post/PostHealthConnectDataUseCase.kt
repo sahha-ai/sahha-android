@@ -19,6 +19,7 @@ import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RespiratoryRateRecord
@@ -698,6 +699,27 @@ internal class PostHealthConnectDataUseCase @Inject constructor(
                                         error, successful,
                                         "Posted basal body temperature successfully.",
                                         records, recordType
+                                    )
+                                    cont.resume(Unit)
+                                }
+                            } ?: cont.resume(Unit)
+                        }
+                    }
+                }
+
+                HealthPermission.getReadPermission(NutritionRecord::class) -> {
+                    val recordType = NutritionRecord::class
+                    suspendCoroutine<Unit> { cont ->
+                        ioScope.launch {
+                            repo.getNewRecords(recordType)?.also { records ->
+                                repo.postEnergyConsumed(
+                                    records,
+                                ) { error, successful ->
+                                    processPostResponse(
+                                        error, successful,
+                                        "Posted energy consumed successfully.",
+                                        records,
+                                        recordType
                                     )
                                     cont.resume(Unit)
                                 }
