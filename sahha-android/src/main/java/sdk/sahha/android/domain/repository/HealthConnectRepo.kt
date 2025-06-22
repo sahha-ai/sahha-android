@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
@@ -134,6 +135,11 @@ internal interface HealthConnectRepo {
 
     suspend fun postVo2MaxData(
         vo2MaxData: List<Vo2MaxRecord>,
+        callback: (suspend (error: String?, successful: Boolean) -> Unit)?
+    )
+
+    suspend fun postEnergyConsumed(
+        energyConsumedData: List<NutritionRecord>,
         callback: (suspend (error: String?, successful: Boolean) -> Unit)?
     )
 
