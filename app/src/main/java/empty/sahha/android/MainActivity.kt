@@ -36,14 +36,14 @@ object Routes {
     const val BIOMARKERS = "biomarkers"
     const val PERMISSIONS = "permissions"
     const val SENSOR_STATUS = "sensor_status"
-    const val CONFIGURATION = "configuration"
     const val ERROR_LOG = "error_log"
     const val AUTHENTICATION = "authentication"
     const val SETTINGS = "settings"
     const val SCORES = "scores"
     const val DEMOGRAPHIC = "demographic"
     const val FORCE_CRASH = "force_crash"
-    const val ENERGY_CONSUMED = "energy_consumed";
+    const val NUTRITION = "nutrition";
+    const val SLEEP = "sleep"
 }
 
 // Menu item data class
@@ -141,16 +141,6 @@ fun AppNavigation(
                 SensorStatusView(activity, sensors)
             }
         }
-        composable(Routes.CONFIGURATION) {
-            ScreenWrapper(navController, "Configuration") {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    ConfigurationView(activity, config)
-                }
-            }
-        }
         composable(Routes.ERROR_LOG) {
             ScreenWrapper(navController, "Error Logging") {
                 ErrorLogView()
@@ -181,9 +171,14 @@ fun AppNavigation(
                 DemographicView()
             }
         }
-        composable(Routes.ENERGY_CONSUMED) {
-            ScreenWrapper(navController, "Energy Consumed") {
-                EnergyConsumedView(activity)
+        composable(Routes.NUTRITION) {
+            ScreenWrapper(navController, "ADD NUTRITION") {
+                NutritionView(activity)
+            }
+        }
+        composable(Routes.SLEEP) {
+            ScreenWrapper(navController, "ADD SLEEP") {
+                SleepView(activity)
             }
         }
         composable(Routes.FORCE_CRASH) {
@@ -209,9 +204,9 @@ fun HomeScreen(navController: NavHostController, activity: ComponentActivity) {
         MenuItem("Scores", Routes.SCORES, "Get activity and sleep scores"),
         MenuItem("Demographics", Routes.DEMOGRAPHIC, "Manage demographic data"),
         MenuItem("Sensor Status", Routes.SENSOR_STATUS, "Check and enable sensors"),
-        MenuItem("Energy Consumed", Routes.ENERGY_CONSUMED, "Add Energy Consumed Data"),
+        MenuItem("Nutrition", Routes.NUTRITION, "Add Nutrition data"),
+        MenuItem("Sleep", Routes.SLEEP, "Add Sleep data"),
         MenuItem("Permission Tests", Routes.PERMISSIONS, "Test individual permissions"),
-        MenuItem("Configuration", Routes.CONFIGURATION, "Configure Sahha SDK"),
         MenuItem("Error Logging", Routes.ERROR_LOG, "Post error logs"),
         MenuItem("App Settings", Routes.SETTINGS, "Open app settings"),
         MenuItem("Force Crash", Routes.FORCE_CRASH, "Test crash reporting"),
