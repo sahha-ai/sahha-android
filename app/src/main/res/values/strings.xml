@@ -1,4 +1,3 @@
 <resources>
-    <string name="app_name">sahha-sdk-empty</string>
-    <string name="title_activity_main">Sahha SDK UI</string>
+    <string name="app_name">AndroidSDKTest</string>
 </resources>
