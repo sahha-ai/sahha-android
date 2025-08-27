@@ -9,22 +9,22 @@ internal interface AuthApi {
 }
 
 
-/** Default implementation backed by JsonHttpPort. */
 internal class AuthApiImpl(
-    private val http: JsonHttpPort,
-    private val basePath: String = "/api/v1/oauth/profile/register/appId"
+    private val httpProvider: () -> JsonHttpPort
 ) : AuthApi {
     override suspend fun register(
         appId: String,
         appSecret: String,
         body: RegisterBody
-    ): AuthResponse =
-        http.post<RegisterBody, AuthResponse>(
-            path = "$basePath",
+    ): AuthResponse {
+        val http = httpProvider()
+        return http.post<RegisterBody, AuthResponse>(
+            path = "/api/v1/oauth/profile/register/appId",
             body = body,
             headers = mapOf("AppId" to appId, "AppSecret" to appSecret),
             requiresAuth = false // registering with app creds
         )
+    }
 }
 
 

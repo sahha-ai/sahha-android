@@ -5,7 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
-import core.SdkJson
+import core.json.SdkJson
 import features.storage.domain.StorageKey
 import features.storage.domain.StoragePort
 import kotlinx.coroutines.Dispatchers

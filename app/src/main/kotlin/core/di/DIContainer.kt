@@ -86,4 +86,16 @@ class DIContainer {
         instances.clear()
         providers.clear()
     }
+
+    inline fun <reified T : Any> registerProviderFunc(
+        noinline provider: (DIContainer) -> () -> T,
+        name: String? = null,
+        replace: Boolean = false
+    ) {
+        registerProvider(T::class, singleton = false, { c -> provider(c)() }, name, replace)  // Wrap to fit existing
+    }
+
+    inline fun <reified T : Any> resolveProvider(name: String? = null): () -> T = {
+        resolve<T>(name)
+    }
 }

@@ -2,7 +2,7 @@ package features.storage.infra.prefs
 
 import android.content.Context
 import androidx.core.content.edit
-import core.SdkJson
+import core.json.SdkJson
 import features.storage.domain.StorageKey
 import features.storage.domain.StoragePort
 import kotlinx.coroutines.Dispatchers

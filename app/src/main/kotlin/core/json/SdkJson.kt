@@ -1,4 +1,4 @@
-package core
+package core.json
 
 import kotlinx.serialization.json.Json
 

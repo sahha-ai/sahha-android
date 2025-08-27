@@ -4,8 +4,7 @@ import features.auth.domain.AuthPort
 import features.auth.model.AuthToken
 import java.time.Instant
 
-/** Wires API + Store into the feature-facing AuthPort. */
-internal class AuthRepository(
+internal class AuthAdapter(
     private val api: AuthApi,
     private val store: AuthStore,
     private val now: () -> Instant = { Instant.now() }
