@@ -7,6 +7,10 @@ plugins {
     id 'com.gradleup.nmcp' version "0.0.7" apply false
 }
 
+signing {
+    useGpgCmd()
+}
+
 import com.vanniktech.maven.publish.SonatypeHost
 
 def secretsPropertiesFile = rootProject.file("sahha-android/secrets.properties")
@@ -16,6 +20,7 @@ secretsProperties.load(new FileInputStream(secretsPropertiesFile))
 def gVersionName = "1.2.1"
 
 android {
+
     compileSdk 35
 
     defaultConfig {
