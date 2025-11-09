@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
@@ -49,7 +50,7 @@ internal class DataCollectionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        startForeground(NOTIFICATION_DATA_COLLECTION, createBasicNotification())
+        startForegroundService(createBasicNotification())
         initializeService()
     }
 
@@ -59,9 +60,7 @@ internal class DataCollectionService : Service() {
             try {
                 SahhaReconfigure(this@DataCollectionService.applicationContext)
                 startForegroundNotification()
-
-                config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
-
+                config = Sahha.di.sahhaConfigRepo.getConfig()
                 Session.handlerThread = HandlerThread("DataCollectionServiceHandlerThread")
                 Session.handlerThread.start()
                 Session.serviceHandler = Handler(Session.handlerThread.looper)
@@ -77,12 +76,18 @@ internal class DataCollectionService : Service() {
         checkAndKillService(intent)
         checkAndRestartService(intent)
         serviceScope.launch {
-            SahhaReconfigure(this@DataCollectionService)
-            config = Sahha.di.sahhaConfigRepo.getConfig() ?: return@launch
-            checkAndStartCollectingSleepData()
-            checkAndStartCollectingScreenLockData()
-            startDataCollectors(this@DataCollectionService)
-            startTimeZoneChangedReceiver()
+            try {
+                SahhaReconfigure(this@DataCollectionService)
+                startForegroundNotification()
+                config = Sahha.di.sahhaConfigRepo.getConfig()
+                checkAndStartCollectingSleepData()
+                checkAndStartCollectingScreenLockData()
+                startDataCollectors(this@DataCollectionService)
+                startTimeZoneChangedReceiver()
+            } catch (ex: Exception) {
+                stopService()
+                Log.w(TAG, ex.message ?: "Something went wrong")
+            }
         }
 
         return if (killswitched) START_NOT_STICKY else START_STICKY
@@ -105,8 +110,19 @@ internal class DataCollectionService : Service() {
 
 
     override fun onDestroy() {
-        sensors.unregisterExistingReceiversAndListeners(this)
-        serviceScope.cancel()
+        try {
+            release()
+            sensors.unregisterExistingReceiversAndListeners(this)
+        } catch (e: Exception) {
+            Log.w(TAG, "Error during onDestroy cleanup: ${e.message}")
+        } finally {
+            serviceJob?.cancel()
+            if (killswitched) println("Turning off main service")
+        }
+    }
+
+    private fun release() {
+        Session.chunkPostJobs.forEach { it.cancel() }
         Sahha.di.dataBatcherRunnable.runnableScope.cancel()
 
         try {
@@ -115,11 +131,6 @@ internal class DataCollectionService : Service() {
             Log.d(TAG, e.message ?: "Handler thread is not yet initialized")
         }
         Session.handlerRunning = false
-
-        if (killswitched) {
-            println("Turning off main service")
-            return
-        }
     }
 
     private fun createBasicNotification(): Notification {
@@ -156,7 +167,7 @@ internal class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun startDataCollectors(context: Context) {
+    private fun startDataCollectors(context: Context) {
         checkAndStartCollectingScreenLockData()
 
         Sahha.di.permissionManager.getNativeSensorStatus(context) { status ->
@@ -167,21 +178,18 @@ internal class DataCollectionService : Service() {
         }
     }
 
-    private suspend fun startForegroundNotification() {
+    private suspend fun startForegroundNotification() = withContext(Dispatchers.Main) {
         val notificationConfig = Sahha.di.configurationDao.getNotificationConfig()
         val notification = Sahha.di.sahhaNotificationManager.getNewPersistent(
             notificationConfig.icon,
             notificationConfig.title,
             notificationConfig.shortDescription
         )
-
-        withContext(Dispatchers.Main) {
-            startForegroundService(notification)
-        }
+        startForegroundService(notification)
     }
 
     private fun stopService() {
-        Session.chunkPostJobs.forEach { it.cancel() }
+        release()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -238,17 +246,16 @@ internal class DataCollectionService : Service() {
         }
     }
 
-    private fun startForegroundService() {
-        startForeground(
-            NOTIFICATION_DATA_COLLECTION,
-            Sahha.di.sahhaNotificationManager.notification
-        )
-    }
+    private fun startForegroundService() =
+        startForegroundService(Sahha.di.sahhaNotificationManager.notification)
 
-    private fun startForegroundService(notification: Notification) {
-        startForeground(
-            NOTIFICATION_DATA_COLLECTION,
-            notification
-        )
-    }
+    private fun startForegroundService(notification: Notification) =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            startForeground(
+                NOTIFICATION_DATA_COLLECTION,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
+            )
+        else startForeground(NOTIFICATION_DATA_COLLECTION, notification)
+
 }
